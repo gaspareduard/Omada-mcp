@@ -1,24 +1,28 @@
 import { z } from 'zod';
 
-const booleanStringSchema = z
-    .union([z.literal('true'), z.literal('false')])
-    .optional()
-    .transform((value) => value !== 'false');
+const createBooleanStringSchema = (defaultValue: boolean): z.ZodEffects<z.ZodOptional<z.ZodUnion<[z.ZodLiteral<'true'>, z.ZodLiteral<'false'>]>>, boolean, 'true' | 'false' | undefined> =>
+    z
+        .union([z.literal('true'), z.literal('false')])
+        .optional()
+        .transform((value: 'true' | 'false' | undefined) => {
+            if (value === undefined) return defaultValue;
+            return value === 'true';
+        });
 
 const numericStringSchema = z
     .string()
     .optional()
-    .transform((value) => (value ? Number.parseInt(value, 10) : undefined))
+    .transform((value: string | undefined) => (value ? Number.parseInt(value, 10) : undefined))
     .pipe(z.number().positive().optional());
 
 const listStringSchema = z
     .string()
     .optional()
-    .transform((value) =>
+    .transform((value: string | undefined) =>
         value
             ? value
                 .split(',')
-                .map((s) => s.trim())
+                .map((s: string) => s.trim())
                 .filter(Boolean)
             : undefined
     );
@@ -30,26 +34,25 @@ const envSchema = z.object({
     clientSecret: z.string().min(1, 'OMADA_CLIENT_SECRET is required'),
     omadacId: z.string().min(1, 'OMADA_OMADAC_ID is required'),
     siteId: z.string().min(1).optional(),
-    strictSsl: booleanStringSchema,
+    strictSsl: createBooleanStringSchema(true),
     requestTimeout: numericStringSchema,
-    proxyUrl: z.string().url().optional(),
 
     // MCP Generic Server Configuration
     logLevel: z.enum(['debug', 'info', 'warn', 'error']).optional().default('info'),
     logFormat: z.enum(['plain', 'json', 'gcp-json']).optional().default('plain'),
-    useHttp: booleanStringSchema,
-    stateful: booleanStringSchema,
+    useHttp: createBooleanStringSchema(false),
+    stateful: createBooleanStringSchema(false),
 
     // MCP Server HTTP/SSE Configuration
     httpPort: numericStringSchema,
     httpHost: z.string().optional(),
-    httpSsePath: z.string().optional(),
-    httpEnableHealthcheck: booleanStringSchema,
+    httpPath: z.string().optional(),
+    httpEnableHealthcheck: createBooleanStringSchema(true),
     httpHealthcheckPath: z.string().optional(),
-    httpAllowCors: booleanStringSchema,
+    httpAllowCors: createBooleanStringSchema(true),
     httpAllowedHosts: listStringSchema,
     httpAllowedOrigins: listStringSchema,
-    httpNgrokEnabled: booleanStringSchema,
+    httpNgrokEnabled: createBooleanStringSchema(false),
     httpNgrokAuthToken: z.string().optional(),
 });
 
@@ -62,7 +65,6 @@ export interface EnvironmentConfig {
     siteId?: string;
     strictSsl: boolean;
     requestTimeout?: number;
-    proxyUrl?: string;
 
     // MCP Generic Server Configuration
     logLevel: 'debug' | 'info' | 'warn' | 'error';
@@ -73,7 +75,7 @@ export interface EnvironmentConfig {
     // MCP Server HTTP/SSE Configuration
     httpPort?: number;
     httpHost?: string;
-    httpSsePath?: string;
+    httpPath?: string;
     httpEnableHealthcheck: boolean;
     httpHealthcheckPath?: string;
     httpAllowCors: boolean;
@@ -93,7 +95,6 @@ export function loadConfigFromEnv(env: NodeJS.ProcessEnv = process.env): Environ
         siteId: env.OMADA_SITE_ID,
         strictSsl: env.OMADA_STRICT_SSL,
         requestTimeout: env.OMADA_TIMEOUT,
-        proxyUrl: env.OMADA_PROXY_URL,
 
         // MCP Generic Server Configuration
         logLevel: env.MCP_SERVER_LOG_LEVEL,
@@ -104,7 +105,7 @@ export function loadConfigFromEnv(env: NodeJS.ProcessEnv = process.env): Environ
         // MCP Server HTTP/SSE Configuration
         httpPort: env.MCP_HTTP_PORT,
         httpHost: env.MCP_HTTP_HOST,
-        httpSsePath: env.MCP_HTTP_SSE_PATH,
+        httpPath: env.MCP_HTTP_PATH,
         httpEnableHealthcheck: env.MCP_HTTP_ENABLE_HEALTHCHECK,
         httpHealthcheckPath: env.MCP_HTTP_HEALTHCHECK_PATH,
         httpAllowCors: env.MCP_HTTP_ALLOW_CORS,
@@ -115,7 +116,7 @@ export function loadConfigFromEnv(env: NodeJS.ProcessEnv = process.env): Environ
     });
 
     if (!parsed.success) {
-        const messages = parsed.error.issues.map((issue) => issue.message);
+        const messages = parsed.error.issues.map((issue: z.ZodIssue) => issue.message);
         throw new Error(`Invalid environment configuration:\n${messages.join('\n')}`);
     }
 
@@ -126,26 +127,25 @@ export function loadConfigFromEnv(env: NodeJS.ProcessEnv = process.env): Environ
         clientSecret: parsed.data.clientSecret,
         omadacId: parsed.data.omadacId,
         siteId: parsed.data.siteId,
-        strictSsl: parsed.data.strictSsl ?? true,
+        strictSsl: parsed.data.strictSsl,
         requestTimeout: parsed.data.requestTimeout,
-        proxyUrl: parsed.data.proxyUrl,
 
         // MCP Generic Server Configuration
         logLevel: parsed.data.logLevel,
         logFormat: parsed.data.logFormat,
-        useHttp: parsed.data.useHttp ?? false,
-        stateful: parsed.data.stateful ?? false,
+        useHttp: parsed.data.useHttp,
+        stateful: parsed.data.stateful,
 
         // MCP Server HTTP/SSE Configuration
         httpPort: parsed.data.httpPort,
         httpHost: parsed.data.httpHost,
-        httpSsePath: parsed.data.httpSsePath,
-        httpEnableHealthcheck: parsed.data.httpEnableHealthcheck ?? true,
+        httpPath: parsed.data.httpPath,
+        httpEnableHealthcheck: parsed.data.httpEnableHealthcheck,
         httpHealthcheckPath: parsed.data.httpHealthcheckPath,
-        httpAllowCors: parsed.data.httpAllowCors ?? true,
+        httpAllowCors: parsed.data.httpAllowCors,
         httpAllowedHosts: parsed.data.httpAllowedHosts,
         httpAllowedOrigins: parsed.data.httpAllowedOrigins,
-        httpNgrokEnabled: parsed.data.httpNgrokEnabled ?? false,
+        httpNgrokEnabled: parsed.data.httpNgrokEnabled,
         httpNgrokAuthToken: parsed.data.httpNgrokAuthToken,
     };
 }

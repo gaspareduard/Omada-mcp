@@ -18,6 +18,7 @@ export default [
             parserOptions: {
                 ecmaVersion: 'latest',
                 sourceType: 'module',
+                project: './tsconfig.json',
             },
         },
         rules: {
@@ -29,6 +30,14 @@ export default [
                 },
             ],
             '@typescript-eslint/consistent-type-definitions': ['error', 'interface'],
+            '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_' }],
+            '@typescript-eslint/no-explicit-any': 'warn',
+            '@typescript-eslint/explicit-function-return-type': ['warn', { allowExpressions: true }],
+            '@typescript-eslint/no-floating-promises': 'error',
+            '@typescript-eslint/no-misused-promises': 'error',
+            '@typescript-eslint/await-thenable': 'error',
+            '@typescript-eslint/require-await': 'warn',
+            '@typescript-eslint/no-unnecessary-condition': 'warn',
         },
     },
     prettierConfig,

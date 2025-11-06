@@ -32,7 +32,7 @@ export const stackIdSchema = siteInputSchema.extend({
 });
 
 export function toToolResult(value: unknown): CallToolResult {
-    const text = typeof value === 'string' ? value : (JSON.stringify(value, null, 2) ?? '');
+    const text = typeof value === 'string' ? value : JSON.stringify(value, null, 2);
 
     return {
         content: text ? [{ type: 'text' as const, text }] : [],
@@ -152,11 +152,13 @@ function setupServerLogging(server: McpServer): void {
         logger.warn('Server connection closed');
     };
 
-    server.server.onerror = (error) => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    server.server.onerror = (error: any) => {
         logger.error('Server error', { error });
     };
 
-    server.server.fallbackRequestHandler = async (request, extra) => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/require-await
+    server.server.fallbackRequestHandler = async (request: any, extra: any) => {
         const sessionId = extra.sessionId ?? 'unknown-session';
         logger.warn('Unhandled request received', {
             method: request.method,
@@ -166,7 +168,8 @@ function setupServerLogging(server: McpServer): void {
         throw new Error(`Unhandled request: ${request.method}`);
     };
 
-    server.server.fallbackNotificationHandler = async (notification) => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/require-await
+    server.server.fallbackNotificationHandler = async (notification: any) => {
         logger.warn('Unhandled notification received', {
             method: notification.method,
             params: safeSerialize(notification.params),

@@ -7,8 +7,9 @@
     "scripts": {
         "build": "tsc -p tsconfig.json",
         "lint": "eslint . --ext .ts",
+        "lint:fix": "eslint . --ext .ts --fix",
         "format": "prettier --write .",
-        "check": "npm run lint",
+        "check": "npm run lint && tsc --noEmit",
         "dev": "tsx src/index.ts",
         "start": "node dist/index.js",
         "docker:build": "docker build -f Dockerfile -t ghcr.io/migueltvms/tplink-omada-mcp:latest .",
@@ -30,7 +31,6 @@
         "@ngrok/ngrok": "^1.5.2",
         "axios": "^1.13.2",
         "dotenv": "^17.2.3",
-        "https-proxy-agent": "^7.0.6",
         "pino": "^10.1.0",
         "zod": "^3.25.76"
     },

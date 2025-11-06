@@ -24,7 +24,6 @@ Reference `.env.example`. Primary variables:
 - `OMADA_SITE_ID` (optional) - site ID for the Omada controller.
 - `OMADA_STRICT_SSL` (default: `true`) - whether to enforce strict SSL certificate validation.
 - `OMADA_TIMEOUT` (default: `30000`) - request timeout in milliseconds.
-- `OMADA_PROXY_URL` (optional) - HTTP/HTTPS proxy URL to reach the controller (e.g., `https://proxy.example.com:8443`).
 
 ### MCP Generic Server Configuration:
 
@@ -36,22 +35,22 @@ Reference `.env.example`. Primary variables:
 - `MCP_SERVER_USE_HTTP` (default: `false`) - whether to start the HTTP server instead of stdio.
 - `MCP_SERVER_STATEFUL` (default: `false`) - whether to maintain stateful sessions per client.
 
-### MCP Server HTTP/SSE Configuration, if `MCP_SERVER_USE_HTTP` is `true`:
+### MCP Server HTTP Configuration, if `MCP_SERVER_USE_HTTP` is `true`:
 
 - `MCP_HTTP_PORT` (default: `3000`) - port for the HTTP/SSE server.
 - `MCP_HTTP_HOST` (default: `0.0.0.0`) - host for the HTTP/SSE server.
-- `MCP_HTTP_SSE_PATH` (optional) - base path for MCP HTTP/SSE endpoints.
+- `MCP_HTTP_PATH` (default: `/mcp`) - base path for MCP HTTP endpoints.
 - `MCP_HTTP_ENABLE_HEALTHCHECK` (default: `true`) - enable a healthcheck endpoint at the path indicated on `MCP_HTTP_HEALTHCHECK_PATH`.
 - `MCP_HTTP_HEALTHCHECK_PATH` (default: `/healthz`) - path for the healthcheck endpoint.
-- `MCP_HTTP_ALLOW_CORS` (default: `true`) - enable CORS for the HTTP/SSE server.
+- `MCP_HTTP_ALLOW_CORS` (default: `true`) - enable CORS for the HTTP server.
 - `MCP_HTTP_ALLOWED_HOSTS` (optional) - comma-separated list of allowed hosts for requests.
 - `MCP_HTTP_ALLOWED_ORIGINS` (optional) - comma-separated list of allowed origins for CORS.
-- `MCP_HTTP_NGROK_ENABLED` (default: `false`) - whether to use ngrok to expose the HTTP/SSE server publicly.
+- `MCP_HTTP_NGROK_ENABLED` (default: `false`) - whether to use ngrok to expose the HTTP server publicly.
 - `MCP_HTTP_NGROK_AUTH_TOKEN` (optional) - ngrok auth token, required if `MCP_HTTP_NGROK_ENABLED` is `true`.
 
 ## Code Structure
 
-- `src/index.ts` — MCP Server startup, including both stdio and HTTP/SSE server initialization. The type of server is selected based on environment variables.
+- `src/index.ts` — MCP Server startup, including both stdio and HTTP server initialization. The type of server is selected based on environment variables.
 - `src/config.ts` — Environment variable loading and validation via Zod.
 - `src/utils/` — Utility functions (e.g., logger, error handling).
 - `src/omadaClient/` — Omada API interaction layer, organized by API tag (e.g., `src/omadaClient/user.ts`, `src/omadaClient/device.ts`). The main client class is in `src/omadaClient/index.ts`.

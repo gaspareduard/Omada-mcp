@@ -1,7 +1,6 @@
 import https from 'node:https';
 
 import axios, { type AxiosInstance, type AxiosRequestConfig } from 'axios';
-import { HttpsProxyAgent } from 'https-proxy-agent';
 
 import type { EnvironmentConfig } from '../config.js';
 import type { OmadaClientInfo, OmadaDeviceInfo, OmadaSiteSummary, OswStackDetail } from '../types/index.js';
@@ -36,20 +35,14 @@ export class OmadaClient {
     constructor(options: OmadaClientOptions) {
         this.omadacId = options.omadacId;
 
-        const httpsAgent = options.proxyUrl ? new HttpsProxyAgent(options.proxyUrl) : new https.Agent({ rejectUnauthorized: options.strictSsl });
-
         const axiosOptions: AxiosRequestConfig = {
             baseURL: options.baseUrl,
-            httpsAgent,
+            httpsAgent: new https.Agent({ rejectUnauthorized: options.strictSsl }),
             headers: {
                 'Content-Type': 'application/json',
                 Accept: 'application/json',
             },
         };
-
-        if (options.proxyUrl) {
-            axiosOptions.proxy = false;
-        }
 
         if (options.requestTimeout) {
             axiosOptions.timeout = options.requestTimeout;

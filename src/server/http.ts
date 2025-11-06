@@ -193,101 +193,103 @@ export async function startHttpServer(client: OmadaClient, config: import('../co
 
     const port = resolvePort(config.httpPort?.toString(), DEFAULT_PORT);
     const host = config.httpHost ?? DEFAULT_HOST;
-    const endpointPath = normalizePath(config.httpSsePath ?? DEFAULT_PATH);
+    const endpointPath = normalizePath(config.httpPath ?? DEFAULT_PATH);
 
 
-    const httpServer = http.createServer(async (req, res) => {
-        const url = getRequestUrl(req, port);
-        if (!url) {
-            logger.warn('HTTP request rejected', {
-                reason: 'invalid-url',
-                method: req.method,
-                url: req.url,
-            });
-            sendJson(res, 400, { error: 'Invalid request URL.' });
-            return;
-        }
-
-        logger.debug('HTTP request headers', {
-            method: req.method,
-            path: url.pathname,
-            headers: sanitizeHeaders(req.headers),
-        });
-
-        const bodyChunks: Buffer[] = [];
-        const shouldCaptureBody = (req.method ?? 'GET').toUpperCase() !== 'GET';
-        if (shouldCaptureBody) {
-            req.on('data', (chunk) => {
-                const bufferChunk = typeof chunk === 'string' ? Buffer.from(chunk, 'utf8') : chunk;
-                bodyChunks.push(bufferChunk);
-            });
-        }
-
-        logger.info('HTTP request received', {
-            method: req.method,
-            path: url.pathname,
-            query: url.search,
-            sessionId: req.headers['mcp-session-id'] ?? undefined,
-        });
-
-        if (url.pathname === HEALTH_PATH) {
-            logger.debug('Health check request served');
-            sendJson(res, 200, { status: 'ok' });
-            return;
-        }
-
-        if (url.pathname !== endpointPath) {
-            logger.warn('HTTP request rejected', {
-                reason: 'unexpected-path',
-                expected: endpointPath,
-                received: url.pathname,
-            });
-            sendJson(res, 404, { error: 'Not Found' });
-            return;
-        }
-
-        try {
-            await transport.handleRequest(req, res);
-            if (!res.headersSent) {
-                logger.debug('Transport completed without sending response headers');
-            }
-            logger.info('MCP request handled successfully', {
-                path: url.pathname,
-                method: req.method,
-            });
-
-            if (shouldCaptureBody) {
-                const rawBody = bodyChunks.length > 0 ? Buffer.concat(bodyChunks).toString('utf8') : '';
-                let parsedBody: unknown = rawBody;
-                if (rawBody.length === 0) {
-                    parsedBody = null;
-                } else {
-                    try {
-                        parsedBody = JSON.parse(rawBody);
-                    } catch {
-                        parsedBody = rawBody;
-                    }
-                }
-
-                logger.debug('HTTP request body', {
+    const httpServer = http.createServer((req, res) => {
+        void (async () => {
+            const url = getRequestUrl(req, port);
+            if (!url) {
+                logger.warn('HTTP request rejected', {
+                    reason: 'invalid-url',
                     method: req.method,
+                    url: req.url,
+                });
+                sendJson(res, 400, { error: 'Invalid request URL.' });
+                return;
+            }
+
+            logger.debug('HTTP request headers', {
+                method: req.method,
+                path: url.pathname,
+                headers: sanitizeHeaders(req.headers),
+            });
+
+            const bodyChunks: Buffer[] = [];
+            const shouldCaptureBody = (req.method ?? 'GET').toUpperCase() !== 'GET';
+            if (shouldCaptureBody) {
+                req.on('data', (chunk) => {
+                    const bufferChunk = typeof chunk === 'string' ? Buffer.from(chunk, 'utf8') : chunk;
+                    bodyChunks.push(bufferChunk);
+                });
+            }
+
+            logger.info('HTTP request received', {
+                method: req.method,
+                path: url.pathname,
+                query: url.search,
+                sessionId: req.headers['mcp-session-id'] ?? undefined,
+            });
+
+            if (url.pathname === HEALTH_PATH) {
+                logger.debug('Health check request served');
+                sendJson(res, 200, { status: 'ok' });
+                return;
+            }
+
+            if (url.pathname !== endpointPath) {
+                logger.warn('HTTP request rejected', {
+                    reason: 'unexpected-path',
+                    expected: endpointPath,
+                    received: url.pathname,
+                });
+                sendJson(res, 404, { error: 'Not Found' });
+                return;
+            }
+
+            try {
+                await transport.handleRequest(req, res);
+                if (!res.headersSent) {
+                    logger.debug('Transport completed without sending response headers');
+                }
+                logger.info('MCP request handled successfully', {
                     path: url.pathname,
-                    length: rawBody.length,
-                    body: sanitizePayload(parsedBody),
+                    method: req.method,
                 });
+
+                if (shouldCaptureBody) {
+                    const rawBody = bodyChunks.length > 0 ? Buffer.concat(bodyChunks).toString('utf8') : '';
+                    let parsedBody: unknown = rawBody;
+                    if (rawBody.length === 0) {
+                        parsedBody = null;
+                    } else {
+                        try {
+                            parsedBody = JSON.parse(rawBody);
+                        } catch {
+                            parsedBody = rawBody;
+                        }
+                    }
+
+                    logger.debug('HTTP request body', {
+                        method: req.method,
+                        path: url.pathname,
+                        length: rawBody.length,
+                        body: sanitizePayload(parsedBody),
+                    });
+                }
+            } catch (error) {
+                logger.error('Failed to handle MCP HTTP request', { error });
+                if (!res.headersSent) {
+                    sendJson(res, 500, {
+                        jsonrpc: '2.0',
+                        error: { code: -32000, message: 'Internal server error' },
+                        id: null,
+                    });
+                } else {
+                    res.end();
+                }
             }
-        } catch (error) {
-            logger.error('Failed to handle MCP HTTP request', { error });
-            if (!res.headersSent) {
-                sendJson(res, 500, {
-                    jsonrpc: '2.0',
-                    error: { code: -32000, message: 'Internal server error' },
-                    id: null,
-                });
-            } else {
-                res.end();
-            }
-        }
+        })();
     });
 
     httpServer.on('clientError', (error, socket) => {

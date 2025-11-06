@@ -27,18 +27,45 @@ npm install
 
 ### Configuration
 
-The MCP server reads its configuration from environment variables:
+The MCP server reads its configuration from environment variables. See `.env.example` for a complete reference.
 
-| Variable              | Description                                                                 |
-| --------------------- | --------------------------------------------------------------------------- |
-| `OMADA_BASE_URL`      | Base URL of the Omada controller, e.g. `https://localhost:8043`             |
-| `OMADA_CLIENT_ID`     | OAuth client identifier generated in Omada Platform Integration             |
-| `OMADA_CLIENT_SECRET` | OAuth client secret associated with the client ID                           |
-| `OMADA_OMADAC_ID`     | Omada controller (omadacId) to target                                       |
-| `OMADA_SITE_ID`       | Optional default site identifier used when a tool call does not specify one |
-| `OMADA_STRICT_SSL`    | Set to `false` to allow self-signed TLS certificates                        |
-| `OMADA_TIMEOUT`       | Optional request timeout in milliseconds                                    |
-| `OMADA_PROXY_URL`     | Optional HTTPS proxy URL for outbound requests                              |
+#### Omada Client Configuration
+
+| Variable              | Required | Default | Description                                                                 |
+| --------------------- | -------- | ------- | --------------------------------------------------------------------------- |
+| `OMADA_BASE_URL`      | Yes      | -       | Base URL of the Omada controller (e.g., `https://omada-controller.local`)   |
+| `OMADA_CLIENT_ID`     | Yes      | -       | OAuth client ID generated under Omada Platform Integration                  |
+| `OMADA_CLIENT_SECRET` | Yes      | -       | OAuth client secret associated with the client ID                           |
+| `OMADA_OMADAC_ID`     | Yes      | -       | Omada controller ID (omadacId) to target                                    |
+| `OMADA_SITE_ID`       | No       | -       | Optional default site ID; if omitted, each MCP call must pass a siteId      |
+| `OMADA_STRICT_SSL`    | No       | `true`  | Enforce strict SSL certificate validation (set to `false` for self-signed)  |
+| `OMADA_TIMEOUT`       | No       | `30000` | HTTP request timeout in milliseconds                                        |
+
+#### MCP Generic Server Configuration
+
+| Variable                 | Required | Default | Description                                                                 |
+| ------------------------ | -------- | ------- | --------------------------------------------------------------------------- |
+| `MCP_SERVER_LOG_LEVEL`   | No       | `info`  | Logging verbosity (`debug`, `info`, `warn`, `error`)                        |
+| `MCP_SERVER_LOG_FORMAT`  | No       | `plain` | Log output format (`plain`, `json`, or `gcp-json`)                          |
+| `MCP_SERVER_USE_HTTP`    | No       | `false` | Start HTTP server instead of stdio                                          |
+| `MCP_SERVER_STATEFUL`    | No       | `false` | Maintain stateful sessions per client                                       |
+
+#### MCP Server HTTP/SSE Configuration
+
+These variables are only used when `MCP_SERVER_USE_HTTP=true`:
+
+| Variable                       | Required | Default     | Description                                                                 |
+| ------------------------------ | -------- | ----------- | --------------------------------------------------------------------------- |
+| `MCP_HTTP_PORT`                | No       | `3000`      | Port for the HTTP/SSE server                                                |
+| `MCP_HTTP_HOST`                | No       | `0.0.0.0`   | Host for the HTTP/SSE server                                                |
+| `MCP_HTTP_PATH`                | No       | `/mcp`      | Base path for MCP HTTP endpoints                                            |
+| `MCP_HTTP_ENABLE_HEALTHCHECK`  | No       | `true`      | Enable a healthcheck endpoint                                               |
+| `MCP_HTTP_HEALTHCHECK_PATH`    | No       | `/healthz`  | Path for the healthcheck endpoint                                           |
+| `MCP_HTTP_ALLOW_CORS`          | No       | `true`      | Enable CORS for the HTTP/SSE server                                         |
+| `MCP_HTTP_ALLOWED_HOSTS`       | No       | -           | Comma-separated list of allowed hosts for requests                          |
+| `MCP_HTTP_ALLOWED_ORIGINS`     | No       | -           | Comma-separated list of allowed origins for CORS                            |
+| `MCP_HTTP_NGROK_ENABLED`       | No       | `false`     | Use ngrok to expose the HTTP/SSE server publicly                            |
+| `MCP_HTTP_NGROK_AUTH_TOKEN`    | No       | -           | Ngrok auth token (required if `MCP_HTTP_NGROK_ENABLED=true`)                |
 
 Create a `.env` file (ignored by git) or export the variables before launching the server.
 

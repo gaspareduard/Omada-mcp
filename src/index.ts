@@ -20,7 +20,6 @@ async function main(): Promise<void> {
         siteId: config.siteId ?? null,
         strictSsl: config.strictSsl,
         requestTimeout: config.requestTimeout ?? null,
-        proxyConfigured: Boolean(config.proxyUrl),
     });
 
     const client = new OmadaClient(config);
