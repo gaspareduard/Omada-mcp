@@ -5,3 +5,4 @@ export type { OmadaApiResponse } from './omadaApiResponse.js';
 export type { PaginatedResult } from './paginatedResult.js';
 export type { TokenResult } from './tokenResult.js';
 export type { OswStackDetail } from './oswStackDetail.js';
+export type { OmadaDeviceStats, OmadaDeviceStatItem, GetDeviceStatsOptions } from './omadaDeviceStats.js';

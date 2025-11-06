@@ -66,7 +66,7 @@ Reference `.env.example`. Primary variables:
 - Install dependencies: `npm install` (runs automatically on container create).
 - Development server: `npm run dev` (tsx watcher).
 - Build: `npm run build` (emits to `dist/`).
-- Lint: `npm run lint` (ESLint flat config).
+- Lint: `npm run check` (ESLint flat config and Prettier).
 - Launch configurations are available under `.vscode/launch.json` for debugging.
 
 ## Formatting & Linting

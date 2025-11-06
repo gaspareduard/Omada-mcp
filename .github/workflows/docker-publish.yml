@@ -1,69 +1,70 @@
 name: Publish Docker Images
 
 on:
-    push:
-        tags:
-            - '*'
-    workflow_dispatch:
+  push:
+    tags:
+      - "*"
+  workflow_dispatch:
 
 env:
-    REGISTRY: ghcr.io
+  REGISTRY: ghcr.io
 
 jobs:
-    build-and-push:
-        runs-on: ubuntu-latest
-        permissions:
-            contents: read
-            packages: write
-        steps:
-            - name: Check out repository
-              uses: actions/checkout@v4
+  build-and-push:
+    name: Build and Push Docker Image
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
 
-            - name: Set up QEMU
-              uses: docker/setup-qemu-action@v3
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
 
-            - name: Set up Docker Buildx
-              uses: docker/setup-buildx-action@v3
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
 
-            - name: Determine image metadata
-              id: meta
-              env:
-                  REGISTRY: ${{ env.REGISTRY }}
-              run: |
-                  set -euo pipefail
-                  owner_lower=$(echo "${GITHUB_REPOSITORY_OWNER}" | tr '[:upper:]' '[:lower:]')
-                  ref="${GITHUB_REF}"
+      - name: Determine image metadata
+        id: meta
+        env:
+          REGISTRY: ${{ env.REGISTRY }}
+        run: |
+          set -euo pipefail
+          owner_lower=$(echo "${GITHUB_REPOSITORY_OWNER}" | tr '[:upper:]' '[:lower:]')
+          ref="${GITHUB_REF}"
 
-                  if [[ "${ref}" == refs/tags/* ]]; then
-                    ref_name="${ref#refs/tags/}"
-                    tags=$(printf "%s\n%s" \
-                      "${REGISTRY}/${owner_lower}/tplink-omada-mcp:latest" \
-                      "${REGISTRY}/${owner_lower}/tplink-omada-mcp:${ref_name}")
-                  else
-                    ref_name="${GITHUB_HEAD_REF:-${ref#refs/heads/}}"
-                    sanitized=$(echo "${ref_name}" | tr '[:upper:]' '[:lower:]' | sed 's/[^a-z0-9._-]/-/g')
-                    tags="${REGISTRY}/${owner_lower}/tplink-omada-mcp:${sanitized}"
-                  fi
+          if [[ "${ref}" == refs/tags/* ]]; then
+            ref_name="${ref#refs/tags/}"
+            tags=$(printf "%s\n%s" \
+              "${REGISTRY}/${owner_lower}/tplink-omada-mcp:latest" \
+              "${REGISTRY}/${owner_lower}/tplink-omada-mcp:${ref_name}")
+          else
+            ref_name="${GITHUB_HEAD_REF:-${ref#refs/heads/}}"
+            sanitized=$(echo "${ref_name}" | tr '[:upper:]' '[:lower:]' | sed 's/[^a-z0-9._-]/-/g')
+            tags="${REGISTRY}/${owner_lower}/tplink-omada-mcp:${sanitized}"
+          fi
 
-                  echo "owner_lower=${owner_lower}" >> "${GITHUB_OUTPUT}"
-                  {
-                    echo "tags<<EOF"
-                    echo "${tags}"
-                    echo "EOF"
-                  } >> "${GITHUB_OUTPUT}"
+          echo "owner_lower=${owner_lower}" >> "${GITHUB_OUTPUT}"
+          {
+            echo "tags<<EOF"
+            echo "${tags}"
+            echo "EOF"
+          } >> "${GITHUB_OUTPUT}"
 
-            - name: Log in to GitHub Container Registry
-              uses: docker/login-action@v3
-              with:
-                  registry: ${{ env.REGISTRY }}
-                  username: ${{ github.actor }}
-                  password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
 
-            - name: Build and push image
-              uses: docker/build-push-action@v6
-              with:
-                  context: .
-                  file: Dockerfile
-                  push: true
-                  platforms: linux/amd64,linux/arm64
-                  tags: ${{ steps.meta.outputs.tags }}
+      - name: Build and push image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: Dockerfile
+          push: true
+          platforms: linux/amd64,linux/arm64
+          tags: ${{ steps.meta.outputs.tags }}

@@ -3,6 +3,7 @@
         "dbaeumer.vscode-eslint",
         "esbenp.prettier-vscode",
         "biomejs.biome",
-        "ardisaurus.gitflow-actions-sidebar"
+        "ardisaurus.gitflow-actions-sidebar",
+        "42crunch.vscode-openapi"
     ]
 }

@@ -3,7 +3,7 @@ import https from 'node:https';
 import axios, { type AxiosInstance, type AxiosRequestConfig } from 'axios';
 
 import type { EnvironmentConfig } from '../config.js';
-import type { OmadaClientInfo, OmadaDeviceInfo, OmadaSiteSummary, OswStackDetail } from '../types/index.js';
+import type { GetDeviceStatsOptions, OmadaClientInfo, OmadaDeviceInfo, OmadaDeviceStats, OmadaSiteSummary, OswStackDetail } from '../types/index.js';
 
 import { AuthManager } from './auth.js';
 import { ClientOperations } from './client.js';
@@ -74,6 +74,14 @@ export class OmadaClient {
 
     public async getSwitchStackDetail(stackId: string, siteId?: string): Promise<OswStackDetail> {
         return this.deviceOps.getSwitchStackDetail(stackId, siteId);
+    }
+
+    public async searchDevices(searchKey: string): Promise<OmadaDeviceInfo[]> {
+        return this.deviceOps.searchDevices(searchKey);
+    }
+
+    public async listDevicesStats(options: GetDeviceStatsOptions): Promise<OmadaDeviceStats> {
+        return this.deviceOps.listDevicesStats(options);
     }
 
     // Client operations

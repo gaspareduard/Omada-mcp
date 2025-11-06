@@ -22,7 +22,10 @@
                 "eslint.nodePath": "./node_modules",
                 "editor.formatOnPaste": false,
                 "editor.formatOnSave": true
-            }
+            },
+            "extensions": [
+                "42Crunch.vscode-openapi"
+            ]
         },
         "extensions": [
             "dbaeumer.vscode-eslint",
