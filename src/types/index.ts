@@ -6,3 +6,5 @@ export type { PaginatedResult } from './paginatedResult.js';
 export type { TokenResult } from './tokenResult.js';
 export type { OswStackDetail } from './oswStackDetail.js';
 export type { OmadaDeviceStats, OmadaDeviceStatItem, GetDeviceStatsOptions } from './omadaDeviceStats.js';
+export type { ActiveClientInfo } from './activeClientInfo.js';
+export type { ClientActivity, GetClientActivityOptions } from './clientActivity.js';
