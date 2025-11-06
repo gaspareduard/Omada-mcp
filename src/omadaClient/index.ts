@@ -3,7 +3,17 @@ import https from 'node:https';
 import axios, { type AxiosInstance, type AxiosRequestConfig } from 'axios';
 
 import type { EnvironmentConfig } from '../config.js';
-import type { GetDeviceStatsOptions, OmadaClientInfo, OmadaDeviceInfo, OmadaDeviceStats, OmadaSiteSummary, OswStackDetail } from '../types/index.js';
+import type {
+    ActiveClientInfo,
+    ClientActivity,
+    GetClientActivityOptions,
+    GetDeviceStatsOptions,
+    OmadaClientInfo,
+    OmadaDeviceInfo,
+    OmadaDeviceStats,
+    OmadaSiteSummary,
+    OswStackDetail,
+} from '../types/index.js';
 
 import { AuthManager } from './auth.js';
 import { ClientOperations } from './client.js';
@@ -91,6 +101,14 @@ export class OmadaClient {
 
     public async getClient(identifier: string, siteId?: string): Promise<OmadaClientInfo | undefined> {
         return this.clientOps.getClient(identifier, siteId);
+    }
+
+    public async listMostActiveClients(siteId?: string): Promise<ActiveClientInfo[]> {
+        return this.clientOps.listMostActiveClients(siteId);
+    }
+
+    public async listClientsActivity(options?: GetClientActivityOptions): Promise<ClientActivity[]> {
+        return this.clientOps.listClientsActivity(options);
     }
 
     // Generic API call
