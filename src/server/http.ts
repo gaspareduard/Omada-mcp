@@ -1,6 +1,6 @@
 import { randomUUID } from 'node:crypto';
+import type { IncomingHttpHeaders, IncomingMessage, ServerResponse } from 'node:http';
 import http from 'node:http';
-import type { IncomingMessage, IncomingHttpHeaders, ServerResponse } from 'node:http';
 
 import { StreamableHTTPServerTransport } from '@modelcontextprotocol/sdk/server/streamableHttp.js';
 import ngrok from '@ngrok/ngrok';
@@ -194,7 +194,6 @@ export async function startHttpServer(client: OmadaClient, config: import('../co
     const port = resolvePort(config.httpPort?.toString(), DEFAULT_PORT);
     const host = config.httpHost ?? DEFAULT_HOST;
     const endpointPath = normalizePath(config.httpPath ?? DEFAULT_PATH);
-
 
     const httpServer = http.createServer((req, res) => {
         void (async () => {

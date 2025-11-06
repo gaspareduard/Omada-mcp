@@ -1,9 +1,3 @@
 {
-    "recommendations": [
-        "dbaeumer.vscode-eslint",
-        "esbenp.prettier-vscode",
-        "biomejs.biome",
-        "ardisaurus.gitflow-actions-sidebar",
-        "42crunch.vscode-openapi"
-    ]
+    "recommendations": ["biomejs.biome", "ardisaurus.gitflow-actions-sidebar", "42crunch.vscode-openapi"]
 }

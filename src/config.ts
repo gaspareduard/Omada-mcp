@@ -1,6 +1,8 @@
 import { z } from 'zod';
 
-const createBooleanStringSchema = (defaultValue: boolean): z.ZodEffects<z.ZodOptional<z.ZodUnion<[z.ZodLiteral<'true'>, z.ZodLiteral<'false'>]>>, boolean, 'true' | 'false' | undefined> =>
+const createBooleanStringSchema = (
+    defaultValue: boolean
+): z.ZodEffects<z.ZodOptional<z.ZodUnion<[z.ZodLiteral<'true'>, z.ZodLiteral<'false'>]>>, boolean, 'true' | 'false' | undefined> =>
     z
         .union([z.literal('true'), z.literal('false')])
         .optional()
@@ -21,9 +23,9 @@ const listStringSchema = z
     .transform((value: string | undefined) =>
         value
             ? value
-                .split(',')
-                .map((s: string) => s.trim())
-                .filter(Boolean)
+                  .split(',')
+                  .map((s: string) => s.trim())
+                  .filter(Boolean)
             : undefined
     );
 

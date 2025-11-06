@@ -11,7 +11,7 @@ export class ClientOperations {
         private readonly request: RequestHandler,
         private readonly site: SiteOperations,
         private readonly buildPath: (path: string) => string
-    ) { }
+    ) {}
 
     /**
      * List all clients in a site.

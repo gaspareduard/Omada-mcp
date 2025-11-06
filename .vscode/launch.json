@@ -6,20 +6,12 @@
             "request": "launch",
             "name": "Run MCP Server (npm run dev)",
             "runtimeExecutable": "npm",
-            "runtimeArgs": [
-                "run",
-                "dev",
-                "--"
-            ],
+            "runtimeArgs": ["run", "dev", "--"],
             "cwd": "${workspaceFolder}",
             "console": "integratedTerminal",
             "sourceMaps": true,
-            "outFiles": [
-                "${workspaceFolder}/dist/**/*.js"
-            ],
-            "skipFiles": [
-                "<node_internals>/**"
-            ]
+            "outFiles": ["${workspaceFolder}/dist/**/*.js"],
+            "skipFiles": ["<node_internals>/**"]
         }
     ]
 }
