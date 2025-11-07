@@ -72,54 +72,54 @@ export class OmadaClient {
 
     // Site operations
     public async listSites(): Promise<OmadaSiteSummary[]> {
-        return this.siteOps.listSites();
+        return await this.siteOps.listSites();
     }
 
     // Device operations
     public async listDevices(siteId?: string): Promise<OmadaDeviceInfo[]> {
-        return this.deviceOps.listDevices(siteId);
+        return await this.deviceOps.listDevices(siteId);
     }
 
     public async getDevice(identifier: string, siteId?: string): Promise<OmadaDeviceInfo | undefined> {
-        return this.deviceOps.getDevice(identifier, siteId);
+        return await this.deviceOps.getDevice(identifier, siteId);
     }
 
     public async getSwitchStackDetail(stackId: string, siteId?: string): Promise<OswStackDetail> {
-        return this.deviceOps.getSwitchStackDetail(stackId, siteId);
+        return await this.deviceOps.getSwitchStackDetail(stackId, siteId);
     }
 
     public async searchDevices(searchKey: string): Promise<OmadaDeviceInfo[]> {
-        return this.deviceOps.searchDevices(searchKey);
+        return await this.deviceOps.searchDevices(searchKey);
     }
 
     public async listDevicesStats(options: GetDeviceStatsOptions): Promise<OmadaDeviceStats> {
-        return this.deviceOps.listDevicesStats(options);
+        return await this.deviceOps.listDevicesStats(options);
     }
 
     // Client operations
     public async listClients(siteId?: string): Promise<OmadaClientInfo[]> {
-        return this.clientOps.listClients(siteId);
+        return await this.clientOps.listClients(siteId);
     }
 
     public async getClient(identifier: string, siteId?: string): Promise<OmadaClientInfo | undefined> {
-        return this.clientOps.getClient(identifier, siteId);
+        return await this.clientOps.getClient(identifier, siteId);
     }
 
     public async listMostActiveClients(siteId?: string): Promise<ActiveClientInfo[]> {
-        return this.clientOps.listMostActiveClients(siteId);
+        return await this.clientOps.listMostActiveClients(siteId);
     }
 
     public async listClientsActivity(options?: GetClientActivityOptions): Promise<ClientActivity[]> {
-        return this.clientOps.listClientsActivity(options);
+        return await this.clientOps.listClientsActivity(options);
     }
 
     public async listClientsPastConnections(options: ListClientsPastConnectionsOptions): Promise<ClientPastConnection[]> {
-        return this.clientOps.listClientsPastConnections(options);
+        return await this.clientOps.listClientsPastConnections(options);
     }
 
     // Generic API call
     public async callApi<T = unknown>(config: AxiosRequestConfig): Promise<T> {
-        return this.request.request<T>(config);
+        return await this.request.request<T>(config);
     }
 
     /**

@@ -27,7 +27,7 @@ export class ClientOperations {
      */
     public async listClients(siteId?: string): Promise<OmadaClientInfo[]> {
         const resolvedSiteId = this.site.resolveSiteId(siteId);
-        return this.request.fetchPaginated<OmadaClientInfo>(this.buildPath(`/sites/${encodeURIComponent(resolvedSiteId)}/clients`));
+        return await this.request.fetchPaginated<OmadaClientInfo>(this.buildPath(`/sites/${encodeURIComponent(resolvedSiteId)}/clients`));
     }
 
     /**

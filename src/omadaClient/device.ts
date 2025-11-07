@@ -18,7 +18,7 @@ export class DeviceOperations {
      */
     public async listDevices(siteId?: string): Promise<OmadaDeviceInfo[]> {
         const resolvedSiteId = this.site.resolveSiteId(siteId);
-        return this.request.fetchPaginated<OmadaDeviceInfo>(this.buildPath(`/sites/${encodeURIComponent(resolvedSiteId)}/devices`));
+        return await this.request.fetchPaginated<OmadaDeviceInfo>(this.buildPath(`/sites/${encodeURIComponent(resolvedSiteId)}/devices`));
     }
 
     /**
