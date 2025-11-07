@@ -9,10 +9,10 @@ export interface ClientPastConnection {
     /** Client MAC Address */
     mac?: string;
 
-    /** Downstream traffic (Bytes) */
+    /** Downstream traffic (Byte) */
     download?: number;
 
-    /** Upstream traffic (Bytes) */
+    /** Upstream traffic (Byte) */
     upload?: number;
 
     /** Up time (seconds) */
