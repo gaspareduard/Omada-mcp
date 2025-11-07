@@ -6,8 +6,10 @@ import type { EnvironmentConfig } from '../config.js';
 import type {
     ActiveClientInfo,
     ClientActivity,
+    ClientPastConnection,
     GetClientActivityOptions,
     GetDeviceStatsOptions,
+    ListClientsPastConnectionsOptions,
     OmadaClientInfo,
     OmadaDeviceInfo,
     OmadaDeviceStats,
@@ -109,6 +111,10 @@ export class OmadaClient {
 
     public async listClientsActivity(options?: GetClientActivityOptions): Promise<ClientActivity[]> {
         return this.clientOps.listClientsActivity(options);
+    }
+
+    public async listClientsPastConnections(options: ListClientsPastConnectionsOptions): Promise<ClientPastConnection[]> {
+        return this.clientOps.listClientsPastConnections(options);
     }
 
     // Generic API call

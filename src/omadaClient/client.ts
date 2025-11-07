@@ -1,4 +1,13 @@
-import type { ActiveClientInfo, ClientActivity, GetClientActivityOptions, OmadaApiResponse, OmadaClientInfo } from '../types/index.js';
+import type {
+    ActiveClientInfo,
+    ClientActivity,
+    ClientPastConnection,
+    GetClientActivityOptions,
+    ListClientsPastConnectionsOptions,
+    OmadaApiResponse,
+    OmadaClientInfo,
+    PaginatedResult,
+} from '../types/index.js';
 
 import type { RequestHandler } from './request.js';
 import type { SiteOperations } from './site.js';
@@ -67,5 +76,49 @@ export class ClientOperations {
             params
         );
         return response.result ?? [];
+    }
+
+    /**
+     * Get client past connection list (insight endpoint).
+     * Returns historical client connection data with support for pagination, filtering, and sorting.
+     *
+     * @param options - Options including siteId, pagination, filters, and search parameters
+     * @returns Array of client past connection information
+     */
+    public async listClientsPastConnections(options: ListClientsPastConnectionsOptions): Promise<ClientPastConnection[]> {
+        const resolvedSiteId = this.site.resolveSiteId(options.siteId);
+        const params: Record<string, unknown> = {
+            page: options.page,
+            pageSize: options.pageSize,
+        };
+
+        // Add optional sort parameter
+        if (options.sortLastSeen !== undefined) {
+            params['sorts.lastSeen'] = options.sortLastSeen;
+        }
+
+        // Add optional filter parameters
+        if (options.timeStart !== undefined) {
+            params['filters.timeStart'] = String(options.timeStart);
+        }
+        if (options.timeEnd !== undefined) {
+            params['filters.timeEnd'] = String(options.timeEnd);
+        }
+        if (options.guest !== undefined) {
+            params['filters.guest'] = String(options.guest);
+        }
+
+        // Add optional search parameter
+        if (options.searchKey !== undefined) {
+            params.searchKey = options.searchKey;
+        }
+
+        const response = await this.request.get<OmadaApiResponse<PaginatedResult<ClientPastConnection>>>(
+            this.buildPath(`/sites/${encodeURIComponent(resolvedSiteId)}/insight/past-connection`),
+            params
+        );
+
+        const result = this.request.ensureSuccess(response);
+        return result.data ?? [];
     }
 }

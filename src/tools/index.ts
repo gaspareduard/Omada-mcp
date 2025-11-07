@@ -8,6 +8,7 @@ import { registerGetDeviceTool } from './getDevice.js';
 import { registerGetSwitchStackDetailTool } from './getSwitchStackDetail.js';
 import { registerListClientsTool } from './listClients.js';
 import { registerListClientsActivityTool } from './listClientsActivity.js';
+import { registerListClientsPastConnectionsTool } from './listClientsPastConnections.js';
 import { registerListDevicesTool } from './listDevices.js';
 import { registerListDevicesStatsTool } from './listDevicesStats.js';
 import { registerListMostActiveClientsTool } from './listMostActiveClients.js';
@@ -25,5 +26,6 @@ export function registerAllTools(server: McpServer, client: OmadaClient): void {
     registerListDevicesStatsTool(server, client);
     registerListMostActiveClientsTool(server, client);
     registerListClientsActivityTool(server, client);
+    registerListClientsPastConnectionsTool(server, client);
     registerCallApiTool(server, client);
 }
