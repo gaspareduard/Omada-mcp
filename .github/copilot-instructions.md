@@ -9,7 +9,7 @@ This project implements a Model Context Protocol (MCP) server that exposes TP-Li
 - Node.js 22 LTS (devcontainer base image `mcr.microsoft.com/devcontainers/typescript-node:1-22-bookworm`).
 - TypeScript 5.9 with `module`/`moduleResolution` set to `NodeNext`.
 - Zod 3.x for configuration validation (the MCP SDK currently expects Zod 3 APIs).
-- ESLint 9 using the flat config (`eslint.config.js`), plus Prettier 3.
+- Biome 2.x for linting and formatting.
 
 ## Environment Variables
 
@@ -66,13 +66,13 @@ Reference `.env.example`. Primary variables:
 - Install dependencies: `npm install` (runs automatically on container create).
 - Development server: `npm run dev` (tsx watcher).
 - Build: `npm run build` (emits to `dist/`).
-- Lint: `npm run check` (ESLint flat config and Prettier).
+- Lint: `npm run check` (Biome linting and TypeScript type checking).
 - Launch configurations are available under `.vscode/launch.json` for debugging.
 
 ## Formatting & Linting
 
-- Follow Prettier defaults (`npm run format`).
-- ESLint enforces import ordering and TypeScript best practices.
+- Biome is used for both formatting and linting (`npm run format` and `npm run lint`).
+- Biome enforces import ordering, TypeScript best practices, and code style consistency.
 
 ## Contribution Guidelines
 

@@ -11,7 +11,7 @@ export class DeviceOperations {
         private readonly request: RequestHandler,
         private readonly site: SiteOperations,
         private readonly buildPath: (path: string) => string
-    ) { }
+    ) {}
 
     /**
      * List all devices in a site.

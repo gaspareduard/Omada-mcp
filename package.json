@@ -6,9 +6,9 @@
     "main": "dist/index.js",
     "scripts": {
         "build": "tsc -p tsconfig.json",
-        "lint": "eslint . --ext .ts",
-        "lint:fix": "eslint . --ext .ts --fix",
-        "format": "prettier --write .",
+        "lint": "biome check .",
+        "lint:fix": "biome check --write .",
+        "format": "biome format --write .",
         "check": "npm run lint && tsc --noEmit",
         "dev": "tsx src/index.ts",
         "start": "node dist/index.js",
@@ -16,11 +16,7 @@
         "docker:run": "docker run --rm -it --env-file .env --env-file .env.local ghcr.io/migueltvms/tplink-omada-mcp:latest",
         "docker:push": "docker push ghcr.io/migueltvms/tplink-omada-mcp:latest"
     },
-    "keywords": [
-        "mcp",
-        "tp-link",
-        "omada"
-    ],
+    "keywords": ["mcp", "tp-link", "omada"],
     "engines": {
         "node": ">=24.0.0"
     },
@@ -37,13 +33,7 @@
     "devDependencies": {
         "@biomejs/biome": "2.3.4",
         "@types/node": "^24.10.0",
-        "@typescript-eslint/eslint-plugin": "^8.46.3",
-        "@typescript-eslint/parser": "^8.46.3",
         "concurrently": "^9.1.0",
-        "eslint": "^9.39.1",
-        "eslint-config-prettier": "^10.1.8",
-        "eslint-plugin-import": "^2.32.0",
-        "prettier": "^3.6.2",
         "tsx": "^4.20.6",
         "typescript": "^5.9.3"
     }
