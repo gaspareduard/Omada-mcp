@@ -15,7 +15,7 @@ export interface ClientPastConnection {
     /** Upstream traffic (Byte) */
     upload?: number;
 
-    /** Up time (seconds) */
+    /** Up time (s) */
     duration?: number;
 
     /** The timestamp (ms) when the client connected */
