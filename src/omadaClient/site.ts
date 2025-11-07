@@ -16,7 +16,7 @@ export class SiteOperations {
      * List all sites accessible to the authenticated user.
      */
     public async listSites(): Promise<OmadaSiteSummary[]> {
-        return this.request.fetchPaginated<OmadaSiteSummary>(this.buildPath('/sites'));
+        return await this.request.fetchPaginated<OmadaSiteSummary>(this.buildPath('/sites'));
     }
 
     /**
