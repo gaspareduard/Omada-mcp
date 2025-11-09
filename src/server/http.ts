@@ -4,6 +4,7 @@ import type { SSEServerTransport } from '@modelcontextprotocol/sdk/server/sse.js
 import ngrok from '@ngrok/ngrok';
 import type { EnvironmentConfig } from '../config.js';
 import type { OmadaClient } from '../omadaClient/index.js';
+import { normalizePath, resolvePort } from '../utils/config-validations.js';
 import { logger } from '../utils/logger.js';
 import { createSseTransport, getSseMessagePath, handleSseConnection, handleSseMessage } from './sse.js';
 import { handleStreamRequest, type StreamTransportState } from './stream.js';
@@ -12,29 +13,6 @@ const DEFAULT_PORT = 3000;
 const HEALTH_PATH = '/healthz';
 
 type ShutdownHandler = () => Promise<void>;
-
-function resolvePort(value: number | undefined, fallback: number): number {
-    if (!value) {
-        return fallback;
-    }
-
-    if (!Number.isInteger(value) || value <= 0 || value > 65_535) {
-        logger.warn('Invalid MCP HTTP port provided', { provided: value, fallback });
-        return fallback;
-    }
-
-    return value;
-}
-
-function normalizePath(path: string): string {
-    const startsWithSlash = path.startsWith('/') ? path : `/${path}`;
-    if (startsWithSlash.length > 1 && startsWithSlash.endsWith('/')) {
-        const trimmed = startsWithSlash.replace(/\/+$/, '');
-        return trimmed.length === 0 ? '/' : trimmed;
-    }
-
-    return startsWithSlash;
-}
 
 function getRequestUrl(req: IncomingMessage, fallbackPort: number): URL | undefined {
     if (!req.url) {

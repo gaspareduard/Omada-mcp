@@ -10,7 +10,9 @@
         "lint:fix": "biome check --write .",
         "format": "biome format --write .",
         "check": "npm run lint && tsc --noEmit",
-        "test": "node --import tsx --test 'tests/**/*.test.ts'",
+        "test": "vitest run",
+        "test:watch": "vitest",
+        "test:coverage": "vitest run --coverage",
         "dev": "tsx src/index.ts",
         "start": "node dist/index.js",
         "docker:build": "docker build -f Dockerfile -t ghcr.io/migueltvms/tplink-omada-mcp:latest .",
@@ -34,8 +36,10 @@
     "devDependencies": {
         "@biomejs/biome": "2.3.4",
         "@types/node": "^24.10.0",
+        "@vitest/ui": "^4.0.8",
         "concurrently": "^9.1.0",
         "tsx": "^4.20.6",
-        "typescript": "^5.9.3"
+        "typescript": "^5.9.3",
+        "vitest": "^4.0.8"
     }
 }

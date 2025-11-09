@@ -64,7 +64,19 @@ Reference `.env.example`. Primary variables:
 - `src/tools/` - individual tool files and registration.
 - `src/prompts/` - individual prompt files and registration.
 - `docs/openapi/` — Reference OpenAPI specifications for Omada endpoints, split per API tag.
-- `tests/` — Unit and integration tests.
+- `tests/` — Unit and integration tests. **The test folder structure MUST mirror the src folder structure.** For example:
+  - `tests/utils/config-validations.test.ts` tests `src/utils/config-validations.ts`
+  - `tests/server/http.test.ts` would test `src/server/http.ts`
+
+## Testing
+
+- The project uses **Vitest** as the test framework.
+- All test files should be placed in the `tests/` directory with the `.test.ts` extension.
+- The test folder structure **must mirror** the `src/` folder structure for consistency and maintainability.
+- Run tests with `npm test` or `npm run test:watch` for watch mode.
+- Test coverage can be generated with `npm run test:coverage`.
+- All configuration validations must be implemented in `src/utils/config-validations.ts` and tested thoroughly.
+- No validation logic should exist outside of `src/config.ts` and `src/utils/config-validations.ts`.
 
 ## Development Workflow
 

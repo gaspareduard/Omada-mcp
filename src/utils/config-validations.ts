@@ -103,3 +103,36 @@ export function validateBindAddress(bindAddr: string): { isValid: boolean; error
     }
     return { isValid: true };
 }
+
+/**
+ * Validates and resolves port number with fallback
+ * @param value - The port number to validate
+ * @param fallback - The fallback port number if validation fails
+ * @returns The validated port or fallback
+ */
+export function resolvePort(value: number | undefined, fallback: number): number {
+    if (!value) {
+        return fallback;
+    }
+
+    if (!Number.isInteger(value) || value <= 0 || value > 65_535) {
+        return fallback;
+    }
+
+    return value;
+}
+
+/**
+ * Normalizes path by ensuring it starts with / and doesn't end with /
+ * @param path - The path to normalize
+ * @returns The normalized path
+ */
+export function normalizePath(path: string): string {
+    const startsWithSlash = path.startsWith('/') ? path : `/${path}`;
+    if (startsWithSlash.length > 1 && startsWithSlash.endsWith('/')) {
+        const trimmed = startsWithSlash.replace(/\/+$/, '');
+        return trimmed.length === 0 ? '/' : trimmed;
+    }
+
+    return startsWithSlash;
+}
