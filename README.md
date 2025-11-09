@@ -58,7 +58,7 @@ These variables are only used when `MCP_SERVER_USE_HTTP=true`:
 | ------------------------------ | -------- | ------------------------------- | --------------------------------------------------------------------------- |
 | `MCP_HTTP_PORT`                | No       | `3000`                          | Port for the HTTP server                                                    |
 | `MCP_HTTP_TRANSPORT`           | No       | `stream`                        | Transport protocol (`stream` or `sse`). See [Transport Protocols](#transport-protocols) |
-| `MCP_HTTP_BIND_ADDR`           | No       | `127.0.0.1`                     | Bind address (IPv4/IPv6). Use `0.0.0.0` to expose to network               |
+| `MCP_HTTP_BIND_ADDR`           | No       | `127.0.0.1`                     | Bind address (IPv4/IPv6). Use atapter IP address to expose to the network.  |
 | `MCP_HTTP_PATH`                | No       | `/mcp` or `/sse`*               | Base path for MCP endpoints (*depends on transport)                         |
 | `MCP_HTTP_ENABLE_HEALTHCHECK`  | No       | `true`                          | Enable a healthcheck endpoint                                               |
 | `MCP_HTTP_HEALTHCHECK_PATH`    | No       | `/healthz`                      | Path for the healthcheck endpoint                                           |
@@ -86,7 +86,7 @@ npm run build
 ### Linting
 
 ```bash
-npm run lint
+npm run check
 ```
 
 ### Running the MCP server
