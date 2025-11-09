@@ -85,9 +85,12 @@ const envSchema = z
             }
             return true;
         },
-        {
-            message: 'MCP_HTTP_ALLOWED_ORIGINS contains invalid origin values',
-            path: ['httpAllowedOrigins'],
+        (data) => {
+            const invalidOrigin = data.httpAllowedOrigins?.find(origin => !isValidOrigin(origin));
+            return {
+                message: `MCP_HTTP_ALLOWED_ORIGINS contains invalid origin: ${invalidOrigin}`,
+                path: ['httpAllowedOrigins'],
+            };
         }
     );
 
