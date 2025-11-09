@@ -111,7 +111,6 @@ export interface EnvironmentConfig {
 
     // MCP Server HTTP/SSE Configuration
     httpPort?: number;
-    httpHost?: string;
     httpTransport: 'stream' | 'sse';
     httpBindAddr?: string;
     httpPath?: string;
