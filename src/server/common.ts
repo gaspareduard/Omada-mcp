@@ -152,12 +152,13 @@ function setupServerLogging(server: McpServer): void {
         logger.warn('Server connection closed');
     };
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    // biome-ignore lint/suspicious/noExplicitAny: MCP SDK doesn't provide types for error handler
     server.server.onerror = (error: any) => {
         logger.error('Server error', { error });
     };
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/require-await
+    // biome-ignore lint/suspicious/noExplicitAny: MCP SDK doesn't provide types for request handler
+    // biome-ignore lint/suspicious/useAwait: Handler signature requires async even without await
     server.server.fallbackRequestHandler = async (request: any, extra: any) => {
         const sessionId = extra.sessionId ?? 'unknown-session';
         logger.warn('Unhandled request received', {
@@ -168,7 +169,8 @@ function setupServerLogging(server: McpServer): void {
         throw new Error(`Unhandled request: ${request.method}`);
     };
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/require-await
+    // biome-ignore lint/suspicious/noExplicitAny: MCP SDK doesn't provide types for notification handler
+    // biome-ignore lint/suspicious/useAwait: Handler signature requires async even without await
     server.server.fallbackNotificationHandler = async (notification: any) => {
         logger.warn('Unhandled notification received', {
             method: notification.method,

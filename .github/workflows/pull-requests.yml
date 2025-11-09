@@ -6,6 +6,10 @@ on:
       - main
       - develop
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   build-and-lint:
     name: Build and Check Code Style
@@ -29,3 +33,6 @@ jobs:
 
       - name: Check code style
         run: npm run check
+
+      - name: Run tests
+        run: npm test

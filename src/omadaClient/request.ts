@@ -20,7 +20,7 @@ export class RequestHandler {
      * Make a GET request to the Omada API.
      */
     public async get<T>(path: string, params?: Record<string, unknown>): Promise<T> {
-        return this.request<T>({ method: 'GET', url: path, params });
+        return await this.request<T>({ method: 'GET', url: path, params });
     }
 
     /**

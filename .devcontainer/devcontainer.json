@@ -8,30 +8,27 @@
     },
     "remoteUser": "node",
     "updateRemoteUserUID": true,
-    "forwardPorts": [
-        8043,
-        8088,
-        3000
-    ],
+    "forwardPorts": [8043, 8088, 3000],
     "postCreateCommand": "npm install -g npm && npm install",
     "customizations": {
         "vscode": {
             "settings": {
                 "typescript.tsdk": "node_modules/typescript/lib",
-                "eslint.useFlatConfig": true,
-                "eslint.nodePath": "./node_modules",
                 "editor.formatOnPaste": false,
-                "editor.formatOnSave": true
+                "editor.formatOnSave": true,
+                "editor.defaultFormatter": "biomejs.biome",
+                "editor.codeActionsOnSave": {
+                    "quickfix.biome": "explicit",
+                    "source.organizeImports.biome": "explicit"
+                },
+                "[json]": {
+                    "editor.defaultFormatter": "biomejs.biome"
+                },
+                "[jsonc]": {
+                    "editor.defaultFormatter": "biomejs.biome"
+                }
             },
-            "extensions": [
-                "42Crunch.vscode-openapi"
-            ]
-        },
-        "extensions": [
-            "dbaeumer.vscode-eslint",
-            "esbenp.prettier-vscode",
-            "biomejs.biome",
-            "ardisaurus.gitflow-actions-sidebar"
-        ]
+            "extensions": ["42Crunch.vscode-openapi", "biomejs.biome", "ardisaurus.gitflow-actions-sidebar"]
+        }
     }
 }

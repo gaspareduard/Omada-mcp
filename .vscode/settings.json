@@ -1,7 +1,16 @@
 {
     "typescript.tsdk": "%workspaceFolder%/node_modules/typescript/lib",
-    "eslint.useFlatConfig": true,
-    "eslint.nodePath": "./node_modules",
     "editor.formatOnPaste": false,
-    "editor.formatOnSave": true
+    "editor.formatOnSave": true,
+    "editor.defaultFormatter": "biomejs.biome",
+    "editor.codeActionsOnSave": {
+        "quickfix.biome": "explicit",
+        "source.organizeImports.biome": "explicit"
+    },
+    "[json]": {
+        "editor.defaultFormatter": "biomejs.biome"
+    },
+    "[jsonc]": {
+        "editor.defaultFormatter": "biomejs.biome"
+    }
 }

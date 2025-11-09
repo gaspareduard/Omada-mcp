@@ -11,14 +11,14 @@ export class DeviceOperations {
         private readonly request: RequestHandler,
         private readonly site: SiteOperations,
         private readonly buildPath: (path: string) => string
-    ) { }
+    ) {}
 
     /**
      * List all devices in a site.
      */
     public async listDevices(siteId?: string): Promise<OmadaDeviceInfo[]> {
         const resolvedSiteId = this.site.resolveSiteId(siteId);
-        return this.request.fetchPaginated<OmadaDeviceInfo>(this.buildPath(`/sites/${encodeURIComponent(resolvedSiteId)}/devices`));
+        return await this.request.fetchPaginated<OmadaDeviceInfo>(this.buildPath(`/sites/${encodeURIComponent(resolvedSiteId)}/devices`));
     }
 
     /**
