@@ -1,5 +1,7 @@
 import { z } from 'zod';
+
 import { isValidBindAddress, isValidOrigin } from './utils/config-validations.js';
+import { logger } from './utils/logger.js';
 
 const createBooleanStringSchema = (
     defaultValue: boolean
@@ -24,9 +26,9 @@ const listStringSchema = z
     .transform((value: string | undefined) =>
         value
             ? value
-                  .split(',')
-                  .map((s: string) => s.trim())
-                  .filter(Boolean)
+                .split(',')
+                .map((s: string) => s.trim())
+                .filter(Boolean)
             : undefined
     );
 
@@ -163,7 +165,14 @@ export function loadConfigFromEnv(env: NodeJS.ProcessEnv = process.env): Environ
 
     // Set default bind address and allowed origins for security
     const httpBindAddr = parsed.data.httpBindAddr ?? '127.0.0.1';
-    const httpAllowedOrigins = parsed.data.httpAllowedOrigins ?? ['127.0.0.1', 'localhost'];
+    let httpAllowedOrigins = parsed.data.httpAllowedOrigins ?? ['127.0.0.1', 'localhost'];
+
+    // If wildcard is present, use empty array to disable SDK origin validation
+    // (we'll handle it in our error handler with better logging)
+    if (httpAllowedOrigins.includes('*')) {
+        logger.warn('Wildcard (*) origin allowed - origin validation is disabled. This should only be used in development.');
+        httpAllowedOrigins = [];
+    }
 
     return {
         // Omada Client Configuration

@@ -44,7 +44,7 @@ Reference `.env.example`. Primary variables:
 - `MCP_HTTP_ENABLE_HEALTHCHECK` (default: `true`) - enable a healthcheck endpoint at the path indicated on `MCP_HTTP_HEALTHCHECK_PATH`.
 - `MCP_HTTP_HEALTHCHECK_PATH` (default: `/healthz`) - path for the healthcheck endpoint.
 - `MCP_HTTP_ALLOW_CORS` (default: `true`) - enable CORS for the HTTP server.
-- `MCP_HTTP_ALLOWED_ORIGINS` (default: `127.0.0.1, localhost`) - comma-separated list of allowed origins for DNS rebinding protection. Must contain valid hostnames, IPv4, or IPv6 addresses.
+- `MCP_HTTP_ALLOWED_ORIGINS` (default: `127.0.0.1, localhost`) - comma-separated list of allowed origins for DNS rebinding protection. Must contain valid hostnames, IPv4, IPv6 addresses, or `*` to allow all origins (development only).
 - `MCP_HTTP_NGROK_ENABLED` (default: `false`) - whether to use ngrok to expose the HTTP server publicly.
 - `MCP_HTTP_NGROK_AUTH_TOKEN` (optional) - ngrok auth token, required if `MCP_HTTP_NGROK_ENABLED` is `true`.
 

@@ -117,7 +117,18 @@
             "selfCloseVoidElements": "always"
         }
     },
+    "json": {
+        "formatter": {
+            "trailingCommas": "none"
+        }
+    },
     "overrides": [
+        {
+            "includes": ["**/*.json", "**/*.jsonc"],
+            "formatter": {
+                "lineWidth": 200
+            }
+        },
         {
             "includes": ["**/*.ts", "**/*.tsx", "**/*.mts", "**/*.cts"],
             "linter": {

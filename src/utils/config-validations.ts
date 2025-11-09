@@ -54,11 +54,15 @@ export function isValidHostname(value: string): boolean {
 }
 
 /**
- * Validates allowed origin values (hostname, IPv4, or IPv6)
+ * Validates allowed origin values (hostname, IPv4, IPv6, or wildcard)
  * @param value - The string to validate
  * @returns true if valid origin, false otherwise
  */
 export function isValidOrigin(value: string): boolean {
+    // Allow wildcard to disable origin validation
+    if (value === '*') {
+        return true;
+    }
     return isValidIpAddress(value) || isValidHostname(value);
 }
 

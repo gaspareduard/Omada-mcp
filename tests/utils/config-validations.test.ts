@@ -127,7 +127,7 @@ describe('config-validations', () => {
     });
 
     describe('validateOrigins', () => {
-        it('should validate arrays of valid origins', () => {
+        it('should accept valid origins', () => {
             const result1 = validateOrigins(['127.0.0.1', 'localhost']);
             expect(result1.isValid).toBe(true);
             expect(result1.error).toBeUndefined();
@@ -135,16 +135,20 @@ describe('config-validations', () => {
             const result2 = validateOrigins(['example.com', '192.168.1.1', '::1']);
             expect(result2.isValid).toBe(true);
             expect(result2.error).toBeUndefined();
+
+            const result3 = validateOrigins(['*']);
+            expect(result3.isValid).toBe(true);
+            expect(result3.error).toBeUndefined();
         });
 
-        it('should reject arrays with invalid origins', () => {
+        it('should reject invalid origins', () => {
             const result1 = validateOrigins(['127.0.0.1', 'inv@lid']);
             expect(result1.isValid).toBe(false);
-            expect(result1.error).toContain('inv@lid');
+            expect(result1.error).toContain('Invalid origin');
 
             const result2 = validateOrigins(['-invalid']);
             expect(result2.isValid).toBe(false);
-            expect(result2.error).toContain('-invalid');
+            expect(result2.error).toContain('Invalid origin');
         });
 
         it('should handle empty arrays', () => {

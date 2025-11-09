@@ -41,7 +41,10 @@ export function createStreamTransport(client: OmadaClient, config: EnvironmentCo
     });
 
     transport.onerror = (error: Error) => {
-        logger.error('Streamable HTTP transport error', { error });
+        logger.error('Streamable HTTP transport error', {
+            error,
+            message: error.message,
+        });
     };
 
     return { transport, server: mcpServer };
@@ -59,10 +62,15 @@ export async function handleStreamRequest(
     parsedBody?: unknown,
     existingTransport?: StreamTransportState
 ): Promise<StreamTransportState | void> {
+    const originHeader = req.headers.origin;
+    const hostHeader = req.headers.host;
+
     logger.info('Streamable HTTP request received', {
         method: req.method,
         url: req.url,
         sessionId: req.headers['mcp-session-id'] ?? undefined,
+        origin: originHeader ?? '(not set)',
+        host: hostHeader ?? '(not set)',
     });
 
     // Reuse existing transport if provided, otherwise create new one
@@ -72,12 +80,24 @@ export async function handleStreamRequest(
         await state.server.connect(state.transport);
     }
 
-    await state.transport.handleRequest(req, res, parsedBody);
+    try {
+        await state.transport.handleRequest(req, res, parsedBody);
 
-    logger.debug('Streamable HTTP request handled', {
-        method: req.method,
-        sessionId: req.headers['mcp-session-id'] ?? undefined,
-    });
+        logger.debug('Streamable HTTP request handled', {
+            method: req.method,
+            sessionId: req.headers['mcp-session-id'] ?? undefined,
+        });
+    } catch (error) {
+        logger.error('Failed to handle Streamable HTTP request', {
+            error,
+            method: req.method,
+            url: req.url,
+            origin: originHeader ?? '(not set)',
+            host: hostHeader ?? '(not set)',
+            allowedOrigins: config.httpAllowedOrigins,
+        });
+        throw error;
+    }
 
     // Return state for session management if stateful
     if (config.stateful) {

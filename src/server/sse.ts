@@ -25,7 +25,10 @@ export function createSseTransport(client: OmadaClient, config: EnvironmentConfi
     });
 
     transport.onerror = (error: Error) => {
-        logger.error('SSE transport error', { error });
+        logger.error('SSE transport error', {
+            error,
+            message: error.message,
+        });
     };
 
     return { transport, server: mcpServer };
@@ -41,21 +44,36 @@ export async function handleSseConnection(
     req: IncomingMessage,
     res: ServerResponse
 ): Promise<SSETransportState> {
+    const originHeader = req.headers.origin;
+    const hostHeader = req.headers.host;
+
     logger.info('SSE connection request received', {
         method: req.method,
         url: req.url,
+        origin: originHeader ?? '(not set)',
+        host: hostHeader ?? '(not set)',
     });
 
-    const { transport, server } = createSseTransport(client, config, endpoint, res);
+    try {
+        const { transport, server } = createSseTransport(client, config, endpoint, res);
 
-    await server.connect(transport);
-    await transport.start();
+        await server.connect(transport);
+        await transport.start();
 
-    logger.info('SSE connection established', {
-        sessionId: transport.sessionId,
-    });
+        logger.info('SSE connection established', {
+            sessionId: transport.sessionId,
+        });
 
-    return { transport, server };
+        return { transport, server };
+    } catch (error) {
+        logger.error('Failed to establish SSE connection', {
+            error,
+            origin: originHeader ?? '(not set)',
+            host: hostHeader ?? '(not set)',
+            allowedOrigins: config.httpAllowedOrigins,
+        });
+        throw error;
+    }
 }
 
 /**

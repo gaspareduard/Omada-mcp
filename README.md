@@ -63,7 +63,7 @@ These variables are only used when `MCP_SERVER_USE_HTTP=true`:
 | `MCP_HTTP_ENABLE_HEALTHCHECK`  | No       | `true`                          | Enable a healthcheck endpoint                                               |
 | `MCP_HTTP_HEALTHCHECK_PATH`    | No       | `/healthz`                      | Path for the healthcheck endpoint                                           |
 | `MCP_HTTP_ALLOW_CORS`          | No       | `true`                          | Enable CORS for the HTTP server                                             |
-| `MCP_HTTP_ALLOWED_ORIGINS`     | No       | `127.0.0.1, localhost`          | Comma-separated list of allowed origins for DNS rebinding protection        |
+| `MCP_HTTP_ALLOWED_ORIGINS`     | No       | `127.0.0.1, localhost`          | Comma-separated list of allowed origins. Use `*` to allow all (dev only)    |
 | `MCP_HTTP_NGROK_ENABLED`       | No       | `false`                         | Use ngrok to expose the HTTP server publicly                                |
 | `MCP_HTTP_NGROK_AUTH_TOKEN`    | No       | -                               | Ngrok auth token (required if `MCP_HTTP_NGROK_ENABLED=true`)                |
 
@@ -159,7 +159,7 @@ The SSE transport uses two endpoints:
 
 Both transports implement DNS rebinding protection:
 
-- **Origin Validation**: The server validates the `Origin` header on all incoming connections. Configure allowed origins with `MCP_HTTP_ALLOWED_ORIGINS` (default: `127.0.0.1, localhost`).
+- **Origin Validation**: The server validates the `Origin` header on all incoming connections. Configure allowed origins with `MCP_HTTP_ALLOWED_ORIGINS` (default: `127.0.0.1, localhost`). Use `*` to allow all origins (development only, not recommended for production).
 - **Network Binding**: The server binds to `127.0.0.1` by default, restricting access to localhost only. Set `MCP_HTTP_BIND_ADDR=0.0.0.0` to expose the server to your network (not recommended for production without additional security measures).
 
 For more information on the MCP protocol and transports, see the [Model Context Protocol documentation](https://modelcontextprotocol.io/).
