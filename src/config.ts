@@ -85,7 +85,7 @@ const envSchema = z
             return true;
         },
         (data) => {
-            const invalidOrigin = data.httpAllowedOrigins?.find(origin => !isValidOrigin(origin));
+            const invalidOrigin = data.httpAllowedOrigins?.find((origin) => !isValidOrigin(origin));
             return {
                 message: `MCP_HTTP_ALLOWED_ORIGINS contains invalid origin: ${invalidOrigin}`,
                 path: ['httpAllowedOrigins'],
@@ -141,7 +141,6 @@ export function loadConfigFromEnv(env: NodeJS.ProcessEnv = process.env): Environ
 
         // MCP Server HTTP/SSE Configuration
         httpPort: env.MCP_HTTP_PORT,
-        httpHost: env.MCP_HTTP_HOST,
         httpTransport: env.MCP_HTTP_TRANSPORT,
         httpBindAddr: env.MCP_HTTP_BIND_ADDR,
         httpPath: env.MCP_HTTP_PATH,
@@ -184,7 +183,6 @@ export function loadConfigFromEnv(env: NodeJS.ProcessEnv = process.env): Environ
 
         // MCP Server HTTP/SSE Configuration
         httpPort: parsed.data.httpPort,
-        httpHost: parsed.data.httpHost,
         httpTransport: parsed.data.httpTransport,
         httpBindAddr,
         httpPath,
