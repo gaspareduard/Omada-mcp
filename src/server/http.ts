@@ -1,41 +1,32 @@
-import { randomUUID } from 'node:crypto';
 import type { IncomingHttpHeaders, IncomingMessage, ServerResponse } from 'node:http';
 import http from 'node:http';
-
-import { StreamableHTTPServerTransport } from '@modelcontextprotocol/sdk/server/streamableHttp.js';
+import type { SSEServerTransport } from '@modelcontextprotocol/sdk/server/sse.js';
 import ngrok from '@ngrok/ngrok';
-
+import type { EnvironmentConfig } from '../config.js';
 import type { OmadaClient } from '../omadaClient/index.js';
 import { logger } from '../utils/logger.js';
-
-import { createServer } from './common.js';
+import { createSseTransport, getSseMessagePath, handleSseConnection, handleSseMessage } from './sse.js';
+import { handleStreamRequest } from './stream.js';
 
 const DEFAULT_PORT = 3000;
-const DEFAULT_HOST = '0.0.0.0';
-const DEFAULT_PATH = '/mcp';
 const HEALTH_PATH = '/healthz';
 
 type ShutdownHandler = () => Promise<void>;
 
-function resolvePort(value: string | undefined, fallback: number): number {
+function resolvePort(value: number | undefined, fallback: number): number {
     if (!value) {
         return fallback;
     }
 
-    const parsed = Number.parseInt(value, 10);
-    if (!Number.isInteger(parsed) || parsed <= 0 || parsed > 65_535) {
+    if (!Number.isInteger(value) || value <= 0 || value > 65_535) {
         logger.warn('Invalid MCP HTTP port provided', { provided: value, fallback });
         return fallback;
     }
 
-    return parsed;
+    return value;
 }
 
 function normalizePath(path: string): string {
-    if (!path) {
-        return DEFAULT_PATH;
-    }
-
     const startsWithSlash = path.startsWith('/') ? path : `/${path}`;
     if (startsWithSlash.length > 1 && startsWithSlash.endsWith('/')) {
         const trimmed = startsWithSlash.replace(/\/+$/, '');
@@ -149,13 +140,13 @@ function maskValue(value: unknown): unknown {
     return '********';
 }
 
-async function createShutdownHandler(signal: NodeJS.Signals, closeHttp: () => Promise<void>, closeServer: () => Promise<void>): Promise<void> {
+async function createShutdownHandler(signal: NodeJS.Signals, closeHttp: () => Promise<void>, closeSessions: () => Promise<void>): Promise<void> {
     logger.warn('Received shutdown signal', { signal });
 
     try {
-        await closeServer();
+        await closeSessions();
     } catch (error) {
-        logger.error('Error closing MCP server', { error });
+        logger.error('Error closing MCP sessions', { error });
     }
 
     try {
@@ -165,35 +156,19 @@ async function createShutdownHandler(signal: NodeJS.Signals, closeHttp: () => Pr
     }
 }
 
-export async function startHttpServer(client: OmadaClient, config: import('../config.js').EnvironmentConfig): Promise<void> {
-    logger.info('Starting HTTP server');
-    const mcpServer = createServer(client);
+/**
+ * Starts the HTTP server with the configured transport (SSE or Stream)
+ */
+export async function startHttpServer(client: OmadaClient, config: EnvironmentConfig): Promise<void> {
+    const transport = config.httpTransport;
+    logger.info('Starting HTTP server', { transport });
 
-    const allowedHosts = config.httpAllowedHosts;
-    const allowedOrigins = config.httpAllowedOrigins;
+    const port = resolvePort(config.httpPort, DEFAULT_PORT);
+    const host = config.httpBindAddr ?? '127.0.0.1';
+    const endpointPath = normalizePath(config.httpPath ?? (transport === 'sse' ? '/sse' : '/mcp'));
 
-    const enableStatefulSessions = config.stateful;
-    const sessionIdGenerator = enableStatefulSessions ? () => randomUUID() : undefined;
-
-    if (!enableStatefulSessions) {
-        logger.info('Starting HTTP transport in stateless mode; Mcp-Session-Id headers are optional');
-    }
-
-    const transport = new StreamableHTTPServerTransport({
-        sessionIdGenerator,
-        allowedHosts,
-        allowedOrigins,
-    });
-
-    transport.onerror = (error: Error) => {
-        logger.error('Streamable HTTP transport error', { error });
-    };
-
-    await mcpServer.connect(transport);
-
-    const port = resolvePort(config.httpPort?.toString(), DEFAULT_PORT);
-    const host = config.httpHost ?? DEFAULT_HOST;
-    const endpointPath = normalizePath(config.httpPath ?? DEFAULT_PATH);
+    // For SSE transport, we need to track transports by session ID
+    const sseTransports = new Map<string, { transport: SSEServerTransport; server: ReturnType<typeof createSseTransport>['server'] }>();
 
     const httpServer = http.createServer((req, res) => {
         void (async () => {
@@ -223,6 +198,10 @@ export async function startHttpServer(client: OmadaClient, config: import('../co
                 });
             }
 
+            await new Promise<void>((resolve) => {
+                req.on('end', () => resolve());
+            });
+
             logger.info('HTTP request received', {
                 method: req.method,
                 path: url.pathname,
@@ -230,43 +209,21 @@ export async function startHttpServer(client: OmadaClient, config: import('../co
                 sessionId: req.headers['mcp-session-id'] ?? undefined,
             });
 
-            if (url.pathname === HEALTH_PATH) {
+            // Health check endpoint
+            if (config.httpEnableHealthcheck && url.pathname === (config.httpHealthcheckPath ?? HEALTH_PATH)) {
                 logger.debug('Health check request served');
                 sendJson(res, 200, { status: 'ok' });
                 return;
             }
 
-            if (url.pathname !== endpointPath) {
-                logger.warn('HTTP request rejected', {
-                    reason: 'unexpected-path',
-                    expected: endpointPath,
-                    received: url.pathname,
-                });
-                sendJson(res, 404, { error: 'Not Found' });
-                return;
-            }
-
-            try {
-                await transport.handleRequest(req, res);
-                if (!res.headersSent) {
-                    logger.debug('Transport completed without sending response headers');
-                }
-                logger.info('MCP request handled successfully', {
-                    path: url.pathname,
-                    method: req.method,
-                });
-
-                if (shouldCaptureBody) {
-                    const rawBody = bodyChunks.length > 0 ? Buffer.concat(bodyChunks).toString('utf8') : '';
-                    let parsedBody: unknown = rawBody;
-                    if (rawBody.length === 0) {
-                        parsedBody = null;
-                    } else {
-                        try {
-                            parsedBody = JSON.parse(rawBody);
-                        } catch {
-                            parsedBody = rawBody;
-                        }
+            let parsedBody: unknown = null;
+            if (shouldCaptureBody && bodyChunks.length > 0) {
+                const rawBody = Buffer.concat(bodyChunks).toString('utf8');
+                if (rawBody.length > 0) {
+                    try {
+                        parsedBody = JSON.parse(rawBody);
+                    } catch {
+                        parsedBody = rawBody;
                     }
 
                     logger.debug('HTTP request body', {
@@ -276,6 +233,62 @@ export async function startHttpServer(client: OmadaClient, config: import('../co
                         body: sanitizePayload(parsedBody),
                     });
                 }
+            }
+
+            try {
+                if (transport === 'sse') {
+                    // SSE Transport handling
+                    if (url.pathname === endpointPath) {
+                        if (req.method === 'GET') {
+                            // Establish SSE connection
+                            const messagePath = getSseMessagePath();
+                            const { transport: sseTransport, server: sseServer } = await handleSseConnection(client, config, messagePath, req, res);
+
+                            // Store transport for later message handling
+                            sseTransports.set(sseTransport.sessionId, { transport: sseTransport, server: sseServer });
+
+                            // Clean up on close
+                            sseTransport.onclose = () => {
+                                sseTransports.delete(sseTransport.sessionId);
+                            };
+                        } else {
+                            sendJson(res, 405, { error: 'Method Not Allowed' });
+                        }
+                    } else if (url.pathname === getSseMessagePath()) {
+                        if (req.method === 'POST') {
+                            // Handle SSE message
+                            const sessionId = req.headers['mcp-session-id'] as string | undefined;
+                            if (!sessionId) {
+                                sendJson(res, 400, { error: 'Missing Mcp-Session-Id header' });
+                                return;
+                            }
+
+                            const session = sseTransports.get(sessionId);
+                            if (!session) {
+                                sendJson(res, 404, { error: 'Session not found' });
+                                return;
+                            }
+
+                            await handleSseMessage(session.transport, req, res, parsedBody);
+                        } else {
+                            sendJson(res, 405, { error: 'Method Not Allowed' });
+                        }
+                    } else {
+                        sendJson(res, 404, { error: 'Not Found' });
+                    }
+                } else {
+                    // Streamable HTTP Transport handling
+                    if (url.pathname === endpointPath) {
+                        await handleStreamRequest(client, config, req, res, parsedBody);
+                    } else {
+                        sendJson(res, 404, { error: 'Not Found' });
+                    }
+                }
+
+                logger.info('MCP request handled successfully', {
+                    path: url.pathname,
+                    method: req.method,
+                });
             } catch (error) {
                 logger.error('Failed to handle MCP HTTP request', { error });
                 if (!res.headersSent) {
@@ -301,10 +314,13 @@ export async function startHttpServer(client: OmadaClient, config: import('../co
             const displayHost = host === '0.0.0.0' ? 'localhost' : host;
             logger.info('HTTP server listening', {
                 endpoint: `http://${displayHost}:${port}${endpointPath}`,
+                transport,
             });
-            logger.info('HTTP health check available', {
-                endpoint: `http://${displayHost}:${port}${HEALTH_PATH}`,
-            });
+            if (config.httpEnableHealthcheck) {
+                logger.info('HTTP health check available', {
+                    endpoint: `http://${displayHost}:${port}${config.httpHealthcheckPath ?? HEALTH_PATH}`,
+                });
+            }
             logger.info('HTTP server ready');
             resolve();
         });
@@ -335,7 +351,18 @@ export async function startHttpServer(client: OmadaClient, config: import('../co
         new Promise((resolve) => {
             httpServer.close(() => resolve());
         });
-    const closeServer: ShutdownHandler = () => mcpServer.close();
+    const closeSessions: ShutdownHandler = async () => {
+        for (const [sessionId, session] of sseTransports) {
+            try {
+                await session.server.close();
+                await session.transport.close();
+                logger.info('Closed session', { sessionId });
+            } catch (error) {
+                logger.error('Error closing session', { sessionId, error });
+            }
+        }
+        sseTransports.clear();
+    };
 
     for (const signal of ['SIGINT', 'SIGTERM'] as const) {
         process.on(signal, () => {
@@ -343,7 +370,7 @@ export async function startHttpServer(client: OmadaClient, config: import('../co
                 return;
             }
             shuttingDown = true;
-            void createShutdownHandler(signal, closeHttp, closeServer);
+            void createShutdownHandler(signal, closeHttp, closeSessions);
         });
     }
 }
