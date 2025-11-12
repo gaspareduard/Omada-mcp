@@ -22,7 +22,7 @@ export interface ThreatInfo {
     dstLongitude?: number;
     archived?: boolean;
     classification?: string;
-    creatTime?: number;
+    createTime?: number;
 }
 
 export interface GetThreatListOptions {
