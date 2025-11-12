@@ -9,18 +9,22 @@ import type {
     ClientPastConnection,
     GetClientActivityOptions,
     GetDeviceStatsOptions,
+    GetThreatListOptions,
     ListClientsPastConnectionsOptions,
     OmadaClientInfo,
     OmadaDeviceInfo,
     OmadaDeviceStats,
     OmadaSiteSummary,
     OswStackDetail,
+    PaginatedResult,
+    ThreatInfo,
 } from '../types/index.js';
 
 import { AuthManager } from './auth.js';
 import { ClientOperations } from './client.js';
 import { DeviceOperations } from './device.js';
 import { RequestHandler } from './request.js';
+import { SecurityOperations } from './security.js';
 import { SiteOperations } from './site.js';
 
 export type OmadaClientOptions = EnvironmentConfig;
@@ -41,6 +45,8 @@ export class OmadaClient {
     private readonly deviceOps: DeviceOperations;
 
     private readonly clientOps: ClientOperations;
+
+    private readonly securityOps: SecurityOperations;
 
     private readonly omadacId: string;
 
@@ -68,6 +74,7 @@ export class OmadaClient {
         this.siteOps = new SiteOperations(this.request, this.buildOmadaPath.bind(this), options.siteId);
         this.deviceOps = new DeviceOperations(this.request, this.siteOps, this.buildOmadaPath.bind(this));
         this.clientOps = new ClientOperations(this.request, this.siteOps, this.buildOmadaPath.bind(this));
+        this.securityOps = new SecurityOperations(this.request, this.buildOmadaPath.bind(this));
     }
 
     // Site operations
@@ -115,6 +122,11 @@ export class OmadaClient {
 
     public async listClientsPastConnections(options: ListClientsPastConnectionsOptions): Promise<ClientPastConnection[]> {
         return await this.clientOps.listClientsPastConnections(options);
+    }
+
+    // Security operations
+    public async getThreatList(options: GetThreatListOptions): Promise<PaginatedResult<ThreatInfo>> {
+        return await this.securityOps.getThreatList(options);
     }
 
     // Generic API call

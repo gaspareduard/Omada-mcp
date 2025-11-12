@@ -126,12 +126,14 @@ npm run dev
 ```
 
 Features:
+
 - Single endpoint for all operations (GET, POST, DELETE)
 - Server-Sent Events for streaming responses
 - Built-in session management with cryptographic session IDs
 - Support for stateless mode when needed
 
 The Streamable HTTP endpoint defaults to `/mcp` and handles:
+
 - `GET /mcp` - Establish SSE stream and initialize session
 - `POST /mcp` - Send JSON-RPC messages
 - `DELETE /mcp` - Terminate session
@@ -148,10 +150,12 @@ npm run dev
 ```
 
 Features:
+
 - Separate endpoints for SSE stream and POST messages
 - Compatible with older MCP client implementations
 
 The SSE transport uses two endpoints:
+
 - `GET /sse` - Establish SSE connection
 - `POST /messages` - Send JSON-RPC messages
 
@@ -184,6 +188,7 @@ To share the local server with remote tooling, you can use ngrok to expose the H
 **Option 1: Built-in ngrok support** (recommended)
 
 Set the following environment variables:
+
 ```bash
 export MCP_HTTP_NGROK_ENABLED=true
 export MCP_HTTP_NGROK_AUTH_TOKEN=your-ngrok-auth-token
@@ -195,6 +200,7 @@ The server will automatically establish an ngrok tunnel and log the public URL.
 **Option 2: Manual ngrok setup**
 
 Run ngrok in a separate terminal after starting the server:
+
 ```bash
 ngrok http 3000
 ```
@@ -230,6 +236,7 @@ If an intermediary strips the `Mcp-Session-Id` header, set `MCP_SERVER_STATEFUL=
 | `getClientActivity`                 | Get client activity statistics over time.                 | Used by `listClientsActivity`; returns time-series data of new, active, and disconnected clients.    |
 | `getGridPastConnections`            | Get client past connection list.                          | Used by `listClientsPastConnections`; supports pagination, filtering, sorting, and fuzzy search.     |
 | `getOswStackDetail`                 | Retrieve details for a switch stack.                      | Used by `getSwitchStackDetail`.                                                                      |
+| `getGlobalThreatList`               | Get global view threat management list.                   | Used by `getThreatList`; returns paginated security threats with filtering by time, severity, sites. |
 
 ## Devcontainer support
 

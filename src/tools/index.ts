@@ -6,6 +6,7 @@ import { registerCallApiTool } from './callApi.js';
 import { registerGetClientTool } from './getClient.js';
 import { registerGetDeviceTool } from './getDevice.js';
 import { registerGetSwitchStackDetailTool } from './getSwitchStackDetail.js';
+import { registerGetThreatListTool } from './getThreatList.js';
 import { registerListClientsTool } from './listClients.js';
 import { registerListClientsActivityTool } from './listClientsActivity.js';
 import { registerListClientsPastConnectionsTool } from './listClientsPastConnections.js';
@@ -27,5 +28,6 @@ export function registerAllTools(server: McpServer, client: OmadaClient): void {
     registerListMostActiveClientsTool(server, client);
     registerListClientsActivityTool(server, client);
     registerListClientsPastConnectionsTool(server, client);
+    registerGetThreatListTool(server, client);
     registerCallApiTool(server, client);
 }

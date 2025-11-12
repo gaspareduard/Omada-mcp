@@ -26,9 +26,9 @@ const listStringSchema = z
     .transform((value: string | undefined) =>
         value
             ? value
-                .split(',')
-                .map((s: string) => s.trim())
-                .filter(Boolean)
+                  .split(',')
+                  .map((s: string) => s.trim())
+                  .filter(Boolean)
             : undefined
     );
 
