@@ -9,7 +9,7 @@ describe('NetworkOperations', () => {
     let networkOps: NetworkOperations;
     let mockRequest: RequestHandler;
     let mockSite: SiteOperations;
-    let mockBuildPath: (path: string) => string;
+    let mockBuildPath: (path: string, version?: string) => string;
 
     beforeEach(() => {
         mockRequest = {
@@ -27,7 +27,7 @@ describe('NetworkOperations', () => {
             resolveSiteId: vi.fn((siteId?: string) => siteId ?? 'default-site'),
         } as unknown as SiteOperations;
 
-        mockBuildPath = vi.fn((path: string) => `/openapi/v1/test-omadac${path}`);
+        mockBuildPath = vi.fn((path: string, version = 'v1') => `/openapi/${version}/test-omadac${path}`);
 
         networkOps = new NetworkOperations(mockRequest, mockSite, mockBuildPath);
     });

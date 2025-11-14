@@ -178,9 +178,11 @@ export class OmadaClient {
 
     /**
      * Build a full Omada API path from a relative path.
+     * @param relativePath - The relative path to append to the base API path
+     * @param version - The API version to use (default: 'v1')
      */
-    private buildOmadaPath(relativePath: string): string {
+    private buildOmadaPath(relativePath: string, version = 'v1'): string {
         const normalized = relativePath.startsWith('/') ? relativePath : `/${relativePath}`;
-        return `/openapi/v1/${encodeURIComponent(this.omadacId)}${normalized}`;
+        return `/openapi/${version}/${encodeURIComponent(this.omadacId)}${normalized}`;
     }
 }

@@ -11,7 +11,7 @@ export class NetworkOperations {
     constructor(
         private readonly request: RequestHandler,
         private readonly site: SiteOperations,
-        private readonly buildPath: (path: string) => string
+        private readonly buildPath: (path: string, version?: string) => string
     ) {}
 
     /**
@@ -51,8 +51,7 @@ export class NetworkOperations {
      */
     public async getLanNetworkList(siteId?: string): Promise<unknown[]> {
         const resolvedSiteId = this.site.resolveSiteId(siteId);
-        // Using v2 API as specified in the issue
-        const path = `/openapi/v2/${encodeURIComponent(this.getOmadacId())}/sites/${encodeURIComponent(resolvedSiteId)}/lan-networks`;
+        const path = this.buildPath(`/sites/${encodeURIComponent(resolvedSiteId)}/lan-networks`, 'v2');
         return await this.request.fetchPaginated<unknown>(path);
     }
 
@@ -125,20 +124,5 @@ export class NetworkOperations {
         const path = this.buildPath(`/sites/${encodeURIComponent(resolvedSiteId)}/firewall`);
         const response = await this.request.get<OmadaApiResponse<unknown>>(path);
         return this.request.ensureSuccess(response);
-    }
-
-    /**
-     * Helper method to extract omadacId from buildPath function.
-     * This is a workaround to access the omadacId for the v2 LAN networks API.
-     */
-    private getOmadacId(): string {
-        // The buildPath function creates paths like: /openapi/v1/{omadacId}/...
-        // We'll build a dummy path and extract the omadacId from it
-        const dummyPath = this.buildPath('/dummy');
-        const match = dummyPath.match(/\/openapi\/v\d+\/([^/]+)\//);
-        if (!match || !match[1]) {
-            throw new Error('Unable to determine omadacId from buildPath');
-        }
-        return match[1];
     }
 }
