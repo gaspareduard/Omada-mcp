@@ -211,17 +211,25 @@ If an intermediary strips the `Mcp-Session-Id` header, set `MCP_SERVER_STATEFUL=
 
 ## Tools
 
-| Tool                    | Description                                                                       |
-| ----------------------- | --------------------------------------------------------------------------------- |
-| `listSites`             | Lists all sites configured on the controller.                                     |
-| `listDevices`           | Lists provisioned devices for a given site.                                       |
-| `listClients`           | Lists active client devices for a site.                                           |
-| `getDevice`             | Fetches details for a specific Omada device.                                      |
-| `getSwitchStackDetail`  | Retrieves detailed configuration and status for a switch stack.                   |
-| `getClient`             | Fetches details for a specific client device.                                     |
-| `searchDevices`         | Searches for devices globally across all sites the user has access to.            |
-| `listDevicesStats`      | Queries statistics for global adopted devices with pagination and filtering.      |
-| `callApi`               | Executes a raw API request using the established Omada session token.             |
+| Tool                            | Description                                                                       |
+| ------------------------------- | --------------------------------------------------------------------------------- |
+| `listSites`                     | Lists all sites configured on the controller.                                     |
+| `listDevices`                   | Lists provisioned devices for a given site.                                       |
+| `listClients`                   | Lists active client devices for a site.                                           |
+| `getDevice`                     | Fetches details for a specific Omada device.                                      |
+| `getSwitchStackDetail`          | Retrieves detailed configuration and status for a switch stack.                   |
+| `getClient`                     | Fetches details for a specific client device.                                     |
+| `searchDevices`                 | Searches for devices globally across all sites the user has access to.            |
+| `listDevicesStats`              | Queries statistics for global adopted devices with pagination and filtering.      |
+| `getInternetInfo`               | Gets internet configuration information for a site.                               |
+| `getPortForwardingStatus`       | Gets port forwarding status and rules (User or UPnP types).                       |
+| `getLanNetworkList`             | Gets the list of LAN networks configured in a site.                               |
+| `getLanProfileList`             | Gets the list of LAN profiles configured in a site.                               |
+| `getWlanGroupList`              | Gets the list of WLAN groups configured in a site.                                |
+| `getSsidList`                   | Gets the list of SSIDs in a WLAN group.                                           |
+| `getSsidDetail`                 | Gets detailed information for a specific SSID.                                    |
+| `getFirewallSetting`            | Gets firewall configuration and rules for a site.                                 |
+| `callApi`                       | Executes a raw API request using the established Omada session token.             |
 
 ## Supported Omada API Operations
 
@@ -237,6 +245,14 @@ If an intermediary strips the `Mcp-Session-Id` header, set `MCP_SERVER_STATEFUL=
 | `getGridPastConnections`            | Get client past connection list.                          | Used by `listClientsPastConnections`; supports pagination, filtering, sorting, and fuzzy search.     |
 | `getOswStackDetail`                 | Retrieve details for a switch stack.                      | Used by `getSwitchStackDetail`.                                                                      |
 | `getGlobalThreatList`               | Get global view threat management list.                   | Used by `getThreatList`; returns paginated security threats with filtering by time, severity, sites. |
+| `getInternet`                       | Get internet configuration info for a site.               | Used by `getInternetInfo`; returns WAN settings and connectivity details.                            |
+| `getPortForwardStatus`              | Get port forwarding status by type.                       | Used by `getPortForwardingStatus`; retrieves User or UPnP port forwarding rules.                     |
+| `getLanNetworkListV2`               | Get LAN network list (v2 API).                            | Used by `getLanNetworkList`; returns VLAN settings, IP ranges, DHCP configuration.                   |
+| `getLanProfileList`                 | Get LAN profile list.                                     | Used by `getLanProfileList`; returns network settings for switch ports.                              |
+| `getWlanGroupList`                  | Get WLAN group list.                                      | Used by `getWlanGroupList`; returns wireless network groups. Use wlanId for `getSsidList`.           |
+| `getSsidList`                       | Get SSID list for a WLAN group.                           | Used by `getSsidList`; requires wlanId from `getWlanGroupList`. Use ssidId for `getSsidDetail`.      |
+| `getSsidDetail`                     | Get detailed SSID configuration.                          | Used by `getSsidDetail`; requires wlanId and ssidId. Returns security, rate limits, scheduling.      |
+| `getFirewallSetting`                | Get firewall configuration for a site.                    | Used by `getFirewallSetting`; returns ACL rules, IP groups, security policies.                       |
 
 ## Devcontainer support
 
