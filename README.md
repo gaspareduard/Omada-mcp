@@ -2,6 +2,73 @@
 
 A Model Context Protocol (MCP) server implemented in TypeScript that exposes the TP-Link Omada controller APIs to AI copilots and automation workflows. The server authenticates against a controller, lists sites, devices, and connected clients, and offers a generic tool to invoke arbitrary Omada API endpoints.
 
+## Quick Start
+
+### Using with Claude Desktop (stdio)
+
+1. **Pull the Docker image** (or build it locally with `npm run docker:build`):
+
+   ```bash
+   docker pull ghcr.io/migueltvms/tplink-omada-mcp-cli:latest
+   ```
+
+2. **Add the MCP server to Claude Desktop configuration**. Edit your Claude Desktop config file:
+   - **macOS**: `~/Library/Application Support/Claude/claude_desktop_config.json`
+   - **Windows**: `%APPDATA%\Claude\claude_desktop_config.json`
+
+3. **Add the following configuration**:
+
+   ```json
+   {
+     "mcpServers": {
+       "tplink-omada": {
+         "command": "docker",
+         "args": [
+           "run",
+           "-i",
+           "--rm",
+           "-e", "OMADA_BASE_URL=https://your-omada-controller.local",
+           "-e", "OMADA_CLIENT_ID=your-client-id",
+           "-e", "OMADA_CLIENT_SECRET=your-client-secret",
+           "-e", "OMADA_OMADAC_ID=your-omadac-id",
+           "-e", "OMADA_SITE_ID=your-site-id",
+           "-e", "OMADA_STRICT_SSL=false",
+           "ghcr.io/migueltvms/tplink-omada-mcp-cli:latest"
+         ]
+       }
+     }
+   }
+   ```
+
+   Replace the environment variable values with your actual Omada controller credentials.
+
+4. **Restart Claude Desktop** to load the new MCP server configuration.
+
+5. **Verify the connection** by asking Claude to list your Omada sites or devices.
+
+### Using Docker Containers
+
+#### CLI/stdio Container
+
+```bash
+docker run -it --rm \
+  --env-file .env \
+  ghcr.io/migueltvms/tplink-omada-mcp-cli:latest
+```
+
+#### HTTP Server Container
+
+```bash
+docker run -d \
+  --env-file .env \
+  -e MCP_SERVER_USE_HTTP=true \
+  -e MCP_HTTP_BIND_ADDR=0.0.0.0 \
+  -p 3000:3000 \
+  ghcr.io/migueltvms/tplink-omada-mcp-http:latest
+```
+
+The HTTP server will be available at `http://localhost:3000/mcp` (stream transport) or `http://localhost:3000/sse` (SSE transport).
+
 ## Features
 
 - OAuth client-credentials authentication with automatic token refresh
@@ -15,15 +82,8 @@ A Model Context Protocol (MCP) server implemented in TypeScript that exposes the
 
 ### Prerequisites
 
-- Node.js 20 or later
-- npm 9 or later
+- Docker (for running pre-built containers) or Node.js 24+ (for local development)
 - Access to a TP-Link Omada controller (for example using the `mbentley/omada-controller` Docker image)
-
-### Installation
-
-```bash
-npm install
-```
 
 ### Configuration
 
@@ -97,18 +157,23 @@ npm start
 
 The MCP server communicates over standard input and output. Integrate it with MCP-compatible clients by referencing the `npm start` command and providing the required environment variables.
 
-### Docker images
+### Docker image
 
-Two container images are provided:
+A container image is provided for running the MCP server:
 
 ```bash
-npm run docker:build       # Build the CLI/stdio image (tag: ghcr.io/migueltvms/tplink-omada-mcp-cli:latest)
-npm run docker:run         # Launch the CLI/stdio image with your .env file
-npm run docker:build:http  # Build the HTTP/SSE image (tag: ghcr.io/migueltvms/tplink-omada-mcp-http:latest)
-npm run docker:run:http    # Launch the HTTP/SSE image and publish port 3000
+npm run docker:build  # Build the Docker image (tag: jmtvms/tplink-omada-mcp:latest)
+npm run docker:run    # Launch the container with your .env file
+npm run docker:push   # Push the image to Docker Hub
 ```
 
-Use `npm run docker:push` and `npm run docker:push:http` to publish the images after authenticating with GitHub Container Registry.
+You can also pull the pre-built image directly from Docker Hub:
+
+```bash
+docker pull jmtvms/tplink-omada-mcp:latest
+```
+
+The same image supports both stdio and HTTP transports - configure the desired mode using environment variables (e.g., set `MCP_SERVER_USE_HTTP=true` for HTTP mode).
 
 ### Transport Protocols
 
@@ -211,17 +276,25 @@ If an intermediary strips the `Mcp-Session-Id` header, set `MCP_SERVER_STATEFUL=
 
 ## Tools
 
-| Tool                    | Description                                                                       |
-| ----------------------- | --------------------------------------------------------------------------------- |
-| `listSites`             | Lists all sites configured on the controller.                                     |
-| `listDevices`           | Lists provisioned devices for a given site.                                       |
-| `listClients`           | Lists active client devices for a site.                                           |
-| `getDevice`             | Fetches details for a specific Omada device.                                      |
-| `getSwitchStackDetail`  | Retrieves detailed configuration and status for a switch stack.                   |
-| `getClient`             | Fetches details for a specific client device.                                     |
-| `searchDevices`         | Searches for devices globally across all sites the user has access to.            |
-| `listDevicesStats`      | Queries statistics for global adopted devices with pagination and filtering.      |
-| `callApi`               | Executes a raw API request using the established Omada session token.             |
+| Tool                            | Description                                                                       |
+| ------------------------------- | --------------------------------------------------------------------------------- |
+| `listSites`                     | Lists all sites configured on the controller.                                     |
+| `listDevices`                   | Lists provisioned devices for a given site.                                       |
+| `listClients`                   | Lists active client devices for a site.                                           |
+| `getDevice`                     | Fetches details for a specific Omada device.                                      |
+| `getSwitchStackDetail`          | Retrieves detailed configuration and status for a switch stack.                   |
+| `getClient`                     | Fetches details for a specific client device.                                     |
+| `searchDevices`                 | Searches for devices globally across all sites the user has access to.            |
+| `listDevicesStats`              | Queries statistics for global adopted devices with pagination and filtering.      |
+| `getInternetInfo`               | Gets internet configuration information for a site.                               |
+| `getPortForwardingStatus`       | Gets port forwarding status and rules (User or UPnP types).                       |
+| `getLanNetworkList`             | Gets the list of LAN networks configured in a site.                               |
+| `getLanProfileList`             | Gets the list of LAN profiles configured in a site.                               |
+| `getWlanGroupList`              | Gets the list of WLAN groups configured in a site.                                |
+| `getSsidList`                   | Gets the list of SSIDs in a WLAN group.                                           |
+| `getSsidDetail`                 | Gets detailed information for a specific SSID.                                    |
+| `getFirewallSetting`            | Gets firewall configuration and rules for a site.                                 |
+| `callApi`                       | Executes a raw API request using the established Omada session token.             |
 
 ## Supported Omada API Operations
 
@@ -237,6 +310,14 @@ If an intermediary strips the `Mcp-Session-Id` header, set `MCP_SERVER_STATEFUL=
 | `getGridPastConnections`            | Get client past connection list.                          | Used by `listClientsPastConnections`; supports pagination, filtering, sorting, and fuzzy search.     |
 | `getOswStackDetail`                 | Retrieve details for a switch stack.                      | Used by `getSwitchStackDetail`.                                                                      |
 | `getGlobalThreatList`               | Get global view threat management list.                   | Used by `getThreatList`; returns paginated security threats with filtering by time, severity, sites. |
+| `getInternet`                       | Get internet configuration info for a site.               | Used by `getInternetInfo`; returns WAN settings and connectivity details.                            |
+| `getPortForwardStatus`              | Get port forwarding status by type.                       | Used by `getPortForwardingStatus`; retrieves User or UPnP port forwarding rules.                     |
+| `getLanNetworkListV2`               | Get LAN network list (v2 API).                            | Used by `getLanNetworkList`; returns VLAN settings, IP ranges, DHCP configuration.                   |
+| `getLanProfileList`                 | Get LAN profile list.                                     | Used by `getLanProfileList`; returns network settings for switch ports.                              |
+| `getWlanGroupList`                  | Get WLAN group list.                                      | Used by `getWlanGroupList`; returns wireless network groups. Use wlanId for `getSsidList`.           |
+| `getSsidList`                       | Get SSID list for a WLAN group.                           | Used by `getSsidList`; requires wlanId from `getWlanGroupList`. Use ssidId for `getSsidDetail`.      |
+| `getSsidDetail`                     | Get detailed SSID configuration.                          | Used by `getSsidDetail`; requires wlanId and ssidId. Returns security, rate limits, scheduling.      |
+| `getFirewallSetting`                | Get firewall configuration for a site.                    | Used by `getFirewallSetting`; returns ACL rules, IP groups, security policies.                       |
 
 ## Devcontainer support
 

@@ -14,6 +14,7 @@ concurrency:
 
 env:
   REGISTRY: ghcr.io
+  DOCKERHUB_REPO: jmtvms/tplink-omada-mcp
 
 jobs:
   build-and-push:
@@ -36,6 +37,7 @@ jobs:
         id: meta
         env:
           REGISTRY: ${{ env.REGISTRY }}
+          DOCKERHUB_REPO: ${{ env.DOCKERHUB_REPO }}
         run: |
           set -euo pipefail
           owner_lower=$(echo "${GITHUB_REPOSITORY_OWNER}" | tr '[:upper:]' '[:lower:]')
@@ -43,13 +45,17 @@ jobs:
 
           if [[ "${ref}" == refs/tags/* ]]; then
             ref_name="${ref#refs/tags/}"
-            tags=$(printf "%s\n%s" \
+            tags=$(printf "%s\n%s\n%s\n%s" \
               "${REGISTRY}/${owner_lower}/tplink-omada-mcp:latest" \
-              "${REGISTRY}/${owner_lower}/tplink-omada-mcp:${ref_name}")
+              "${REGISTRY}/${owner_lower}/tplink-omada-mcp:${ref_name}" \
+              "${DOCKERHUB_REPO}:latest" \
+              "${DOCKERHUB_REPO}:${ref_name}")
           else
             ref_name="${GITHUB_HEAD_REF:-${ref#refs/heads/}}"
             sanitized=$(echo "${ref_name}" | tr '[:upper:]' '[:lower:]' | sed 's/[^a-z0-9._-]/-/g')
-            tags="${REGISTRY}/${owner_lower}/tplink-omada-mcp:${sanitized}"
+            tags=$(printf "%s\n%s" \
+              "${REGISTRY}/${owner_lower}/tplink-omada-mcp:${sanitized}" \
+              "${DOCKERHUB_REPO}:${sanitized}")
           fi
 
           echo "owner_lower=${owner_lower}" >> "${GITHUB_OUTPUT}"
@@ -65,6 +71,12 @@ jobs:
           registry: ${{ env.REGISTRY }}
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
 
       - name: Build and push image
         uses: docker/build-push-action@v6

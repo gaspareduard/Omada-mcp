@@ -23,6 +23,7 @@ import type {
 import { AuthManager } from './auth.js';
 import { ClientOperations } from './client.js';
 import { DeviceOperations } from './device.js';
+import { NetworkOperations } from './network.js';
 import { RequestHandler } from './request.js';
 import { SecurityOperations } from './security.js';
 import { SiteOperations } from './site.js';
@@ -47,6 +48,8 @@ export class OmadaClient {
     private readonly clientOps: ClientOperations;
 
     private readonly securityOps: SecurityOperations;
+
+    private readonly networkOps: NetworkOperations;
 
     private readonly omadacId: string;
 
@@ -75,6 +78,7 @@ export class OmadaClient {
         this.deviceOps = new DeviceOperations(this.request, this.siteOps, this.buildOmadaPath.bind(this));
         this.clientOps = new ClientOperations(this.request, this.siteOps, this.buildOmadaPath.bind(this));
         this.securityOps = new SecurityOperations(this.request, this.buildOmadaPath.bind(this));
+        this.networkOps = new NetworkOperations(this.request, this.siteOps, this.buildOmadaPath.bind(this));
     }
 
     // Site operations
@@ -129,6 +133,44 @@ export class OmadaClient {
         return await this.securityOps.getThreatList(options);
     }
 
+    // Network operations
+    public async getInternetInfo(siteId?: string): Promise<unknown> {
+        return await this.networkOps.getInternetInfo(siteId);
+    }
+
+    public async getPortForwardingStatus(
+        type: 'User' | 'UPnP',
+        siteId?: string,
+        page?: number,
+        pageSize?: number
+    ): Promise<PaginatedResult<unknown>> {
+        return await this.networkOps.getPortForwardingStatus(type, siteId, page, pageSize);
+    }
+
+    public async getLanNetworkList(siteId?: string): Promise<unknown[]> {
+        return await this.networkOps.getLanNetworkList(siteId);
+    }
+
+    public async getLanProfileList(siteId?: string): Promise<unknown[]> {
+        return await this.networkOps.getLanProfileList(siteId);
+    }
+
+    public async getWlanGroupList(siteId?: string): Promise<unknown[]> {
+        return await this.networkOps.getWlanGroupList(siteId);
+    }
+
+    public async getSsidList(wlanId: string, siteId?: string): Promise<unknown[]> {
+        return await this.networkOps.getSsidList(wlanId, siteId);
+    }
+
+    public async getSsidDetail(wlanId: string, ssidId: string, siteId?: string): Promise<unknown> {
+        return await this.networkOps.getSsidDetail(wlanId, ssidId, siteId);
+    }
+
+    public async getFirewallSetting(siteId?: string): Promise<unknown> {
+        return await this.networkOps.getFirewallSetting(siteId);
+    }
+
     // Generic API call
     public async callApi<T = unknown>(config: AxiosRequestConfig): Promise<T> {
         return await this.request.request<T>(config);
@@ -136,9 +178,11 @@ export class OmadaClient {
 
     /**
      * Build a full Omada API path from a relative path.
+     * @param relativePath - The relative path to append to the base API path
+     * @param version - The API version to use (default: 'v1')
      */
-    private buildOmadaPath(relativePath: string): string {
+    private buildOmadaPath(relativePath: string, version = 'v1'): string {
         const normalized = relativePath.startsWith('/') ? relativePath : `/${relativePath}`;
-        return `/openapi/v1/${encodeURIComponent(this.omadacId)}${normalized}`;
+        return `/openapi/${version}/${encodeURIComponent(this.omadacId)}${normalized}`;
     }
 }
