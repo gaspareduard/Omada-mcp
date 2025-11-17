@@ -105,7 +105,7 @@ The MCP server reads its configuration from environment variables. See `.env.exa
 
 | Variable                 | Required | Default | Description                                                                 |
 | ------------------------ | -------- | ------- | --------------------------------------------------------------------------- |
-| `MCP_SERVER_LOG_LEVEL`   | No       | `info`  | Logging verbosity (`debug`, `info`, `warn`, `error`)                        |
+| `MCP_SERVER_LOG_LEVEL`   | No       | `info`  | Logging verbosity (`debug`, `info`, `warn`, `error`, `silent`)              |
 | `MCP_SERVER_LOG_FORMAT`  | No       | `plain` | Log output format (`plain`, `json`, or `gcp-json`)                          |
 | `MCP_SERVER_USE_HTTP`    | No       | `false` | Start HTTP server instead of stdio                                          |
 | `MCP_SERVER_STATEFUL`    | No       | `false` | Maintain stateful sessions per client                                       |

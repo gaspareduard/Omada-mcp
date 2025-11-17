@@ -2,7 +2,7 @@ import pino from 'pino';
 
 type LogFields = Record<string, unknown>;
 
-type LogLevel = 'debug' | 'info' | 'warn' | 'error';
+type LogLevel = 'debug' | 'info' | 'warn' | 'error' | 'silent';
 
 type LogFormat = 'plain' | 'json' | 'gcp-json';
 
@@ -49,7 +49,9 @@ function createLogger(level: LogLevel = 'info', format: LogFormat = 'plain', use
 }
 
 // Initialize with default, will be reconfigured by calling initLogger
-instance = createLogger();
+// Read log level from environment for tests
+const defaultLevel = (process.env.MCP_SERVER_LOG_LEVEL as LogLevel | undefined) ?? 'info';
+instance = createLogger(defaultLevel);
 
 /**
  * Initialize the logger with a specific log level and format.

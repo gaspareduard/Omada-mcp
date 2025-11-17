@@ -27,7 +27,7 @@ Reference `.env.example`. Primary variables:
 
 ### MCP Generic Server Configuration:
 
-- `MCP_SERVER_LOG_LEVEL` (default: `info`) - logging verbosity (`debug`, `info`, `warn`, `error`).
+- `MCP_SERVER_LOG_LEVEL` (default: `info`) - logging verbosity (`debug`, `info`, `warn`, `error`, `silent`).
 - `MCP_SERVER_LOG_FORMAT` (default: `plain`) - log output format (`plain`,`json`, or `gcp-json`).
   - `plain` - human-readable text format.
   - `json` - structured JSON format.
