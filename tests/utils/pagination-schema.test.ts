@@ -83,7 +83,8 @@ describe('pagination-schema', () => {
             expect(() => schema.parse({ page: 1, pageSize: '10' })).toThrow();
             expect(() => schema.parse({ page: 1, pageSize: null })).toThrow();
             // Note: undefined uses default value, so it doesn't throw
-        }); it('should work when combined with other schema fields', () => {
+        });
+        it('should work when combined with other schema fields', () => {
             const schema = z.object({
                 siteId: z.string().optional(),
                 ...createPaginationSchema(20),

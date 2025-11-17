@@ -14,13 +14,7 @@ import { z } from 'zod';
 export function createPaginationSchema(defaultPageSize = 10) {
     return {
         page: z.number().int().min(1).default(1).describe('Start page number. Start from 1.'),
-        pageSize: z
-            .number()
-            .int()
-            .min(1)
-            .max(1000)
-            .default(defaultPageSize)
-            .describe('Number of entries per page. Range: 1-1000.'),
+        pageSize: z.number().int().min(1).max(1000).default(defaultPageSize).describe('Number of entries per page. Range: 1-1000.'),
     };
 }
 

@@ -12,7 +12,7 @@ export class NetworkOperations {
         private readonly request: RequestHandler,
         private readonly site: SiteOperations,
         private readonly buildPath: (path: string, version?: string) => string
-    ) { }
+    ) {}
 
     /**
      * Get internet configuration info for a site.

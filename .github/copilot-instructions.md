@@ -29,9 +29,9 @@ Reference `.env.example`. Primary variables:
 
 - `MCP_SERVER_LOG_LEVEL` (default: `info`) - logging verbosity (`debug`, `info`, `warn`, `error`).
 - `MCP_SERVER_LOG_FORMAT` (default: `plain`) - log output format (`plain`,`json`, or `gcp-json`).
-    - `plain` - human-readable text format.
-    - `json` - structured JSON format.
-    - `gcp-json` - structured JSON format compatible with Google Cloud Logging.
+  - `plain` - human-readable text format.
+  - `json` - structured JSON format.
+  - `gcp-json` - structured JSON format compatible with Google Cloud Logging.
 - `MCP_SERVER_USE_HTTP` (default: `false`) - whether to start the HTTP server instead of stdio.
 - `MCP_SERVER_STATEFUL` (default: `false`) - whether to maintain stateful sessions per client.
 
@@ -90,6 +90,8 @@ Reference `.env.example`. Primary variables:
 
 - Biome is used for both formatting and linting (`npm run format` and `npm run lint`).
 - Biome enforces import ordering, TypeScript best practices, and code style consistency.
+- **IMPORTANT** All source files must use LF (Unix-style) line endings, not CRLF (Windows-style). Biome will automatically convert line endings when running `npm run format`.
+- If you encounter formatting errors related to line endings (shown as `␍` in error messages), run `npm run format` to fix them automatically.
 
 ## Contribution Guidelines
 
