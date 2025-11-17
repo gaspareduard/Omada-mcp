@@ -8,4 +8,5 @@ export type { GetDeviceStatsOptions, OmadaDeviceStatItem, OmadaDeviceStats } fro
 export type { OmadaSiteSummary } from './omadaSiteSummary.js';
 export type { OswStackDetail } from './oswStackDetail.js';
 export type { PaginatedResult } from './paginatedResult.js';
+export type { GetThreatListOptions, ThreatInfo } from './threatInfo.js';
 export type { TokenResult } from './tokenResult.js';
