@@ -115,9 +115,7 @@ describe('omadaClient/device', () => {
         });
 
         it('should throw error if stackId is empty', async () => {
-            await expect(deviceOps.getSwitchStackDetail('', 'test-site')).rejects.toThrow(
-                'A stack id must be provided.'
-            );
+            await expect(deviceOps.getSwitchStackDetail('', 'test-site')).rejects.toThrow('A stack id must be provided.');
         });
 
         it('should use default siteId if not provided', async () => {
@@ -144,9 +142,7 @@ describe('omadaClient/device', () => {
 
     describe('searchDevices', () => {
         it('should search devices globally', async () => {
-            const mockDevices: OmadaDeviceInfo[] = [
-                { mac: '00:11:22:33:44:55', name: 'Device 1', deviceId: 'dev-1' } as OmadaDeviceInfo,
-            ];
+            const mockDevices: OmadaDeviceInfo[] = [{ mac: '00:11:22:33:44:55', name: 'Device 1', deviceId: 'dev-1' } as OmadaDeviceInfo];
 
             const mockResponse: OmadaApiResponse<OmadaDeviceInfo[]> = {
                 errorCode: 0,

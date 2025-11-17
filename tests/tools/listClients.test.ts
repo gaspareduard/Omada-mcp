@@ -34,9 +34,7 @@ describe('tools/listClients', () => {
     });
 
     it('should register and execute successfully', async () => {
-        const mockClients: OmadaClientInfo[] = [
-            { mac: '00:11:22:33:44:55', name: 'Client 1', id: 'client-1' } as OmadaClientInfo,
-        ];
+        const mockClients: OmadaClientInfo[] = [{ mac: '00:11:22:33:44:55', name: 'Client 1', id: 'client-1' } as OmadaClientInfo];
 
         (mockClient.listClients as ReturnType<typeof vi.fn>).mockResolvedValue(mockClients);
 

@@ -37,11 +37,7 @@ describe('tools/getDevice', () => {
         it('should register the getDevice tool with correct schema', () => {
             registerGetDeviceTool(mockServer, mockClient);
 
-            expect(mockServer.registerTool).toHaveBeenCalledWith(
-                'getDevice',
-                expect.any(Object),
-                expect.any(Function)
-            );
+            expect(mockServer.registerTool).toHaveBeenCalledWith('getDevice', expect.any(Object), expect.any(Function));
         });
 
         it('should successfully get device by MAC', async () => {

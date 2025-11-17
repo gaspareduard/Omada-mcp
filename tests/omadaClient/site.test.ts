@@ -51,9 +51,7 @@ describe('omadaClient/site', () => {
             it('should throw error if no siteId provided and no default', () => {
                 const siteOps = new SiteOperations(mockRequest, buildPath);
 
-                expect(() => siteOps.resolveSiteId()).toThrow(
-                    'A site id must be provided either in the environment or as a parameter.'
-                );
+                expect(() => siteOps.resolveSiteId()).toThrow('A site id must be provided either in the environment or as a parameter.');
             });
 
             it('should prefer parameter over default', () => {

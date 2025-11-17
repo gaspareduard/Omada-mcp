@@ -271,9 +271,7 @@ describe('config', () => {
             const config = loadConfigFromEnv(mockEnv);
 
             expect(config.httpAllowedOrigins).toEqual([]);
-            expect(loggerModule.logger.warn).toHaveBeenCalledWith(
-                expect.stringContaining('Wildcard (*) origin allowed')
-            );
+            expect(loggerModule.logger.warn).toHaveBeenCalledWith(expect.stringContaining('Wildcard (*) origin allowed'));
         });
 
         it('should throw error for invalid origin', () => {

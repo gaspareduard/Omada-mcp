@@ -1,5 +1,13 @@
 import { describe, expect, it } from 'vitest';
-import { clientIdSchema, customRequestSchema, deviceIdSchema, safeSerialize, siteInputSchema, stackIdSchema, toToolResult } from '../../src/server/common.js';
+import {
+    clientIdSchema,
+    customRequestSchema,
+    deviceIdSchema,
+    safeSerialize,
+    siteInputSchema,
+    stackIdSchema,
+    toToolResult,
+} from '../../src/server/common.js';
 
 describe('server/common', () => {
     describe('toToolResult', () => {

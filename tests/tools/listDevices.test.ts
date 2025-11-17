@@ -37,11 +37,7 @@ describe('tools/listDevices', () => {
         it('should register the listDevices tool with correct schema', () => {
             registerListDevicesTool(mockServer, mockClient);
 
-            expect(mockServer.registerTool).toHaveBeenCalledWith(
-                'listDevices',
-                expect.any(Object),
-                expect.any(Function)
-            );
+            expect(mockServer.registerTool).toHaveBeenCalledWith('listDevices', expect.any(Object), expect.any(Function));
         });
 
         it('should successfully list devices', async () => {
