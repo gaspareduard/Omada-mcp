@@ -20,3 +20,6 @@ pnpm-debug.log*
 
 # Built Visual Studio Code Extensions
 *.vsix
+
+# Coverage directory used by vitest
+coverage/

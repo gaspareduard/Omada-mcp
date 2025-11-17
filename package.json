@@ -22,7 +22,11 @@
         "docker:run": "docker run --rm -it --env-file .env --env-file .env.local ghcr.io/migueltvms/tplink-omada-mcp:latest",
         "docker:push": "docker push ghcr.io/migueltvms/tplink-omada-mcp:latest"
     },
-    "keywords": ["mcp", "tp-link", "omada"],
+    "keywords": [
+        "mcp",
+        "tp-link",
+        "omada"
+    ],
     "engines": {
         "node": ">=24.0.0"
     },
@@ -39,6 +43,7 @@
     "devDependencies": {
         "@biomejs/biome": "2.3.4",
         "@types/node": "^24.10.0",
+        "@vitest/coverage-v8": "^4.0.10",
         "@vitest/ui": "^4.0.8",
         "concurrently": "^9.1.0",
         "tsx": "^4.20.6",
