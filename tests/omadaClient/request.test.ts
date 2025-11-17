@@ -134,9 +134,7 @@ describe('RequestHandler', () => {
 
             const handler = new RequestHandler(mockAxiosInstance as never, mockAuthManager as never);
 
-            await expect(
-                handler.request<unknown>({ method: 'GET', url: '/api/secure' }, false)
-            ).rejects.toThrow();
+            await expect(handler.request<unknown>({ method: 'GET', url: '/api/secure' }, false)).rejects.toThrow();
 
             expect(mockAuthManager.refreshAccessToken).not.toHaveBeenCalled();
             expect(mockAxiosInstance.request).toHaveBeenCalledTimes(1);

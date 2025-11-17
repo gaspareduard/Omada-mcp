@@ -1,13 +1,29 @@
-import { describe, expect, it } from 'vitest';
+import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import type { ToolExtra } from '../../src/server/common.js';
 import {
     clientIdSchema,
     customRequestSchema,
     deviceIdSchema,
     safeSerialize,
+    setupServerLogging,
     siteInputSchema,
     stackIdSchema,
     toToolResult,
+    wrapToolHandler,
 } from '../../src/server/common.js';
+import { logger } from '../../src/utils/logger.js';
+
+function createToolExtra(overrides: Partial<ToolExtra> = {}): ToolExtra {
+    const controller = new AbortController();
+    return {
+        signal: controller.signal,
+        requestId: overrides.requestId ?? 'request-id',
+        sendNotification: overrides.sendNotification ?? vi.fn(),
+        sendRequest: overrides.sendRequest ?? vi.fn(),
+        ...overrides,
+    };
+}
 
 describe('server/common', () => {
     describe('toToolResult', () => {
@@ -290,6 +306,110 @@ describe('server/common', () => {
             expect(protocol.oninitialized).toBeDefined();
             expect(protocol.onclose).toBeDefined();
             expect(protocol.onerror).toBeDefined();
+        });
+    });
+
+    describe('wrapToolHandler', () => {
+        it('should log tool invocation and completion', async () => {
+            const infoSpy = vi.spyOn(logger, 'info').mockImplementation(() => undefined);
+            const handler = vi.fn(async () => toToolResult({ ok: true }));
+            const extra = createToolExtra({ sessionId: 'session-1' });
+
+            const wrapped = wrapToolHandler('test-tool', handler);
+            await wrapped({ value: 1 }, extra);
+
+            expect(handler).toHaveBeenCalledWith({ value: 1 }, extra);
+            expect(infoSpy).toHaveBeenCalledWith('Tool invoked', expect.objectContaining({ tool: 'test-tool' }));
+            expect(infoSpy).toHaveBeenCalledWith('Tool completed', expect.objectContaining({ tool: 'test-tool' }));
+        });
+
+        it('should log and rethrow errors', async () => {
+            const errorSpy = vi.spyOn(logger, 'error').mockImplementation(() => undefined);
+            const handler = vi.fn(async () => {
+                await Promise.resolve();
+                throw new Error('failure');
+            });
+
+            const wrapped = wrapToolHandler('error-tool', handler);
+            const extra = createToolExtra();
+
+            await expect(wrapped({}, extra)).rejects.toThrow('failure');
+            expect(errorSpy).toHaveBeenCalledWith('Tool failed', expect.objectContaining({ tool: 'error-tool' }));
+        });
+    });
+
+    describe('setupServerLogging', () => {
+        type Handler = (request: unknown, extra: unknown) => Promise<unknown>;
+        interface ProtocolStub {
+            setRequestHandler: (schema: { shape: { method: { value: string } } }, handler: Handler) => Handler;
+            getCapabilities: () => { version: string };
+            oninitialized?: () => void;
+            onclose?: () => void;
+            onerror?: (error: unknown) => void;
+            fallbackRequestHandler?: Handler;
+            fallbackNotificationHandler?: (notification: unknown) => Promise<void>;
+        }
+
+        function createServerStub() {
+            const handlers = new Map<string, Handler>();
+
+            const protocol: ProtocolStub = {
+                setRequestHandler(schema, handler) {
+                    const method = schema.shape.method.value;
+                    handlers.set(method, handler);
+                    return handler;
+                },
+                getCapabilities: vi.fn(() => ({ version: 'test' })),
+            };
+
+            const server = { server: protocol } as unknown as McpServer;
+            return { server, protocol, handlers };
+        }
+
+        beforeEach(() => {
+            vi.spyOn(logger, 'info').mockImplementation(() => undefined);
+            vi.spyOn(logger, 'warn').mockImplementation(() => undefined);
+            vi.spyOn(logger, 'error').mockImplementation(() => undefined);
+        });
+
+        afterEach(() => {
+            vi.restoreAllMocks();
+        });
+
+        it('should summarize initialize, tools/list, and tools/call responses', async () => {
+            const { server, handlers, protocol } = createServerStub();
+            setupServerLogging(server);
+
+            protocol.setRequestHandler({ shape: { method: { value: 'initialize' } } }, () => Promise.resolve({ protocolVersion: '1.0' }));
+            protocol.setRequestHandler({ shape: { method: { value: 'tools/list' } } }, () => Promise.resolve({ tools: ['one', 'two'] }));
+            protocol.setRequestHandler({ shape: { method: { value: 'tools/call' } } }, () => Promise.resolve({ name: 'test-tool' }));
+
+            await handlers.get('initialize')?.({}, { sessionId: 'init' });
+            await handlers.get('tools/list')?.({}, { sessionId: 'list' });
+            await handlers.get('tools/call')?.({}, { sessionId: 'call' });
+
+            expect(logger.info).toHaveBeenCalledWith('MCP request handled', expect.objectContaining({ protocolVersion: '1.0' }));
+            expect(logger.info).toHaveBeenCalledWith('MCP request handled', expect.objectContaining({ toolCount: 2 }));
+            expect(logger.info).toHaveBeenCalledWith('MCP request handled', expect.objectContaining({ tool: 'test-tool' }));
+        });
+
+        it('should wire lifecycle hooks and fallback handlers', async () => {
+            const { server, protocol } = createServerStub();
+            setupServerLogging(server);
+
+            protocol.oninitialized?.();
+            protocol.onclose?.();
+            protocol.onerror?.(new Error('boom'));
+
+            await expect(protocol.fallbackRequestHandler?.({ method: 'custom', params: { value: 1 } }, { sessionId: 'fallback' })).rejects.toThrow(
+                'Unhandled request: custom'
+            );
+            await protocol.fallbackNotificationHandler?.({ method: 'notify', params: { value: 2 } });
+
+            expect(logger.warn).toHaveBeenCalledWith('Server connection closed');
+            expect(logger.error).toHaveBeenCalledWith('Server error', expect.objectContaining({ error: expect.any(Error) }));
+            expect(logger.warn).toHaveBeenCalledWith('Unhandled request received', expect.objectContaining({ method: 'custom' }));
+            expect(logger.warn).toHaveBeenCalledWith('Unhandled notification received', expect.objectContaining({ method: 'notify' }));
         });
     });
 });

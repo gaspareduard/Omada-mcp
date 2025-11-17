@@ -176,10 +176,7 @@ describe('omadaClient/client', () => {
 
             expect(activity).toEqual(mockActivity);
             expect(mockSite.resolveSiteId).toHaveBeenCalledWith(undefined);
-            expect(mockRequest.get).toHaveBeenCalledWith(
-                '/api/sites/default-site/dashboard/client-activity',
-                {}
-            );
+            expect(mockRequest.get).toHaveBeenCalledWith('/api/sites/default-site/dashboard/client-activity', {});
         });
 
         it('should fetch client activity with start and end timestamps', async () => {

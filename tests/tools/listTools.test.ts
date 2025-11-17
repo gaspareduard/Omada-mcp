@@ -34,13 +34,9 @@ describe('tools - list operations', () => {
 
     describe('listMostActiveClients', () => {
         it('should register and execute successfully', async () => {
-            const mockResult = [
-                { mac: '00:11:22:33:44:55', name: 'Client1', totalTraffic: 1000000 },
-            ];
+            const mockResult = [{ mac: '00:11:22:33:44:55', name: 'Client1', totalTraffic: 1000000 }];
 
-            (mockClient.listMostActiveClients as ReturnType<typeof vi.fn>).mockResolvedValue(
-                mockResult
-            );
+            (mockClient.listMostActiveClients as ReturnType<typeof vi.fn>).mockResolvedValue(mockResult);
 
             registerListMostActiveClientsTool(mockServer, mockClient);
 
@@ -128,20 +124,21 @@ describe('tools - list operations', () => {
                 },
             ];
 
-            (mockClient.listClientsPastConnections as ReturnType<typeof vi.fn>).mockResolvedValue(
-                mockResult
-            );
+            (mockClient.listClientsPastConnections as ReturnType<typeof vi.fn>).mockResolvedValue(mockResult);
 
             registerListClientsPastConnectionsTool(mockServer, mockClient);
 
             const handler = registeredHandlers.get('listClientsPastConnections');
             expect(handler).toBeDefined();
 
-            const result = await handler!({
-                page: 1,
-                pageSize: 50,
-                siteId: 'test-site',
-            }, mockExtra);
+            const result = await handler!(
+                {
+                    page: 1,
+                    pageSize: 50,
+                    siteId: 'test-site',
+                },
+                mockExtra
+            );
 
             expect(mockClient.listClientsPastConnections).toHaveBeenCalledWith({
                 page: 1,
@@ -156,23 +153,24 @@ describe('tools - list operations', () => {
         it('should handle all optional parameters', async () => {
             const mockResult: never[] = [];
 
-            (mockClient.listClientsPastConnections as ReturnType<typeof vi.fn>).mockResolvedValue(
-                mockResult
-            );
+            (mockClient.listClientsPastConnections as ReturnType<typeof vi.fn>).mockResolvedValue(mockResult);
 
             registerListClientsPastConnectionsTool(mockServer, mockClient);
 
             const handler = registeredHandlers.get('listClientsPastConnections');
-            const result = await handler!({
-                page: 2,
-                pageSize: 100,
-                siteId: 'test-site',
-                sortLastSeen: 'desc',
-                timeStart: 1640000000000,
-                timeEnd: 1640100000000,
-                guest: true,
-                searchKey: 'test',
-            }, mockExtra);
+            const result = await handler!(
+                {
+                    page: 2,
+                    pageSize: 100,
+                    siteId: 'test-site',
+                    sortLastSeen: 'desc',
+                    timeStart: 1640000000000,
+                    timeEnd: 1640100000000,
+                    guest: true,
+                    searchKey: 'test',
+                },
+                mockExtra
+            );
 
             expect(mockClient.listClientsPastConnections).toHaveBeenCalledWith({
                 page: 2,
@@ -206,10 +204,13 @@ describe('tools - list operations', () => {
             const handler = registeredHandlers.get('listDevicesStats');
             expect(handler).toBeDefined();
 
-            const result = await handler!({
-                page: 1,
-                pageSize: 50,
-            }, mockExtra);
+            const result = await handler!(
+                {
+                    page: 1,
+                    pageSize: 50,
+                },
+                mockExtra
+            );
 
             expect(mockClient.listDevicesStats).toHaveBeenCalledWith({
                 page: 1,
@@ -233,16 +234,19 @@ describe('tools - list operations', () => {
             registerListDevicesStatsTool(mockServer, mockClient);
 
             const handler = registeredHandlers.get('listDevicesStats');
-            const result = await handler!({
-                page: 2,
-                pageSize: 100,
-                searchMacs: '00:11:22:33:44:55',
-                searchNames: 'Device 1',
-                searchModels: 'EAP650',
-                searchSns: 'SN001',
-                filterTag: 'building-a',
-                filterDeviceSeriesType: 'eap',
-            }, mockExtra);
+            const result = await handler!(
+                {
+                    page: 2,
+                    pageSize: 100,
+                    searchMacs: '00:11:22:33:44:55',
+                    searchNames: 'Device 1',
+                    searchModels: 'EAP650',
+                    searchSns: 'SN001',
+                    filterTag: 'building-a',
+                    filterDeviceSeriesType: 'eap',
+                },
+                mockExtra
+            );
 
             expect(mockClient.listDevicesStats).toHaveBeenCalledWith({
                 page: 2,

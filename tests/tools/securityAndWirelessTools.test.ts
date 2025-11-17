@@ -15,9 +15,7 @@ describe('Security and Wireless Tools', () => {
             };
 
             const mockServer = {
-                registerTool: vi.fn((_, _schema, handler) =>
-                    handler({ type: 'User', siteId: 'test-site', page: 1, pageSize: 10 }, {})
-                ),
+                registerTool: vi.fn((_, _schema, handler) => handler({ type: 'User', siteId: 'test-site', page: 1, pageSize: 10 }, {})),
             };
 
             registerGetPortForwardingStatusTool(mockServer as never, mockClient as never);
@@ -69,9 +67,7 @@ describe('Security and Wireless Tools', () => {
             };
 
             const mockServer = {
-                registerTool: vi.fn((_, _schema, handler) =>
-                    handler({ wlanId: 'wlan1', ssidId: 'ssid1', siteId: 'test-site' }, {})
-                ),
+                registerTool: vi.fn((_, _schema, handler) => handler({ wlanId: 'wlan1', ssidId: 'ssid1', siteId: 'test-site' }, {})),
             };
 
             registerGetSsidDetailTool(mockServer as never, mockClient as never);
