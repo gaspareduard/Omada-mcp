@@ -265,4 +265,31 @@ describe('server/common', () => {
             });
         });
     });
+
+    describe('createServer', () => {
+        it('should create MCP server instance', async () => {
+            const { createServer } = await import('../../src/server/common.js');
+            const mockClient = {} as unknown as import('../../src/omadaClient/index.js').OmadaClient;
+
+            const server = createServer(mockClient);
+
+            expect(server).toBeDefined();
+            expect(server).toBeTypeOf('object');
+            // Verify the server has the protocol server property
+            expect((server as { server: unknown }).server).toBeDefined();
+        });
+
+        it('should setup logging on the server', async () => {
+            const { createServer } = await import('../../src/server/common.js');
+            const mockClient = {} as unknown as import('../../src/omadaClient/index.js').OmadaClient;
+
+            const server = createServer(mockClient);
+            const protocol = (server as { server: { oninitialized?: unknown; onclose?: unknown; onerror?: unknown } }).server;
+
+            // Verify logging handlers are set up
+            expect(protocol.oninitialized).toBeDefined();
+            expect(protocol.onclose).toBeDefined();
+            expect(protocol.onerror).toBeDefined();
+        });
+    });
 });
