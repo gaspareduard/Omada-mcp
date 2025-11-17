@@ -102,9 +102,15 @@ The MCP server communicates over standard input and output. Integrate it with MC
 A container image is provided for running the MCP server:
 
 ```bash
-npm run docker:build  # Build the Docker image (tag: ghcr.io/migueltvms/tplink-omada-mcp:latest)
+npm run docker:build  # Build the Docker image (tag: jmtvms/tplink-omada-mcp:latest)
 npm run docker:run    # Launch the container with your .env file
-npm run docker:push   # Push the image to GitHub Container Registry
+npm run docker:push   # Push the image to Docker Hub
+```
+
+You can also pull the pre-built image directly from Docker Hub:
+
+```bash
+docker pull jmtvms/tplink-omada-mcp:latest
 ```
 
 The same image supports both stdio and HTTP transports - configure the desired mode using environment variables (e.g., set `MCP_SERVER_USE_HTTP=true` for HTTP mode).
