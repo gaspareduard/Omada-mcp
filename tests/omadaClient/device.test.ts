@@ -2,7 +2,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { DeviceOperations } from '../../src/omadaClient/device.js';
 import type { RequestHandler } from '../../src/omadaClient/request.js';
 import type { SiteOperations } from '../../src/omadaClient/site.js';
-import type { OmadaApiResponse, OmadaDeviceInfo, OswStackDetail } from '../../src/types/index.js';
+import type { OmadaApiResponse, OmadaDeviceInfo, OmadaDeviceStats, OswStackDetail } from '../../src/types/index.js';
 
 describe('omadaClient/device', () => {
     let mockRequest: RequestHandler;
@@ -158,6 +158,68 @@ describe('omadaClient/device', () => {
             expect(devices).toEqual(mockDevices);
             expect(mockRequest.get).toHaveBeenCalledWith('/api/devices?searchKey=Device%201');
             expect(mockRequest.ensureSuccess).toHaveBeenCalledWith(mockResponse);
+        });
+    });
+
+    describe('listDevicesStats', () => {
+        it('should fetch device stats with required options', async () => {
+            const mockStats: OmadaDeviceStats = {
+                page: 1,
+                pageSize: 50,
+                totalRows: 1,
+                data: [{ mac: '00:11:22:33:44:55', name: 'Device 1' } as OmadaDeviceInfo],
+            } as OmadaDeviceStats;
+
+            const mockResponse: OmadaApiResponse<OmadaDeviceStats> = {
+                errorCode: 0,
+                msg: 'Success',
+                result: mockStats,
+            };
+
+            (mockRequest.get as ReturnType<typeof vi.fn>).mockResolvedValue(mockResponse);
+            (mockRequest.ensureSuccess as ReturnType<typeof vi.fn>).mockReturnValue(mockStats);
+
+            const stats = await deviceOps.listDevicesStats({
+                page: 1,
+                pageSize: 50,
+            });
+
+            expect(stats).toEqual(mockStats);
+            expect(mockRequest.get).toHaveBeenCalledWith('/api/devices/stat?page=1&pageSize=50');
+            expect(mockRequest.ensureSuccess).toHaveBeenCalledWith(mockResponse);
+        });
+
+        it('should include all optional search and filter parameters', async () => {
+            const mockStats: OmadaDeviceStats = {
+                page: 2,
+                pageSize: 100,
+                totalRows: 0,
+                data: [],
+            } as OmadaDeviceStats;
+
+            const mockResponse: OmadaApiResponse<OmadaDeviceStats> = {
+                errorCode: 0,
+                msg: 'Success',
+                result: mockStats,
+            };
+
+            (mockRequest.get as ReturnType<typeof vi.fn>).mockResolvedValue(mockResponse);
+            (mockRequest.ensureSuccess as ReturnType<typeof vi.fn>).mockReturnValue(mockStats);
+
+            await deviceOps.listDevicesStats({
+                page: 2,
+                pageSize: 100,
+                searchMacs: '00:11:22:33:44:55,AA:BB:CC:DD:EE:FF',
+                searchNames: 'Device 1,Device 2',
+                searchModels: 'EAP650,EAP670',
+                searchSns: 'SN001,SN002',
+                filterTag: 'building-a',
+                filterDeviceSeriesType: 'eap',
+            });
+
+            expect(mockRequest.get).toHaveBeenCalledWith(
+                '/api/devices/stat?page=2&pageSize=100&searchMacs=00%3A11%3A22%3A33%3A44%3A55%2CAA%3ABB%3ACC%3ADD%3AEE%3AFF&searchNames=Device+1%2CDevice+2&searchModels=EAP650%2CEAP670&searchSns=SN001%2CSN002&filters.tag=building-a&filters.deviceSeriesType=eap'
+            );
         });
     });
 });

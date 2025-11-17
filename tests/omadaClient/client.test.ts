@@ -2,7 +2,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { ClientOperations } from '../../src/omadaClient/client.js';
 import type { RequestHandler } from '../../src/omadaClient/request.js';
 import type { SiteOperations } from '../../src/omadaClient/site.js';
-import type { ActiveClientInfo, OmadaApiResponse, OmadaClientInfo } from '../../src/types/index.js';
+import type { ActiveClientInfo, ClientActivity, ClientPastConnection, OmadaApiResponse, OmadaClientInfo } from '../../src/types/index.js';
 
 describe('omadaClient/client', () => {
     let mockRequest: RequestHandler;
@@ -147,6 +147,183 @@ describe('omadaClient/client', () => {
             const clients = await clientOps.listMostActiveClients();
 
             expect(clients).toEqual([]);
+        });
+    });
+
+    describe('listClientsActivity', () => {
+        it('should fetch client activity with no options', async () => {
+            const mockActivity: ClientActivity[] = [
+                {
+                    time: 1640000000,
+                    newEapClientNum: 5,
+                    newSwitchClientNum: 2,
+                    activeEapClientNum: 10,
+                    activeSwitchClientNum: 8,
+                    disconnectEapClientNum: 1,
+                    disconnectSwitchClientNum: 1,
+                } as ClientActivity,
+            ];
+
+            const mockResponse: OmadaApiResponse<ClientActivity[]> = {
+                errorCode: 0,
+                msg: 'Success',
+                result: mockActivity,
+            };
+
+            (mockRequest.get as ReturnType<typeof vi.fn>).mockResolvedValue(mockResponse);
+
+            const activity = await clientOps.listClientsActivity();
+
+            expect(activity).toEqual(mockActivity);
+            expect(mockSite.resolveSiteId).toHaveBeenCalledWith(undefined);
+            expect(mockRequest.get).toHaveBeenCalledWith(
+                '/api/sites/default-site/dashboard/client-activity',
+                {}
+            );
+        });
+
+        it('should fetch client activity with start and end timestamps', async () => {
+            const mockActivity: ClientActivity[] = [];
+            const mockResponse: OmadaApiResponse<ClientActivity[]> = {
+                errorCode: 0,
+                msg: 'Success',
+                result: mockActivity,
+            };
+
+            (mockRequest.get as ReturnType<typeof vi.fn>).mockResolvedValue(mockResponse);
+
+            await clientOps.listClientsActivity({
+                siteId: 'test-site',
+                start: 1640000000,
+                end: 1640100000,
+            });
+
+            expect(mockSite.resolveSiteId).toHaveBeenCalledWith('test-site');
+            expect(mockRequest.get).toHaveBeenCalledWith('/api/sites/test-site/dashboard/client-activity', {
+                start: 1640000000,
+                end: 1640100000,
+            });
+        });
+
+        it('should return empty array if result is undefined', async () => {
+            const mockResponse: OmadaApiResponse<ClientActivity[]> = {
+                errorCode: 0,
+                msg: 'Success',
+            };
+
+            (mockRequest.get as ReturnType<typeof vi.fn>).mockResolvedValue(mockResponse);
+
+            const activity = await clientOps.listClientsActivity();
+
+            expect(activity).toEqual([]);
+        });
+    });
+
+    describe('listClientsPastConnections', () => {
+        it('should fetch past connections with required options', async () => {
+            const mockConnections: ClientPastConnection[] = [
+                {
+                    mac: '00:11:22:33:44:55',
+                    name: 'Client 1',
+                    lastSeen: 1640000000000,
+                    firstSeen: 1639990000000,
+                    download: 1000000,
+                    upload: 500000,
+                    duration: 3600,
+                } as ClientPastConnection,
+            ];
+
+            const mockPaginatedResult = {
+                data: mockConnections,
+                totalRows: 1,
+                currentPage: 1,
+                currentSize: 1,
+            };
+
+            const mockResponse: OmadaApiResponse<typeof mockPaginatedResult> = {
+                errorCode: 0,
+                msg: 'Success',
+                result: mockPaginatedResult,
+            };
+
+            (mockRequest.get as ReturnType<typeof vi.fn>).mockResolvedValue(mockResponse);
+            (mockRequest.ensureSuccess as ReturnType<typeof vi.fn>).mockReturnValue(mockPaginatedResult);
+
+            const connections = await clientOps.listClientsPastConnections({
+                page: 1,
+                pageSize: 50,
+            });
+
+            expect(connections).toEqual(mockConnections);
+            expect(mockSite.resolveSiteId).toHaveBeenCalledWith(undefined);
+            expect(mockRequest.get).toHaveBeenCalledWith('/api/sites/default-site/insight/past-connection', {
+                page: 1,
+                pageSize: 50,
+            });
+            expect(mockRequest.ensureSuccess).toHaveBeenCalledWith(mockResponse);
+        });
+
+        it('should include all optional parameters when provided', async () => {
+            const mockPaginatedResult = {
+                data: [],
+                totalRows: 0,
+                currentPage: 1,
+                currentSize: 0,
+            };
+
+            const mockResponse: OmadaApiResponse<typeof mockPaginatedResult> = {
+                errorCode: 0,
+                msg: 'Success',
+                result: mockPaginatedResult,
+            };
+
+            (mockRequest.get as ReturnType<typeof vi.fn>).mockResolvedValue(mockResponse);
+            (mockRequest.ensureSuccess as ReturnType<typeof vi.fn>).mockReturnValue(mockPaginatedResult);
+
+            await clientOps.listClientsPastConnections({
+                siteId: 'test-site',
+                page: 2,
+                pageSize: 100,
+                sortLastSeen: 'desc',
+                timeStart: 1640000000000,
+                timeEnd: 1640100000000,
+                guest: true,
+                searchKey: 'test',
+            });
+
+            expect(mockRequest.get).toHaveBeenCalledWith('/api/sites/test-site/insight/past-connection', {
+                page: 2,
+                pageSize: 100,
+                'sorts.lastSeen': 'desc',
+                'filters.timeStart': '1640000000000',
+                'filters.timeEnd': '1640100000000',
+                'filters.guest': 'true',
+                searchKey: 'test',
+            });
+        });
+
+        it('should return empty array if data is undefined', async () => {
+            const mockPaginatedResult = {
+                totalRows: 0,
+                currentPage: 1,
+                currentSize: 0,
+            };
+
+            const mockResponse: OmadaApiResponse<typeof mockPaginatedResult> = {
+                errorCode: 0,
+                msg: 'Success',
+                result: mockPaginatedResult,
+            };
+
+            (mockRequest.get as ReturnType<typeof vi.fn>).mockResolvedValue(mockResponse);
+            (mockRequest.ensureSuccess as ReturnType<typeof vi.fn>).mockReturnValue(mockPaginatedResult as never);
+
+            const connections = await clientOps.listClientsPastConnections({
+                page: 1,
+                pageSize: 50,
+            });
+
+            expect(connections).toEqual([]);
         });
     });
 });
