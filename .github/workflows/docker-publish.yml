@@ -160,5 +160,5 @@ jobs:
           password: ${{ secrets.DOCKERHUB_TOKEN }}
           repository: ${{ env.DOCKERHUB_REPO }}
           short-description: "MCP server for TP-Link Omada Controller APIs"
-          readme-filepath: ./README.md
+          readme-filepath: ./README.Docker.md
           enable-url-completion: true

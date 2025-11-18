@@ -121,3 +121,20 @@ Reference `.env.example`. Primary variables:
   - **HTTP+SSE** (`sse`) - MCP protocol version 2024-11-05, separate endpoints for SSE stream and POST messages
 - Both transports implement DNS rebinding protection via origin validation and bind address restrictions for security.
 - Always reuse the pagination schema in `src/utils/pagination-schema.ts` when implementing list operations that support pagination.
+
+## Documentation Synchronization
+
+- **Two README files must be kept in sync** for Docker container usage information and MCP configuration:
+  - `README.md` - Main project documentation (includes development setup, building, testing, and Docker usage)
+  - `README.Docker.md` - Docker-focused documentation (excludes development information, intended for Docker Hub)
+- When updating container runtime information, MCP configuration, tools, or supported operations, **both files must be updated**:
+  - Quick Start (Using with Claude Desktop and Using Docker Containers sections)
+  - Configuration (all environment variable tables)
+  - Transport Protocols (including security considerations and ngrok usage)
+  - Tools table
+  - Supported Omada API Operations table
+- `README.Docker.md` should **not** include development-specific sections:
+  - Development workflow (npm commands, building, linting)
+  - Devcontainer support
+  - Local testing and debugging
+- `README.Docker.md` should include a "Contributing" section with the GitHub repository URL to invite contributions.
