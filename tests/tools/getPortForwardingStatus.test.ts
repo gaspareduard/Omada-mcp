@@ -1,9 +1,14 @@
-import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
+import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { describe, expect, it, vi } from 'vitest';
 
 import type { OmadaClient } from '../../src/omadaClient/index.js';
 import { registerGetPortForwardingStatusTool } from '../../src/tools/getPortForwardingStatus.js';
 import type { PaginatedResult } from '../../src/types/index.js';
+
+interface MockServerWithTools extends McpServer {
+    registerTool: ReturnType<typeof vi.fn>;
+    getRegisteredTool: (name: string) => { schema: unknown; handler: CallableFunction } | undefined;
+}
 
 describe('getPortForwardingStatus Tool', () => {
     const createMockClient = () => {
@@ -13,13 +18,13 @@ describe('getPortForwardingStatus Tool', () => {
     };
 
     const createMockServer = () => {
-        const registeredTools = new Map();
+        const registeredTools = new Map<string, { schema: unknown; handler: CallableFunction }>();
         return {
             registerTool: vi.fn((name: string, schema: unknown, handler: unknown) => {
-                registeredTools.set(name, { schema, handler });
+                registeredTools.set(name, { schema, handler: handler as CallableFunction });
             }),
             getRegisteredTool: (name: string) => registeredTools.get(name),
-        } as unknown as McpServer;
+        } as unknown as MockServerWithTools;
     };
 
     it('should register the tool with correct schema', () => {
@@ -59,9 +64,13 @@ describe('getPortForwardingStatus Tool', () => {
         registerGetPortForwardingStatusTool(mockServer, mockClient);
 
         const toolData = mockServer.getRegisteredTool('getPortForwardingStatus');
+        if (!toolData) throw new Error('Tool not registered');
         const handler = toolData.handler;
 
-        const result = await handler({ type: 'User', siteId: 'test-site', page: 1, pageSize: 10 }, { sessionId: 'test-session' });
+        const result = await handler(
+            { type: 'User', siteId: 'test-site', page: 1, pageSize: 10 },
+            { sessionId: 'test-session' }
+        );
 
         expect(mockClient.getPortForwardingStatus).toHaveBeenCalledWith('User', 'test-site', 1, 10);
         expect(result).toEqual({
@@ -93,9 +102,13 @@ describe('getPortForwardingStatus Tool', () => {
         registerGetPortForwardingStatusTool(mockServer, mockClient);
 
         const toolData = mockServer.getRegisteredTool('getPortForwardingStatus');
+        if (!toolData) throw new Error('Tool not registered');
         const handler = toolData.handler;
 
-        const result = await handler({ type: 'UPnP', siteId: 'test-site', page: 1, pageSize: 10 }, { sessionId: 'test-session' });
+        const result = await handler(
+            { type: 'UPnP', siteId: 'test-site', page: 1, pageSize: 10 },
+            { sessionId: 'test-session' }
+        );
 
         expect(mockClient.getPortForwardingStatus).toHaveBeenCalledWith('UPnP', 'test-site', 1, 10);
         expect(result).toEqual({
@@ -124,12 +137,11 @@ describe('getPortForwardingStatus Tool', () => {
         registerGetPortForwardingStatusTool(mockServer, mockClient);
 
         const toolData = mockServer.getRegisteredTool('getPortForwardingStatus');
+        if (!toolData) throw new Error('Tool not registered');
         const handler = toolData.handler;
 
-        // Call with only required parameters (defaults should be applied in handler)
         const result = await handler({ type: 'User', siteId: 'test-site' }, { sessionId: 'test-session' });
 
-        // The handler should apply defaults: page=1, pageSize=10
         expect(mockClient.getPortForwardingStatus).toHaveBeenCalledWith('User', 'test-site', 1, 10);
         expect(result).toBeDefined();
     });
@@ -150,9 +162,13 @@ describe('getPortForwardingStatus Tool', () => {
         registerGetPortForwardingStatusTool(mockServer, mockClient);
 
         const toolData = mockServer.getRegisteredTool('getPortForwardingStatus');
+        if (!toolData) throw new Error('Tool not registered');
         const handler = toolData.handler;
 
-        const result = await handler({ type: 'User', siteId: 'test-site', page: 2, pageSize: 50 }, { sessionId: 'test-session' });
+        const result = await handler(
+            { type: 'User', siteId: 'test-site', page: 2, pageSize: 50 },
+            { sessionId: 'test-session' }
+        );
 
         expect(mockClient.getPortForwardingStatus).toHaveBeenCalledWith('User', 'test-site', 2, 50);
         expect(result).toBeDefined();
@@ -168,11 +184,15 @@ describe('getPortForwardingStatus Tool', () => {
         registerGetPortForwardingStatusTool(mockServer, mockClient);
 
         const toolData = mockServer.getRegisteredTool('getPortForwardingStatus');
+        if (!toolData) throw new Error('Tool not registered');
         const handler = toolData.handler;
 
-        await expect(handler({ type: 'User', siteId: 'test-site', page: 1, pageSize: 10 }, { sessionId: 'test-session' })).rejects.toThrow(
-            'API error: Invalid request parameters'
-        );
+        await expect(
+            handler(
+                { type: 'User', siteId: 'test-site', page: 1, pageSize: 10 },
+                { sessionId: 'test-session' }
+            )
+        ).rejects.toThrow('API error: Invalid request parameters');
 
         expect(mockClient.getPortForwardingStatus).toHaveBeenCalledWith('User', 'test-site', 1, 10);
     });
