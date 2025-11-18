@@ -95,5 +95,5 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
           repository: ${{ env.DOCKERHUB_REPO }}
-          short-description: ${{ github.event.repository.description }}
+          short-description: "MCP server for TP-Link Omada Controller APIs"
           readme-filepath: ./README.md
