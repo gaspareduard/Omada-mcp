@@ -9,7 +9,7 @@ A Model Context Protocol (MCP) server implemented in TypeScript that exposes the
 1. **Pull the Docker image** (or build it locally with `npm run docker:build`):
 
    ```bash
-   docker pull ghcr.io/migueltvms/tplink-omada-mcp-cli:latest
+   docker pull jmtvms/tplink-omada-mcp:latest
    ```
 
 2. **Add the MCP server to Claude Desktop configuration**. Edit your Claude Desktop config file:
@@ -33,7 +33,7 @@ A Model Context Protocol (MCP) server implemented in TypeScript that exposes the
            "-e", "OMADA_OMADAC_ID=your-omadac-id",
            "-e", "OMADA_SITE_ID=your-site-id",
            "-e", "OMADA_STRICT_SSL=false",
-           "ghcr.io/migueltvms/tplink-omada-mcp-cli:latest"
+           "jmtvms/tplink-omada-mcp:latest"
          ]
        }
      }
@@ -53,7 +53,7 @@ A Model Context Protocol (MCP) server implemented in TypeScript that exposes the
 ```bash
 docker run -it --rm \
   --env-file .env \
-  ghcr.io/migueltvms/tplink-omada-mcp-cli:latest
+  jmtvms/tplink-omada-mcp:latest
 ```
 
 #### HTTP Server Container
@@ -64,7 +64,7 @@ docker run -d \
   -e MCP_SERVER_USE_HTTP=true \
   -e MCP_HTTP_BIND_ADDR=0.0.0.0 \
   -p 3000:3000 \
-  ghcr.io/migueltvms/tplink-omada-mcp-http:latest
+  jmtvms/tplink-omada-mcp:latest
 ```
 
 The HTTP server will be available at `http://localhost:3000/mcp` (stream transport) or `http://localhost:3000/sse` (SSE transport).

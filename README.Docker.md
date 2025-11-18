@@ -9,7 +9,7 @@ A Model Context Protocol (MCP) server that exposes TP-Link Omada controller APIs
 1. **Pull the Docker image**:
 
    ```bash
-   docker pull ghcr.io/migueltvms/tplink-omada-mcp-cli:latest
+   docker pull jmtvms/tplink-omada-mcp:latest
    ```
 
 2. **Add the MCP server to Claude Desktop configuration**. Edit your Claude Desktop config file:
@@ -33,7 +33,7 @@ A Model Context Protocol (MCP) server that exposes TP-Link Omada controller APIs
            "-e", "OMADA_OMADAC_ID=your-omadac-id",
            "-e", "OMADA_SITE_ID=your-site-id",
            "-e", "OMADA_STRICT_SSL=false",
-           "ghcr.io/migueltvms/tplink-omada-mcp-cli:latest"
+           "jmtvms/tplink-omada-mcp:latest"
          ]
        }
      }
@@ -53,7 +53,7 @@ A Model Context Protocol (MCP) server that exposes TP-Link Omada controller APIs
 ```bash
 docker run -it --rm \
   --env-file .env \
-  ghcr.io/migueltvms/tplink-omada-mcp-cli:latest
+  jmtvms/tplink-omada-mcp:latest
 ```
 
 #### HTTP Server Container
@@ -64,7 +64,7 @@ docker run -d \
   -e MCP_SERVER_USE_HTTP=true \
   -e MCP_HTTP_BIND_ADDR=0.0.0.0 \
   -p 3000:3000 \
-  ghcr.io/migueltvms/tplink-omada-mcp-http:latest
+  jmtvms/tplink-omada-mcp:latest
 ```
 
 The HTTP server will be available at `http://localhost:3000/mcp` (stream transport) or `http://localhost:3000/sse` (SSE transport).
@@ -137,7 +137,7 @@ docker run -d \
   -e MCP_HTTP_TRANSPORT=stream \
   -e MCP_HTTP_BIND_ADDR=0.0.0.0 \
   -p 3000:3000 \
-  ghcr.io/migueltvms/tplink-omada-mcp-http:latest
+  jmtvms/tplink-omada-mcp:latest
 ```
 
 Features:
@@ -164,7 +164,7 @@ docker run -d \
   -e MCP_HTTP_TRANSPORT=sse \
   -e MCP_HTTP_BIND_ADDR=0.0.0.0 \
   -p 3000:3000 \
-  ghcr.io/migueltvms/tplink-omada-mcp-http:latest
+  jmtvms/tplink-omada-mcp:latest
 ```
 
 Features:
@@ -200,7 +200,7 @@ docker run -d \
   -e MCP_HTTP_NGROK_ENABLED=true \
   -e MCP_HTTP_NGROK_AUTH_TOKEN=your-ngrok-auth-token \
   -p 3000:3000 \
-  ghcr.io/migueltvms/tplink-omada-mcp-http:latest
+  jmtvms/tplink-omada-mcp:latest
 ```
 
 The server will automatically establish an ngrok tunnel and log the public URL.
