@@ -3,11 +3,11 @@ import { z } from 'zod';
 
 import type { OmadaClient } from '../omadaClient/index.js';
 import { toToolResult, wrapToolHandler } from '../server/common.js';
+import { createPaginationSchema } from '../utils/pagination-schema.js';
 
 const clientsPastConnectionsInputSchema = z.object({
     siteId: z.string().optional().describe('Optional site ID. If not provided, uses the default site from configuration.'),
-    page: z.number().int().min(1).default(1).describe('Start page number. Start from 1.'),
-    pageSize: z.number().int().min(1).max(1000).default(50).describe('Number of entries per page. Range: 1-1000.'),
+    ...createPaginationSchema(50),
     sortLastSeen: z
         .enum(['asc', 'desc'])
         .optional()

@@ -5,11 +5,18 @@ export default defineConfig({
         globals: true,
         environment: 'node',
         include: ['tests/**/*.test.ts'],
+        env: {
+            MCP_SERVER_LOG_LEVEL: 'silent',
+        },
         coverage: {
             provider: 'v8',
-            reporter: ['text', 'json', 'html'],
+            reporter: ['text', 'json', 'json-summary', 'html'],
             include: ['src/**/*.ts'],
-            exclude: ['src/**/*.test.ts', 'src/types/**'],
+            exclude: ['src/**/*.test.ts', 'src/types/**', 'src/types.ts', 'src/tools/types.ts'],
+            reportOnFailure: true,
         },
+    },
+    resolve: {
+        extensions: ['.ts', '.js', '.json'],
     },
 });

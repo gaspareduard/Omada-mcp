@@ -27,11 +27,11 @@ Reference `.env.example`. Primary variables:
 
 ### MCP Generic Server Configuration:
 
-- `MCP_SERVER_LOG_LEVEL` (default: `info`) - logging verbosity (`debug`, `info`, `warn`, `error`).
+- `MCP_SERVER_LOG_LEVEL` (default: `info`) - logging verbosity (`debug`, `info`, `warn`, `error`, `silent`).
 - `MCP_SERVER_LOG_FORMAT` (default: `plain`) - log output format (`plain`,`json`, or `gcp-json`).
-    - `plain` - human-readable text format.
-    - `json` - structured JSON format.
-    - `gcp-json` - structured JSON format compatible with Google Cloud Logging.
+  - `plain` - human-readable text format.
+  - `json` - structured JSON format.
+  - `gcp-json` - structured JSON format compatible with Google Cloud Logging.
 - `MCP_SERVER_USE_HTTP` (default: `false`) - whether to start the HTTP server instead of stdio.
 - `MCP_SERVER_STATEFUL` (default: `false`) - whether to maintain stateful sessions per client.
 
@@ -77,6 +77,8 @@ Reference `.env.example`. Primary variables:
 - Test coverage can be generated with `npm run test:coverage`.
 - All configuration validations must be implemented in `src/utils/config-validations.ts` and tested thoroughly.
 - No validation logic should exist outside of `src/config.ts` and `src/utils/config-validations.ts`.
+- Mock external dependencies (e.g., Omada API calls) in tests to ensure isolation. Use Vitest's mocking capabilities for this purpose.
+- Keep the coverage above 90% for all source files. Focus on covering edge cases and error handling. Always validate after making changes.
 
 ## Development Workflow
 
@@ -90,6 +92,8 @@ Reference `.env.example`. Primary variables:
 
 - Biome is used for both formatting and linting (`npm run format` and `npm run lint`).
 - Biome enforces import ordering, TypeScript best practices, and code style consistency.
+- **IMPORTANT** All source files must use LF (Unix-style) line endings, not CRLF (Windows-style). Biome will automatically convert line endings when running `npm run format`.
+- If you encounter formatting errors related to line endings (shown as `␍` in error messages), run `npm run format` to fix them automatically.
 
 ## Contribution Guidelines
 
@@ -116,3 +120,4 @@ Reference `.env.example`. Primary variables:
   - **Streamable HTTP** (`stream`) - MCP protocol version 2025-03-26, single endpoint for all operations
   - **HTTP+SSE** (`sse`) - MCP protocol version 2024-11-05, separate endpoints for SSE stream and POST messages
 - Both transports implement DNS rebinding protection via origin validation and bind address restrictions for security.
+- Always reuse the pagination schema in `src/utils/pagination-schema.ts` when implementing list operations that support pagination.

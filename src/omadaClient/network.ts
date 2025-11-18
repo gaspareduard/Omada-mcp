@@ -30,8 +30,9 @@ export class NetworkOperations {
      * OperationId: getPortForwardStatus
      *
      * @param type - Port forwarding type: 'User' or 'UPnP'
-     * @param page - Page number (default: 1)
-     * @param pageSize - Page size (default: 10)
+     * @param siteId - Optional site ID (uses default if not provided)
+     * @param page - Page number (required by API, default: 1)
+     * @param pageSize - Page size (required by API, range: 1-1000, default: 10)
      */
     public async getPortForwardingStatus(type: 'User' | 'UPnP', siteId?: string, page = 1, pageSize = 10): Promise<PaginatedResult<unknown>> {
         const resolvedSiteId = this.site.resolveSiteId(siteId);

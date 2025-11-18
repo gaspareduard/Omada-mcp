@@ -3,12 +3,12 @@ import { z } from 'zod';
 
 import type { OmadaClient } from '../omadaClient/index.js';
 import { toToolResult, wrapToolHandler } from '../server/common.js';
+import { createPaginationSchema } from '../utils/pagination-schema.js';
 
 const getThreatListSchema = z.object({
     siteList: z.string().optional().describe('Comma-separated site IDs. If not provided, all sites are selected by default.'),
     archived: z.boolean().describe('Whether to include archived threats'),
-    page: z.number().int().min(1).default(1).describe('Page number, starting from 1'),
-    pageSize: z.number().int().min(1).max(1000).default(10).describe('Number of entries per page (1-1000)'),
+    ...createPaginationSchema(10),
     startTime: z.number().int().describe('Start timestamp in seconds (e.g., 1682000000)'),
     endTime: z.number().int().describe('End timestamp in seconds (e.g., 1682000000)'),
     severity: z.number().int().min(0).max(3).optional().describe('Threat severity: 0=Critical, 1=Major, 2=Concerning, 3=Minor'),

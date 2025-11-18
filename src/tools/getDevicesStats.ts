@@ -3,10 +3,10 @@ import { z } from 'zod';
 
 import type { OmadaClient } from '../omadaClient/index.js';
 import { toToolResult, wrapToolHandler } from '../server/common.js';
+import { createPaginationSchema } from '../utils/pagination-schema.js';
 
 const listDevicesStatsSchema = z.object({
-    page: z.number().min(1, 'page must be at least 1').default(1),
-    pageSize: z.number().min(1).max(1000, 'pageSize must be between 1 and 1000').default(100),
+    ...createPaginationSchema(100),
     searchMacs: z.string().optional(),
     searchNames: z.string().optional(),
     searchModels: z.string().optional(),

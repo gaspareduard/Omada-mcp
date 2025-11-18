@@ -138,12 +138,7 @@ export class OmadaClient {
         return await this.networkOps.getInternetInfo(siteId);
     }
 
-    public async getPortForwardingStatus(
-        type: 'User' | 'UPnP',
-        siteId?: string,
-        page?: number,
-        pageSize?: number
-    ): Promise<PaginatedResult<unknown>> {
+    public async getPortForwardingStatus(type: 'User' | 'UPnP', siteId?: string, page = 1, pageSize = 10): Promise<PaginatedResult<unknown>> {
         return await this.networkOps.getPortForwardingStatus(type, siteId, page, pageSize);
     }
 

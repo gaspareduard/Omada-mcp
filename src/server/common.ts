@@ -190,3 +190,5 @@ export function createServer(client: OmadaClient): McpServer {
 
     return server;
 }
+
+export { setupServerLogging };

@@ -345,7 +345,7 @@ export async function startHttpServer(client: OmadaClient, config: EnvironmentCo
         }
     }
 
-    let shuttingDown = false;
+    let shuttingDown: boolean = false;
     const closeHttp: ShutdownHandler = () =>
         new Promise((resolve) => {
             httpServer.close(() => resolve());
@@ -380,11 +380,22 @@ export async function startHttpServer(client: OmadaClient, config: EnvironmentCo
 
     for (const signal of ['SIGINT', 'SIGTERM'] as const) {
         process.on(signal, () => {
-            if (shuttingDown) {
-                return;
+            if (!shuttingDown) {
+                shuttingDown = true;
+                void createShutdownHandler(signal, closeHttp, closeSessions);
             }
-            shuttingDown = true;
-            void createShutdownHandler(signal, closeHttp, closeSessions);
         });
     }
 }
+
+export {
+    getRequestUrl,
+    sendJson,
+    sanitizeHeaders,
+    sanitizeHeaderValue,
+    sanitizePayload,
+    isSensitiveKey,
+    isLikelySensitiveString,
+    maskValue,
+    createShutdownHandler,
+};

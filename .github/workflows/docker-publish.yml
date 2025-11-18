@@ -17,12 +17,15 @@ env:
   DOCKERHUB_REPO: jmtvms/tplink-omada-mcp
 
 jobs:
-  build-and-push:
-    name: Build and Push Docker Image
+  build-and-push-ghcr:
+    name: Build and Push to GitHub Container Registry
     runs-on: ubuntu-latest
     permissions:
       contents: read
       packages: write
+    outputs:
+      image-tag: ${{ steps.meta.outputs.image-tag }}
+      ghcr-image: ${{ steps.meta.outputs.ghcr-image }}
     steps:
       - name: Check out repository
         uses: actions/checkout@v4
@@ -37,7 +40,6 @@ jobs:
         id: meta
         env:
           REGISTRY: ${{ env.REGISTRY }}
-          DOCKERHUB_REPO: ${{ env.DOCKERHUB_REPO }}
         run: |
           set -euo pipefail
           owner_lower=$(echo "${GITHUB_REPOSITORY_OWNER}" | tr '[:upper:]' '[:lower:]')
@@ -45,25 +47,55 @@ jobs:
 
           if [[ "${ref}" == refs/tags/* ]]; then
             ref_name="${ref#refs/tags/}"
-            tags=$(printf "%s\n%s\n%s\n%s" \
+            image_tag="${ref_name}"
+            tags=$(printf "%s\n%s" \
               "${REGISTRY}/${owner_lower}/tplink-omada-mcp:latest" \
-              "${REGISTRY}/${owner_lower}/tplink-omada-mcp:${ref_name}" \
-              "${DOCKERHUB_REPO}:latest" \
-              "${DOCKERHUB_REPO}:${ref_name}")
+              "${REGISTRY}/${owner_lower}/tplink-omada-mcp:${ref_name}")
           else
             ref_name="${GITHUB_HEAD_REF:-${ref#refs/heads/}}"
             sanitized=$(echo "${ref_name}" | tr '[:upper:]' '[:lower:]' | sed 's/[^a-z0-9._-]/-/g')
-            tags=$(printf "%s\n%s" \
-              "${REGISTRY}/${owner_lower}/tplink-omada-mcp:${sanitized}" \
-              "${DOCKERHUB_REPO}:${sanitized}")
+            image_tag="${sanitized}"
+            tags="${REGISTRY}/${owner_lower}/tplink-omada-mcp:${sanitized}"
           fi
 
-          echo "owner_lower=${owner_lower}" >> "${GITHUB_OUTPUT}"
+          ghcr_image="${REGISTRY}/${owner_lower}/tplink-omada-mcp:${image_tag}"
+
+          echo "image-tag=${image_tag}" >> "${GITHUB_OUTPUT}"
+          echo "ghcr-image=${ghcr_image}" >> "${GITHUB_OUTPUT}"
           {
             echo "tags<<EOF"
             echo "${tags}"
             echo "EOF"
           } >> "${GITHUB_OUTPUT}"
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push to GHCR
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: Dockerfile
+          push: true
+          platforms: linux/amd64,linux/arm64
+          tags: ${{ steps.meta.outputs.tags }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  push-to-dockerhub:
+    name: Push to Docker Hub
+    needs: build-and-push-ghcr
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
 
       - name: Log in to GitHub Container Registry
         uses: docker/login-action@v3
@@ -78,11 +110,55 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      - name: Build and push image
-        uses: docker/build-push-action@v6
+      - name: Determine Docker Hub tags
+        id: dockerhub-tags
+        env:
+          DOCKERHUB_REPO: ${{ env.DOCKERHUB_REPO }}
+          IMAGE_TAG: ${{ needs.build-and-push-ghcr.outputs.image-tag }}
+        run: |
+          set -euo pipefail
+          ref="${GITHUB_REF}"
+
+          if [[ "${ref}" == refs/tags/* ]]; then
+            tags=$(printf "%s\n%s" \
+              "${DOCKERHUB_REPO}:latest" \
+              "${DOCKERHUB_REPO}:${IMAGE_TAG}")
+          else
+            tags="${DOCKERHUB_REPO}:${IMAGE_TAG}"
+          fi
+
+          {
+            echo "tags<<EOF"
+            echo "${tags}"
+            echo "EOF"
+          } >> "${GITHUB_OUTPUT}"
+
+      - name: Pull, retag and push to Docker Hub
+        env:
+          GHCR_IMAGE: ${{ needs.build-and-push-ghcr.outputs.ghcr-image }}
+          DOCKERHUB_TAGS: ${{ steps.dockerhub-tags.outputs.tags }}
+        run: |
+          set -euo pipefail
+
+          # Pull the image from GHCR for both platforms
+          echo "Pulling image from GHCR: ${GHCR_IMAGE}"
+          docker pull --platform linux/amd64 "${GHCR_IMAGE}"
+          docker pull --platform linux/arm64 "${GHCR_IMAGE}"
+
+          # Create and push manifest for each Docker Hub tag
+          while IFS= read -r tag; do
+            echo "Creating and pushing manifest for: ${tag}"
+            docker buildx imagetools create -t "${tag}" "${GHCR_IMAGE}"
+          done <<< "${DOCKERHUB_TAGS}"
+
+      - name: Update Docker Hub description
+        if: startsWith(github.ref, 'refs/tags/')
+        continue-on-error: true
+        uses: peter-evans/dockerhub-description@v4
         with:
-          context: .
-          file: Dockerfile
-          push: true
-          platforms: linux/amd64,linux/arm64
-          tags: ${{ steps.meta.outputs.tags }}
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+          repository: ${{ env.DOCKERHUB_REPO }}
+          short-description: "MCP server for TP-Link Omada Controller APIs"
+          readme-filepath: ./README.md
+          enable-url-completion: true
