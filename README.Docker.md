@@ -2,6 +2,8 @@
 
 A Model Context Protocol (MCP) server that exposes TP-Link Omada controller APIs to AI copilots and automation workflows. This Docker image provides an easy way to run the MCP server with support for both stdio and HTTP transports.
 
+> **Compatibility:** Tested with Omada Controller versions 5.x and 6.x
+
 ## Quick Start
 
 ### Using with Claude Desktop (stdio)
