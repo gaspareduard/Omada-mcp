@@ -69,6 +69,22 @@ export class RequestHandler {
                 headers: this.sanitizeHeaders(response.headers as AxiosRequestHeaders | undefined),
                 data: this.sanitizePayload(response.data),
             });
+
+            // Check if the response data indicates an authentication error
+            const errorCode = (response.data as { errorCode?: number } | undefined)?.errorCode;
+            const errorMsg = (response.data as { msg?: string } | undefined)?.msg;
+
+            if (retry && (this.isAuthErrorCode(errorCode) || this.isTokenExpiredMessage(errorMsg))) {
+                logger.warn('Omada authentication error in response, retrying with fresh token', {
+                    method,
+                    url,
+                    errorCode,
+                    message: errorMsg,
+                });
+                this.auth.clearToken();
+                return this.request<T>(config, false);
+            }
+
             return response.data;
         } catch (error) {
             logger.error('Omada request failed', {
@@ -159,6 +175,23 @@ export class RequestHandler {
         }
 
         return [-44106, -44111, -44112, -44113, -44114, -44116].includes(errorCode);
+    }
+
+    /**
+     * Check if an error message indicates token expiration.
+     */
+    private isTokenExpiredMessage(message?: string): boolean {
+        if (!message) {
+            return false;
+        }
+
+        const lowerMsg = message.toLowerCase();
+        return (
+            lowerMsg.includes('access token has expired') ||
+            lowerMsg.includes('token has expired') ||
+            lowerMsg.includes('token expired') ||
+            lowerMsg.includes('re-initiate the refreshtoken')
+        );
     }
 
     /**

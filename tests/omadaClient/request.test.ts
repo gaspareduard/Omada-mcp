@@ -124,7 +124,7 @@ describe('RequestHandler', () => {
             expect(result).toEqual({ errorCode: 0, msg: 'Success', result: { refreshed: true } });
         });
 
-        it('should not retry on 401 if retry=false', async () => {
+        it('should retry on 401 if retry=false', async () => {
             const { RequestHandler } = await import('../../src/omadaClient/request.js');
 
             mockAxiosInstance.request.mockRejectedValue({
@@ -138,6 +138,97 @@ describe('RequestHandler', () => {
 
             expect(mockAuthManager.refreshAccessToken).not.toHaveBeenCalled();
             expect(mockAxiosInstance.request).toHaveBeenCalledTimes(1);
+        });
+
+        it('should retry on token expiration error message', async () => {
+            const { RequestHandler } = await import('../../src/omadaClient/request.js');
+
+            // Mock axios.isAxiosError to return true for our error object
+            vi.mocked(axios.isAxiosError).mockReturnValue(true);
+
+            const tokenExpiredError = {
+                response: {
+                    status: 200, // Sometimes errors come with 200 status
+                    data: {
+                        errorCode: -1,
+                        msg: 'The access token has expired. Please re-initiate the refreshToken process to obtain the access token.',
+                    },
+                },
+                isAxiosError: true,
+            };
+
+            // First request fails with token expired message
+            mockAxiosInstance.request
+                .mockResolvedValueOnce({
+                    data: tokenExpiredError.response.data,
+                })
+                // Second request succeeds after token refresh
+                .mockResolvedValueOnce({
+                    data: { errorCode: 0, msg: 'Success', result: { refreshed: true } },
+                });
+
+            mockAuthManager.clearToken = vi.fn();
+
+            const handler = new RequestHandler(mockAxiosInstance as never, mockAuthManager as never);
+            const result = await handler.request<{ errorCode: number; msg: string; result?: { refreshed: boolean } }>({
+                method: 'GET',
+                url: '/api/secure',
+            });
+
+            expect(mockAuthManager.clearToken).toHaveBeenCalledTimes(1);
+            expect(mockAxiosInstance.request).toHaveBeenCalledTimes(2);
+            expect(result).toEqual({ errorCode: 0, msg: 'Success', result: { refreshed: true } });
+        });
+
+        it('should retry on various token expiration messages', async () => {
+            const { RequestHandler } = await import('../../src/omadaClient/request.js');
+
+            const expirationMessages = [
+                'Token expired',
+                'token has expired',
+                'ACCESS TOKEN HAS EXPIRED',
+                'Please re-initiate the refreshToken process',
+            ];
+
+            for (const msg of expirationMessages) {
+                mockAxiosInstance.request
+                    .mockResolvedValueOnce({
+                        data: { errorCode: -1, msg },
+                    })
+                    .mockResolvedValueOnce({
+                        data: { errorCode: 0, msg: 'Success', result: {} },
+                    });
+
+                mockAuthManager.clearToken = vi.fn();
+
+                const handler = new RequestHandler(mockAxiosInstance as never, mockAuthManager as never);
+                await handler.request({ method: 'GET', url: '/api/test' });
+
+                expect(mockAuthManager.clearToken).toHaveBeenCalledTimes(1);
+            }
+        });
+
+        it('should retry on auth error codes', async () => {
+            const { RequestHandler } = await import('../../src/omadaClient/request.js');
+
+            const authErrorCodes = [-44106, -44111, -44112, -44113, -44114, -44116];
+
+            for (const errorCode of authErrorCodes) {
+                mockAxiosInstance.request
+                    .mockResolvedValueOnce({
+                        data: { errorCode, msg: 'Auth error' },
+                    })
+                    .mockResolvedValueOnce({
+                        data: { errorCode: 0, msg: 'Success', result: {} },
+                    });
+
+                mockAuthManager.clearToken = vi.fn();
+
+                const handler = new RequestHandler(mockAxiosInstance as never, mockAuthManager as never);
+                await handler.request({ method: 'GET', url: '/api/test' });
+
+                expect(mockAuthManager.clearToken).toHaveBeenCalledTimes(1);
+            }
         });
 
         it('should return response with errorCode without throwing', async () => {
