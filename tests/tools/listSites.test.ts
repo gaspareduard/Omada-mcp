@@ -87,6 +87,7 @@ describe('tools/listSites', () => {
             expect(loggerModule.logger.info).toHaveBeenCalledWith('Tool invoked', {
                 tool: 'listSites',
                 sessionId: 'test-session',
+                args: '{}',
             });
             expect(loggerModule.logger.info).toHaveBeenCalledWith('Tool completed', {
                 tool: 'listSites',
@@ -120,6 +121,7 @@ describe('tools/listSites', () => {
             expect(loggerModule.logger.info).toHaveBeenCalledWith('Tool invoked', {
                 tool: 'listSites',
                 sessionId: 'unknown-session',
+                args: '{}',
             });
         });
     });
