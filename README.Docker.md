@@ -227,7 +227,6 @@ If an intermediary strips the `Mcp-Session-Id` header, set `MCP_SERVER_STATEFUL=
 | `getSsidList`                   | Gets the list of SSIDs in a WLAN group.                                           |
 | `getSsidDetail`                 | Gets detailed information for a specific SSID.                                    |
 | `getFirewallSetting`            | Gets firewall configuration and rules for a site.                                 |
-| `callApi`                       | Executes a raw API request using the established Omada session token.             |
 
 ## Supported Omada API Operations
 

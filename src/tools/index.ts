@@ -2,7 +2,6 @@ import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 
 import type { OmadaClient } from '../omadaClient/index.js';
 
-import { registerCallApiTool } from './callApi.js';
 import { registerGetClientTool } from './getClient.js';
 import { registerGetDeviceTool } from './getDevice.js';
 import { registerGetFirewallSettingTool } from './getFirewallSetting.js';
@@ -45,5 +44,4 @@ export function registerAllTools(server: McpServer, client: OmadaClient): void {
     registerGetSsidListTool(server, client);
     registerGetSsidDetailTool(server, client);
     registerGetFirewallSettingTool(server, client);
-    registerCallApiTool(server, client);
 }

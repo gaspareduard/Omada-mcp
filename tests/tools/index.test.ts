@@ -40,10 +40,9 @@ describe('tools/index', () => {
             expect(mockServer.registerTool).toHaveBeenCalledWith('getSsidList', expect.any(Object), expect.any(Function));
             expect(mockServer.registerTool).toHaveBeenCalledWith('getSsidDetail', expect.any(Object), expect.any(Function));
             expect(mockServer.registerTool).toHaveBeenCalledWith('getFirewallSetting', expect.any(Object), expect.any(Function));
-            expect(mockServer.registerTool).toHaveBeenCalledWith('callApi', expect.any(Object), expect.any(Function));
 
             // Verify total number of tools registered
-            expect(mockServer.registerTool).toHaveBeenCalledTimes(21);
+            expect(mockServer.registerTool).toHaveBeenCalledTimes(20);
         });
     });
 });
