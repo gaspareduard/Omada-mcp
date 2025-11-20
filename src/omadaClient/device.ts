@@ -1,4 +1,4 @@
-import type { GetDeviceStatsOptions, OmadaApiResponse, OmadaDeviceInfo, OmadaDeviceStats, OswStackDetail } from '../types/index.js';
+import type { CustomHeaders, GetDeviceStatsOptions, OmadaApiResponse, OmadaDeviceInfo, OmadaDeviceStats, OswStackDetail } from '../types/index.js';
 
 import type { RequestHandler } from './request.js';
 import type { SiteOperations } from './site.js';
@@ -16,23 +16,27 @@ export class DeviceOperations {
     /**
      * List all devices in a site.
      */
-    public async listDevices(siteId?: string): Promise<OmadaDeviceInfo[]> {
+    public async listDevices(siteId?: string, customHeaders?: CustomHeaders): Promise<OmadaDeviceInfo[]> {
         const resolvedSiteId = this.site.resolveSiteId(siteId);
-        return await this.request.fetchPaginated<OmadaDeviceInfo>(this.buildPath(`/sites/${encodeURIComponent(resolvedSiteId)}/devices`));
+        return await this.request.fetchPaginated<OmadaDeviceInfo>(
+            this.buildPath(`/sites/${encodeURIComponent(resolvedSiteId)}/devices`),
+            {},
+            customHeaders
+        );
     }
 
     /**
      * Get a specific device by MAC address or device ID.
      */
-    public async getDevice(identifier: string, siteId?: string): Promise<OmadaDeviceInfo | undefined> {
-        const devices = await this.listDevices(siteId);
+    public async getDevice(identifier: string, siteId?: string, customHeaders?: CustomHeaders): Promise<OmadaDeviceInfo | undefined> {
+        const devices = await this.listDevices(siteId, customHeaders);
         return devices.find((device) => device.mac === identifier || device.deviceId === identifier);
     }
 
     /**
      * Get detailed information about a switch stack.
      */
-    public async getSwitchStackDetail(stackId: string, siteId?: string): Promise<OswStackDetail> {
+    public async getSwitchStackDetail(stackId: string, siteId?: string, customHeaders?: CustomHeaders): Promise<OswStackDetail> {
         if (!stackId) {
             throw new Error('A stack id must be provided.');
         }
@@ -40,27 +44,27 @@ export class DeviceOperations {
         const resolvedSiteId = this.site.resolveSiteId(siteId);
         const path = this.buildPath(`/sites/${encodeURIComponent(resolvedSiteId)}/stacks/${encodeURIComponent(stackId)}`);
 
-        const response = await this.request.get<OmadaApiResponse<OswStackDetail>>(path);
+        const response = await this.request.get<OmadaApiResponse<OswStackDetail>>(path, undefined, customHeaders);
         return this.request.ensureSuccess(response);
     }
 
     /**
      * Search for devices globally across all sites the user has access to.
      */
-    public async searchDevices(searchKey: string): Promise<OmadaDeviceInfo[]> {
+    public async searchDevices(searchKey: string, customHeaders?: CustomHeaders): Promise<OmadaDeviceInfo[]> {
         if (!searchKey) {
             throw new Error('A search key must be provided.');
         }
 
         const path = this.buildPath(`/devices?searchKey=${encodeURIComponent(searchKey)}`);
-        const response = await this.request.get<OmadaApiResponse<OmadaDeviceInfo[]>>(path);
+        const response = await this.request.get<OmadaApiResponse<OmadaDeviceInfo[]>>(path, undefined, customHeaders);
         return this.request.ensureSuccess(response);
     }
 
     /**
      * Get statistics for global adopted devices with filtering and pagination.
      */
-    public async listDevicesStats(options: GetDeviceStatsOptions): Promise<OmadaDeviceStats> {
+    public async listDevicesStats(options: GetDeviceStatsOptions, customHeaders?: CustomHeaders): Promise<OmadaDeviceStats> {
         const queryParams = new URLSearchParams();
         queryParams.append('page', options.page.toString());
         queryParams.append('pageSize', options.pageSize.toString());
@@ -85,7 +89,7 @@ export class DeviceOperations {
         }
 
         const path = this.buildPath(`/devices/stat?${queryParams.toString()}`);
-        const response = await this.request.get<OmadaApiResponse<OmadaDeviceStats>>(path);
+        const response = await this.request.get<OmadaApiResponse<OmadaDeviceStats>>(path, undefined, customHeaders);
         return this.request.ensureSuccess(response);
     }
 }

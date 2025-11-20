@@ -52,7 +52,7 @@ describe('tools/listDevices', () => {
 
             const result = await toolHandler({}, { sessionId: 'test-session' });
 
-            expect(mockClient.listDevices).toHaveBeenCalledWith(undefined);
+            expect(mockClient.listDevices).toHaveBeenCalledWith(undefined, undefined);
             expect(result).toEqual({
                 content: [
                     {
@@ -71,7 +71,7 @@ describe('tools/listDevices', () => {
 
             await toolHandler({ siteId: 'test-site' }, { sessionId: 'test-session' });
 
-            expect(mockClient.listDevices).toHaveBeenCalledWith('test-site');
+            expect(mockClient.listDevices).toHaveBeenCalledWith('test-site', undefined);
         });
 
         it('should handle errors', async () => {

@@ -7,8 +7,12 @@ import type { OmadaClient } from '../omadaClient/index.js';
 import { registerAllTools } from '../tools/index.js';
 import { logger } from '../utils/logger.js';
 
+// Custom headers schema for optional HTTP headers
+export const customHeadersSchema = z.record(z.string(), z.string()).optional();
+
 export const siteInputSchema = z.object({
     siteId: z.string().min(1).optional(),
+    customHeaders: customHeadersSchema,
 });
 
 export const clientIdSchema = siteInputSchema.extend({
@@ -25,6 +29,7 @@ export const customRequestSchema = z.object({
     params: z.record(z.string(), z.unknown()).optional(),
     data: z.unknown().optional(),
     siteId: z.string().min(1).optional(),
+    customHeaders: customHeadersSchema,
 });
 
 export const stackIdSchema = siteInputSchema.extend({

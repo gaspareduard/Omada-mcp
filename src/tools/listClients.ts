@@ -10,6 +10,6 @@ export function registerListClientsTool(server: McpServer, client: OmadaClient):
             description: 'List network clients connected to a site.',
             inputSchema: siteInputSchema.shape,
         },
-        wrapToolHandler('listClients', async ({ siteId }) => toToolResult(await client.listClients(siteId)))
+        wrapToolHandler('listClients', async ({ siteId, customHeaders }) => toToolResult(await client.listClients(siteId, customHeaders)))
     );
 }

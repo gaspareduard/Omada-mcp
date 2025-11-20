@@ -10,6 +10,6 @@ export function registerGetInternetInfoTool(server: McpServer, client: OmadaClie
             description: 'Get internet configuration information for a site, including WAN settings and connectivity details.',
             inputSchema: siteInputSchema.shape,
         },
-        wrapToolHandler('getInternetInfo', async ({ siteId }) => toToolResult(await client.getInternetInfo(siteId)))
+        wrapToolHandler('getInternetInfo', async ({ siteId, customHeaders }) => toToolResult(await client.getInternetInfo(siteId, customHeaders)))
     );
 }

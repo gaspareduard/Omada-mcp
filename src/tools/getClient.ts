@@ -10,6 +10,8 @@ export function registerGetClientTool(server: McpServer, client: OmadaClient): v
             description: 'Fetch details for a specific Omada client.',
             inputSchema: clientIdSchema.shape,
         },
-        wrapToolHandler('getClient', async ({ clientId, siteId }) => toToolResult(await client.getClient(clientId, siteId)))
+        wrapToolHandler('getClient', async ({ clientId, siteId, customHeaders }) =>
+            toToolResult(await client.getClient(clientId, siteId, customHeaders))
+        )
     );
 }

@@ -40,17 +40,21 @@ describe('omadaClient/security', () => {
             const result = await securityOps.getThreatList(options);
 
             expect(result).toEqual(mockResult);
-            expect(mockRequest.request).toHaveBeenCalledWith({
-                method: 'GET',
-                url: '/api/security/threat-management',
-                params: {
-                    archived: false,
-                    page: 1,
-                    pageSize: 50,
-                    'filters.startTime': 1640000000000,
-                    'filters.endTime': 1640100000000,
+            expect(mockRequest.request).toHaveBeenCalledWith(
+                {
+                    method: 'GET',
+                    url: '/api/security/threat-management',
+                    params: {
+                        archived: false,
+                        page: 1,
+                        pageSize: 50,
+                        'filters.startTime': 1640000000000,
+                        'filters.endTime': 1640100000000,
+                    },
                 },
-            });
+                true,
+                undefined
+            );
         });
 
         it('should include optional parameters when provided', async () => {
@@ -77,21 +81,25 @@ describe('omadaClient/security', () => {
 
             await securityOps.getThreatList(options);
 
-            expect(mockRequest.request).toHaveBeenCalledWith({
-                method: 'GET',
-                url: '/api/security/threat-management',
-                params: {
-                    archived: true,
-                    page: 2,
-                    pageSize: 100,
-                    'filters.startTime': 1640000000000,
-                    'filters.endTime': 1640100000000,
-                    siteList: 'site1,site2',
-                    'filters.severity': 1,
-                    'sorts.time': 'desc',
-                    searchKey: 'test',
+            expect(mockRequest.request).toHaveBeenCalledWith(
+                {
+                    method: 'GET',
+                    url: '/api/security/threat-management',
+                    params: {
+                        archived: true,
+                        page: 2,
+                        pageSize: 100,
+                        'filters.startTime': 1640000000000,
+                        'filters.endTime': 1640100000000,
+                        siteList: 'site1,site2',
+                        'filters.severity': 1,
+                        'sorts.time': 'desc',
+                        searchKey: 'test',
+                    },
                 },
-            });
+                true,
+                undefined
+            );
         });
 
         it('should omit undefined optional parameters', async () => {

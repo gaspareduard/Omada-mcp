@@ -27,7 +27,7 @@ describe('Network Configuration Tools', () => {
                 }),
                 expect.any(Function)
             );
-            expect(mockClient.getLanNetworkList).toHaveBeenCalledWith('test-site');
+            expect(mockClient.getLanNetworkList).toHaveBeenCalledWith('test-site', undefined);
         });
     });
 
@@ -57,7 +57,7 @@ describe('Network Configuration Tools', () => {
                 }),
                 expect.any(Function)
             );
-            expect(mockClient.getLanProfileList).toHaveBeenCalledWith('test-site');
+            expect(mockClient.getLanProfileList).toHaveBeenCalledWith('test-site', undefined);
         });
     });
 
@@ -87,7 +87,7 @@ describe('Network Configuration Tools', () => {
                 }),
                 expect.any(Function)
             );
-            expect(mockClient.getWlanGroupList).toHaveBeenCalledWith('test-site');
+            expect(mockClient.getWlanGroupList).toHaveBeenCalledWith('test-site', undefined);
         });
     });
 
@@ -118,7 +118,7 @@ describe('Network Configuration Tools', () => {
                 }),
                 expect.any(Function)
             );
-            expect(mockClient.getSwitchStackDetail).toHaveBeenCalledWith('stack1', 'test-site');
+            expect(mockClient.getSwitchStackDetail).toHaveBeenCalledWith('stack1', 'test-site', undefined);
         });
     });
 });

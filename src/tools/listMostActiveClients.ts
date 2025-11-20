@@ -11,6 +11,8 @@ export function registerListMostActiveClientsTool(server: McpServer, client: Oma
                 'Get the most active clients in a site, sorted by total traffic. Returns client name, MAC address, type, model, wireless status, and total traffic. This is a dashboard endpoint that provides a quick overview of top clients by traffic usage.',
             inputSchema: siteInputSchema.shape,
         },
-        wrapToolHandler('listMostActiveClients', async ({ siteId }) => toToolResult(await client.listMostActiveClients(siteId)))
+        wrapToolHandler('listMostActiveClients', async ({ siteId, customHeaders }) =>
+            toToolResult(await client.listMostActiveClients(siteId, customHeaders))
+        )
     );
 }

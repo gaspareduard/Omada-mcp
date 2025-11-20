@@ -2,6 +2,7 @@ import type {
     ActiveClientInfo,
     ClientActivity,
     ClientPastConnection,
+    CustomHeaders,
     GetClientActivityOptions,
     ListClientsPastConnectionsOptions,
     OmadaApiResponse,
@@ -25,16 +26,20 @@ export class ClientOperations {
     /**
      * List all clients in a site.
      */
-    public async listClients(siteId?: string): Promise<OmadaClientInfo[]> {
+    public async listClients(siteId?: string, customHeaders?: CustomHeaders): Promise<OmadaClientInfo[]> {
         const resolvedSiteId = this.site.resolveSiteId(siteId);
-        return await this.request.fetchPaginated<OmadaClientInfo>(this.buildPath(`/sites/${encodeURIComponent(resolvedSiteId)}/clients`));
+        return await this.request.fetchPaginated<OmadaClientInfo>(
+            this.buildPath(`/sites/${encodeURIComponent(resolvedSiteId)}/clients`),
+            {},
+            customHeaders
+        );
     }
 
     /**
      * Get a specific client by MAC address or client ID.
      */
-    public async getClient(identifier: string, siteId?: string): Promise<OmadaClientInfo | undefined> {
-        const clients = await this.listClients(siteId);
+    public async getClient(identifier: string, siteId?: string, customHeaders?: CustomHeaders): Promise<OmadaClientInfo | undefined> {
+        const clients = await this.listClients(siteId, customHeaders);
         return clients.find((client) => client.mac === identifier || client.id === identifier);
     }
 
@@ -45,10 +50,12 @@ export class ClientOperations {
      * @param siteId - Optional site ID, uses default from config if not provided
      * @returns Array of active client information
      */
-    public async listMostActiveClients(siteId?: string): Promise<ActiveClientInfo[]> {
+    public async listMostActiveClients(siteId?: string, customHeaders?: CustomHeaders): Promise<ActiveClientInfo[]> {
         const resolvedSiteId = this.site.resolveSiteId(siteId);
         const response = await this.request.get<OmadaApiResponse<ActiveClientInfo[]>>(
-            this.buildPath(`/sites/${encodeURIComponent(resolvedSiteId)}/dashboard/active-clients`)
+            this.buildPath(`/sites/${encodeURIComponent(resolvedSiteId)}/dashboard/active-clients`),
+            undefined,
+            customHeaders
         );
         return response.result ?? [];
     }
@@ -60,7 +67,7 @@ export class ClientOperations {
      * @param options - Options including optional siteId, start, and end timestamps
      * @returns Array of client activity snapshots over time
      */
-    public async listClientsActivity(options: GetClientActivityOptions = {}): Promise<ClientActivity[]> {
+    public async listClientsActivity(options: GetClientActivityOptions = {}, customHeaders?: CustomHeaders): Promise<ClientActivity[]> {
         const resolvedSiteId = this.site.resolveSiteId(options.siteId);
         const params: Record<string, unknown> = {};
 
@@ -73,7 +80,8 @@ export class ClientOperations {
 
         const response = await this.request.get<OmadaApiResponse<ClientActivity[]>>(
             this.buildPath(`/sites/${encodeURIComponent(resolvedSiteId)}/dashboard/client-activity`),
-            params
+            params,
+            customHeaders
         );
         return response.result ?? [];
     }
@@ -85,7 +93,10 @@ export class ClientOperations {
      * @param options - Options including siteId, pagination, filters, and search parameters
      * @returns Array of client past connection information
      */
-    public async listClientsPastConnections(options: ListClientsPastConnectionsOptions): Promise<ClientPastConnection[]> {
+    public async listClientsPastConnections(
+        options: ListClientsPastConnectionsOptions,
+        customHeaders?: CustomHeaders
+    ): Promise<ClientPastConnection[]> {
         const resolvedSiteId = this.site.resolveSiteId(options.siteId);
         const params: Record<string, unknown> = {
             page: options.page,
@@ -115,7 +126,8 @@ export class ClientOperations {
 
         const response = await this.request.get<OmadaApiResponse<PaginatedResult<ClientPastConnection>>>(
             this.buildPath(`/sites/${encodeURIComponent(resolvedSiteId)}/insight/past-connection`),
-            params
+            params,
+            customHeaders
         );
 
         const result = this.request.ensureSuccess(response);
