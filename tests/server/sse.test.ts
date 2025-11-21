@@ -75,7 +75,6 @@ describe('SSE Server', () => {
             httpHealthcheckPath: '/healthz',
             httpAllowCors: true,
             httpNgrokEnabled: false,
-            stateful: false,
             logLevel: 'info',
             logFormat: 'plain',
         } as EnvironmentConfig;

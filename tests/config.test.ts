@@ -37,7 +37,6 @@ describe('config', () => {
             expect(config.logLevel).toBe('info'); // Default
             expect(config.logFormat).toBe('plain'); // Default
             expect(config.useHttp).toBe(false); // Default
-            expect(config.stateful).toBe(false); // Default
         });
 
         it('should strip trailing slash from baseUrl', () => {
@@ -137,20 +136,6 @@ describe('config', () => {
             const config = loadConfigFromEnv(mockEnv);
 
             expect(config.useHttp).toBe(false);
-        });
-
-        it('should parse MCP_SERVER_STATEFUL as true', () => {
-            mockEnv.MCP_SERVER_STATEFUL = 'true';
-            const config = loadConfigFromEnv(mockEnv);
-
-            expect(config.stateful).toBe(true);
-        });
-
-        it('should parse MCP_SERVER_STATEFUL as false', () => {
-            mockEnv.MCP_SERVER_STATEFUL = 'false';
-            const config = loadConfigFromEnv(mockEnv);
-
-            expect(config.stateful).toBe(false);
         });
 
         it('should parse MCP_HTTP_PORT as number', () => {
@@ -313,7 +298,6 @@ describe('config', () => {
                 MCP_SERVER_LOG_LEVEL: 'debug',
                 MCP_SERVER_LOG_FORMAT: 'json',
                 MCP_SERVER_USE_HTTP: 'true',
-                MCP_SERVER_STATEFUL: 'true',
                 MCP_HTTP_PORT: '9000',
                 MCP_HTTP_TRANSPORT: 'sse',
                 MCP_HTTP_BIND_ADDR: '0.0.0.0',
@@ -339,7 +323,6 @@ describe('config', () => {
                 logLevel: 'debug',
                 logFormat: 'json',
                 useHttp: true,
-                stateful: true,
                 httpPort: 9000,
                 httpTransport: 'sse',
                 httpBindAddr: '0.0.0.0',

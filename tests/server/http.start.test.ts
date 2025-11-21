@@ -73,17 +73,9 @@ const sseModule = vi.hoisted(() => {
 });
 
 const streamModule = vi.hoisted(() => {
-    const state = {
-        transport: {
-            sessionId: 'stream-1',
-            close: vi.fn().mockResolvedValue(undefined),
-            onclose: undefined as (() => void) | undefined,
-        },
-        server: { close: vi.fn().mockResolvedValue(undefined) },
-    };
     return {
-        handleStreamRequest: vi.fn(async () => state),
-        state,
+        handleStreamRequest: vi.fn(async () => undefined),
+        closeAllStreamSessions: vi.fn(async () => undefined),
     };
 });
 
@@ -95,7 +87,10 @@ vi.mock('../../src/server/sse.js', () => ({
     handleSseConnection: sseModule.handleSseConnection,
     handleSseMessage: sseModule.handleSseMessage,
 }));
-vi.mock('../../src/server/stream.js', () => ({ handleStreamRequest: streamModule.handleStreamRequest }));
+vi.mock('../../src/server/stream.js', () => ({
+    handleStreamRequest: streamModule.handleStreamRequest,
+    closeAllStreamSessions: streamModule.closeAllStreamSessions,
+}));
 vi.mock('../../src/utils/logger.js', () => ({ logger: loggerModule }));
 
 class MockRequest extends EventEmitter {
@@ -158,7 +153,6 @@ const baseConfig: EnvironmentConfig = {
     logLevel: 'info',
     logFormat: 'plain',
     useHttp: true,
-    stateful: false,
     httpTransport: 'sse',
     httpEnableHealthcheck: true,
     httpAllowCors: true,
@@ -262,9 +256,9 @@ describe('startHttpServer', () => {
         expect(notFoundRes.statusCode).toBe(404);
     });
 
-    it('processes stream transport with stateful sessions and errors', async () => {
+    it('processes stream transport requests and handles errors', async () => {
         const { startHttpServer } = await import('../../src/server/http.js');
-        const config: EnvironmentConfig = { ...baseConfig, httpTransport: 'stream', stateful: true };
+        const config: EnvironmentConfig = { ...baseConfig, httpTransport: 'stream' };
         await startHttpServer({} as never, config);
         const handler = httpModule.getHandler();
         const streamReq = new MockRequest({ method: 'POST', url: '/mcp', headers: { 'mcp-session-id': 'stream-1' } });
@@ -273,9 +267,9 @@ describe('startHttpServer', () => {
         streamReq.send('{"jsonrpc":"2.0"}');
         await flushTasks();
         expect(streamModule.handleStreamRequest).toHaveBeenCalled();
-
-        expect(typeof streamModule.state.transport.onclose).toBe('function');
-        streamModule.state.transport.onclose?.();
+        const streamCallArgs = streamModule.handleStreamRequest.mock.calls[0] as unknown[];
+        const sessionMapArg = streamCallArgs[5];
+        expect(sessionMapArg).toBeInstanceOf(Map);
 
         const errorReq = new MockRequest({ method: 'POST', url: '/unknown' });
         const errorRes = new MockResponse();
@@ -372,7 +366,7 @@ describe('startHttpServer', () => {
         processOnSpy.mockClear();
         httpModule.server.close.mockClear();
 
-        const streamConfig: EnvironmentConfig = { ...baseConfig, httpTransport: 'stream', stateful: true };
+        const streamConfig: EnvironmentConfig = { ...baseConfig, httpTransport: 'stream' };
         await startHttpServer({} as never, streamConfig);
         const streamHandler = httpModule.getHandler();
         expect(streamHandler).toBeDefined();
@@ -387,8 +381,7 @@ describe('startHttpServer', () => {
         await flushTasks();
         await flushTasks();
 
-        expect(streamModule.state.server.close).toHaveBeenCalled();
-        expect(streamModule.state.transport.close).toHaveBeenCalled();
         expect(httpModule.server.close).toHaveBeenCalled();
+        expect(streamModule.closeAllStreamSessions).toHaveBeenCalled();
     });
 });

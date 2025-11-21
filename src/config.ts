@@ -47,7 +47,6 @@ const envSchema = z
         logLevel: z.enum(['debug', 'info', 'warn', 'error']).optional().default('info'),
         logFormat: z.enum(['plain', 'json', 'gcp-json']).optional().default('plain'),
         useHttp: createBooleanStringSchema(false),
-        stateful: createBooleanStringSchema(false),
 
         // MCP Server HTTP/SSE Configuration
         httpPort: numericStringSchema,
@@ -109,7 +108,6 @@ export interface EnvironmentConfig {
     logLevel: 'debug' | 'info' | 'warn' | 'error';
     logFormat: 'plain' | 'json' | 'gcp-json';
     useHttp: boolean;
-    stateful: boolean;
 
     // MCP Server HTTP/SSE Configuration
     httpPort?: number;
@@ -139,7 +137,6 @@ export function loadConfigFromEnv(env: NodeJS.ProcessEnv = process.env): Environ
         logLevel: env.MCP_SERVER_LOG_LEVEL,
         logFormat: env.MCP_SERVER_LOG_FORMAT,
         useHttp: env.MCP_SERVER_USE_HTTP,
-        stateful: env.MCP_SERVER_STATEFUL,
 
         // MCP Server HTTP/SSE Configuration
         httpPort: env.MCP_HTTP_PORT,
@@ -188,7 +185,6 @@ export function loadConfigFromEnv(env: NodeJS.ProcessEnv = process.env): Environ
         logLevel: parsed.data.logLevel,
         logFormat: parsed.data.logFormat,
         useHttp: parsed.data.useHttp,
-        stateful: parsed.data.stateful,
 
         // MCP Server HTTP/SSE Configuration
         httpPort: parsed.data.httpPort,

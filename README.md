@@ -110,7 +110,8 @@ The MCP server reads its configuration from environment variables. See `.env.exa
 | `MCP_SERVER_LOG_LEVEL`   | No       | `info`  | Logging verbosity (`debug`, `info`, `warn`, `error`, `silent`)              |
 | `MCP_SERVER_LOG_FORMAT`  | No       | `plain` | Log output format (`plain`, `json`, or `gcp-json`)                          |
 | `MCP_SERVER_USE_HTTP`    | No       | `false` | Start HTTP server instead of stdio                                          |
-| `MCP_SERVER_STATEFUL`    | No       | `false` | Maintain stateful sessions per client                                       |
+
+> **Session IDs and authentication:** When `OMADA_CLIENT_ID`, `OMADA_CLIENT_SECRET`, and `OMADA_OMADAC_ID` are provided (the default client-credentials mode), the server runs statelessly and treats the `Mcp-Session-Id` header as optional. A future OAuth-based user authentication mode will require this header again.
 
 #### MCP Server HTTP Configuration
 
@@ -196,8 +197,7 @@ Features:
 
 - Single endpoint for all operations (GET, POST, DELETE)
 - Server-Sent Events for streaming responses
-- Built-in session management with cryptographic session IDs
-- Support for stateless mode when needed
+- Built-in session management with cryptographic session IDs (the server currently operates statelessly when using client credentials)
 
 The Streamable HTTP endpoint defaults to `/mcp` and handles:
 
@@ -274,7 +274,7 @@ ngrok http 3000
 
 This forwards a public HTTPS URL to `http://localhost:3000` and prints the tunnel address in the console.
 
-If an intermediary strips the `Mcp-Session-Id` header, set `MCP_SERVER_STATEFUL=false` to disable server-managed sessions and allow stateless requests.
+In client-credentials mode the server already treats `Mcp-Session-Id` as optional; if the header is removed in transit, requests will still succeed.
 
 ## Tools
 

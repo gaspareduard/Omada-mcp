@@ -33,7 +33,6 @@ Reference `.env.example`. Primary variables:
   - `json` - structured JSON format.
   - `gcp-json` - structured JSON format compatible with Google Cloud Logging.
 - `MCP_SERVER_USE_HTTP` (default: `false`) - whether to start the HTTP server instead of stdio.
-- `MCP_SERVER_STATEFUL` (default: `false`) - whether to maintain stateful sessions per client.
 
 ### MCP Server HTTP Configuration, if `MCP_SERVER_USE_HTTP` is `true`:
 
@@ -74,7 +73,7 @@ Reference `.env.example`. Primary variables:
 - All test files should be placed in the `tests/` directory with the `.test.ts` extension.
 - The test folder structure **must mirror** the `src/` folder structure for consistency and maintainability.
 - Run tests with `npm test` or `npm run test:watch` for watch mode.
-- Test coverage can be generated with `npm run test:coverage`.
+- Test coverage can be generated with `npm run test:coverage`. The coverage needs to be above 80% on Lines, Branches, Functions, and Statements for the entire project. Focus on covering edge cases and error handling. Always validate after making changes.
 - All configuration validations must be implemented in `src/utils/config-validations.ts` and tested thoroughly.
 - No validation logic should exist outside of `src/config.ts` and `src/utils/config-validations.ts`.
 - Mock external dependencies (e.g., Omada API calls) in tests to ensure isolation. Use Vitest's mocking capabilities for this purpose.
@@ -91,6 +90,7 @@ Reference `.env.example`. Primary variables:
 ## Formatting & Linting
 
 - Biome is used for both formatting and linting (`npm run format` and `npm run lint`).
+- Develop using the Biome setting located in `biome.json`.
 - Biome enforces import ordering, TypeScript best practices, and code style consistency.
 - **IMPORTANT** All source files must use LF (Unix-style) line endings, not CRLF (Windows-style). Biome will automatically convert line endings when running `npm run format`.
 - If you encounter formatting errors related to line endings (shown as `␍` in error messages), run `npm run format` to fix them automatically.
