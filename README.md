@@ -252,7 +252,7 @@ By default, the server listens on `127.0.0.1:3000` and exposes the MCP endpoint 
 
 To share the local server with remote tooling, you can use ngrok to expose the HTTP server publicly. This works with **both stream and SSE transports**.
 
-**Option 1: Built-in ngrok support** (recommended)
+##### Option 1: Built-in ngrok support (recommended)
 
 Set the following environment variables:
 
@@ -264,7 +264,7 @@ npm run dev
 
 The server will automatically establish an ngrok tunnel and log the public URL.
 
-**Option 2: Manual ngrok setup**
+##### Option 2: Manual ngrok setup
 
 Run ngrok in a separate terminal after starting the server:
 
