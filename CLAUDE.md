@@ -101,14 +101,14 @@ Reference `.env.example`. Primary variables:
 - Ensure `npm run lint` and `npm run build` pass before committing.
 - Reference the OpenAPI spec in `docs/` when adding or updating Omada API interactions.
 
-## Aditional Guidelines
+## Additional Guidelines
 
 - The project follows a GitFlow branching strategy: `main` reflects production-ready code, while `develop` is the integration branch. **All pull requests must target `develop`.**
 - When adding new features or fixing bugs, create a new branch from `develop` and submit a pull request for review.
 - Write unit tests for new functionality and ensure existing tests pass.
 - Keep the reference `.env.example` and this documentation up to date with any new environment variables added to the project.
 - **DON'T** change the JSON files under `docs/openapi/`; they should only be used as reference for the API endpoints.
-- **ONLY** implement using client credentials mode Access processs as described in the Omada API documentation. The client credentials should be provided via environment variables.
+- **ONLY** implement using client credentials mode Access process as described in the Omada API documentation. The client credentials should be provided via environment variables.
 - After a tool or prompt is implemented, update the README.md file with a table of supported tools and prompts in the topic Supported Omada API Operations. This table should include the operationId, a brief description, and any relevant notes about the implementation. Keep it short and concise.
 - Avoid using `docs/openapi/00-all.json` as a reference for implementing operations. Instead, use the individual files in `docs/openapi/` that correspond to each TAG. This will help keep the implementation focused and organized. Also the file is very large and cumbersome to navigate. All the individual files under `docs/openapi/` are generated from `00-all.json`.
 - **DON'T** change anything in `node_modules` or commit any changes to that folder.
