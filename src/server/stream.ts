@@ -2,7 +2,8 @@ import { randomUUID } from 'node:crypto';
 import type { IncomingMessage, ServerResponse } from 'node:http';
 import { StreamableHTTPServerTransport } from '@modelcontextprotocol/sdk/server/streamableHttp.js';
 import type { EnvironmentConfig } from '../config.js';
-import type { OmadaClient } from '../omadaClient/index.js';
+import { OmadaClient } from '../omadaClient/index.js';
+import { extractAuthFromHeaders, resolveOmadaConfig } from '../utils/omada-headers.js';
 import { logger } from '../utils/logger.js';
 import { createServer } from './common.js';
 
@@ -114,10 +115,11 @@ export function createStreamTransport(client: OmadaClient, config: EnvironmentCo
 }
 
 /**
- * Handles incoming Streamable HTTP requests (GET, POST, DELETE) using persistent session state
+ * Handles incoming Streamable HTTP requests (GET, POST, DELETE) using persistent session state.
+ * For new sessions, resolves Omada credentials from env config (wins) and request headers (fallback).
+ * Existing sessions reuse the OmadaClient that was created when the session was initialized.
  */
 export async function handleStreamRequest(
-    client: OmadaClient,
     config: EnvironmentConfig,
     req: IncomingMessage,
     res: ServerResponse,
@@ -146,6 +148,11 @@ export async function handleStreamRequest(
 
     const isNewSession = !state;
     if (!state) {
+        // Resolve Omada credentials for the new session from env (wins) and request headers
+        const headerAuth = extractAuthFromHeaders(req.headers);
+        const omadaConfig = resolveOmadaConfig(config, headerAuth);
+        const client = new OmadaClient(omadaConfig);
+
         let pendingState: StreamTransportState;
         const lifecycleHooks: StreamLifecycleHooks = {
             onSessionInitialized: (sessionId: string) => {

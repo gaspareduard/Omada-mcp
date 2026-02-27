@@ -2,7 +2,7 @@ import https from 'node:https';
 
 import axios, { type AxiosInstance, type AxiosRequestConfig } from 'axios';
 
-import type { EnvironmentConfig } from '../config.js';
+import type { OmadaConnectionConfig } from '../config.js';
 import type {
     ActiveClientInfo,
     ClientActivity,
@@ -29,7 +29,7 @@ import { RequestHandler } from './request.js';
 import { SecurityOperations } from './security.js';
 import { SiteOperations } from './site.js';
 
-export type OmadaClientOptions = EnvironmentConfig;
+export type OmadaClientOptions = OmadaConnectionConfig;
 
 /**
  * Main client for interacting with the TP-Link Omada API.

@@ -56,7 +56,7 @@ const sseModule = vi.hoisted(() => {
         server: { close: vi.fn().mockResolvedValue(undefined) },
     };
     return {
-        handleSseConnection: vi.fn(async (_client, _config, _messagePath, _req, res: { writeHead: Function }) => {
+        handleSseConnection: vi.fn(async (_config, _messagePath, _req, res: { writeHead: Function }) => {
             await Promise.resolve();
             res.writeHead?.(200, { 'Content-Type': 'text/event-stream' });
             return connection;
@@ -178,7 +178,7 @@ describe('startHttpServer', () => {
 
     it('handles health, SSE connection, and SSE messages', async () => {
         const { startHttpServer } = await import('../../src/server/http.js');
-        await startHttpServer({} as never, baseConfig);
+        await startHttpServer(baseConfig);
         const handler = httpModule.getHandler();
         expect(handler).toBeDefined();
 
@@ -213,7 +213,7 @@ describe('startHttpServer', () => {
 
     it('handles invalid URLs, method mismatches, and missing sessions', async () => {
         const { startHttpServer } = await import('../../src/server/http.js');
-        await startHttpServer({} as never, baseConfig);
+        await startHttpServer(baseConfig);
         const handler = httpModule.getHandler();
         expect(handler).toBeDefined();
 
@@ -259,7 +259,7 @@ describe('startHttpServer', () => {
     it('processes stream transport requests and handles errors', async () => {
         const { startHttpServer } = await import('../../src/server/http.js');
         const config: EnvironmentConfig = { ...baseConfig, httpTransport: 'stream' };
-        await startHttpServer({} as never, config);
+        await startHttpServer(config);
         const handler = httpModule.getHandler();
         const streamReq = new MockRequest({ method: 'POST', url: '/mcp', headers: { 'mcp-session-id': 'stream-1' } });
         const streamRes = new MockResponse();
@@ -268,7 +268,7 @@ describe('startHttpServer', () => {
         await flushTasks();
         expect(streamModule.handleStreamRequest).toHaveBeenCalled();
         const streamCallArgs = streamModule.handleStreamRequest.mock.calls[0] as unknown[];
-        const sessionMapArg = streamCallArgs[5];
+        const sessionMapArg = streamCallArgs[4];
         expect(sessionMapArg).toBeInstanceOf(Map);
 
         const errorReq = new MockRequest({ method: 'POST', url: '/unknown' });
@@ -281,14 +281,14 @@ describe('startHttpServer', () => {
 
     it('warns when ngrok enabled without token', async () => {
         const { startHttpServer } = await import('../../src/server/http.js');
-        await startHttpServer({} as never, { ...baseConfig, httpNgrokEnabled: true });
+        await startHttpServer({ ...baseConfig, httpNgrokEnabled: true });
         expect(loggerModule.warn).toHaveBeenCalledWith('Ngrok enabled but no auth token provided; skipping tunnel setup');
     });
 
     it('handles handler failures and client errors gracefully', async () => {
         const { startHttpServer } = await import('../../src/server/http.js');
         sseModule.handleSseConnection.mockRejectedValueOnce(new Error('connect-fail'));
-        await startHttpServer({} as never, baseConfig);
+        await startHttpServer(baseConfig);
         const handler = httpModule.getHandler();
         expect(handler).toBeDefined();
 
@@ -330,7 +330,7 @@ describe('startHttpServer', () => {
 
     it('establishes ngrok tunnel and normalizes host when auth token provided', async () => {
         const { startHttpServer } = await import('../../src/server/http.js');
-        await startHttpServer({} as never, {
+        await startHttpServer({
             ...baseConfig,
             httpNgrokEnabled: true,
             httpNgrokAuthToken: 'token-123',
@@ -346,7 +346,7 @@ describe('startHttpServer', () => {
     it('closes SSE and stream sessions on shutdown signals', async () => {
         const { startHttpServer } = await import('../../src/server/http.js');
 
-        await startHttpServer({} as never, baseConfig);
+        await startHttpServer(baseConfig);
         const sseHandler = httpModule.getHandler();
         expect(sseHandler).toBeDefined();
 
@@ -367,7 +367,7 @@ describe('startHttpServer', () => {
         httpModule.server.close.mockClear();
 
         const streamConfig: EnvironmentConfig = { ...baseConfig, httpTransport: 'stream' };
-        await startHttpServer({} as never, streamConfig);
+        await startHttpServer(streamConfig);
         const streamHandler = httpModule.getHandler();
         expect(streamHandler).toBeDefined();
 

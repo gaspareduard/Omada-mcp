@@ -1,7 +1,8 @@
 import type { IncomingMessage, ServerResponse } from 'node:http';
 import { SSEServerTransport } from '@modelcontextprotocol/sdk/server/sse.js';
 import type { EnvironmentConfig } from '../config.js';
-import type { OmadaClient } from '../omadaClient/index.js';
+import { OmadaClient } from '../omadaClient/index.js';
+import { extractAuthFromHeaders, resolveOmadaConfig } from '../utils/omada-headers.js';
 import { logger } from '../utils/logger.js';
 import { createServer } from './common.js';
 
@@ -35,10 +36,10 @@ export function createSseTransport(client: OmadaClient, config: EnvironmentConfi
 }
 
 /**
- * Handles SSE connection establishment (GET request)
+ * Handles SSE connection establishment (GET request).
+ * Resolves Omada credentials from env config (wins) and request headers (fallback).
  */
 export async function handleSseConnection(
-    client: OmadaClient,
     config: EnvironmentConfig,
     endpoint: string,
     req: IncomingMessage,
@@ -55,6 +56,10 @@ export async function handleSseConnection(
     });
 
     try {
+        const headerAuth = extractAuthFromHeaders(req.headers);
+        const omadaConfig = resolveOmadaConfig(config, headerAuth);
+        const client = new OmadaClient(omadaConfig);
+
         const { transport, server } = createSseTransport(client, config, endpoint, res);
 
         await server.connect(transport);

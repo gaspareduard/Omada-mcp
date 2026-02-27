@@ -7,6 +7,23 @@ import { createServer } from '../../src/server/common.js';
 import { createSseTransport, getSseMessagePath, handleSseConnection, handleSseMessage } from '../../src/server/sse.js';
 import { logger } from '../../src/utils/logger.js';
 
+vi.mock('../../src/omadaClient/index.js', () => ({
+    OmadaClient: vi.fn(function MockOmadaClient(this: Record<string, unknown>) {
+        return this;
+    }),
+}));
+
+vi.mock('../../src/utils/omada-headers.js', () => ({
+    extractAuthFromHeaders: vi.fn(() => ({})),
+    resolveOmadaConfig: vi.fn(() => ({
+        baseUrl: 'https://test.local',
+        clientId: 'test-client-id',
+        clientSecret: 'test-client-secret',
+        omadacId: 'test-omadac-id',
+        strictSsl: true,
+    })),
+}));
+
 // Mock dependencies
 vi.mock('../../src/utils/logger.js', () => ({
     logger: {
@@ -144,7 +161,7 @@ describe('SSE Server', () => {
     describe('handleSseConnection', () => {
         it('should establish SSE connection successfully', async () => {
             const endpoint = '/sse';
-            const result = await handleSseConnection(mockClient, mockConfig, endpoint, mockReq, mockRes);
+            const result = await handleSseConnection(mockConfig, endpoint, mockReq, mockRes);
 
             expect(result).toBeDefined();
             expect(result.transport).toBeDefined();
@@ -155,7 +172,7 @@ describe('SSE Server', () => {
         it('should log connection request with headers', async () => {
             const endpoint = '/sse';
 
-            await handleSseConnection(mockClient, mockConfig, endpoint, mockReq, mockRes);
+            await handleSseConnection(mockConfig, endpoint, mockReq, mockRes);
 
             expect(logger.info).toHaveBeenCalledWith('SSE connection request received', {
                 method: 'GET',
@@ -172,7 +189,7 @@ describe('SSE Server', () => {
                 headers: { host: 'localhost:3000' },
             } as unknown as IncomingMessage;
 
-            await handleSseConnection(mockClient, mockConfig, endpoint, reqWithoutOrigin, mockRes);
+            await handleSseConnection(mockConfig, endpoint, reqWithoutOrigin, mockRes);
 
             expect(logger.info).toHaveBeenCalledWith(
                 'SSE connection request received',
@@ -189,7 +206,7 @@ describe('SSE Server', () => {
                 headers: { origin: 'http://localhost' },
             } as unknown as IncomingMessage;
 
-            await handleSseConnection(mockClient, mockConfig, endpoint, reqWithoutHost, mockRes);
+            await handleSseConnection(mockConfig, endpoint, reqWithoutHost, mockRes);
 
             expect(logger.info).toHaveBeenCalledWith(
                 'SSE connection request received',
@@ -202,7 +219,7 @@ describe('SSE Server', () => {
         it('should log successful connection establishment', async () => {
             const endpoint = '/sse';
 
-            await handleSseConnection(mockClient, mockConfig, endpoint, mockReq, mockRes);
+            await handleSseConnection(mockConfig, endpoint, mockReq, mockRes);
 
             expect(logger.info).toHaveBeenCalledWith('SSE connection established', {
                 sessionId: 'mock-session-id',
@@ -217,7 +234,7 @@ describe('SSE Server', () => {
                 connect: vi.fn().mockRejectedValue(testError),
             } as unknown as ReturnType<typeof createServer>);
 
-            await expect(handleSseConnection(mockClient, mockConfig, endpoint, mockReq, mockRes)).rejects.toThrow('Connection failed');
+            await expect(handleSseConnection(mockConfig, endpoint, mockReq, mockRes)).rejects.toThrow('Connection failed');
 
             expect(logger.error).toHaveBeenCalledWith(
                 'Failed to establish SSE connection',
@@ -233,7 +250,7 @@ describe('SSE Server', () => {
         it('should connect server to transport', async () => {
             const endpoint = '/sse';
 
-            await handleSseConnection(mockClient, mockConfig, endpoint, mockReq, mockRes);
+            await handleSseConnection(mockConfig, endpoint, mockReq, mockRes);
 
             const serverMock = vi.mocked(createServer).mock.results[0].value;
             expect(serverMock.connect).toHaveBeenCalled();
@@ -241,7 +258,7 @@ describe('SSE Server', () => {
 
         it('should start transport after connection', async () => {
             const endpoint = '/sse';
-            const result = await handleSseConnection(mockClient, mockConfig, endpoint, mockReq, mockRes);
+            const result = await handleSseConnection(mockConfig, endpoint, mockReq, mockRes);
 
             expect(result.transport.start).toHaveBeenCalledTimes(1);
         });

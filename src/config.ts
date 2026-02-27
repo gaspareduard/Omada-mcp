@@ -36,9 +36,9 @@ const envSchema = z
     .object({
         // Omada Client Configuration
         baseUrl: z.string().url({ message: 'OMADA_BASE_URL must be a valid URL' }),
-        clientId: z.string().min(1, 'OMADA_CLIENT_ID is required'),
-        clientSecret: z.string().min(1, 'OMADA_CLIENT_SECRET is required'),
-        omadacId: z.string().min(1, 'OMADA_OMADAC_ID is required'),
+        clientId: z.string().min(1, 'OMADA_CLIENT_ID must not be empty').optional(),
+        clientSecret: z.string().min(1, 'OMADA_CLIENT_SECRET must not be empty').optional(),
+        omadacId: z.string().min(1, 'OMADA_OMADAC_ID must not be empty').optional(),
         siteId: z.string().min(1).optional(),
         strictSsl: createBooleanStringSchema(true),
         requestTimeout: numericStringSchema,
@@ -60,6 +60,18 @@ const envSchema = z
         httpNgrokEnabled: createBooleanStringSchema(false),
         httpNgrokAuthToken: z.string().optional(),
     })
+    .refine(
+        (data) => data.useHttp || !!data.clientId,
+        { message: 'OMADA_CLIENT_ID is required when not using HTTP mode', path: ['clientId'] }
+    )
+    .refine(
+        (data) => data.useHttp || !!data.clientSecret,
+        { message: 'OMADA_CLIENT_SECRET is required when not using HTTP mode', path: ['clientSecret'] }
+    )
+    .refine(
+        (data) => data.useHttp || !!data.omadacId,
+        { message: 'OMADA_OMADAC_ID is required when not using HTTP mode', path: ['omadacId'] }
+    )
     .refine(
         (data) => {
             // Validate httpBindAddr if provided
@@ -94,12 +106,28 @@ const envSchema = z
         }
     );
 
-export interface EnvironmentConfig {
-    // Omada Client Configuration
+/**
+ * The resolved Omada connection parameters required to build an OmadaClient.
+ * All fields are guaranteed to be present.
+ */
+export interface OmadaConnectionConfig {
     baseUrl: string;
     clientId: string;
     clientSecret: string;
     omadacId: string;
+    siteId?: string;
+    strictSsl: boolean;
+    requestTimeout?: number;
+}
+
+export interface EnvironmentConfig {
+    // Omada Client Configuration
+    // baseUrl is always required (from env)
+    // clientId, clientSecret, omadacId are optional in HTTP mode (can come from request headers)
+    baseUrl: string;
+    clientId?: string;
+    clientSecret?: string;
+    omadacId?: string;
     siteId?: string;
     strictSsl: boolean;
     requestTimeout?: number;
