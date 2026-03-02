@@ -10,6 +10,8 @@ export function registerGetFirewallSettingTool(server: McpServer, client: OmadaC
             description: 'Get firewall configuration and rules for a site, including ACL rules, IP groups, and security policies.',
             inputSchema: siteInputSchema.shape,
         },
-        wrapToolHandler('getFirewallSetting', async ({ siteId }) => toToolResult(await client.getFirewallSetting(siteId)))
+        wrapToolHandler('getFirewallSetting', async ({ siteId, customHeaders }) =>
+            toToolResult(await client.getFirewallSetting(siteId, customHeaders))
+        )
     );
 }

@@ -10,6 +10,8 @@ export function registerGetSwitchStackDetailTool(server: McpServer, client: Omad
             description: 'Fetch detailed information for a specific switch stack.',
             inputSchema: stackIdSchema.shape,
         },
-        wrapToolHandler('getSwitchStackDetail', async ({ stackId, siteId }) => toToolResult(await client.getSwitchStackDetail(stackId, siteId)))
+        wrapToolHandler('getSwitchStackDetail', async ({ stackId, siteId, customHeaders }) =>
+            toToolResult(await client.getSwitchStackDetail(stackId, siteId, customHeaders))
+        )
     );
 }

@@ -3,7 +3,6 @@ import http from 'node:http';
 import type { SSEServerTransport } from '@modelcontextprotocol/sdk/server/sse.js';
 import ngrok from '@ngrok/ngrok';
 import type { EnvironmentConfig } from '../config.js';
-import type { OmadaClient } from '../omadaClient/index.js';
 import { normalizePath, resolvePort } from '../utils/config-validations.js';
 import { logger } from '../utils/logger.js';
 import { createSseTransport, getSseMessagePath, handleSseConnection, handleSseMessage } from './sse.js';
@@ -136,9 +135,11 @@ async function createShutdownHandler(signal: NodeJS.Signals, closeHttp: () => Pr
 }
 
 /**
- * Starts the HTTP server with the configured transport (SSE or Stream)
+ * Starts the HTTP server with the configured transport (SSE or Stream).
+ * Omada credentials are resolved per-connection/session from env vars (always win)
+ * and request headers (x-omada-client-id, x-omada-client-secret, x-omada-omadac-id).
  */
-export async function startHttpServer(client: OmadaClient, config: EnvironmentConfig): Promise<void> {
+export async function startHttpServer(config: EnvironmentConfig): Promise<void> {
     const transport = config.httpTransport;
     logger.info('Starting HTTP server', { transport });
 
@@ -222,7 +223,7 @@ export async function startHttpServer(client: OmadaClient, config: EnvironmentCo
                         if (req.method === 'GET') {
                             // Establish SSE connection
                             const messagePath = getSseMessagePath();
-                            const { transport: sseTransport, server: sseServer } = await handleSseConnection(client, config, messagePath, req, res);
+                            const { transport: sseTransport, server: sseServer } = await handleSseConnection(config, messagePath, req, res);
 
                             // Store transport for later message handling
                             sseTransports.set(sseTransport.sessionId, { transport: sseTransport, server: sseServer });
@@ -259,7 +260,7 @@ export async function startHttpServer(client: OmadaClient, config: EnvironmentCo
                 } else {
                     // Streamable HTTP Transport handling
                     if (url.pathname === endpointPath) {
-                        await handleStreamRequest(client, config, req, res, parsedBody, streamSessions);
+                        await handleStreamRequest(config, req, res, parsedBody, streamSessions);
                     } else {
                         sendJson(res, 404, { error: 'Not Found' });
                     }
@@ -270,6 +271,15 @@ export async function startHttpServer(client: OmadaClient, config: EnvironmentCo
                     method: req.method,
                 });
             } catch (error) {
+                if (error instanceof Error && error.message.startsWith('Missing required Omada credentials')) {
+                    logger.warn('Request rejected: missing Omada credentials', { error: error.message });
+                    if (!res.headersSent) {
+                        sendJson(res, 401, { error: error.message });
+                    } else {
+                        res.end();
+                    }
+                    return;
+                }
                 logger.error('Failed to handle MCP HTTP request', { error });
                 if (!res.headersSent) {
                     sendJson(res, 500, {

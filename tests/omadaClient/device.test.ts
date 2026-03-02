@@ -39,7 +39,7 @@ describe('omadaClient/device', () => {
 
             expect(devices).toEqual(mockDevices);
             expect(mockSite.resolveSiteId).toHaveBeenCalledWith('test-site');
-            expect(mockRequest.fetchPaginated).toHaveBeenCalledWith('/api/sites/test-site/devices');
+            expect(mockRequest.fetchPaginated).toHaveBeenCalledWith('/api/sites/test-site/devices', {}, undefined);
         });
 
         it('should use default siteId if not provided', async () => {
@@ -49,7 +49,7 @@ describe('omadaClient/device', () => {
             await deviceOps.listDevices();
 
             expect(mockSite.resolveSiteId).toHaveBeenCalledWith(undefined);
-            expect(mockRequest.fetchPaginated).toHaveBeenCalledWith('/api/sites/default-site/devices');
+            expect(mockRequest.fetchPaginated).toHaveBeenCalledWith('/api/sites/default-site/devices', {}, undefined);
         });
     });
 
@@ -110,7 +110,7 @@ describe('omadaClient/device', () => {
 
             expect(stack).toEqual(mockStack);
             expect(mockSite.resolveSiteId).toHaveBeenCalledWith('test-site');
-            expect(mockRequest.get).toHaveBeenCalledWith('/api/sites/test-site/stacks/stack-1');
+            expect(mockRequest.get).toHaveBeenCalledWith('/api/sites/test-site/stacks/stack-1', undefined, undefined);
             expect(mockRequest.ensureSuccess).toHaveBeenCalledWith(mockResponse);
         });
 
@@ -136,7 +136,7 @@ describe('omadaClient/device', () => {
             await deviceOps.getSwitchStackDetail('stack-1');
 
             expect(mockSite.resolveSiteId).toHaveBeenCalledWith(undefined);
-            expect(mockRequest.get).toHaveBeenCalledWith('/api/sites/default-site/stacks/stack-1');
+            expect(mockRequest.get).toHaveBeenCalledWith('/api/sites/default-site/stacks/stack-1', undefined, undefined);
         });
     });
 
@@ -156,7 +156,7 @@ describe('omadaClient/device', () => {
             const devices = await deviceOps.searchDevices('Device 1');
 
             expect(devices).toEqual(mockDevices);
-            expect(mockRequest.get).toHaveBeenCalledWith('/api/devices?searchKey=Device%201');
+            expect(mockRequest.get).toHaveBeenCalledWith('/api/devices?searchKey=Device%201', undefined, undefined);
             expect(mockRequest.ensureSuccess).toHaveBeenCalledWith(mockResponse);
         });
     });
@@ -185,7 +185,7 @@ describe('omadaClient/device', () => {
             });
 
             expect(stats).toEqual(mockStats);
-            expect(mockRequest.get).toHaveBeenCalledWith('/api/devices/stat?page=1&pageSize=50');
+            expect(mockRequest.get).toHaveBeenCalledWith('/api/devices/stat?page=1&pageSize=50', undefined, undefined);
             expect(mockRequest.ensureSuccess).toHaveBeenCalledWith(mockResponse);
         });
 
@@ -218,7 +218,9 @@ describe('omadaClient/device', () => {
             });
 
             expect(mockRequest.get).toHaveBeenCalledWith(
-                '/api/devices/stat?page=2&pageSize=100&searchMacs=00%3A11%3A22%3A33%3A44%3A55%2CAA%3ABB%3ACC%3ADD%3AEE%3AFF&searchNames=Device+1%2CDevice+2&searchModels=EAP650%2CEAP670&searchSns=SN001%2CSN002&filters.tag=building-a&filters.deviceSeriesType=eap'
+                '/api/devices/stat?page=2&pageSize=100&searchMacs=00%3A11%3A22%3A33%3A44%3A55%2CAA%3ABB%3ACC%3ADD%3AEE%3AFF&searchNames=Device+1%2CDevice+2&searchModels=EAP650%2CEAP670&searchSns=SN001%2CSN002&filters.tag=building-a&filters.deviceSeriesType=eap',
+                undefined,
+                undefined
             );
         });
     });

@@ -11,6 +11,6 @@ export function registerGetLanProfileListTool(server: McpServer, client: OmadaCl
                 'Get the list of LAN profiles configured in a site. LAN profiles define network settings that can be applied to switch ports.',
             inputSchema: siteInputSchema.shape,
         },
-        wrapToolHandler('getLanProfileList', async ({ siteId }) => toToolResult(await client.getLanProfileList(siteId)))
+        wrapToolHandler('getLanProfileList', async ({ siteId, customHeaders }) => toToolResult(await client.getLanProfileList(siteId, customHeaders)))
     );
 }

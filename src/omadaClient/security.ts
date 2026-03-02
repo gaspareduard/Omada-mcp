@@ -1,4 +1,4 @@
-import type { PaginatedResult } from '../types/index.js';
+import type { CustomHeaders, PaginatedResult } from '../types/index.js';
 import type { GetThreatListOptions, ThreatInfo } from '../types/threatInfo.js';
 import type { RequestHandler } from './request.js';
 
@@ -19,7 +19,7 @@ export class SecurityOperations {
      * @param options - Threat list query options
      * @returns Paginated list of threat information
      */
-    async getThreatList(options: GetThreatListOptions): Promise<PaginatedResult<ThreatInfo>> {
+    async getThreatList(options: GetThreatListOptions, customHeaders?: CustomHeaders): Promise<PaginatedResult<ThreatInfo>> {
         const params: Record<string, string | number | boolean> = {
             archived: options.archived,
             page: options.page,
@@ -46,10 +46,14 @@ export class SecurityOperations {
 
         const path = this.buildPath('/security/threat-management');
 
-        return await this.request.request<PaginatedResult<ThreatInfo>>({
-            method: 'GET',
-            url: path,
-            params,
-        });
+        return await this.request.request<PaginatedResult<ThreatInfo>>(
+            {
+                method: 'GET',
+                url: path,
+                params,
+            },
+            true,
+            customHeaders
+        );
     }
 }

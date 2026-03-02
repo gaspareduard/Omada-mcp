@@ -29,7 +29,7 @@ describe('omadaClient/site', () => {
                 const sites = await siteOps.listSites();
 
                 expect(sites).toEqual(mockSites);
-                expect(mockRequest.fetchPaginated).toHaveBeenCalledWith('/api/sites');
+                expect(mockRequest.fetchPaginated).toHaveBeenCalledWith('/api/sites', {}, undefined);
             });
         });
 

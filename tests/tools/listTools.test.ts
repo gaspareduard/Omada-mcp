@@ -46,7 +46,7 @@ describe('tools - list operations', () => {
             const mockExtra = { sessionId: 'test-session' };
             const result = await handler!({ siteId: 'test-site' }, mockExtra, mockExtra);
 
-            expect(mockClient.listMostActiveClients).toHaveBeenCalledWith('test-site');
+            expect(mockClient.listMostActiveClients).toHaveBeenCalledWith('test-site', undefined);
             expect(result).toEqual({
                 content: [{ type: 'text', text: expect.any(String) }],
             });
@@ -86,11 +86,14 @@ describe('tools - list operations', () => {
 
             const result = await handler!({ siteId: 'test-site', start: 1640000000, end: 1640100000 }, mockExtra);
 
-            expect(mockClient.listClientsActivity).toHaveBeenCalledWith({
-                siteId: 'test-site',
-                start: 1640000000,
-                end: 1640100000,
-            });
+            expect(mockClient.listClientsActivity).toHaveBeenCalledWith(
+                {
+                    siteId: 'test-site',
+                    start: 1640000000,
+                    end: 1640100000,
+                },
+                undefined
+            );
             expect(result).toEqual({
                 content: [{ type: 'text', text: expect.any(String) }],
             });
@@ -106,7 +109,7 @@ describe('tools - list operations', () => {
             const handler = registeredHandlers.get('listClientsActivity');
             const result = await handler!({}, mockExtra);
 
-            expect(mockClient.listClientsActivity).toHaveBeenCalledWith({});
+            expect(mockClient.listClientsActivity).toHaveBeenCalledWith({}, undefined);
             expect(result).toEqual({
                 content: [{ type: 'text', text: expect.any(String) }],
             });
@@ -140,11 +143,14 @@ describe('tools - list operations', () => {
                 mockExtra
             );
 
-            expect(mockClient.listClientsPastConnections).toHaveBeenCalledWith({
-                page: 1,
-                pageSize: 50,
-                siteId: 'test-site',
-            });
+            expect(mockClient.listClientsPastConnections).toHaveBeenCalledWith(
+                {
+                    page: 1,
+                    pageSize: 50,
+                    siteId: 'test-site',
+                },
+                undefined
+            );
             expect(result).toEqual({
                 content: [{ type: 'text', text: expect.any(String) }],
             });
@@ -172,16 +178,19 @@ describe('tools - list operations', () => {
                 mockExtra
             );
 
-            expect(mockClient.listClientsPastConnections).toHaveBeenCalledWith({
-                page: 2,
-                pageSize: 100,
-                siteId: 'test-site',
-                sortLastSeen: 'desc',
-                timeStart: 1640000000000,
-                timeEnd: 1640100000000,
-                guest: true,
-                searchKey: 'test',
-            });
+            expect(mockClient.listClientsPastConnections).toHaveBeenCalledWith(
+                {
+                    page: 2,
+                    pageSize: 100,
+                    siteId: 'test-site',
+                    sortLastSeen: 'desc',
+                    timeStart: 1640000000000,
+                    timeEnd: 1640100000000,
+                    guest: true,
+                    searchKey: 'test',
+                },
+                undefined
+            );
             expect(result).toEqual({
                 content: [{ type: 'text', text: expect.any(String) }],
             });
@@ -212,10 +221,13 @@ describe('tools - list operations', () => {
                 mockExtra
             );
 
-            expect(mockClient.listDevicesStats).toHaveBeenCalledWith({
-                page: 1,
-                pageSize: 50,
-            });
+            expect(mockClient.listDevicesStats).toHaveBeenCalledWith(
+                {
+                    page: 1,
+                    pageSize: 50,
+                },
+                undefined
+            );
             expect(result).toEqual({
                 content: [{ type: 'text', text: expect.any(String) }],
             });
@@ -248,16 +260,19 @@ describe('tools - list operations', () => {
                 mockExtra
             );
 
-            expect(mockClient.listDevicesStats).toHaveBeenCalledWith({
-                page: 2,
-                pageSize: 100,
-                searchMacs: '00:11:22:33:44:55',
-                searchNames: 'Device 1',
-                searchModels: 'EAP650',
-                searchSns: 'SN001',
-                filterTag: 'building-a',
-                filterDeviceSeriesType: 'eap',
-            });
+            expect(mockClient.listDevicesStats).toHaveBeenCalledWith(
+                {
+                    page: 2,
+                    pageSize: 100,
+                    searchMacs: '00:11:22:33:44:55',
+                    searchNames: 'Device 1',
+                    searchModels: 'EAP650',
+                    searchSns: 'SN001',
+                    filterTag: 'building-a',
+                    filterDeviceSeriesType: 'eap',
+                },
+                undefined
+            );
             expect(result).toEqual({
                 content: [{ type: 'text', text: expect.any(String) }],
             });

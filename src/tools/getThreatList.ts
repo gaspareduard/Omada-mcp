@@ -2,7 +2,7 @@ import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { z } from 'zod';
 
 import type { OmadaClient } from '../omadaClient/index.js';
-import { toToolResult, wrapToolHandler } from '../server/common.js';
+import { customHeadersSchema, toToolResult, wrapToolHandler } from '../server/common.js';
 import { createPaginationSchema } from '../utils/pagination-schema.js';
 
 const getThreatListSchema = z.object({
@@ -14,6 +14,7 @@ const getThreatListSchema = z.object({
     severity: z.number().int().min(0).max(3).optional().describe('Threat severity: 0=Critical, 1=Major, 2=Concerning, 3=Minor'),
     sortTime: z.enum(['asc', 'desc']).optional().describe('Sort by time: asc or desc'),
     searchKey: z.string().optional().describe('Fuzzy search for Threat Description/Classification/Classification Description'),
+    customHeaders: customHeadersSchema,
 });
 
 export function registerGetThreatListTool(server: McpServer, client: OmadaClient): void {
@@ -37,7 +38,7 @@ export function registerGetThreatListTool(server: McpServer, client: OmadaClient
                 searchKey: args.searchKey,
             };
 
-            return toToolResult(await client.getThreatList(options));
+            return toToolResult(await client.getThreatList(options, args.customHeaders));
         })
     );
 }

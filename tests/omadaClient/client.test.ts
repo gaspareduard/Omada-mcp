@@ -39,7 +39,7 @@ describe('omadaClient/client', () => {
 
             expect(clients).toEqual(mockClients);
             expect(mockSite.resolveSiteId).toHaveBeenCalledWith('test-site');
-            expect(mockRequest.fetchPaginated).toHaveBeenCalledWith('/api/sites/test-site/clients');
+            expect(mockRequest.fetchPaginated).toHaveBeenCalledWith('/api/sites/test-site/clients', {}, undefined);
         });
 
         it('should use default siteId if not provided', async () => {
@@ -49,7 +49,7 @@ describe('omadaClient/client', () => {
             await clientOps.listClients();
 
             expect(mockSite.resolveSiteId).toHaveBeenCalledWith(undefined);
-            expect(mockRequest.fetchPaginated).toHaveBeenCalledWith('/api/sites/default-site/clients');
+            expect(mockRequest.fetchPaginated).toHaveBeenCalledWith('/api/sites/default-site/clients', {}, undefined);
         });
     });
 
@@ -117,7 +117,7 @@ describe('omadaClient/client', () => {
 
             expect(clients).toEqual(mockClients);
             expect(mockSite.resolveSiteId).toHaveBeenCalledWith('test-site');
-            expect(mockRequest.get).toHaveBeenCalledWith('/api/sites/test-site/dashboard/active-clients');
+            expect(mockRequest.get).toHaveBeenCalledWith('/api/sites/test-site/dashboard/active-clients', undefined, undefined);
         });
 
         it('should use default siteId if not provided', async () => {
@@ -133,7 +133,7 @@ describe('omadaClient/client', () => {
             await clientOps.listMostActiveClients();
 
             expect(mockSite.resolveSiteId).toHaveBeenCalledWith(undefined);
-            expect(mockRequest.get).toHaveBeenCalledWith('/api/sites/default-site/dashboard/active-clients');
+            expect(mockRequest.get).toHaveBeenCalledWith('/api/sites/default-site/dashboard/active-clients', undefined, undefined);
         });
 
         it('should return empty array if result is undefined', async () => {
@@ -176,7 +176,7 @@ describe('omadaClient/client', () => {
 
             expect(activity).toEqual(mockActivity);
             expect(mockSite.resolveSiteId).toHaveBeenCalledWith(undefined);
-            expect(mockRequest.get).toHaveBeenCalledWith('/api/sites/default-site/dashboard/client-activity', {});
+            expect(mockRequest.get).toHaveBeenCalledWith('/api/sites/default-site/dashboard/client-activity', {}, undefined);
         });
 
         it('should fetch client activity with start and end timestamps', async () => {
@@ -199,7 +199,7 @@ describe('omadaClient/client', () => {
             expect(mockRequest.get).toHaveBeenCalledWith('/api/sites/test-site/dashboard/client-activity', {
                 start: 1640000000,
                 end: 1640100000,
-            });
+            }, undefined);
         });
 
         it('should return empty array if result is undefined', async () => {
@@ -256,7 +256,7 @@ describe('omadaClient/client', () => {
             expect(mockRequest.get).toHaveBeenCalledWith('/api/sites/default-site/insight/past-connection', {
                 page: 1,
                 pageSize: 50,
-            });
+            }, undefined);
             expect(mockRequest.ensureSuccess).toHaveBeenCalledWith(mockResponse);
         });
 
@@ -296,7 +296,7 @@ describe('omadaClient/client', () => {
                 'filters.timeEnd': '1640100000000',
                 'filters.guest': 'true',
                 searchKey: 'test',
-            });
+            }, undefined);
         });
 
         it('should return empty array if data is undefined', async () => {

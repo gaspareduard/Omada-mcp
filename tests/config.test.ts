@@ -58,22 +58,56 @@ describe('config', () => {
             expect(() => loadConfigFromEnv(mockEnv)).toThrow('Invalid environment configuration');
         });
 
-        it('should throw error if OMADA_CLIENT_ID is missing', () => {
+        it('should throw error if OMADA_CLIENT_ID is missing in stdio mode', () => {
             delete mockEnv.OMADA_CLIENT_ID;
 
             expect(() => loadConfigFromEnv(mockEnv)).toThrow('Invalid environment configuration');
         });
 
-        it('should throw error if OMADA_CLIENT_SECRET is missing', () => {
+        it('should throw error if OMADA_CLIENT_SECRET is missing in stdio mode', () => {
             delete mockEnv.OMADA_CLIENT_SECRET;
 
             expect(() => loadConfigFromEnv(mockEnv)).toThrow('Invalid environment configuration');
         });
 
-        it('should throw error if OMADA_OMADAC_ID is missing', () => {
+        it('should throw error if OMADA_OMADAC_ID is missing in stdio mode', () => {
             delete mockEnv.OMADA_OMADAC_ID;
 
             expect(() => loadConfigFromEnv(mockEnv)).toThrow('Invalid environment configuration');
+        });
+
+        it('should NOT throw if OMADA_CLIENT_ID is missing in HTTP mode', () => {
+            mockEnv.MCP_SERVER_USE_HTTP = 'true';
+            delete mockEnv.OMADA_CLIENT_ID;
+
+            expect(() => loadConfigFromEnv(mockEnv)).not.toThrow();
+        });
+
+        it('should NOT throw if OMADA_CLIENT_SECRET is missing in HTTP mode', () => {
+            mockEnv.MCP_SERVER_USE_HTTP = 'true';
+            delete mockEnv.OMADA_CLIENT_SECRET;
+
+            expect(() => loadConfigFromEnv(mockEnv)).not.toThrow();
+        });
+
+        it('should NOT throw if OMADA_OMADAC_ID is missing in HTTP mode', () => {
+            mockEnv.MCP_SERVER_USE_HTTP = 'true';
+            delete mockEnv.OMADA_OMADAC_ID;
+
+            expect(() => loadConfigFromEnv(mockEnv)).not.toThrow();
+        });
+
+        it('should load with only OMADA_BASE_URL set in HTTP mode', () => {
+            mockEnv.MCP_SERVER_USE_HTTP = 'true';
+            delete mockEnv.OMADA_CLIENT_ID;
+            delete mockEnv.OMADA_CLIENT_SECRET;
+            delete mockEnv.OMADA_OMADAC_ID;
+
+            const config = loadConfigFromEnv(mockEnv);
+            expect(config.baseUrl).toBe('https://omada.example.com');
+            expect(config.clientId).toBeUndefined();
+            expect(config.clientSecret).toBeUndefined();
+            expect(config.omadacId).toBeUndefined();
         });
 
         it('should accept optional OMADA_SITE_ID', () => {

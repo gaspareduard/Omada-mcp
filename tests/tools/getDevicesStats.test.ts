@@ -47,16 +47,19 @@ describe('registerListDevicesStatsTool', () => {
             createToolExtra()
         );
 
-        expect(client.listDevicesStats).toHaveBeenCalledWith({
-            page: 2,
-            pageSize: 50,
-            searchMacs: 'AA:BB',
-            searchNames: 'Switch',
-            searchModels: 'TL',
-            searchSns: 'SN123',
-            filterTag: 'datacenter',
-            filterDeviceSeriesType: '1',
-        });
+        expect(client.listDevicesStats).toHaveBeenCalledWith(
+            {
+                page: 2,
+                pageSize: 50,
+                searchMacs: 'AA:BB',
+                searchNames: 'Switch',
+                searchModels: 'TL',
+                searchSns: 'SN123',
+                filterTag: 'datacenter',
+                filterDeviceSeriesType: '1',
+            },
+            undefined
+        );
         expect(result.content).toHaveLength(1);
         const output = result.content?.[0];
         expect(output).toMatchObject({ type: 'text' });

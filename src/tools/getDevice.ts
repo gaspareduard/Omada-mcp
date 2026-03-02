@@ -10,6 +10,8 @@ export function registerGetDeviceTool(server: McpServer, client: OmadaClient): v
             description: 'Fetch detailed information for a specific Omada device.',
             inputSchema: deviceIdSchema.shape,
         },
-        wrapToolHandler('getDevice', async ({ deviceId, siteId }) => toToolResult(await client.getDevice(deviceId, siteId)))
+        wrapToolHandler('getDevice', async ({ deviceId, siteId, customHeaders }) =>
+            toToolResult(await client.getDevice(deviceId, siteId, customHeaders))
+        )
     );
 }

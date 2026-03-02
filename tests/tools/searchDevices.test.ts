@@ -34,7 +34,7 @@ describe('registerSearchDevicesTool', () => {
         const handler = registerTool.mock.calls[0][2];
         const result = await handler({ searchKey: 'Switch' }, createToolExtra());
 
-        expect(client.searchDevices).toHaveBeenCalledWith('Switch');
+        expect(client.searchDevices).toHaveBeenCalledWith('Switch', undefined);
         expect(result.content).toHaveLength(1);
         const output = result.content?.[0];
         expect(output).toMatchObject({ type: 'text' });

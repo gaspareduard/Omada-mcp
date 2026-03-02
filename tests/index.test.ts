@@ -78,7 +78,8 @@ describe('src/index main entry', () => {
         await loadEntry();
 
         expect(mockInitLogger).toHaveBeenCalledWith('info', 'json', false);
-        expect(startHttpServer).toHaveBeenCalledWith(expect.objectContaining({ client: 'instance' }), expect.objectContaining({ useHttp: true }));
+        expect(OmadaClient).not.toHaveBeenCalled();
+        expect(startHttpServer).toHaveBeenCalledWith(expect.objectContaining({ useHttp: true }));
         expect(startStdioServer).not.toHaveBeenCalled();
     });
 
