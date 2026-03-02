@@ -1,6 +1,6 @@
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import type { RequestHandlerExtra } from '@modelcontextprotocol/sdk/shared/protocol.js';
-import type { CallToolResult, ServerNotification, ServerRequest } from '@modelcontextprotocol/sdk/types.js';
+import { type CallToolResult, ListResourcesRequestSchema, type ServerNotification, type ServerRequest } from '@modelcontextprotocol/sdk/types.js';
 import { z } from 'zod';
 
 import type { OmadaClient } from '../omadaClient/index.js';
@@ -192,6 +192,17 @@ export function createServer(client: OmadaClient): McpServer {
 
     setupServerLogging(server);
     registerAllTools(server, client);
+
+    // Register resources capability and resources/list handler to prevent initialization errors
+    // in MCP clients like Claude Desktop. Currently, this server does not expose any resources,
+    // so we return an empty list.
+    server.server.registerCapabilities({
+        resources: {},
+    });
+
+    server.server.setRequestHandler(ListResourcesRequestSchema, async () => ({
+        resources: [],
+    }));
 
     return server;
 }

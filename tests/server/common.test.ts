@@ -307,6 +307,29 @@ describe('server/common', () => {
             expect(protocol.onclose).toBeDefined();
             expect(protocol.onerror).toBeDefined();
         });
+
+        it('should register resources/list handler that returns empty array', async () => {
+            const { createServer } = await import('../../src/server/common.js');
+            const { ListResourcesRequestSchema } = await import('@modelcontextprotocol/sdk/types.js');
+            const mockClient = {} as unknown as import('../../src/omadaClient/index.js').OmadaClient;
+
+            const server = createServer(mockClient);
+
+            type HandlerFn = (req: unknown, extra: unknown) => Promise<unknown>;
+            const protocol = (server as { server: { _requestHandlers?: Map<string, HandlerFn> } }).server;
+            const handlers = protocol._requestHandlers;
+
+            expect(handlers).toBeInstanceOf(Map);
+
+            const method = ListResourcesRequestSchema.shape.method.value;
+            expect(handlers?.has(method)).toBe(true);
+
+            const handler = handlers?.get(method);
+            expect(handler).toBeTypeOf('function');
+
+            const result = await handler?.({ method: 'resources/list' }, { requestId: 'test-request' });
+            expect(result).toEqual({ resources: [] });
+        });
     });
 
     describe('wrapToolHandler', () => {
