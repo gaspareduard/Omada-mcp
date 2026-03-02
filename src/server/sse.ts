@@ -2,8 +2,8 @@ import type { IncomingMessage, ServerResponse } from 'node:http';
 import { SSEServerTransport } from '@modelcontextprotocol/sdk/server/sse.js';
 import type { EnvironmentConfig } from '../config.js';
 import { OmadaClient } from '../omadaClient/index.js';
-import { extractAuthFromHeaders, resolveOmadaConfig } from '../utils/omada-headers.js';
 import { logger } from '../utils/logger.js';
+import { extractAuthFromHeaders, resolveOmadaConfig } from '../utils/omada-headers.js';
 import { createServer } from './common.js';
 
 const MESSAGE_PATH = '/messages';

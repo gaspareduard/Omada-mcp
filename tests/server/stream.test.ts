@@ -315,9 +315,7 @@ describe('Stream Server', () => {
                 this.onerror = undefined;
             });
 
-            await expect(handleStreamRequest(mockConfig, mockReq, mockRes, undefined, streamSessions)).rejects.toThrow(
-                'Request handling failed'
-            );
+            await expect(handleStreamRequest(mockConfig, mockReq, mockRes, undefined, streamSessions)).rejects.toThrow('Request handling failed');
 
             expect(logger.error).toHaveBeenCalledWith(
                 'Failed to handle Streamable HTTP request',

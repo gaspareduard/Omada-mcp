@@ -1,7 +1,6 @@
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-
 import type { AxiosInstance, RawAxiosRequestHeaders } from 'axios';
 import axios from 'axios';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { AuthManager } from '../../src/omadaClient/auth.js';
 import { RequestHandler } from '../../src/omadaClient/request.js';
 import type { CustomHeaders } from '../../src/types/index.js';

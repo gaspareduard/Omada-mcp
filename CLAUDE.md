@@ -98,14 +98,66 @@ Reference `.env.example`. Primary variables:
 ## Contribution Guidelines
 
 - Keep environment secrets out of the repo; only commit `.env.example`.
-- Ensure `npm run lint` and `npm run build` pass before committing.
+- **Before every commit**, all of the following must pass:
+  1. `npm run lint` — Biome lint and import ordering
+  2. `npm run build` — TypeScript compilation
+  3. `npm test` — full test suite
+- If any of the above fail, fix the issues first, then commit.
 - Reference the OpenAPI spec in `docs/` when adding or updating Omada API interactions.
+
+## GitFlow Branching Strategy
+
+This project follows **GitFlow** strictly. Every change must go through the correct branch type before reaching `develop` or `main`.
+
+### Branch Types and Naming
+
+| Branch type | Pattern | Base branch | Merges into |
+|-------------|---------|-------------|-------------|
+| Feature | `feature/<short-description>` | `develop` | `develop` |
+| Bug fix | `fix/<short-description>` | `develop` | `develop` |
+| Release | `release/<version>` | `develop` | `develop` and `main` |
+| Hotfix | `hotfix/<short-description>` | `main` | `main` and `develop` |
+
+- `main` — production-ready code only. **Never commit directly to `main`.**
+- `develop` — integration branch. **Never commit directly to `develop`.**
+
+### Workflow Rules
+
+1. **Always branch from the correct base.** Features and fixes branch from `develop`; hotfixes branch from `main`.
+2. **Branch before coding.** Create the appropriate branch before making any changes.
+3. **One concern per branch.** Each branch addresses a single feature, fix, release, or hotfix.
+4. **All pull requests target `develop`** (or `main` for hotfixes/releases). Direct pushes to `develop` or `main` are not allowed.
+5. **Ensure `npm run lint` and `npm run build` pass** before opening a pull request.
+6. **Ensure test coverage stays above 90%** before merging (run `npm run test:coverage`).
+7. **Keep branch names lowercase and hyphenated** — e.g., `feature/add-site-list`, `fix/ssl-timeout`.
+
+### Typical Feature Flow
+
+```
+git checkout develop
+git pull
+git checkout -b feature/<short-description>
+# ... make changes, commit ...
+git push -u origin feature/<short-description>
+# open PR targeting develop
+```
+
+### Typical Hotfix Flow
+
+```
+git checkout main
+git pull
+git checkout -b hotfix/<short-description>
+# ... make changes, commit ...
+git push -u origin hotfix/<short-description>
+# open PR targeting main; after merge, also merge into develop
+```
 
 ## Additional Guidelines
 
-- The project follows a GitFlow branching strategy: `main` reflects production-ready code, while `develop` is the integration branch. **All pull requests must target `develop`.**
-- When adding new features or fixing bugs, create a new branch from `develop` and submit a pull request for review.
 - Write unit tests for new functionality and ensure existing tests pass.
+- Write unit tests for new functionality and ensure existing tests pass.
+- When adding new features or fixing bugs, follow the GitFlow branching strategy described above.
 - Keep the reference `.env.example` and this documentation up to date with any new environment variables added to the project.
 - **DON'T** change the JSON files under `docs/openapi/`; they should only be used as reference for the API endpoints.
 - **ONLY** implement using client credentials mode Access process as described in the Omada API documentation. The client credentials should be provided via environment variables.

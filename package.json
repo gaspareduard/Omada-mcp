@@ -22,11 +22,7 @@
         "docker:run": "docker run --rm -it --env-file .env --env-file .env.local ghcr.io/migueltvms/tplink-omada-mcp:latest",
         "docker:push": "docker push ghcr.io/migueltvms/tplink-omada-mcp:latest"
     },
-    "keywords": [
-        "mcp",
-        "tp-link",
-        "omada"
-    ],
+    "keywords": ["mcp", "tp-link", "omada"],
     "engines": {
         "node": ">=24.0.0"
     },
@@ -35,7 +31,6 @@
     "dependencies": {
         "@modelcontextprotocol/sdk": "^1.21.0",
         "@ngrok/ngrok": "^1.5.2",
-        "@rollup/rollup-win32-x64-msvc": "^4.59.0",
         "axios": "^1.13.2",
         "dotenv": "^17.2.3",
         "pino": "^10.1.0",

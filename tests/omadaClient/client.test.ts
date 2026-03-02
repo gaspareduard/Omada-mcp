@@ -196,10 +196,14 @@ describe('omadaClient/client', () => {
             });
 
             expect(mockSite.resolveSiteId).toHaveBeenCalledWith('test-site');
-            expect(mockRequest.get).toHaveBeenCalledWith('/api/sites/test-site/dashboard/client-activity', {
-                start: 1640000000,
-                end: 1640100000,
-            }, undefined);
+            expect(mockRequest.get).toHaveBeenCalledWith(
+                '/api/sites/test-site/dashboard/client-activity',
+                {
+                    start: 1640000000,
+                    end: 1640100000,
+                },
+                undefined
+            );
         });
 
         it('should return empty array if result is undefined', async () => {
@@ -253,10 +257,14 @@ describe('omadaClient/client', () => {
 
             expect(connections).toEqual(mockConnections);
             expect(mockSite.resolveSiteId).toHaveBeenCalledWith(undefined);
-            expect(mockRequest.get).toHaveBeenCalledWith('/api/sites/default-site/insight/past-connection', {
-                page: 1,
-                pageSize: 50,
-            }, undefined);
+            expect(mockRequest.get).toHaveBeenCalledWith(
+                '/api/sites/default-site/insight/past-connection',
+                {
+                    page: 1,
+                    pageSize: 50,
+                },
+                undefined
+            );
             expect(mockRequest.ensureSuccess).toHaveBeenCalledWith(mockResponse);
         });
 
@@ -288,15 +296,19 @@ describe('omadaClient/client', () => {
                 searchKey: 'test',
             });
 
-            expect(mockRequest.get).toHaveBeenCalledWith('/api/sites/test-site/insight/past-connection', {
-                page: 2,
-                pageSize: 100,
-                'sorts.lastSeen': 'desc',
-                'filters.timeStart': '1640000000000',
-                'filters.timeEnd': '1640100000000',
-                'filters.guest': 'true',
-                searchKey: 'test',
-            }, undefined);
+            expect(mockRequest.get).toHaveBeenCalledWith(
+                '/api/sites/test-site/insight/past-connection',
+                {
+                    page: 2,
+                    pageSize: 100,
+                    'sorts.lastSeen': 'desc',
+                    'filters.timeStart': '1640000000000',
+                    'filters.timeEnd': '1640100000000',
+                    'filters.guest': 'true',
+                    searchKey: 'test',
+                },
+                undefined
+            );
         });
 
         it('should return empty array if data is undefined', async () => {

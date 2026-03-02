@@ -60,18 +60,12 @@ const envSchema = z
         httpNgrokEnabled: createBooleanStringSchema(false),
         httpNgrokAuthToken: z.string().optional(),
     })
-    .refine(
-        (data) => data.useHttp || !!data.clientId,
-        { message: 'OMADA_CLIENT_ID is required when not using HTTP mode', path: ['clientId'] }
-    )
-    .refine(
-        (data) => data.useHttp || !!data.clientSecret,
-        { message: 'OMADA_CLIENT_SECRET is required when not using HTTP mode', path: ['clientSecret'] }
-    )
-    .refine(
-        (data) => data.useHttp || !!data.omadacId,
-        { message: 'OMADA_OMADAC_ID is required when not using HTTP mode', path: ['omadacId'] }
-    )
+    .refine((data) => data.useHttp || !!data.clientId, { message: 'OMADA_CLIENT_ID is required when not using HTTP mode', path: ['clientId'] })
+    .refine((data) => data.useHttp || !!data.clientSecret, {
+        message: 'OMADA_CLIENT_SECRET is required when not using HTTP mode',
+        path: ['clientSecret'],
+    })
+    .refine((data) => data.useHttp || !!data.omadacId, { message: 'OMADA_OMADAC_ID is required when not using HTTP mode', path: ['omadacId'] })
     .refine(
         (data) => {
             // Validate httpBindAddr if provided

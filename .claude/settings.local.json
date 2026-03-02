@@ -1,15 +1,20 @@
 {
-  "permissions": {
-    "allow": [
-      "Bash(git push --force-with-lease origin feature/auth-headers)",
-      "Bash(git fetch origin feature/auth-headers)",
-      "Bash(git fetch origin)",
-      "Bash(git push --force origin feature/auth-headers)",
-      "Bash(npx tsc -p tsconfig.json --noEmit)",
-      "Bash(./node_modules/.bin/tsc -p tsconfig.json --noEmit)",
-      "Bash(./node_modules/.bin/vitest run)",
-      "Bash(npm install @rollup/rollup-win32-x64-msvc)",
-      "Bash(git push --dry-run origin feature/auth-headers)"
-    ]
-  }
+    "permissions": {
+        "allow": [
+            "Bash(git push --force-with-lease origin feature/auth-headers)",
+            "Bash(git fetch origin feature/auth-headers)",
+            "Bash(git fetch origin)",
+            "Bash(git push --force origin feature/auth-headers)",
+            "Bash(npx tsc -p tsconfig.json --noEmit)",
+            "Bash(./node_modules/.bin/tsc -p tsconfig.json --noEmit)",
+            "Bash(./node_modules/.bin/vitest run)",
+            "Bash(npm install @rollup/rollup-win32-x64-msvc)",
+            "Bash(git push --dry-run origin feature/auth-headers)",
+            "Bash(gh run:*)",
+            "Bash(git commit:*)",
+            "Bash(git push:*)",
+            "Bash(gh pr:*)",
+            "Bash(npm run:*)"
+        ]
+    }
 }
