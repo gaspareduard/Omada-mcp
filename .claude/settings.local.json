@@ -8,7 +8,8 @@
       "Bash(npx tsc -p tsconfig.json --noEmit)",
       "Bash(./node_modules/.bin/tsc -p tsconfig.json --noEmit)",
       "Bash(./node_modules/.bin/vitest run)",
-      "Bash(npm install @rollup/rollup-win32-x64-msvc)"
+      "Bash(npm install @rollup/rollup-win32-x64-msvc)",
+      "Bash(git push --dry-run origin feature/auth-headers)"
     ]
   }
 }
