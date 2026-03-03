@@ -325,7 +325,6 @@ describe('config', () => {
                 MCP_SERVER_LOG_FORMAT: 'json',
                 MCP_SERVER_USE_HTTP: 'true',
                 MCP_HTTP_PORT: '9000',
-                MCP_HTTP_TRANSPORT: 'stream',
                 MCP_HTTP_BIND_ADDR: '0.0.0.0',
                 MCP_HTTP_PATH: '/api/mcp',
                 MCP_HTTP_ENABLE_HEALTHCHECK: 'true',

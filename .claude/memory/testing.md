@@ -36,7 +36,7 @@ tests/
     network.test.ts, request.test.ts, security.test.ts, site.test.ts
   server/
     common.test.ts, http.start.test.ts, http.test.ts
-    sse.test.ts, stdio.test.ts, stream.test.ts
+    stdio.test.ts, stream.test.ts
   tools/
     getDevice.test.ts, getDevicesStats.test.ts, getPortForwardingStatus.test.ts
     index.test.ts, listClients.test.ts, listDevices.test.ts, listSites.test.ts

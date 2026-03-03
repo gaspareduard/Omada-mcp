@@ -29,7 +29,7 @@
 5. Reference `docs/openapi/<tag>.json` for the API spec (not `00-all.json`)
 
 ## Adding a New HTTP Feature
-- Must implement in both `src/server/sse.ts` AND `src/server/stream.ts`
+- HTTP features go in `src/server/stream.ts`
 - Common logic goes in `src/server/common.ts`
 - DNS rebinding protection must be preserved
 
