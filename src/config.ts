@@ -48,9 +48,9 @@ const envSchema = z
         logFormat: z.enum(['plain', 'json', 'gcp-json']).optional().default('plain'),
         useHttp: createBooleanStringSchema(false),
 
-        // MCP Server HTTP/SSE Configuration
+        // MCP Server HTTP Configuration
         httpPort: numericStringSchema,
-        httpTransport: z.enum(['stream', 'sse']).optional().default('stream'),
+        httpTransport: z.literal('stream').optional().default('stream'),
         httpBindAddr: z.string().optional(),
         httpPath: z.string().optional(),
         httpEnableHealthcheck: createBooleanStringSchema(true),
@@ -131,9 +131,9 @@ export interface EnvironmentConfig {
     logFormat: 'plain' | 'json' | 'gcp-json';
     useHttp: boolean;
 
-    // MCP Server HTTP/SSE Configuration
+    // MCP Server HTTP Configuration
     httpPort?: number;
-    httpTransport: 'stream' | 'sse';
+    httpTransport: 'stream';
     httpBindAddr?: string;
     httpPath?: string;
     httpEnableHealthcheck: boolean;
@@ -160,7 +160,7 @@ export function loadConfigFromEnv(env: NodeJS.ProcessEnv = process.env): Environ
         logFormat: env.MCP_SERVER_LOG_FORMAT,
         useHttp: env.MCP_SERVER_USE_HTTP,
 
-        // MCP Server HTTP/SSE Configuration
+        // MCP Server HTTP Configuration
         httpPort: env.MCP_HTTP_PORT,
         httpTransport: env.MCP_HTTP_TRANSPORT,
         httpBindAddr: env.MCP_HTTP_BIND_ADDR,
@@ -178,9 +178,8 @@ export function loadConfigFromEnv(env: NodeJS.ProcessEnv = process.env): Environ
         throw new Error(`Invalid environment configuration:\n${messages.join('\n')}`);
     }
 
-    // Determine default httpPath based on transport if not explicitly set
-    const defaultPath = parsed.data.httpTransport === 'sse' ? '/sse' : '/mcp';
-    const httpPath = parsed.data.httpPath ?? defaultPath;
+    // Determine default httpPath
+    const httpPath = parsed.data.httpPath ?? '/mcp';
 
     // Set default bind address and allowed origins for security
     const httpBindAddr = parsed.data.httpBindAddr ?? '127.0.0.1';

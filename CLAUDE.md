@@ -2,7 +2,7 @@
 
 ## Repository Purpose
 
-This project implements a Model Context Protocol (MCP) server that exposes TP-Link Omada controller APIs. The server is written in TypeScript/Node.js and communicates with MCP clients over stdio and sse.
+This project implements a Model Context Protocol (MCP) server that exposes TP-Link Omada controller APIs. The server is written in TypeScript/Node.js and communicates with MCP clients over stdio and HTTP (Streamable HTTP transport).
 
 ## Tooling and Runtime
 
@@ -37,9 +37,8 @@ Reference `.env.example`. Primary variables:
 ### MCP Server HTTP Configuration, if `MCP_SERVER_USE_HTTP` is `true`:
 
 - `MCP_HTTP_PORT` (default: `3000`) - port for the HTTP server.
-- `MCP_HTTP_TRANSPORT` (default: `stream`) - transport protocol (`stream` for Streamable HTTP [MCP 2025-03-26], `sse` for HTTP+SSE [MCP 2024-11-05]).
 - `MCP_HTTP_BIND_ADDR` (default: `127.0.0.1`) - bind address for the HTTP server (IPv4 or IPv6). For security, defaults to localhost.
-- `MCP_HTTP_PATH` (default: `/mcp` for stream, `/sse` for sse) - base path for MCP HTTP endpoints. If explicitly set, overrides transport-based default.
+- `MCP_HTTP_PATH` (default: `/mcp`) - base path for MCP HTTP endpoints.
 - `MCP_HTTP_ENABLE_HEALTHCHECK` (default: `true`) - enable a healthcheck endpoint at the path indicated on `MCP_HTTP_HEALTHCHECK_PATH`.
 - `MCP_HTTP_HEALTHCHECK_PATH` (default: `/healthz`) - path for the healthcheck endpoint.
 - `MCP_HTTP_ALLOW_CORS` (default: `true`) - enable CORS for the HTTP server.
@@ -55,8 +54,7 @@ Reference `.env.example`. Primary variables:
 - `src/omadaClient/` — Omada API interaction layer, organized by API tag (e.g., `src/omadaClient/user.ts`, `src/omadaClient/device.ts`). The main client class is in `src/omadaClient/index.ts`.
 - `src/server/` — Code for each implementation of the MCP server:
   - `src/server/stdio.ts` - stdio transport implementation
-  - `src/server/http.ts` - HTTP server coordinator that delegates to transport-specific implementations
-  - `src/server/sse.ts` - HTTP+SSE transport implementation (MCP 2024-11-05)
+  - `src/server/http.ts` - HTTP server coordinator
   - `src/server/stream.ts` - Streamable HTTP transport implementation (MCP 2025-03-26)
   - `src/server/common.ts` - common server logic shared across transports
 - `src/types/` - centralized type definitions (API, MCP, errors)
@@ -166,12 +164,9 @@ git push -u origin hotfix/<short-description>
 - **DON'T** change anything in `node_modules` or commit any changes to that folder.
 - IMPORTANT: Encapsulate the log implementation in `src/utils/logger.ts` to allow easy modification of the logging behavior in the future. Use this logger throughout the codebase instead of direct console.log statements.
 - Avoid using the TypeScript `any` type; prefer precise typings or `unknown` when necessary.
-- Any new HTTP transport implementation should be done for both `sse` and `stream` transports to maintain feature parity.
 - **DON'T** use `process.env.` to access environment variables directly. Access should be done outside of `src/config.ts`. All environment variables must be loaded and validated there using Zod, and then imported where needed.
-- The HTTP server supports two transport protocols:
-  - **Streamable HTTP** (`stream`) - MCP protocol version 2025-03-26, single endpoint for all operations
-  - **HTTP+SSE** (`sse`) - MCP protocol version 2024-11-05, separate endpoints for SSE stream and POST messages
-- Both transports implement DNS rebinding protection via origin validation and bind address restrictions for security.
+- The HTTP server uses the **Streamable HTTP** transport (MCP protocol version 2025-03-26) with a single endpoint for all operations.
+- DNS rebinding protection is implemented via origin validation and bind address restrictions for security.
 - Always reuse the pagination schema in `src/utils/pagination-schema.ts` when implementing list operations that support pagination.
 
 ## Documentation Synchronization

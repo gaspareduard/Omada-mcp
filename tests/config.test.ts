@@ -181,26 +181,19 @@ describe('config', () => {
 
         it('should accept valid http transports', () => {
             mockEnv.MCP_HTTP_TRANSPORT = 'stream';
-            let config = loadConfigFromEnv(mockEnv);
+            const config = loadConfigFromEnv(mockEnv);
             expect(config.httpTransport).toBe('stream');
-
-            mockEnv.MCP_HTTP_TRANSPORT = 'sse';
-            config = loadConfigFromEnv(mockEnv);
-            expect(config.httpTransport).toBe('sse');
         });
 
-        it('should use default httpPath based on transport (stream)', () => {
-            mockEnv.MCP_HTTP_TRANSPORT = 'stream';
+        it('should reject invalid http transport', () => {
+            mockEnv.MCP_HTTP_TRANSPORT = 'sse';
+            expect(() => loadConfigFromEnv(mockEnv)).toThrow('Invalid literal value, expected "stream"');
+        });
+
+        it('should use default httpPath', () => {
             const config = loadConfigFromEnv(mockEnv);
 
             expect(config.httpPath).toBe('/mcp');
-        });
-
-        it('should use default httpPath based on transport (sse)', () => {
-            mockEnv.MCP_HTTP_TRANSPORT = 'sse';
-            const config = loadConfigFromEnv(mockEnv);
-
-            expect(config.httpPath).toBe('/sse');
         });
 
         it('should override httpPath when explicitly set', () => {
@@ -333,7 +326,7 @@ describe('config', () => {
                 MCP_SERVER_LOG_FORMAT: 'json',
                 MCP_SERVER_USE_HTTP: 'true',
                 MCP_HTTP_PORT: '9000',
-                MCP_HTTP_TRANSPORT: 'sse',
+                MCP_HTTP_TRANSPORT: 'stream',
                 MCP_HTTP_BIND_ADDR: '0.0.0.0',
                 MCP_HTTP_PATH: '/api/mcp',
                 MCP_HTTP_ENABLE_HEALTHCHECK: 'true',
@@ -358,7 +351,7 @@ describe('config', () => {
                 logFormat: 'json',
                 useHttp: true,
                 httpPort: 9000,
-                httpTransport: 'sse',
+                httpTransport: 'stream',
                 httpBindAddr: '0.0.0.0',
                 httpPath: '/api/mcp',
                 httpEnableHealthcheck: true,

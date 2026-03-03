@@ -46,32 +46,6 @@ const ngrokModule = vi.hoisted(() => ({
     forward: vi.fn(async () => ({ url: () => 'https://example.ngrok.dev' })),
 }));
 
-const sseModule = vi.hoisted(() => {
-    const connection = {
-        transport: {
-            sessionId: 'session-1',
-            close: vi.fn().mockResolvedValue(undefined),
-            onclose: undefined as (() => void) | undefined,
-        },
-        server: { close: vi.fn().mockResolvedValue(undefined) },
-    };
-    return {
-        handleSseConnection: vi.fn(async (_config, _messagePath, _req, res: { writeHead: Function }) => {
-            await Promise.resolve();
-            res.writeHead?.(200, { 'Content-Type': 'text/event-stream' });
-            return connection;
-        }),
-        handleSseMessage: vi.fn(async (_transport, _req, res: { writeHead: Function; end: Function }) => {
-            await Promise.resolve();
-            res.writeHead?.(200, { 'Content-Type': 'application/json' });
-            res.end?.('{}');
-            return undefined;
-        }),
-        getSseMessagePath: vi.fn(() => '/sse/messages'),
-        connection,
-    };
-});
-
 const streamModule = vi.hoisted(() => {
     return {
         handleStreamRequest: vi.fn(async () => undefined),
@@ -81,12 +55,6 @@ const streamModule = vi.hoisted(() => {
 
 vi.mock('node:http', () => ({ default: { createServer: httpModule.createServer }, createServer: httpModule.createServer }));
 vi.mock('@ngrok/ngrok', () => ({ default: ngrokModule, ...ngrokModule }));
-vi.mock('../../src/server/sse.js', () => ({
-    createSseTransport: vi.fn(),
-    getSseMessagePath: sseModule.getSseMessagePath,
-    handleSseConnection: sseModule.handleSseConnection,
-    handleSseMessage: sseModule.handleSseMessage,
-}));
 vi.mock('../../src/server/stream.js', () => ({
     handleStreamRequest: streamModule.handleStreamRequest,
     closeAllStreamSessions: streamModule.closeAllStreamSessions,
@@ -153,7 +121,7 @@ const baseConfig: EnvironmentConfig = {
     logLevel: 'info',
     logFormat: 'plain',
     useHttp: true,
-    httpTransport: 'sse',
+    httpTransport: 'stream',
     httpEnableHealthcheck: true,
     httpAllowCors: true,
     httpNgrokEnabled: false,
@@ -176,7 +144,7 @@ describe('startHttpServer', () => {
         processOnSpy.mockRestore();
     });
 
-    it('handles health, SSE connection, and SSE messages', async () => {
+    it('handles health check and stream transport requests', async () => {
         const { startHttpServer } = await import('../../src/server/http.js');
         await startHttpServer(baseConfig);
         const handler = httpModule.getHandler();
@@ -189,29 +157,18 @@ describe('startHttpServer', () => {
         await healthRes.finished;
         expect(healthRes.statusCode).toBe(200);
 
-        const sseReq = new MockRequest({ method: 'GET', url: '/sse' });
-        const sseRes = new MockResponse();
-        handler!(sseReq as never, sseRes as never);
-        sseReq.send();
+        const streamReq = new MockRequest({ method: 'POST', url: '/mcp', headers: { 'mcp-session-id': 'stream-1' } });
+        const streamRes = new MockResponse();
+        handler!(streamReq as never, streamRes as never);
+        streamReq.send('{"jsonrpc":"2.0"}');
         await flushTasks();
-        expect(sseModule.handleSseConnection).toHaveBeenCalled();
-
-        const msgReq = new MockRequest({ method: 'POST', url: '/sse/messages', headers: { 'mcp-session-id': 'session-1' } });
-        const msgRes = new MockResponse();
-        handler!(msgReq as never, msgRes as never);
-        msgReq.send('{"jsonrpc":"2.0"}');
-        await msgRes.finished;
-        expect(sseModule.handleSseMessage).toHaveBeenCalled();
-
-        const missingSessionReq = new MockRequest({ method: 'POST', url: '/sse/messages' });
-        const missingSessionRes = new MockResponse();
-        handler!(missingSessionReq as never, missingSessionRes as never);
-        missingSessionReq.send('{}');
-        await missingSessionRes.finished;
-        expect(missingSessionRes.statusCode).toBe(400);
+        expect(streamModule.handleStreamRequest).toHaveBeenCalled();
+        const streamCallArgs = streamModule.handleStreamRequest.mock.calls[0] as unknown[];
+        const sessionMapArg = streamCallArgs[4];
+        expect(sessionMapArg).toBeInstanceOf(Map);
     });
 
-    it('handles invalid URLs, method mismatches, and missing sessions', async () => {
+    it('handles invalid URLs and not found paths', async () => {
         const { startHttpServer } = await import('../../src/server/http.js');
         await startHttpServer(baseConfig);
         const handler = httpModule.getHandler();
@@ -223,60 +180,12 @@ describe('startHttpServer', () => {
         await invalidRes.finished;
         expect(invalidRes.statusCode).toBe(400);
 
-        const wrongMethodReq = new MockRequest({ method: 'POST', url: '/sse' });
-        const wrongMethodRes = new MockResponse();
-        handler!(wrongMethodReq as never, wrongMethodRes as never);
-        wrongMethodReq.send('{}');
-        await wrongMethodRes.finished;
-        expect(wrongMethodRes.statusCode).toBe(405);
-
-        const getMessageReq = new MockRequest({ method: 'GET', url: '/sse/messages' });
-        const getMessageRes = new MockResponse();
-        handler!(getMessageReq as never, getMessageRes as never);
-        getMessageReq.send();
-        await getMessageRes.finished;
-        expect(getMessageRes.statusCode).toBe(405);
-
-        const unknownSessionReq = new MockRequest({
-            method: 'POST',
-            url: '/sse/messages',
-            headers: { 'mcp-session-id': 'missing' },
-        });
-        const unknownSessionRes = new MockResponse();
-        handler!(unknownSessionReq as never, unknownSessionRes as never);
-        unknownSessionReq.send('{}');
-        await unknownSessionRes.finished;
-        expect(unknownSessionRes.statusCode).toBe(404);
-
         const notFoundReq = new MockRequest({ method: 'GET', url: '/unknown' });
         const notFoundRes = new MockResponse();
         handler!(notFoundReq as never, notFoundRes as never);
         notFoundReq.send();
         await notFoundRes.finished;
         expect(notFoundRes.statusCode).toBe(404);
-    });
-
-    it('processes stream transport requests and handles errors', async () => {
-        const { startHttpServer } = await import('../../src/server/http.js');
-        const config: EnvironmentConfig = { ...baseConfig, httpTransport: 'stream' };
-        await startHttpServer(config);
-        const handler = httpModule.getHandler();
-        const streamReq = new MockRequest({ method: 'POST', url: '/mcp', headers: { 'mcp-session-id': 'stream-1' } });
-        const streamRes = new MockResponse();
-        handler!(streamReq as never, streamRes as never);
-        streamReq.send('{"jsonrpc":"2.0"}');
-        await flushTasks();
-        expect(streamModule.handleStreamRequest).toHaveBeenCalled();
-        const streamCallArgs = streamModule.handleStreamRequest.mock.calls[0] as unknown[];
-        const sessionMapArg = streamCallArgs[4];
-        expect(sessionMapArg).toBeInstanceOf(Map);
-
-        const errorReq = new MockRequest({ method: 'POST', url: '/unknown' });
-        const errorRes = new MockResponse();
-        handler!(errorReq as never, errorRes as never);
-        errorReq.send('{}');
-        await errorRes.finished;
-        expect(errorRes.statusCode).toBe(404);
     });
 
     it('warns when ngrok enabled without token', async () => {
@@ -287,41 +196,17 @@ describe('startHttpServer', () => {
 
     it('handles handler failures and client errors gracefully', async () => {
         const { startHttpServer } = await import('../../src/server/http.js');
-        sseModule.handleSseConnection.mockRejectedValueOnce(new Error('connect-fail'));
+        streamModule.handleStreamRequest.mockRejectedValueOnce(new Error('connect-fail'));
         await startHttpServer(baseConfig);
         const handler = httpModule.getHandler();
         expect(handler).toBeDefined();
 
-        const failingReq = new MockRequest({ method: 'GET', url: '/sse' });
+        const failingReq = new MockRequest({ method: 'POST', url: '/mcp' });
         const failingRes = new MockResponse();
         handler!(failingReq as never, failingRes as never);
-        failingReq.send();
+        failingReq.send('{}');
         await failingRes.finished;
         expect(failingRes.statusCode).toBe(500);
-
-        const okReq = new MockRequest({ method: 'GET', url: '/sse' });
-        const okRes = new MockResponse();
-        handler!(okReq as never, okRes as never);
-        okReq.send();
-        await flushTasks();
-
-        sseModule.handleSseMessage.mockImplementationOnce(async (_transport, _req, res) => {
-            res.writeHead?.(200, { 'Content-Type': 'application/json' });
-            await Promise.resolve();
-            throw new Error('message-fail');
-        });
-
-        const errorMsgReq = new MockRequest({
-            method: 'POST',
-            url: '/sse/messages',
-            headers: { 'mcp-session-id': 'session-1' },
-        });
-        const errorMsgRes = new MockResponse();
-        handler!(errorMsgReq as never, errorMsgRes as never);
-        errorMsgReq.send('{}');
-        await errorMsgRes.finished;
-        expect(errorMsgRes.headersSent).toBe(true);
-        expect(loggerModule.error).toHaveBeenCalledWith('Failed to handle MCP HTTP request', expect.objectContaining({ error: expect.any(Error) }));
 
         const socket = { end: vi.fn() };
         httpModule.emit('clientError', new Error('bad-request'), socket);
@@ -343,37 +228,16 @@ describe('startHttpServer', () => {
         expect(listeningCall?.[1]).toEqual(expect.objectContaining({ endpoint: expect.stringContaining('http://localhost:3000') }));
     });
 
-    it('closes SSE and stream sessions on shutdown signals', async () => {
+    it('closes stream sessions on shutdown signals', async () => {
         const { startHttpServer } = await import('../../src/server/http.js');
 
         await startHttpServer(baseConfig);
-        const sseHandler = httpModule.getHandler();
-        expect(sseHandler).toBeDefined();
-
-        const sseReq = new MockRequest({ method: 'GET', url: '/sse' });
-        const sseRes = new MockResponse();
-        sseHandler!(sseReq as never, sseRes as never);
-        sseReq.send();
-        await flushTasks();
-
-        getSignalHandler('SIGINT')?.();
-        await flushTasks();
-        await flushTasks();
-
-        expect(sseModule.connection.server.close).toHaveBeenCalled();
-        expect(sseModule.connection.transport.close).toHaveBeenCalled();
-
-        processOnSpy.mockClear();
-        httpModule.server.close.mockClear();
-
-        const streamConfig: EnvironmentConfig = { ...baseConfig, httpTransport: 'stream' };
-        await startHttpServer(streamConfig);
-        const streamHandler = httpModule.getHandler();
-        expect(streamHandler).toBeDefined();
+        const handler = httpModule.getHandler();
+        expect(handler).toBeDefined();
 
         const streamReq = new MockRequest({ method: 'POST', url: '/mcp', headers: { 'mcp-session-id': 'stream-1' } });
         const streamRes = new MockResponse();
-        streamHandler!(streamReq as never, streamRes as never);
+        handler!(streamReq as never, streamRes as never);
         streamReq.send('{"jsonrpc":"2.0"}');
         await flushTasks();
 

@@ -1,11 +1,9 @@
 import type { IncomingHttpHeaders, IncomingMessage, ServerResponse } from 'node:http';
 import http from 'node:http';
-import type { SSEServerTransport } from '@modelcontextprotocol/sdk/server/sse.js';
 import ngrok from '@ngrok/ngrok';
 import type { EnvironmentConfig } from '../config.js';
 import { normalizePath, resolvePort } from '../utils/config-validations.js';
 import { logger } from '../utils/logger.js';
-import { createSseTransport, getSseMessagePath, handleSseConnection, handleSseMessage } from './sse.js';
 import type { StreamTransportState } from './stream.js';
 import { closeAllStreamSessions, handleStreamRequest } from './stream.js';
 
@@ -135,7 +133,7 @@ async function createShutdownHandler(signal: NodeJS.Signals, closeHttp: () => Pr
 }
 
 /**
- * Starts the HTTP server with the configured transport (SSE or Stream).
+ * Starts the HTTP server with the Streamable HTTP transport.
  * Omada credentials are resolved per-connection/session from env vars (always win)
  * and request headers (x-omada-client-id, x-omada-client-secret, x-omada-omadac-id).
  */
@@ -145,10 +143,8 @@ export async function startHttpServer(config: EnvironmentConfig): Promise<void> 
 
     const port = resolvePort(config.httpPort, DEFAULT_PORT);
     const host = config.httpBindAddr ?? '127.0.0.1';
-    const endpointPath = normalizePath(config.httpPath ?? (transport === 'sse' ? '/sse' : '/mcp'));
+    const endpointPath = normalizePath(config.httpPath ?? '/mcp');
 
-    // Track SSE transports by session ID for message routing
-    const sseTransports = new Map<string, { transport: SSEServerTransport; server: ReturnType<typeof createSseTransport>['server'] }>();
     const streamSessions = new Map<string, StreamTransportState>();
 
     const httpServer = http.createServer((req, res) => {
@@ -217,53 +213,11 @@ export async function startHttpServer(config: EnvironmentConfig): Promise<void> 
             }
 
             try {
-                if (transport === 'sse') {
-                    // SSE Transport handling
-                    if (url.pathname === endpointPath) {
-                        if (req.method === 'GET') {
-                            // Establish SSE connection
-                            const messagePath = getSseMessagePath();
-                            const { transport: sseTransport, server: sseServer } = await handleSseConnection(config, messagePath, req, res);
-
-                            // Store transport for later message handling
-                            sseTransports.set(sseTransport.sessionId, { transport: sseTransport, server: sseServer });
-
-                            // Clean up on close
-                            sseTransport.onclose = () => {
-                                sseTransports.delete(sseTransport.sessionId);
-                            };
-                        } else {
-                            sendJson(res, 405, { error: 'Method Not Allowed' });
-                        }
-                    } else if (url.pathname === getSseMessagePath()) {
-                        if (req.method === 'POST') {
-                            // Handle SSE message
-                            const sessionId = req.headers['mcp-session-id'] as string | undefined;
-                            if (!sessionId) {
-                                sendJson(res, 400, { error: 'Missing Mcp-Session-Id header' });
-                                return;
-                            }
-
-                            const session = sseTransports.get(sessionId);
-                            if (!session) {
-                                sendJson(res, 404, { error: 'Session not found' });
-                                return;
-                            }
-
-                            await handleSseMessage(session.transport, req, res, parsedBody);
-                        } else {
-                            sendJson(res, 405, { error: 'Method Not Allowed' });
-                        }
-                    } else {
-                        sendJson(res, 404, { error: 'Not Found' });
-                    }
+                // Streamable HTTP Transport handling
+                if (url.pathname === endpointPath) {
+                    await handleStreamRequest(config, req, res, parsedBody, streamSessions);
                 } else {
-                    // Streamable HTTP Transport handling
-                    if (url.pathname === endpointPath) {
-                        await handleStreamRequest(config, req, res, parsedBody, streamSessions);
-                    } else {
-                        sendJson(res, 404, { error: 'Not Found' });
-                    }
+                    sendJson(res, 404, { error: 'Not Found' });
                 }
 
                 logger.info('MCP request handled successfully', {
@@ -342,19 +296,6 @@ export async function startHttpServer(config: EnvironmentConfig): Promise<void> 
             httpServer.close(() => resolve());
         });
     const closeSessions: ShutdownHandler = async () => {
-        // Close SSE transport sessions
-        for (const [sessionId, session] of sseTransports) {
-            try {
-                await session.server.close();
-                await session.transport.close();
-                logger.info('Closed SSE session', { sessionId });
-            } catch (error) {
-                logger.error('Error closing SSE session', { sessionId, error });
-            }
-        }
-        sseTransports.clear();
-
-        // Close Stream transport sessions
         await closeAllStreamSessions(streamSessions);
     };
 
