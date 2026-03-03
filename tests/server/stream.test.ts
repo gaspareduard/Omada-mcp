@@ -49,6 +49,10 @@ vi.mock('../../src/server/common.js', () => ({
     })),
 }));
 
+vi.mock('../../src/tools/index.js', () => ({
+    registerAllTools: vi.fn(),
+}));
+
 vi.mock('@modelcontextprotocol/sdk/server/streamableHttp.js', () => {
     return {
         StreamableHTTPServerTransport: vi.fn(function (

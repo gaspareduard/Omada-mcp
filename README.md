@@ -296,6 +296,10 @@ In client-credentials mode the server already treats `Mcp-Session-Id` as optiona
 | `getSsidList`                   | Gets the list of SSIDs in a WLAN group.                                           |
 | `getSsidDetail`                 | Gets detailed information for a specific SSID.                                    |
 | `getFirewallSetting`            | Gets firewall configuration and rules for a site.                                 |
+| `getRateLimitProfiles`          | Gets the list of available rate limit profiles for bandwidth control.             |
+| `setClientRateLimit`            | Sets custom bandwidth limits (download/upload) for a specific client.             |
+| `setClientRateLimitProfile`     | Applies a predefined rate limit profile to a specific client.                     |
+| `disableClientRateLimit`        | Disables bandwidth rate limiting for a specific client.                           |
 
 ## Supported Omada API Operations
 
@@ -319,6 +323,8 @@ In client-credentials mode the server already treats `Mcp-Session-Id` as optiona
 | `getSsidList`                       | Get SSID list for a WLAN group.                           | Used by `getSsidList`; requires wlanId from `getWlanGroupList`. Use ssidId for `getSsidDetail`.      |
 | `getSsidDetail`                     | Get detailed SSID configuration.                          | Used by `getSsidDetail`; requires wlanId and ssidId. Returns security, rate limits, scheduling.      |
 | `getFirewallSetting`                | Get firewall configuration for a site.                    | Used by `getFirewallSetting`; returns ACL rules, IP groups, security policies.                       |
+| `getRateLimitProfileList`           | Get rate limit profile list.                              | Used by `getRateLimitProfiles`; returns available bandwidth control profiles with limits in Kbps.    |
+| `updateClientRateLimitSetting`      | Set rate limit setting for a client.                      | Used by `setClientRateLimit`, `setClientRateLimitProfile`, and `disableClientRateLimit`.             |
 
 ## Devcontainer support
 

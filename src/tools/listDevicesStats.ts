@@ -5,24 +5,24 @@ import type { OmadaClient } from '../omadaClient/index.js';
 import { customHeadersSchema, toToolResult, wrapToolHandler } from '../server/common.js';
 import { createPaginationSchema } from '../utils/pagination-schema.js';
 
-const listDevicesStatsSchema = z.object({
-    ...createPaginationSchema(100),
-    searchMacs: z.string().optional(),
-    searchNames: z.string().optional(),
-    searchModels: z.string().optional(),
-    searchSns: z.string().optional(),
-    filterTag: z.string().optional(),
-    filterDeviceSeriesType: z.string().optional(),
-    customHeaders: customHeadersSchema,
-});
-
 export function registerListDevicesStatsTool(server: McpServer, client: OmadaClient): void {
+    const inputSchema = z.object({
+        ...createPaginationSchema(100),
+        searchMacs: z.string().optional(),
+        searchNames: z.string().optional(),
+        searchModels: z.string().optional(),
+        searchSns: z.string().optional(),
+        filterTag: z.string().optional(),
+        filterDeviceSeriesType: z.string().optional(),
+        customHeaders: customHeadersSchema,
+    });
+
     server.registerTool(
         'listDevicesStats',
         {
             description:
                 'Query statistics for global adopted devices with pagination and filtering. Supports fuzzy search by MAC address, name, model, or serial number, and filtering by tag or device series type (0: basic, 1: pro).',
-            inputSchema: listDevicesStatsSchema.shape,
+            inputSchema: inputSchema.shape,
         },
         wrapToolHandler('listDevicesStats', async (args) =>
             toToolResult(

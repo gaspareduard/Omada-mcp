@@ -2,6 +2,7 @@ import type { IncomingMessage, ServerResponse } from 'node:http';
 import { SSEServerTransport } from '@modelcontextprotocol/sdk/server/sse.js';
 import type { EnvironmentConfig } from '../config.js';
 import { OmadaClient } from '../omadaClient/index.js';
+import { registerAllTools } from '../tools/index.js';
 import { logger } from '../utils/logger.js';
 import { extractAuthFromHeaders, resolveOmadaConfig } from '../utils/omada-headers.js';
 import { createServer } from './common.js';
@@ -18,7 +19,8 @@ interface SSETransportState {
  * This implements the legacy MCP protocol version 2024-11-05
  */
 export function createSseTransport(client: OmadaClient, config: EnvironmentConfig, endpoint: string, res: ServerResponse): SSETransportState {
-    const mcpServer = createServer(client);
+    const mcpServer = createServer();
+    registerAllTools(mcpServer, client);
 
     const transport = new SSEServerTransport(endpoint, res, {
         allowedOrigins: config.httpAllowedOrigins,

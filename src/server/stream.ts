@@ -3,6 +3,7 @@ import type { IncomingMessage, ServerResponse } from 'node:http';
 import { StreamableHTTPServerTransport } from '@modelcontextprotocol/sdk/server/streamableHttp.js';
 import type { EnvironmentConfig } from '../config.js';
 import { OmadaClient } from '../omadaClient/index.js';
+import { registerAllTools } from '../tools/index.js';
 import { logger } from '../utils/logger.js';
 import { extractAuthFromHeaders, resolveOmadaConfig } from '../utils/omada-headers.js';
 import { createServer } from './common.js';
@@ -80,7 +81,8 @@ function getSessionIdFromHeaders(req: IncomingMessage): string | undefined {
  * This implements the MCP protocol version 2025-03-26
  */
 export function createStreamTransport(client: OmadaClient, config: EnvironmentConfig, hooks?: StreamLifecycleHooks): StreamTransportState {
-    const mcpServer = createServer(client);
+    const mcpServer = createServer();
+    registerAllTools(mcpServer, client);
 
     logger.info('Starting Streamable HTTP transport; Mcp-Session-Id headers are optional in client-credentials mode');
 

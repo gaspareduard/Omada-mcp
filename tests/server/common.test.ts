@@ -285,9 +285,8 @@ describe('server/common', () => {
     describe('createServer', () => {
         it('should create MCP server instance', async () => {
             const { createServer } = await import('../../src/server/common.js');
-            const mockClient = {} as unknown as import('../../src/omadaClient/index.js').OmadaClient;
 
-            const server = createServer(mockClient);
+            const server = createServer();
 
             expect(server).toBeDefined();
             expect(server).toBeTypeOf('object');
@@ -297,9 +296,8 @@ describe('server/common', () => {
 
         it('should setup logging on the server', async () => {
             const { createServer } = await import('../../src/server/common.js');
-            const mockClient = {} as unknown as import('../../src/omadaClient/index.js').OmadaClient;
 
-            const server = createServer(mockClient);
+            const server = createServer();
             const protocol = (server as { server: { oninitialized?: unknown; onclose?: unknown; onerror?: unknown } }).server;
 
             // Verify logging handlers are set up
@@ -311,9 +309,8 @@ describe('server/common', () => {
         it('should register resources/list handler that returns empty array', async () => {
             const { createServer } = await import('../../src/server/common.js');
             const { ListResourcesRequestSchema } = await import('@modelcontextprotocol/sdk/types.js');
-            const mockClient = {} as unknown as import('../../src/omadaClient/index.js').OmadaClient;
 
-            const server = createServer(mockClient);
+            const server = createServer();
 
             type HandlerFn = (req: unknown, extra: unknown) => Promise<unknown>;
             const protocol = (server as { server: { _requestHandlers?: Map<string, HandlerFn> } }).server;

@@ -3,8 +3,6 @@ import type { RequestHandlerExtra } from '@modelcontextprotocol/sdk/shared/proto
 import { type CallToolResult, ListResourcesRequestSchema, type ServerNotification, type ServerRequest } from '@modelcontextprotocol/sdk/types.js';
 import { z } from 'zod';
 
-import type { OmadaClient } from '../omadaClient/index.js';
-import { registerAllTools } from '../tools/index.js';
 import { logger } from '../utils/logger.js';
 
 // Custom headers schema for optional HTTP headers
@@ -184,14 +182,13 @@ function setupServerLogging(server: McpServer): void {
     };
 }
 
-export function createServer(client: OmadaClient): McpServer {
+export function createServer(): McpServer {
     const server = new McpServer({
         name: 'tplink-omada-mcp',
         version: '0.1.0',
     });
 
     setupServerLogging(server);
-    registerAllTools(server, client);
 
     // Register resources capability and resources/list handler to prevent initialization errors
     // in MCP clients like Claude Desktop. Currently, this server does not expose any resources,

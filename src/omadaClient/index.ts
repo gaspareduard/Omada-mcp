@@ -7,6 +7,7 @@ import type {
     ActiveClientInfo,
     ClientActivity,
     ClientPastConnection,
+    ClientRateLimitSetting,
     CustomHeaders,
     GetClientActivityOptions,
     GetDeviceStatsOptions,
@@ -18,6 +19,7 @@ import type {
     OmadaSiteSummary,
     OswStackDetail,
     PaginatedResult,
+    RateLimitProfile,
     ThreatInfo,
 } from '../types/index.js';
 
@@ -130,6 +132,34 @@ export class OmadaClient {
         customHeaders?: CustomHeaders
     ): Promise<ClientPastConnection[]> {
         return await this.clientOps.listClientsPastConnections(options, customHeaders);
+    }
+
+    // Rate limit operations
+    public async getRateLimitProfiles(siteId?: string, customHeaders?: CustomHeaders): Promise<RateLimitProfile[]> {
+        return await this.clientOps.getRateLimitProfiles(siteId, customHeaders);
+    }
+
+    public async setClientRateLimit(
+        clientMac: string,
+        downLimit: number,
+        upLimit: number,
+        siteId?: string,
+        customHeaders?: CustomHeaders
+    ): Promise<ClientRateLimitSetting> {
+        return await this.clientOps.setClientRateLimit(clientMac, downLimit, upLimit, siteId, customHeaders);
+    }
+
+    public async setClientRateLimitProfile(
+        clientMac: string,
+        profileId: string,
+        siteId?: string,
+        customHeaders?: CustomHeaders
+    ): Promise<ClientRateLimitSetting> {
+        return await this.clientOps.setClientRateLimitProfile(clientMac, profileId, siteId, customHeaders);
+    }
+
+    public async disableClientRateLimit(clientMac: string, siteId?: string, customHeaders?: CustomHeaders): Promise<ClientRateLimitSetting> {
+        return await this.clientOps.disableClientRateLimit(clientMac, siteId, customHeaders);
     }
 
     // Security operations

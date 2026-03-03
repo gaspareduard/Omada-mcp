@@ -47,6 +47,10 @@ vi.mock('../../src/server/common.js', () => ({
     })),
 }));
 
+vi.mock('../../src/tools/index.js', () => ({
+    registerAllTools: vi.fn(),
+}));
+
 vi.mock('@modelcontextprotocol/sdk/server/sse.js', () => {
     return {
         SSEServerTransport: vi.fn(function (this: {
