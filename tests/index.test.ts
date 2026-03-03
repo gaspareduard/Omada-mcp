@@ -9,7 +9,7 @@ const baseConfig = {
     siteId: 'site-1',
     strictSsl: true,
     requestTimeout: 15_000,
-    httpTransport: 'sse',
+    httpTransport: 'stream',
 };
 
 const loadEntry = async () => import('../src/index.js');

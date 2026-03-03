@@ -110,7 +110,7 @@ const baseConfig: EnvironmentConfig = {
     logLevel: 'info',
     logFormat: 'plain',
     useHttp: false,
-    httpTransport: 'sse',
+    httpTransport: 'stream',
     httpEnableHealthcheck: true,
     httpAllowCors: true,
     httpNgrokEnabled: false,

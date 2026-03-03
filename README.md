@@ -69,7 +69,7 @@ docker run -d \
   jmtvms/tplink-omada-mcp:latest
 ```
 
-The HTTP server will be available at `http://localhost:3000/mcp` (stream transport) or `http://localhost:3000/sse` (SSE transport).
+The HTTP server will be available at `http://localhost:3000/mcp`.
 
 ## Features
 
@@ -120,9 +120,8 @@ These variables are only used when `MCP_SERVER_USE_HTTP=true`:
 | Variable                       | Required | Default                         | Description                                                                 |
 | ------------------------------ | -------- | ------------------------------- | --------------------------------------------------------------------------- |
 | `MCP_HTTP_PORT`                | No       | `3000`                          | Port for the HTTP server                                                    |
-| `MCP_HTTP_TRANSPORT`           | No       | `stream`                        | Transport protocol (`stream` or `sse`). See [Transport Protocols](#transport-protocols) |
 | `MCP_HTTP_BIND_ADDR`           | No       | `127.0.0.1`                     | Bind address (IPv4/IPv6). Use atapter IP address to expose to the network.  |
-| `MCP_HTTP_PATH`                | No       | `/mcp` or `/sse`*               | Base path for MCP endpoints (*depends on transport)                         |
+| `MCP_HTTP_PATH`                | No       | `/mcp`                          | Base path for MCP endpoints                                                 |
 | `MCP_HTTP_ENABLE_HEALTHCHECK`  | No       | `true`                          | Enable a healthcheck endpoint                                               |
 | `MCP_HTTP_HEALTHCHECK_PATH`    | No       | `/healthz`                      | Path for the healthcheck endpoint                                           |
 | `MCP_HTTP_ALLOW_CORS`          | No       | `true`                          | Enable CORS for the HTTP server                                             |
@@ -180,16 +179,10 @@ The same image supports both stdio and HTTP transports - configure the desired m
 
 ### Transport Protocols
 
-The MCP server supports two HTTP transport protocols:
-
-#### Streamable HTTP (Default)
-
-The **Streamable HTTP** transport implements the [MCP protocol version 2025-03-26](https://modelcontextprotocol.io/specification/2025-06-18/basic/transports#http-with-sse). This is the recommended transport for new integrations.
+The MCP server uses the **Streamable HTTP** transport, which implements the [MCP protocol version 2025-03-26](https://modelcontextprotocol.io/specification/2025-06-18/basic/transports#http-with-sse).
 
 ```bash
-# Set transport to stream (default)
 export MCP_SERVER_USE_HTTP=true
-export MCP_HTTP_TRANSPORT=stream
 npm run dev
 ```
 
@@ -199,36 +192,15 @@ Features:
 - Server-Sent Events for streaming responses
 - Built-in session management with cryptographic session IDs (the server currently operates statelessly when using client credentials)
 
-The Streamable HTTP endpoint defaults to `/mcp` and handles:
+The endpoint defaults to `/mcp` and handles:
 
 - `GET /mcp` - Establish SSE stream and initialize session
 - `POST /mcp` - Send JSON-RPC messages
 - `DELETE /mcp` - Terminate session
 
-#### HTTP with SSE (Legacy)
-
-The **HTTP+SSE** transport implements the [MCP protocol version 2024-11-05](https://modelcontextprotocol.io/specification/2024-11-05/basic/transports#http-with-sse). This transport is provided for backward compatibility with older MCP clients.
-
-```bash
-# Set transport to sse for legacy clients
-export MCP_SERVER_USE_HTTP=true
-export MCP_HTTP_TRANSPORT=sse
-npm run dev
-```
-
-Features:
-
-- Separate endpoints for SSE stream and POST messages
-- Compatible with older MCP client implementations
-
-The SSE transport uses two endpoints:
-
-- `GET /sse` - Establish SSE connection
-- `POST /messages` - Send JSON-RPC messages
-
 #### Security Considerations
 
-Both transports implement DNS rebinding protection:
+DNS rebinding protection is enabled by default:
 
 - **Origin Validation**: The server validates the `Origin` header on all incoming connections. Configure allowed origins with `MCP_HTTP_ALLOWED_ORIGINS` (default: `127.0.0.1, localhost`). Use `*` to allow all origins (development only, not recommended for production).
 - **Network Binding**: The server binds to `127.0.0.1` by default, restricting access to localhost only. Set `MCP_HTTP_BIND_ADDR=0.0.0.0` to expose the server to your network (not recommended for production without additional security measures).
@@ -246,11 +218,11 @@ npm run dev    # live reload during development
 npm run start  # run the compiled output
 ```
 
-By default, the server listens on `127.0.0.1:3000` and exposes the MCP endpoint at `/mcp` (for stream transport) or `/sse` (for SSE transport) with a health check on `/healthz`. Configure the bind address, port, and path using the optional `MCP_HTTP_*` environment variables documented in `.env.example`. The `npm run docker:run:http` helper wraps the HTTP image and publishes the port automatically.
+By default, the server listens on `127.0.0.1:3000` and exposes the MCP endpoint at `/mcp` with a health check on `/healthz`. Configure the bind address, port, and path using the optional `MCP_HTTP_*` environment variables documented in `.env.example`. The `npm run docker:run:http` helper wraps the HTTP image and publishes the port automatically.
 
-#### Using ngrok (works with both transports)
+#### Using ngrok
 
-To share the local server with remote tooling, you can use ngrok to expose the HTTP server publicly. This works with **both stream and SSE transports**.
+To share the local server with remote tooling, you can use ngrok to expose the HTTP server publicly.
 
 ##### Option 1: Built-in ngrok support (recommended)
 

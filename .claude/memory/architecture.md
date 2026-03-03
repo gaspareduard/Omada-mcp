@@ -24,8 +24,7 @@ src/
   server/                # MCP transport implementations
     common.ts            # shared tool/prompt registration logic
     stdio.ts             # stdio transport
-    http.ts              # HTTP coordinator (delegates to sse/stream)
-    sse.ts               # HTTP+SSE (MCP 2024-11-05)
+    http.ts              # HTTP coordinator
     stream.ts            # Streamable HTTP (MCP 2025-03-26)
   tools/                 # one file per MCP tool
     index.ts             # tool registration
@@ -87,10 +86,8 @@ tests/                   # mirrors src/ structure exactly
 | Transport | MCP Version | Endpoint |
 |-----------|-------------|----------|
 | `stream`  | 2025-03-26  | `/mcp` (single endpoint) |
-| `sse`     | 2024-11-05  | `/sse` (stream) + POST endpoint |
 
-Both implement DNS rebinding protection (origin validation + bind address restriction).
-Both must be updated together whenever HTTP features are added.
+Implements DNS rebinding protection (origin validation + bind address restriction).
 
 ## Key Dependencies
 - `@modelcontextprotocol/sdk` ^1.21.0 — MCP SDK
