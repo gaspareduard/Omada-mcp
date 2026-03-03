@@ -29,13 +29,13 @@ export class NetworkOperations {
      * Get port forwarding status for a specific type (User or UPnP).
      * OperationId: getPortForwardStatus
      *
-     * @param type - Port forwarding type: 'User' or 'UPnP'
+     * @param type - Port forwarding type. The API expects lowercase: 'user' or 'upnp'.
      * @param siteId - Optional site ID (uses default if not provided)
      * @param page - Page number (required by API, default: 1)
      * @param pageSize - Page size (required by API, range: 1-1000, default: 10)
      */
     public async getPortForwardingStatus(
-        type: 'User' | 'UPnP',
+        type: 'user' | 'upnp',
         siteId?: string,
         page = 1,
         pageSize = 10,

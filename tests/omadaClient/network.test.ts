@@ -77,10 +77,10 @@ describe('NetworkOperations', () => {
 
             vi.mocked(mockRequest.get).mockResolvedValue(mockResponse);
 
-            const result = await networkOps.getPortForwardingStatus('User', 'site-123', 1, 10);
+            const result = await networkOps.getPortForwardingStatus('user', 'site-123', 1, 10);
 
             expect(mockRequest.get).toHaveBeenCalledWith(
-                '/openapi/v1/test-omadac/sites/site-123/insight/port-forwarding/User',
+                '/openapi/v1/test-omadac/sites/site-123/insight/port-forwarding/user',
                 {
                     page: 1,
                     pageSize: 10,
@@ -104,10 +104,10 @@ describe('NetworkOperations', () => {
 
             vi.mocked(mockRequest.get).mockResolvedValue(mockResponse);
 
-            const result = await networkOps.getPortForwardingStatus('UPnP', 'site-123');
+            const result = await networkOps.getPortForwardingStatus('upnp', 'site-123');
 
             expect(mockRequest.get).toHaveBeenCalledWith(
-                '/openapi/v1/test-omadac/sites/site-123/insight/port-forwarding/UPnP',
+                '/openapi/v1/test-omadac/sites/site-123/insight/port-forwarding/upnp',
                 {
                     page: 1,
                     pageSize: 10,

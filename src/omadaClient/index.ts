@@ -173,7 +173,7 @@ export class OmadaClient {
     }
 
     public async getPortForwardingStatus(
-        type: 'User' | 'UPnP',
+        type: 'user' | 'upnp',
         siteId?: string,
         page = 1,
         pageSize = 10,

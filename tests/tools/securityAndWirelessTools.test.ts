@@ -27,7 +27,7 @@ describe('Security and Wireless Tools', () => {
                 }),
                 expect.any(Function)
             );
-            expect(mockClient.getPortForwardingStatus).toHaveBeenCalledWith('User', 'test-site', 1, 10, undefined);
+            expect(mockClient.getPortForwardingStatus).toHaveBeenCalledWith('user', 'test-site', 1, 10, undefined);
         });
 
         it('should handle UPnP type', async () => {
@@ -47,7 +47,7 @@ describe('Security and Wireless Tools', () => {
             };
 
             registerGetPortForwardingStatusTool(mockServer as never, mockClient as never);
-            expect(mockClient.getPortForwardingStatus).toHaveBeenCalledWith('UPnP', undefined, 1, 10, undefined);
+            expect(mockClient.getPortForwardingStatus).toHaveBeenCalledWith('upnp', undefined, 1, 10, undefined);
         });
     });
 
