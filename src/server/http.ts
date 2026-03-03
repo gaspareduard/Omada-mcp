@@ -1,13 +1,11 @@
 import type { IncomingHttpHeaders, IncomingMessage, ServerResponse } from 'node:http';
 import http from 'node:http';
-import type { SSEServerTransport } from '@modelcontextprotocol/sdk/server/sse.js';
 import ngrok from '@ngrok/ngrok';
 import type { EnvironmentConfig } from '../config.js';
-import type { OmadaClient } from '../omadaClient/index.js';
 import { normalizePath, resolvePort } from '../utils/config-validations.js';
 import { logger } from '../utils/logger.js';
-import { createSseTransport, getSseMessagePath, handleSseConnection, handleSseMessage } from './sse.js';
-import { handleStreamRequest, type StreamTransportState } from './stream.js';
+import type { StreamTransportState } from './stream.js';
+import { closeAllStreamSessions, handleStreamRequest } from './stream.js';
 
 const DEFAULT_PORT = 3000;
 const HEALTH_PATH = '/healthz';
@@ -135,19 +133,19 @@ async function createShutdownHandler(signal: NodeJS.Signals, closeHttp: () => Pr
 }
 
 /**
- * Starts the HTTP server with the configured transport (SSE or Stream)
+ * Starts the HTTP server with the Streamable HTTP transport.
+ * Omada credentials are resolved per-connection/session from env vars (always win)
+ * and request headers (x-omada-client-id, x-omada-client-secret, x-omada-omadac-id).
  */
-export async function startHttpServer(client: OmadaClient, config: EnvironmentConfig): Promise<void> {
+export async function startHttpServer(config: EnvironmentConfig): Promise<void> {
     const transport = config.httpTransport;
     logger.info('Starting HTTP server', { transport });
 
     const port = resolvePort(config.httpPort, DEFAULT_PORT);
     const host = config.httpBindAddr ?? '127.0.0.1';
-    const endpointPath = normalizePath(config.httpPath ?? (transport === 'sse' ? '/sse' : '/mcp'));
+    const endpointPath = normalizePath(config.httpPath ?? '/mcp');
 
-    // Track transports by session ID for stateful mode
-    const sseTransports = new Map<string, { transport: SSEServerTransport; server: ReturnType<typeof createSseTransport>['server'] }>();
-    const streamTransports = new Map<string, StreamTransportState>();
+    const streamSessions = new Map<string, StreamTransportState>();
 
     const httpServer = http.createServer((req, res) => {
         void (async () => {
@@ -215,73 +213,11 @@ export async function startHttpServer(client: OmadaClient, config: EnvironmentCo
             }
 
             try {
-                if (transport === 'sse') {
-                    // SSE Transport handling
-                    if (url.pathname === endpointPath) {
-                        if (req.method === 'GET') {
-                            // Establish SSE connection
-                            const messagePath = getSseMessagePath();
-                            const { transport: sseTransport, server: sseServer } = await handleSseConnection(client, config, messagePath, req, res);
-
-                            // Store transport for later message handling
-                            sseTransports.set(sseTransport.sessionId, { transport: sseTransport, server: sseServer });
-
-                            // Clean up on close
-                            sseTransport.onclose = () => {
-                                sseTransports.delete(sseTransport.sessionId);
-                            };
-                        } else {
-                            sendJson(res, 405, { error: 'Method Not Allowed' });
-                        }
-                    } else if (url.pathname === getSseMessagePath()) {
-                        if (req.method === 'POST') {
-                            // Handle SSE message
-                            const sessionId = req.headers['mcp-session-id'] as string | undefined;
-                            if (!sessionId) {
-                                sendJson(res, 400, { error: 'Missing Mcp-Session-Id header' });
-                                return;
-                            }
-
-                            const session = sseTransports.get(sessionId);
-                            if (!session) {
-                                sendJson(res, 404, { error: 'Session not found' });
-                                return;
-                            }
-
-                            await handleSseMessage(session.transport, req, res, parsedBody);
-                        } else {
-                            sendJson(res, 405, { error: 'Method Not Allowed' });
-                        }
-                    } else {
-                        sendJson(res, 404, { error: 'Not Found' });
-                    }
+                // Streamable HTTP Transport handling
+                if (url.pathname === endpointPath) {
+                    await handleStreamRequest(config, req, res, parsedBody, streamSessions);
                 } else {
-                    // Streamable HTTP Transport handling
-                    if (url.pathname === endpointPath) {
-                        // Check for existing session in stateful mode
-                        const sessionId = req.headers['mcp-session-id'] as string | undefined;
-                        let existingState: StreamTransportState | undefined;
-
-                        if (config.stateful && sessionId) {
-                            existingState = streamTransports.get(sessionId);
-                        }
-
-                        const state = await handleStreamRequest(client, config, req, res, parsedBody, existingState);
-
-                        // Store transport for stateful sessions
-                        if (config.stateful && state && state.transport.sessionId) {
-                            streamTransports.set(state.transport.sessionId, state);
-
-                            // Clean up on close
-                            state.transport.onclose = () => {
-                                if (state.transport.sessionId) {
-                                    streamTransports.delete(state.transport.sessionId);
-                                }
-                            };
-                        }
-                    } else {
-                        sendJson(res, 404, { error: 'Not Found' });
-                    }
+                    sendJson(res, 404, { error: 'Not Found' });
                 }
 
                 logger.info('MCP request handled successfully', {
@@ -289,6 +225,15 @@ export async function startHttpServer(client: OmadaClient, config: EnvironmentCo
                     method: req.method,
                 });
             } catch (error) {
+                if (error instanceof Error && error.message.startsWith('Missing required Omada credentials')) {
+                    logger.warn('Request rejected: missing Omada credentials', { error: error.message });
+                    if (!res.headersSent) {
+                        sendJson(res, 401, { error: error.message });
+                    } else {
+                        res.end();
+                    }
+                    return;
+                }
                 logger.error('Failed to handle MCP HTTP request', { error });
                 if (!res.headersSent) {
                     sendJson(res, 500, {
@@ -351,31 +296,7 @@ export async function startHttpServer(client: OmadaClient, config: EnvironmentCo
             httpServer.close(() => resolve());
         });
     const closeSessions: ShutdownHandler = async () => {
-        // Close SSE transport sessions
-        for (const [sessionId, session] of sseTransports) {
-            try {
-                await session.server.close();
-                await session.transport.close();
-                logger.info('Closed SSE session', { sessionId });
-            } catch (error) {
-                logger.error('Error closing SSE session', { sessionId, error });
-            }
-        }
-        sseTransports.clear();
-
-        // Close Streamable HTTP transport sessions
-        for (const [sessionId, state] of streamTransports) {
-            if (state) {
-                try {
-                    await state.server.close();
-                    await state.transport.close();
-                    logger.info('Closed stream session', { sessionId });
-                } catch (error) {
-                    logger.error('Error closing stream session', { sessionId, error });
-                }
-            }
-        }
-        streamTransports.clear();
+        await closeAllStreamSessions(streamSessions);
     };
 
     for (const signal of ['SIGINT', 'SIGTERM'] as const) {

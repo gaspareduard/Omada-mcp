@@ -1,0 +1,22 @@
+{
+    "permissions": {
+        "allow": [
+            "Bash(npm install)",
+            "Bash(npm run build)",
+            "Bash(npm run dev)",
+            "Bash(npm run lint)",
+            "Bash(npm run format)",
+            "Bash(npm run check)",
+            "Bash(npm test)",
+            "Bash(npm run test:watch)",
+            "Bash(npm run test:coverage)",
+            "Bash(git status)",
+            "Bash(git diff*)",
+            "Bash(git log*)",
+            "Bash(git branch*)",
+            "Bash(git checkout*)",
+            "Bash(git add*)",
+            "Bash(git commit*)"
+        ]
+    }
+}

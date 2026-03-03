@@ -2,11 +2,15 @@ import type {
     ActiveClientInfo,
     ClientActivity,
     ClientPastConnection,
+    ClientRateLimitSetting,
+    CustomHeaders,
     GetClientActivityOptions,
     ListClientsPastConnectionsOptions,
     OmadaApiResponse,
     OmadaClientInfo,
     PaginatedResult,
+    RateLimitProfile,
+    UpdateClientRateLimitRequest,
 } from '../types/index.js';
 
 import type { RequestHandler } from './request.js';
@@ -25,16 +29,20 @@ export class ClientOperations {
     /**
      * List all clients in a site.
      */
-    public async listClients(siteId?: string): Promise<OmadaClientInfo[]> {
+    public async listClients(siteId?: string, customHeaders?: CustomHeaders): Promise<OmadaClientInfo[]> {
         const resolvedSiteId = this.site.resolveSiteId(siteId);
-        return await this.request.fetchPaginated<OmadaClientInfo>(this.buildPath(`/sites/${encodeURIComponent(resolvedSiteId)}/clients`));
+        return await this.request.fetchPaginated<OmadaClientInfo>(
+            this.buildPath(`/sites/${encodeURIComponent(resolvedSiteId)}/clients`),
+            {},
+            customHeaders
+        );
     }
 
     /**
      * Get a specific client by MAC address or client ID.
      */
-    public async getClient(identifier: string, siteId?: string): Promise<OmadaClientInfo | undefined> {
-        const clients = await this.listClients(siteId);
+    public async getClient(identifier: string, siteId?: string, customHeaders?: CustomHeaders): Promise<OmadaClientInfo | undefined> {
+        const clients = await this.listClients(siteId, customHeaders);
         return clients.find((client) => client.mac === identifier || client.id === identifier);
     }
 
@@ -45,10 +53,12 @@ export class ClientOperations {
      * @param siteId - Optional site ID, uses default from config if not provided
      * @returns Array of active client information
      */
-    public async listMostActiveClients(siteId?: string): Promise<ActiveClientInfo[]> {
+    public async listMostActiveClients(siteId?: string, customHeaders?: CustomHeaders): Promise<ActiveClientInfo[]> {
         const resolvedSiteId = this.site.resolveSiteId(siteId);
         const response = await this.request.get<OmadaApiResponse<ActiveClientInfo[]>>(
-            this.buildPath(`/sites/${encodeURIComponent(resolvedSiteId)}/dashboard/active-clients`)
+            this.buildPath(`/sites/${encodeURIComponent(resolvedSiteId)}/dashboard/active-clients`),
+            undefined,
+            customHeaders
         );
         return response.result ?? [];
     }
@@ -60,7 +70,7 @@ export class ClientOperations {
      * @param options - Options including optional siteId, start, and end timestamps
      * @returns Array of client activity snapshots over time
      */
-    public async listClientsActivity(options: GetClientActivityOptions = {}): Promise<ClientActivity[]> {
+    public async listClientsActivity(options: GetClientActivityOptions = {}, customHeaders?: CustomHeaders): Promise<ClientActivity[]> {
         const resolvedSiteId = this.site.resolveSiteId(options.siteId);
         const params: Record<string, unknown> = {};
 
@@ -73,7 +83,8 @@ export class ClientOperations {
 
         const response = await this.request.get<OmadaApiResponse<ClientActivity[]>>(
             this.buildPath(`/sites/${encodeURIComponent(resolvedSiteId)}/dashboard/client-activity`),
-            params
+            params,
+            customHeaders
         );
         return response.result ?? [];
     }
@@ -85,7 +96,10 @@ export class ClientOperations {
      * @param options - Options including siteId, pagination, filters, and search parameters
      * @returns Array of client past connection information
      */
-    public async listClientsPastConnections(options: ListClientsPastConnectionsOptions): Promise<ClientPastConnection[]> {
+    public async listClientsPastConnections(
+        options: ListClientsPastConnectionsOptions,
+        customHeaders?: CustomHeaders
+    ): Promise<ClientPastConnection[]> {
         const resolvedSiteId = this.site.resolveSiteId(options.siteId);
         const params: Record<string, unknown> = {
             page: options.page,
@@ -115,10 +129,125 @@ export class ClientOperations {
 
         const response = await this.request.get<OmadaApiResponse<PaginatedResult<ClientPastConnection>>>(
             this.buildPath(`/sites/${encodeURIComponent(resolvedSiteId)}/insight/past-connection`),
-            params
+            params,
+            customHeaders
         );
 
         const result = this.request.ensureSuccess(response);
         return result.data ?? [];
+    }
+
+    /**
+     * Get rate limit profile list for a site.
+     * Returns available rate limit profiles that can be applied to clients.
+     *
+     * @param siteId - Optional site ID, uses default from config if not provided
+     * @returns Array of rate limit profiles
+     */
+    public async getRateLimitProfiles(siteId?: string, customHeaders?: CustomHeaders): Promise<RateLimitProfile[]> {
+        const resolvedSiteId = this.site.resolveSiteId(siteId);
+        const response = await this.request.get<OmadaApiResponse<RateLimitProfile[]>>(
+            this.buildPath(`/sites/${encodeURIComponent(resolvedSiteId)}/rate-limit-profiles`),
+            undefined,
+            customHeaders
+        );
+        return this.request.ensureSuccess(response) ?? [];
+    }
+
+    /**
+     * Set custom rate limit for a client.
+     * Configures download and upload bandwidth limits directly without using a profile.
+     *
+     * @param clientMac - MAC address of the client
+     * @param downLimit - Download limit in Kbps
+     * @param upLimit - Upload limit in Kbps
+     * @param siteId - Optional site ID, uses default from config if not provided
+     * @returns Updated rate limit setting
+     */
+    public async setClientRateLimit(
+        clientMac: string,
+        downLimit: number,
+        upLimit: number,
+        siteId?: string,
+        customHeaders?: CustomHeaders
+    ): Promise<ClientRateLimitSetting> {
+        const resolvedSiteId = this.site.resolveSiteId(siteId);
+        const requestBody: UpdateClientRateLimitRequest = {
+            mode: 0, // 0 = custom rate limit
+            customRateLimit: {
+                enable: true,
+                upEnable: true,
+                upLimit: upLimit,
+                downEnable: true,
+                downLimit: downLimit,
+            },
+        };
+
+        const response = await this.request.patch<OmadaApiResponse<ClientRateLimitSetting>>(
+            this.buildPath(`/sites/${encodeURIComponent(resolvedSiteId)}/clients/${encodeURIComponent(clientMac)}/ratelimit`),
+            requestBody,
+            customHeaders
+        );
+        return this.request.ensureSuccess(response);
+    }
+
+    /**
+     * Set rate limit profile for a client.
+     * Applies a predefined rate limit profile to the client.
+     *
+     * @param clientMac - MAC address of the client
+     * @param profileId - Rate limit profile ID
+     * @param siteId - Optional site ID, uses default from config if not provided
+     * @returns Updated rate limit setting
+     */
+    public async setClientRateLimitProfile(
+        clientMac: string,
+        profileId: string,
+        siteId?: string,
+        customHeaders?: CustomHeaders
+    ): Promise<ClientRateLimitSetting> {
+        const resolvedSiteId = this.site.resolveSiteId(siteId);
+        const requestBody: UpdateClientRateLimitRequest = {
+            mode: 1, // 1 = use rate limit profile
+            rateLimitProfileId: profileId,
+        };
+
+        const response = await this.request.patch<OmadaApiResponse<ClientRateLimitSetting>>(
+            this.buildPath(`/sites/${encodeURIComponent(resolvedSiteId)}/clients/${encodeURIComponent(clientMac)}/ratelimit`),
+            requestBody,
+            customHeaders
+        );
+        return this.request.ensureSuccess(response);
+    }
+
+    /**
+     * Disable rate limit for a client.
+     * Removes any rate limiting applied to the client.
+     *
+     * @param clientMac - MAC address of the client
+     * @param siteId - Optional site ID, uses default from config if not provided
+     * @returns Updated rate limit setting
+     */
+    public async disableClientRateLimit(clientMac: string, siteId?: string, customHeaders?: CustomHeaders): Promise<ClientRateLimitSetting> {
+        const resolvedSiteId = this.site.resolveSiteId(siteId);
+
+        // To disable rate limiting, use mode 0 with enable: false and minimal valid limit values
+        const requestBody: UpdateClientRateLimitRequest = {
+            mode: 0,
+            customRateLimit: {
+                enable: false,
+                upEnable: false,
+                upLimit: 1,
+                downEnable: false,
+                downLimit: 1,
+            },
+        };
+
+        const response = await this.request.patch<OmadaApiResponse<ClientRateLimitSetting>>(
+            this.buildPath(`/sites/${encodeURIComponent(resolvedSiteId)}/clients/${encodeURIComponent(clientMac)}/ratelimit`),
+            requestBody,
+            customHeaders
+        );
+        return this.request.ensureSuccess(response);
     }
 }

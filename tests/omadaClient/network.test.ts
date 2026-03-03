@@ -44,7 +44,7 @@ describe('NetworkOperations', () => {
             const result = await networkOps.getInternetInfo('site-123');
 
             expect(mockSite.resolveSiteId).toHaveBeenCalledWith('site-123');
-            expect(mockRequest.get).toHaveBeenCalledWith('/openapi/v1/test-omadac/sites/site-123/internet');
+            expect(mockRequest.get).toHaveBeenCalledWith('/openapi/v1/test-omadac/sites/site-123/internet', undefined, undefined);
             expect(result).toEqual({ wanType: 'static', ip: '192.168.1.1' });
         });
 
@@ -79,10 +79,14 @@ describe('NetworkOperations', () => {
 
             const result = await networkOps.getPortForwardingStatus('User', 'site-123', 1, 10);
 
-            expect(mockRequest.get).toHaveBeenCalledWith('/openapi/v1/test-omadac/sites/site-123/insight/port-forwarding/User', {
-                page: 1,
-                pageSize: 10,
-            });
+            expect(mockRequest.get).toHaveBeenCalledWith(
+                '/openapi/v1/test-omadac/sites/site-123/insight/port-forwarding/User',
+                {
+                    page: 1,
+                    pageSize: 10,
+                },
+                undefined
+            );
             expect(result).toEqual(mockResult);
         });
 
@@ -102,10 +106,14 @@ describe('NetworkOperations', () => {
 
             const result = await networkOps.getPortForwardingStatus('UPnP', 'site-123');
 
-            expect(mockRequest.get).toHaveBeenCalledWith('/openapi/v1/test-omadac/sites/site-123/insight/port-forwarding/UPnP', {
-                page: 1,
-                pageSize: 10,
-            });
+            expect(mockRequest.get).toHaveBeenCalledWith(
+                '/openapi/v1/test-omadac/sites/site-123/insight/port-forwarding/UPnP',
+                {
+                    page: 1,
+                    pageSize: 10,
+                },
+                undefined
+            );
             expect(result).toEqual(mockResult);
         });
     });
@@ -121,7 +129,7 @@ describe('NetworkOperations', () => {
 
             const result = await networkOps.getLanNetworkList('site-123');
 
-            expect(mockRequest.fetchPaginated).toHaveBeenCalledWith('/openapi/v2/test-omadac/sites/site-123/lan-networks');
+            expect(mockRequest.fetchPaginated).toHaveBeenCalledWith('/openapi/v2/test-omadac/sites/site-123/lan-networks', {}, undefined);
             expect(result).toEqual(mockData);
         });
     });
@@ -137,7 +145,7 @@ describe('NetworkOperations', () => {
 
             const result = await networkOps.getLanProfileList('site-123');
 
-            expect(mockRequest.fetchPaginated).toHaveBeenCalledWith('/openapi/v1/test-omadac/sites/site-123/lan-profiles');
+            expect(mockRequest.fetchPaginated).toHaveBeenCalledWith('/openapi/v1/test-omadac/sites/site-123/lan-profiles', {}, undefined);
             expect(result).toEqual(mockData);
         });
     });
@@ -157,7 +165,7 @@ describe('NetworkOperations', () => {
 
             const result = await networkOps.getWlanGroupList('site-123');
 
-            expect(mockRequest.get).toHaveBeenCalledWith('/openapi/v1/test-omadac/sites/site-123/wireless-network/wlans');
+            expect(mockRequest.get).toHaveBeenCalledWith('/openapi/v1/test-omadac/sites/site-123/wireless-network/wlans', undefined, undefined);
             expect(result).toEqual(mockData);
         });
     });
@@ -173,7 +181,11 @@ describe('NetworkOperations', () => {
 
             const result = await networkOps.getSsidList('wlan-123', 'site-123');
 
-            expect(mockRequest.fetchPaginated).toHaveBeenCalledWith('/openapi/v1/test-omadac/sites/site-123/wireless-network/wlans/wlan-123/ssids');
+            expect(mockRequest.fetchPaginated).toHaveBeenCalledWith(
+                '/openapi/v1/test-omadac/sites/site-123/wireless-network/wlans/wlan-123/ssids',
+                {},
+                undefined
+            );
             expect(result).toEqual(mockData);
         });
 
@@ -201,7 +213,11 @@ describe('NetworkOperations', () => {
 
             const result = await networkOps.getSsidDetail('wlan-123', 'ssid-456', 'site-123');
 
-            expect(mockRequest.get).toHaveBeenCalledWith('/openapi/v1/test-omadac/sites/site-123/wireless-network/wlans/wlan-123/ssids/ssid-456');
+            expect(mockRequest.get).toHaveBeenCalledWith(
+                '/openapi/v1/test-omadac/sites/site-123/wireless-network/wlans/wlan-123/ssids/ssid-456',
+                undefined,
+                undefined
+            );
             expect(result).toEqual(mockData);
         });
 
@@ -233,7 +249,7 @@ describe('NetworkOperations', () => {
 
             const result = await networkOps.getFirewallSetting('site-123');
 
-            expect(mockRequest.get).toHaveBeenCalledWith('/openapi/v1/test-omadac/sites/site-123/firewall');
+            expect(mockRequest.get).toHaveBeenCalledWith('/openapi/v1/test-omadac/sites/site-123/firewall', undefined, undefined);
             expect(result).toEqual(mockData);
         });
     });

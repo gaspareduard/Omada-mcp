@@ -2,6 +2,7 @@ import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 
 import type { OmadaClient } from '../omadaClient/index.js';
 
+import { registerDisableClientRateLimitTool } from './disableClientRateLimit.js';
 import { registerGetClientTool } from './getClient.js';
 import { registerGetDeviceTool } from './getDevice.js';
 import { registerGetFirewallSettingTool } from './getFirewallSetting.js';
@@ -9,6 +10,7 @@ import { registerGetInternetInfoTool } from './getInternetInfo.js';
 import { registerGetLanNetworkListTool } from './getLanNetworkList.js';
 import { registerGetLanProfileListTool } from './getLanProfileList.js';
 import { registerGetPortForwardingStatusTool } from './getPortForwardingStatus.js';
+import { registerGetRateLimitProfilesTool } from './getRateLimitProfiles.js';
 import { registerGetSsidDetailTool } from './getSsidDetail.js';
 import { registerGetSsidListTool } from './getSsidList.js';
 import { registerGetSwitchStackDetailTool } from './getSwitchStackDetail.js';
@@ -22,6 +24,8 @@ import { registerListDevicesStatsTool } from './listDevicesStats.js';
 import { registerListMostActiveClientsTool } from './listMostActiveClients.js';
 import { registerListSitesTool } from './listSites.js';
 import { registerSearchDevicesTool } from './searchDevices.js';
+import { registerSetClientRateLimitTool } from './setClientRateLimit.js';
+import { registerSetClientRateLimitProfileTool } from './setClientRateLimitProfile.js';
 
 export function registerAllTools(server: McpServer, client: OmadaClient): void {
     registerListSitesTool(server, client);
@@ -44,4 +48,8 @@ export function registerAllTools(server: McpServer, client: OmadaClient): void {
     registerGetSsidListTool(server, client);
     registerGetSsidDetailTool(server, client);
     registerGetFirewallSettingTool(server, client);
+    registerGetRateLimitProfilesTool(server, client);
+    registerSetClientRateLimitTool(server, client);
+    registerSetClientRateLimitProfileTool(server, client);
+    registerDisableClientRateLimitTool(server, client);
 }

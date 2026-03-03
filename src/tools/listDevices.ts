@@ -10,6 +10,6 @@ export function registerListDevicesTool(server: McpServer, client: OmadaClient):
             description: 'List provisioned network devices for a specific site.',
             inputSchema: siteInputSchema.shape,
         },
-        wrapToolHandler('listDevices', async ({ siteId }) => toToolResult(await client.listDevices(siteId)))
+        wrapToolHandler('listDevices', async ({ siteId, customHeaders }) => toToolResult(await client.listDevices(siteId, customHeaders)))
     );
 }

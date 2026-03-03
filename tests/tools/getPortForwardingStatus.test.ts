@@ -69,7 +69,7 @@ describe('getPortForwardingStatus Tool', () => {
 
         const result = await handler({ type: 'User', siteId: 'test-site', page: 1, pageSize: 10 }, { sessionId: 'test-session' });
 
-        expect(mockClient.getPortForwardingStatus).toHaveBeenCalledWith('User', 'test-site', 1, 10);
+        expect(mockClient.getPortForwardingStatus).toHaveBeenCalledWith('User', 'test-site', 1, 10, undefined);
         expect(result).toEqual({
             content: [
                 {
@@ -104,7 +104,7 @@ describe('getPortForwardingStatus Tool', () => {
 
         const result = await handler({ type: 'UPnP', siteId: 'test-site', page: 1, pageSize: 10 }, { sessionId: 'test-session' });
 
-        expect(mockClient.getPortForwardingStatus).toHaveBeenCalledWith('UPnP', 'test-site', 1, 10);
+        expect(mockClient.getPortForwardingStatus).toHaveBeenCalledWith('UPnP', 'test-site', 1, 10, undefined);
         expect(result).toEqual({
             content: [
                 {
@@ -136,7 +136,7 @@ describe('getPortForwardingStatus Tool', () => {
 
         const result = await handler({ type: 'User', siteId: 'test-site' }, { sessionId: 'test-session' });
 
-        expect(mockClient.getPortForwardingStatus).toHaveBeenCalledWith('User', 'test-site', 1, 10);
+        expect(mockClient.getPortForwardingStatus).toHaveBeenCalledWith('User', 'test-site', 1, 10, undefined);
         expect(result).toBeDefined();
     });
 
@@ -161,7 +161,7 @@ describe('getPortForwardingStatus Tool', () => {
 
         const result = await handler({ type: 'User', siteId: 'test-site', page: 2, pageSize: 50 }, { sessionId: 'test-session' });
 
-        expect(mockClient.getPortForwardingStatus).toHaveBeenCalledWith('User', 'test-site', 2, 50);
+        expect(mockClient.getPortForwardingStatus).toHaveBeenCalledWith('User', 'test-site', 2, 50, undefined);
         expect(result).toBeDefined();
     });
 
@@ -182,6 +182,6 @@ describe('getPortForwardingStatus Tool', () => {
             'API error: Invalid request parameters'
         );
 
-        expect(mockClient.getPortForwardingStatus).toHaveBeenCalledWith('User', 'test-site', 1, 10);
+        expect(mockClient.getPortForwardingStatus).toHaveBeenCalledWith('User', 'test-site', 1, 10, undefined);
     });
 });

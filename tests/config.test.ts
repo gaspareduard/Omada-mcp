@@ -37,7 +37,6 @@ describe('config', () => {
             expect(config.logLevel).toBe('info'); // Default
             expect(config.logFormat).toBe('plain'); // Default
             expect(config.useHttp).toBe(false); // Default
-            expect(config.stateful).toBe(false); // Default
         });
 
         it('should strip trailing slash from baseUrl', () => {
@@ -59,22 +58,56 @@ describe('config', () => {
             expect(() => loadConfigFromEnv(mockEnv)).toThrow('Invalid environment configuration');
         });
 
-        it('should throw error if OMADA_CLIENT_ID is missing', () => {
+        it('should throw error if OMADA_CLIENT_ID is missing in stdio mode', () => {
             delete mockEnv.OMADA_CLIENT_ID;
 
             expect(() => loadConfigFromEnv(mockEnv)).toThrow('Invalid environment configuration');
         });
 
-        it('should throw error if OMADA_CLIENT_SECRET is missing', () => {
+        it('should throw error if OMADA_CLIENT_SECRET is missing in stdio mode', () => {
             delete mockEnv.OMADA_CLIENT_SECRET;
 
             expect(() => loadConfigFromEnv(mockEnv)).toThrow('Invalid environment configuration');
         });
 
-        it('should throw error if OMADA_OMADAC_ID is missing', () => {
+        it('should throw error if OMADA_OMADAC_ID is missing in stdio mode', () => {
             delete mockEnv.OMADA_OMADAC_ID;
 
             expect(() => loadConfigFromEnv(mockEnv)).toThrow('Invalid environment configuration');
+        });
+
+        it('should NOT throw if OMADA_CLIENT_ID is missing in HTTP mode', () => {
+            mockEnv.MCP_SERVER_USE_HTTP = 'true';
+            delete mockEnv.OMADA_CLIENT_ID;
+
+            expect(() => loadConfigFromEnv(mockEnv)).not.toThrow();
+        });
+
+        it('should NOT throw if OMADA_CLIENT_SECRET is missing in HTTP mode', () => {
+            mockEnv.MCP_SERVER_USE_HTTP = 'true';
+            delete mockEnv.OMADA_CLIENT_SECRET;
+
+            expect(() => loadConfigFromEnv(mockEnv)).not.toThrow();
+        });
+
+        it('should NOT throw if OMADA_OMADAC_ID is missing in HTTP mode', () => {
+            mockEnv.MCP_SERVER_USE_HTTP = 'true';
+            delete mockEnv.OMADA_OMADAC_ID;
+
+            expect(() => loadConfigFromEnv(mockEnv)).not.toThrow();
+        });
+
+        it('should load with only OMADA_BASE_URL set in HTTP mode', () => {
+            mockEnv.MCP_SERVER_USE_HTTP = 'true';
+            delete mockEnv.OMADA_CLIENT_ID;
+            delete mockEnv.OMADA_CLIENT_SECRET;
+            delete mockEnv.OMADA_OMADAC_ID;
+
+            const config = loadConfigFromEnv(mockEnv);
+            expect(config.baseUrl).toBe('https://omada.example.com');
+            expect(config.clientId).toBeUndefined();
+            expect(config.clientSecret).toBeUndefined();
+            expect(config.omadacId).toBeUndefined();
         });
 
         it('should accept optional OMADA_SITE_ID', () => {
@@ -139,20 +172,6 @@ describe('config', () => {
             expect(config.useHttp).toBe(false);
         });
 
-        it('should parse MCP_SERVER_STATEFUL as true', () => {
-            mockEnv.MCP_SERVER_STATEFUL = 'true';
-            const config = loadConfigFromEnv(mockEnv);
-
-            expect(config.stateful).toBe(true);
-        });
-
-        it('should parse MCP_SERVER_STATEFUL as false', () => {
-            mockEnv.MCP_SERVER_STATEFUL = 'false';
-            const config = loadConfigFromEnv(mockEnv);
-
-            expect(config.stateful).toBe(false);
-        });
-
         it('should parse MCP_HTTP_PORT as number', () => {
             mockEnv.MCP_HTTP_PORT = '8080';
             const config = loadConfigFromEnv(mockEnv);
@@ -160,32 +179,24 @@ describe('config', () => {
             expect(config.httpPort).toBe(8080);
         });
 
-        it('should accept valid http transports', () => {
-            mockEnv.MCP_HTTP_TRANSPORT = 'stream';
-            let config = loadConfigFromEnv(mockEnv);
+        it('should always return stream as httpTransport regardless of env', () => {
+            const config = loadConfigFromEnv(mockEnv);
             expect(config.httpTransport).toBe('stream');
-
-            mockEnv.MCP_HTTP_TRANSPORT = 'sse';
-            config = loadConfigFromEnv(mockEnv);
-            expect(config.httpTransport).toBe('sse');
         });
 
-        it('should use default httpPath based on transport (stream)', () => {
-            mockEnv.MCP_HTTP_TRANSPORT = 'stream';
+        it('should ignore MCP_HTTP_TRANSPORT env var', () => {
+            mockEnv.MCP_HTTP_TRANSPORT = 'sse';
+            const config = loadConfigFromEnv(mockEnv);
+            expect(config.httpTransport).toBe('stream');
+        });
+
+        it('should use default httpPath', () => {
             const config = loadConfigFromEnv(mockEnv);
 
             expect(config.httpPath).toBe('/mcp');
         });
 
-        it('should use default httpPath based on transport (sse)', () => {
-            mockEnv.MCP_HTTP_TRANSPORT = 'sse';
-            const config = loadConfigFromEnv(mockEnv);
-
-            expect(config.httpPath).toBe('/sse');
-        });
-
         it('should override httpPath when explicitly set', () => {
-            mockEnv.MCP_HTTP_TRANSPORT = 'stream';
             mockEnv.MCP_HTTP_PATH = '/custom-path';
             const config = loadConfigFromEnv(mockEnv);
 
@@ -313,9 +324,7 @@ describe('config', () => {
                 MCP_SERVER_LOG_LEVEL: 'debug',
                 MCP_SERVER_LOG_FORMAT: 'json',
                 MCP_SERVER_USE_HTTP: 'true',
-                MCP_SERVER_STATEFUL: 'true',
                 MCP_HTTP_PORT: '9000',
-                MCP_HTTP_TRANSPORT: 'sse',
                 MCP_HTTP_BIND_ADDR: '0.0.0.0',
                 MCP_HTTP_PATH: '/api/mcp',
                 MCP_HTTP_ENABLE_HEALTHCHECK: 'true',
@@ -339,9 +348,8 @@ describe('config', () => {
                 logLevel: 'debug',
                 logFormat: 'json',
                 useHttp: true,
-                stateful: true,
                 httpPort: 9000,
-                httpTransport: 'sse',
+                httpTransport: 'stream',
                 httpBindAddr: '0.0.0.0',
                 httpPath: '/api/mcp',
                 httpEnableHealthcheck: true,

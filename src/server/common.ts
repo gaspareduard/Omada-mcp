@@ -1,14 +1,16 @@
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import type { RequestHandlerExtra } from '@modelcontextprotocol/sdk/shared/protocol.js';
-import type { CallToolResult, ServerNotification, ServerRequest } from '@modelcontextprotocol/sdk/types.js';
+import { type CallToolResult, ListResourcesRequestSchema, type ServerNotification, type ServerRequest } from '@modelcontextprotocol/sdk/types.js';
 import { z } from 'zod';
 
-import type { OmadaClient } from '../omadaClient/index.js';
-import { registerAllTools } from '../tools/index.js';
 import { logger } from '../utils/logger.js';
+
+// Custom headers schema for optional HTTP headers
+export const customHeadersSchema = z.record(z.string(), z.string()).optional();
 
 export const siteInputSchema = z.object({
     siteId: z.string().min(1).optional(),
+    customHeaders: customHeadersSchema,
 });
 
 export const clientIdSchema = siteInputSchema.extend({
@@ -25,6 +27,7 @@ export const customRequestSchema = z.object({
     params: z.record(z.string(), z.unknown()).optional(),
     data: z.unknown().optional(),
     siteId: z.string().min(1).optional(),
+    customHeaders: customHeadersSchema,
 });
 
 export const stackIdSchema = siteInputSchema.extend({
@@ -179,14 +182,24 @@ function setupServerLogging(server: McpServer): void {
     };
 }
 
-export function createServer(client: OmadaClient): McpServer {
+export function createServer(): McpServer {
     const server = new McpServer({
         name: 'tplink-omada-mcp',
         version: '0.1.0',
     });
 
     setupServerLogging(server);
-    registerAllTools(server, client);
+
+    // Register resources capability and resources/list handler to prevent initialization errors
+    // in MCP clients like Claude Desktop. Currently, this server does not expose any resources,
+    // so we return an empty list.
+    server.server.registerCapabilities({
+        resources: {},
+    });
+
+    server.server.setRequestHandler(ListResourcesRequestSchema, async () => ({
+        resources: [],
+    }));
 
     return server;
 }

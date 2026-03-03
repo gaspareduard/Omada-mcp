@@ -1,4 +1,4 @@
-import type { OmadaSiteSummary } from '../types/index.js';
+import type { CustomHeaders, OmadaSiteSummary } from '../types/index.js';
 
 import type { RequestHandler } from './request.js';
 
@@ -15,8 +15,8 @@ export class SiteOperations {
     /**
      * List all sites accessible to the authenticated user.
      */
-    public async listSites(): Promise<OmadaSiteSummary[]> {
-        return await this.request.fetchPaginated<OmadaSiteSummary>(this.buildPath('/sites'));
+    public async listSites(customHeaders?: CustomHeaders): Promise<OmadaSiteSummary[]> {
+        return await this.request.fetchPaginated<OmadaSiteSummary>(this.buildPath('/sites'), {}, customHeaders);
     }
 
     /**

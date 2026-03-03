@@ -2,6 +2,8 @@
 
 A Model Context Protocol (MCP) server that exposes TP-Link Omada controller APIs to AI copilots and automation workflows. This Docker image provides an easy way to run the MCP server with support for both stdio and HTTP transports.
 
+> **Compatibility:** Tested with Omada Controller versions 5.x and 6.x
+
 ## Quick Start
 
 ### Using with Claude Desktop (stdio)
@@ -67,7 +69,7 @@ docker run -d \
   jmtvms/tplink-omada-mcp:latest
 ```
 
-The HTTP server will be available at `http://localhost:3000/mcp` (stream transport) or `http://localhost:3000/sse` (SSE transport).
+The HTTP server will be available at `http://localhost:3000/mcp`.
 
 ## Features
 
@@ -101,7 +103,8 @@ The MCP server reads its configuration from environment variables.
 | `MCP_SERVER_LOG_LEVEL`   | No       | `info`  | Logging verbosity (`debug`, `info`, `warn`, `error`, `silent`)              |
 | `MCP_SERVER_LOG_FORMAT`  | No       | `plain` | Log output format (`plain`, `json`, or `gcp-json`)                          |
 | `MCP_SERVER_USE_HTTP`    | No       | `false` | Start HTTP server instead of stdio                                          |
-| `MCP_SERVER_STATEFUL`    | No       | `false` | Maintain stateful sessions per client                                       |
+
+> **Session IDs and authentication:** When `OMADA_CLIENT_ID`, `OMADA_CLIENT_SECRET`, and `OMADA_OMADAC_ID` are provided (the default client-credentials mode), the server runs statelessly and treats the `Mcp-Session-Id` header as optional. A future OAuth-based user authentication mode will require this header again.
 
 ### MCP Server HTTP Configuration
 
@@ -110,9 +113,8 @@ These variables are only used when `MCP_SERVER_USE_HTTP=true`:
 | Variable                       | Required | Default                         | Description                                                                 |
 | ------------------------------ | -------- | ------------------------------- | --------------------------------------------------------------------------- |
 | `MCP_HTTP_PORT`                | No       | `3000`                          | Port for the HTTP server                                                    |
-| `MCP_HTTP_TRANSPORT`           | No       | `stream`                        | Transport protocol (`stream` or `sse`). See [Transport Protocols](#transport-protocols) |
 | `MCP_HTTP_BIND_ADDR`           | No       | `127.0.0.1`                     | Bind address (IPv4/IPv6). Use adapter IP address to expose to the network.  |
-| `MCP_HTTP_PATH`                | No       | `/mcp` or `/sse`*               | Base path for MCP endpoints (*depends on transport)                         |
+| `MCP_HTTP_PATH`                | No       | `/mcp`                          | Base path for MCP endpoints                                                 |
 | `MCP_HTTP_ENABLE_HEALTHCHECK`  | No       | `true`                          | Enable a healthcheck endpoint                                               |
 | `MCP_HTTP_HEALTHCHECK_PATH`    | No       | `/healthz`                      | Path for the healthcheck endpoint                                           |
 | `MCP_HTTP_ALLOW_CORS`          | No       | `true`                          | Enable CORS for the HTTP server                                             |
@@ -124,17 +126,12 @@ Create a `.env` file or export the variables before launching the container.
 
 ## Transport Protocols
 
-The MCP server supports two HTTP transport protocols:
-
-### Streamable HTTP (Default)
-
-The **Streamable HTTP** transport implements the [MCP protocol version 2025-03-26](https://modelcontextprotocol.io/specification/2025-06-18/basic/transports#http-with-sse). This is the recommended transport for new integrations.
+The MCP server uses the **Streamable HTTP** transport, which implements the [MCP protocol version 2025-03-26](https://modelcontextprotocol.io/specification/2025-06-18/basic/transports#http-with-sse).
 
 ```bash
 docker run -d \
   --env-file .env \
   -e MCP_SERVER_USE_HTTP=true \
-  -e MCP_HTTP_TRANSPORT=stream \
   -e MCP_HTTP_BIND_ADDR=0.0.0.0 \
   -p 3000:3000 \
   jmtvms/tplink-omada-mcp:latest
@@ -144,42 +141,17 @@ Features:
 
 - Single endpoint for all operations (GET, POST, DELETE)
 - Server-Sent Events for streaming responses
-- Built-in session management with cryptographic session IDs
-- Support for stateless mode when needed
+- Built-in session management with cryptographic session IDs (the server currently operates statelessly when using client credentials)
 
-The Streamable HTTP endpoint defaults to `/mcp` and handles:
+The endpoint defaults to `/mcp` and handles:
 
 - `GET /mcp` - Establish SSE stream and initialize session
 - `POST /mcp` - Send JSON-RPC messages
 - `DELETE /mcp` - Terminate session
 
-### HTTP with SSE (Legacy)
-
-The **HTTP+SSE** transport implements the [MCP protocol version 2024-11-05](https://modelcontextprotocol.io/specification/2024-11-05/basic/transports#http-with-sse). This transport is provided for backward compatibility with older MCP clients.
-
-```bash
-docker run -d \
-  --env-file .env \
-  -e MCP_SERVER_USE_HTTP=true \
-  -e MCP_HTTP_TRANSPORT=sse \
-  -e MCP_HTTP_BIND_ADDR=0.0.0.0 \
-  -p 3000:3000 \
-  jmtvms/tplink-omada-mcp:latest
-```
-
-Features:
-
-- Separate endpoints for SSE stream and POST messages
-- Compatible with older MCP client implementations
-
-The SSE transport uses two endpoints:
-
-- `GET /sse` - Establish SSE connection
-- `POST /messages` - Send JSON-RPC messages
-
 ### Security Considerations
 
-Both transports implement DNS rebinding protection:
+DNS rebinding protection is enabled by default:
 
 - **Origin Validation**: The server validates the `Origin` header on all incoming connections. Configure allowed origins with `MCP_HTTP_ALLOWED_ORIGINS` (default: `127.0.0.1, localhost`). Use `*` to allow all origins (development only, not recommended for production).
 - **Network Binding**: The server binds to `127.0.0.1` by default, restricting access to localhost only. Set `MCP_HTTP_BIND_ADDR=0.0.0.0` to expose the server to your network (not recommended for production without additional security measures).
@@ -188,9 +160,9 @@ For more information on the MCP protocol and transports, see the [Model Context 
 
 ### Using ngrok
 
-To share the local server with remote tooling, you can use ngrok to expose the HTTP server publicly. This works with **both stream and SSE transports**.
+To share the local server with remote tooling, you can use ngrok to expose the HTTP server publicly.
 
-**Built-in ngrok support**
+#### Built-in ngrok support
 
 ```bash
 docker run -d \
@@ -205,7 +177,7 @@ docker run -d \
 
 The server will automatically establish an ngrok tunnel and log the public URL.
 
-If an intermediary strips the `Mcp-Session-Id` header, set `MCP_SERVER_STATEFUL=false` to disable server-managed sessions and allow stateless requests.
+In client-credentials mode the server already treats `Mcp-Session-Id` as optional; if the header is removed in transit, requests will still succeed.
 
 ## Tools
 
@@ -255,7 +227,7 @@ If an intermediary strips the `Mcp-Session-Id` header, set `MCP_SERVER_STATEFUL=
 
 Want to help improve this project? Contributions are welcome! Visit our GitHub repository to report issues, suggest features, or submit pull requests:
 
-**https://github.com/MiguelTVMS/tplink-omada-mcp**
+**[https://github.com/MiguelTVMS/tplink-omada-mcp](https://github.com/MiguelTVMS/tplink-omada-mcp)**
 
 ## License
 

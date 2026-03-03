@@ -9,7 +9,7 @@ const baseConfig = {
     siteId: 'site-1',
     strictSsl: true,
     requestTimeout: 15_000,
-    httpTransport: 'sse',
+    httpTransport: 'stream',
 };
 
 const loadEntry = async () => import('../src/index.js');
@@ -78,7 +78,8 @@ describe('src/index main entry', () => {
         await loadEntry();
 
         expect(mockInitLogger).toHaveBeenCalledWith('info', 'json', false);
-        expect(startHttpServer).toHaveBeenCalledWith(expect.objectContaining({ client: 'instance' }), expect.objectContaining({ useHttp: true }));
+        expect(OmadaClient).not.toHaveBeenCalled();
+        expect(startHttpServer).toHaveBeenCalledWith(expect.objectContaining({ useHttp: true }));
         expect(startStdioServer).not.toHaveBeenCalled();
     });
 

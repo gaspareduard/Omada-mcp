@@ -2,6 +2,8 @@
 
 A Model Context Protocol (MCP) server implemented in TypeScript that exposes the TP-Link Omada controller APIs to AI copilots and automation workflows. The server authenticates against a controller, lists sites, devices, and connected clients, and offers a generic tool to invoke arbitrary Omada API endpoints.
 
+> **Compatibility:** Tested with Omada Controller versions 5.x and 6.x
+
 ## Quick Start
 
 ### Using with Claude Desktop (stdio)
@@ -67,7 +69,7 @@ docker run -d \
   jmtvms/tplink-omada-mcp:latest
 ```
 
-The HTTP server will be available at `http://localhost:3000/mcp` (stream transport) or `http://localhost:3000/sse` (SSE transport).
+The HTTP server will be available at `http://localhost:3000/mcp`.
 
 ## Features
 
@@ -108,7 +110,8 @@ The MCP server reads its configuration from environment variables. See `.env.exa
 | `MCP_SERVER_LOG_LEVEL`   | No       | `info`  | Logging verbosity (`debug`, `info`, `warn`, `error`, `silent`)              |
 | `MCP_SERVER_LOG_FORMAT`  | No       | `plain` | Log output format (`plain`, `json`, or `gcp-json`)                          |
 | `MCP_SERVER_USE_HTTP`    | No       | `false` | Start HTTP server instead of stdio                                          |
-| `MCP_SERVER_STATEFUL`    | No       | `false` | Maintain stateful sessions per client                                       |
+
+> **Session IDs and authentication:** When `OMADA_CLIENT_ID`, `OMADA_CLIENT_SECRET`, and `OMADA_OMADAC_ID` are provided (the default client-credentials mode), the server runs statelessly and treats the `Mcp-Session-Id` header as optional. A future OAuth-based user authentication mode will require this header again.
 
 #### MCP Server HTTP Configuration
 
@@ -117,9 +120,8 @@ These variables are only used when `MCP_SERVER_USE_HTTP=true`:
 | Variable                       | Required | Default                         | Description                                                                 |
 | ------------------------------ | -------- | ------------------------------- | --------------------------------------------------------------------------- |
 | `MCP_HTTP_PORT`                | No       | `3000`                          | Port for the HTTP server                                                    |
-| `MCP_HTTP_TRANSPORT`           | No       | `stream`                        | Transport protocol (`stream` or `sse`). See [Transport Protocols](#transport-protocols) |
 | `MCP_HTTP_BIND_ADDR`           | No       | `127.0.0.1`                     | Bind address (IPv4/IPv6). Use atapter IP address to expose to the network.  |
-| `MCP_HTTP_PATH`                | No       | `/mcp` or `/sse`*               | Base path for MCP endpoints (*depends on transport)                         |
+| `MCP_HTTP_PATH`                | No       | `/mcp`                          | Base path for MCP endpoints                                                 |
 | `MCP_HTTP_ENABLE_HEALTHCHECK`  | No       | `true`                          | Enable a healthcheck endpoint                                               |
 | `MCP_HTTP_HEALTHCHECK_PATH`    | No       | `/healthz`                      | Path for the healthcheck endpoint                                           |
 | `MCP_HTTP_ALLOW_CORS`          | No       | `true`                          | Enable CORS for the HTTP server                                             |
@@ -177,16 +179,10 @@ The same image supports both stdio and HTTP transports - configure the desired m
 
 ### Transport Protocols
 
-The MCP server supports two HTTP transport protocols:
-
-#### Streamable HTTP (Default)
-
-The **Streamable HTTP** transport implements the [MCP protocol version 2025-03-26](https://modelcontextprotocol.io/specification/2025-06-18/basic/transports#http-with-sse). This is the recommended transport for new integrations.
+The MCP server uses the **Streamable HTTP** transport, which implements the [MCP protocol version 2025-03-26](https://modelcontextprotocol.io/specification/2025-06-18/basic/transports#http-with-sse).
 
 ```bash
-# Set transport to stream (default)
 export MCP_SERVER_USE_HTTP=true
-export MCP_HTTP_TRANSPORT=stream
 npm run dev
 ```
 
@@ -194,39 +190,17 @@ Features:
 
 - Single endpoint for all operations (GET, POST, DELETE)
 - Server-Sent Events for streaming responses
-- Built-in session management with cryptographic session IDs
-- Support for stateless mode when needed
+- Built-in session management with cryptographic session IDs (the server currently operates statelessly when using client credentials)
 
-The Streamable HTTP endpoint defaults to `/mcp` and handles:
+The endpoint defaults to `/mcp` and handles:
 
 - `GET /mcp` - Establish SSE stream and initialize session
 - `POST /mcp` - Send JSON-RPC messages
 - `DELETE /mcp` - Terminate session
 
-#### HTTP with SSE (Legacy)
-
-The **HTTP+SSE** transport implements the [MCP protocol version 2024-11-05](https://modelcontextprotocol.io/specification/2024-11-05/basic/transports#http-with-sse). This transport is provided for backward compatibility with older MCP clients.
-
-```bash
-# Set transport to sse for legacy clients
-export MCP_SERVER_USE_HTTP=true
-export MCP_HTTP_TRANSPORT=sse
-npm run dev
-```
-
-Features:
-
-- Separate endpoints for SSE stream and POST messages
-- Compatible with older MCP client implementations
-
-The SSE transport uses two endpoints:
-
-- `GET /sse` - Establish SSE connection
-- `POST /messages` - Send JSON-RPC messages
-
 #### Security Considerations
 
-Both transports implement DNS rebinding protection:
+DNS rebinding protection is enabled by default:
 
 - **Origin Validation**: The server validates the `Origin` header on all incoming connections. Configure allowed origins with `MCP_HTTP_ALLOWED_ORIGINS` (default: `127.0.0.1, localhost`). Use `*` to allow all origins (development only, not recommended for production).
 - **Network Binding**: The server binds to `127.0.0.1` by default, restricting access to localhost only. Set `MCP_HTTP_BIND_ADDR=0.0.0.0` to expose the server to your network (not recommended for production without additional security measures).
@@ -244,13 +218,13 @@ npm run dev    # live reload during development
 npm run start  # run the compiled output
 ```
 
-By default, the server listens on `127.0.0.1:3000` and exposes the MCP endpoint at `/mcp` (for stream transport) or `/sse` (for SSE transport) with a health check on `/healthz`. Configure the bind address, port, and path using the optional `MCP_HTTP_*` environment variables documented in `.env.example`. The `npm run docker:run:http` helper wraps the HTTP image and publishes the port automatically.
+By default, the server listens on `127.0.0.1:3000` and exposes the MCP endpoint at `/mcp` with a health check on `/healthz`. Configure the bind address, port, and path using the optional `MCP_HTTP_*` environment variables documented in `.env.example`. The `npm run docker:run:http` helper wraps the HTTP image and publishes the port automatically.
 
-#### Using ngrok (works with both transports)
+#### Using ngrok
 
-To share the local server with remote tooling, you can use ngrok to expose the HTTP server publicly. This works with **both stream and SSE transports**.
+To share the local server with remote tooling, you can use ngrok to expose the HTTP server publicly.
 
-**Option 1: Built-in ngrok support** (recommended)
+##### Option 1: Built-in ngrok support (recommended)
 
 Set the following environment variables:
 
@@ -262,7 +236,7 @@ npm run dev
 
 The server will automatically establish an ngrok tunnel and log the public URL.
 
-**Option 2: Manual ngrok setup**
+##### Option 2: Manual ngrok setup
 
 Run ngrok in a separate terminal after starting the server:
 
@@ -272,7 +246,7 @@ ngrok http 3000
 
 This forwards a public HTTPS URL to `http://localhost:3000` and prints the tunnel address in the console.
 
-If an intermediary strips the `Mcp-Session-Id` header, set `MCP_SERVER_STATEFUL=false` to disable server-managed sessions and allow stateless requests.
+In client-credentials mode the server already treats `Mcp-Session-Id` as optional; if the header is removed in transit, requests will still succeed.
 
 ## Tools
 
@@ -294,6 +268,10 @@ If an intermediary strips the `Mcp-Session-Id` header, set `MCP_SERVER_STATEFUL=
 | `getSsidList`                   | Gets the list of SSIDs in a WLAN group.                                           |
 | `getSsidDetail`                 | Gets detailed information for a specific SSID.                                    |
 | `getFirewallSetting`            | Gets firewall configuration and rules for a site.                                 |
+| `getRateLimitProfiles`          | Gets the list of available rate limit profiles for bandwidth control.             |
+| `setClientRateLimit`            | Sets custom bandwidth limits (download/upload) for a specific client.             |
+| `setClientRateLimitProfile`     | Applies a predefined rate limit profile to a specific client.                     |
+| `disableClientRateLimit`        | Disables bandwidth rate limiting for a specific client.                           |
 
 ## Supported Omada API Operations
 
@@ -317,6 +295,8 @@ If an intermediary strips the `Mcp-Session-Id` header, set `MCP_SERVER_STATEFUL=
 | `getSsidList`                       | Get SSID list for a WLAN group.                           | Used by `getSsidList`; requires wlanId from `getWlanGroupList`. Use ssidId for `getSsidDetail`.      |
 | `getSsidDetail`                     | Get detailed SSID configuration.                          | Used by `getSsidDetail`; requires wlanId and ssidId. Returns security, rate limits, scheduling.      |
 | `getFirewallSetting`                | Get firewall configuration for a site.                    | Used by `getFirewallSetting`; returns ACL rules, IP groups, security policies.                       |
+| `getRateLimitProfileList`           | Get rate limit profile list.                              | Used by `getRateLimitProfiles`; returns available bandwidth control profiles with limits in Kbps.    |
+| `updateClientRateLimitSetting`      | Set rate limit setting for a client.                      | Used by `setClientRateLimit`, `setClientRateLimitProfile`, and `disableClientRateLimit`.             |
 
 ## Devcontainer support
 

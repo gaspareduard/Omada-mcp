@@ -36,9 +36,9 @@ const envSchema = z
     .object({
         // Omada Client Configuration
         baseUrl: z.string().url({ message: 'OMADA_BASE_URL must be a valid URL' }),
-        clientId: z.string().min(1, 'OMADA_CLIENT_ID is required'),
-        clientSecret: z.string().min(1, 'OMADA_CLIENT_SECRET is required'),
-        omadacId: z.string().min(1, 'OMADA_OMADAC_ID is required'),
+        clientId: z.string().min(1, 'OMADA_CLIENT_ID must not be empty').optional(),
+        clientSecret: z.string().min(1, 'OMADA_CLIENT_SECRET must not be empty').optional(),
+        omadacId: z.string().min(1, 'OMADA_OMADAC_ID must not be empty').optional(),
         siteId: z.string().min(1).optional(),
         strictSsl: createBooleanStringSchema(true),
         requestTimeout: numericStringSchema,
@@ -47,11 +47,9 @@ const envSchema = z
         logLevel: z.enum(['debug', 'info', 'warn', 'error']).optional().default('info'),
         logFormat: z.enum(['plain', 'json', 'gcp-json']).optional().default('plain'),
         useHttp: createBooleanStringSchema(false),
-        stateful: createBooleanStringSchema(false),
 
-        // MCP Server HTTP/SSE Configuration
+        // MCP Server HTTP Configuration
         httpPort: numericStringSchema,
-        httpTransport: z.enum(['stream', 'sse']).optional().default('stream'),
         httpBindAddr: z.string().optional(),
         httpPath: z.string().optional(),
         httpEnableHealthcheck: createBooleanStringSchema(true),
@@ -61,6 +59,12 @@ const envSchema = z
         httpNgrokEnabled: createBooleanStringSchema(false),
         httpNgrokAuthToken: z.string().optional(),
     })
+    .refine((data) => data.useHttp || !!data.clientId, { message: 'OMADA_CLIENT_ID is required when not using HTTP mode', path: ['clientId'] })
+    .refine((data) => data.useHttp || !!data.clientSecret, {
+        message: 'OMADA_CLIENT_SECRET is required when not using HTTP mode',
+        path: ['clientSecret'],
+    })
+    .refine((data) => data.useHttp || !!data.omadacId, { message: 'OMADA_OMADAC_ID is required when not using HTTP mode', path: ['omadacId'] })
     .refine(
         (data) => {
             // Validate httpBindAddr if provided
@@ -95,12 +99,28 @@ const envSchema = z
         }
     );
 
-export interface EnvironmentConfig {
-    // Omada Client Configuration
+/**
+ * The resolved Omada connection parameters required to build an OmadaClient.
+ * All fields are guaranteed to be present.
+ */
+export interface OmadaConnectionConfig {
     baseUrl: string;
     clientId: string;
     clientSecret: string;
     omadacId: string;
+    siteId?: string;
+    strictSsl: boolean;
+    requestTimeout?: number;
+}
+
+export interface EnvironmentConfig {
+    // Omada Client Configuration
+    // baseUrl is always required (from env)
+    // clientId, clientSecret, omadacId are optional in HTTP mode (can come from request headers)
+    baseUrl: string;
+    clientId?: string;
+    clientSecret?: string;
+    omadacId?: string;
     siteId?: string;
     strictSsl: boolean;
     requestTimeout?: number;
@@ -109,11 +129,10 @@ export interface EnvironmentConfig {
     logLevel: 'debug' | 'info' | 'warn' | 'error';
     logFormat: 'plain' | 'json' | 'gcp-json';
     useHttp: boolean;
-    stateful: boolean;
 
-    // MCP Server HTTP/SSE Configuration
+    // MCP Server HTTP Configuration
     httpPort?: number;
-    httpTransport: 'stream' | 'sse';
+    httpTransport: 'stream';
     httpBindAddr?: string;
     httpPath?: string;
     httpEnableHealthcheck: boolean;
@@ -139,11 +158,9 @@ export function loadConfigFromEnv(env: NodeJS.ProcessEnv = process.env): Environ
         logLevel: env.MCP_SERVER_LOG_LEVEL,
         logFormat: env.MCP_SERVER_LOG_FORMAT,
         useHttp: env.MCP_SERVER_USE_HTTP,
-        stateful: env.MCP_SERVER_STATEFUL,
 
-        // MCP Server HTTP/SSE Configuration
+        // MCP Server HTTP Configuration
         httpPort: env.MCP_HTTP_PORT,
-        httpTransport: env.MCP_HTTP_TRANSPORT,
         httpBindAddr: env.MCP_HTTP_BIND_ADDR,
         httpPath: env.MCP_HTTP_PATH,
         httpEnableHealthcheck: env.MCP_HTTP_ENABLE_HEALTHCHECK,
@@ -159,9 +176,8 @@ export function loadConfigFromEnv(env: NodeJS.ProcessEnv = process.env): Environ
         throw new Error(`Invalid environment configuration:\n${messages.join('\n')}`);
     }
 
-    // Determine default httpPath based on transport if not explicitly set
-    const defaultPath = parsed.data.httpTransport === 'sse' ? '/sse' : '/mcp';
-    const httpPath = parsed.data.httpPath ?? defaultPath;
+    // Determine default httpPath
+    const httpPath = parsed.data.httpPath ?? '/mcp';
 
     // Set default bind address and allowed origins for security
     const httpBindAddr = parsed.data.httpBindAddr ?? '127.0.0.1';
@@ -188,11 +204,10 @@ export function loadConfigFromEnv(env: NodeJS.ProcessEnv = process.env): Environ
         logLevel: parsed.data.logLevel,
         logFormat: parsed.data.logFormat,
         useHttp: parsed.data.useHttp,
-        stateful: parsed.data.stateful,
 
-        // MCP Server HTTP/SSE Configuration
+        // MCP Server HTTP Configuration
         httpPort: parsed.data.httpPort,
-        httpTransport: parsed.data.httpTransport,
+        httpTransport: 'stream' as const,
         httpBindAddr,
         httpPath,
         httpEnableHealthcheck: parsed.data.httpEnableHealthcheck,

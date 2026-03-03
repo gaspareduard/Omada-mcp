@@ -1,6 +1,7 @@
 export type { ActiveClientInfo } from './activeClientInfo.js';
 export type { ClientActivity, GetClientActivityOptions } from './clientActivity.js';
 export type { ClientPastConnection, ListClientsPastConnectionsOptions } from './clientPastConnection.js';
+export type { CustomHeaders } from './customHeaders.js';
 export type { OmadaApiResponse } from './omadaApiResponse.js';
 export type { OmadaClientInfo } from './omadaClientInfo.js';
 export type { OmadaDeviceInfo } from './omadaDeviceInfo.js';
@@ -8,5 +9,6 @@ export type { GetDeviceStatsOptions, OmadaDeviceStatItem, OmadaDeviceStats } fro
 export type { OmadaSiteSummary } from './omadaSiteSummary.js';
 export type { OswStackDetail } from './oswStackDetail.js';
 export type { PaginatedResult } from './paginatedResult.js';
+export type { ClientRateLimitSetting, RateLimitProfile, UpdateClientRateLimitRequest } from './rateLimitProfile.js';
 export type { GetThreatListOptions, ThreatInfo } from './threatInfo.js';
 export type { TokenResult } from './tokenResult.js';

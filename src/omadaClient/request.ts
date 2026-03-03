@@ -1,6 +1,6 @@
 import axios, { type AxiosInstance, type AxiosRequestConfig, type AxiosRequestHeaders } from 'axios';
 
-import type { OmadaApiResponse, PaginatedResult } from '../types/index.js';
+import type { CustomHeaders, OmadaApiResponse, PaginatedResult } from '../types/index.js';
 import { logger } from '../utils/logger.js';
 
 import type { AuthManager } from './auth.js';
@@ -19,20 +19,28 @@ export class RequestHandler {
     /**
      * Make a GET request to the Omada API.
      */
-    public async get<T>(path: string, params?: Record<string, unknown>): Promise<T> {
-        return await this.request<T>({ method: 'GET', url: path, params });
+    public async get<T>(path: string, params?: Record<string, unknown>, customHeaders?: CustomHeaders): Promise<T> {
+        return await this.request<T>({ method: 'GET', url: path, params }, true, customHeaders);
+    }
+
+    /**
+     * Make a PATCH request to the Omada API.
+     */
+    public async patch<T>(path: string, data?: unknown, customHeaders?: CustomHeaders): Promise<T> {
+        return await this.request<T>({ method: 'PATCH', url: path, data }, true, customHeaders);
     }
 
     /**
      * Make an arbitrary HTTP request to the Omada API.
      */
-    public async request<T>(config: AxiosRequestConfig, retry = true): Promise<T> {
+    public async request<T>(config: AxiosRequestConfig, retry = true, customHeaders?: CustomHeaders): Promise<T> {
         const accessToken = await this.auth.getAccessToken();
 
         const requestConfig: AxiosRequestConfig = {
             ...config,
             headers: {
                 ...(config.headers ?? {}),
+                ...(customHeaders ?? {}),
                 Authorization: `AccessToken=${accessToken}`,
             },
         };
@@ -82,7 +90,7 @@ export class RequestHandler {
                     message: errorMsg,
                 });
                 this.auth.clearToken();
-                return this.request<T>(config, false);
+                return this.request<T>(config, false, customHeaders);
             }
 
             return response.data;
@@ -112,7 +120,7 @@ export class RequestHandler {
 
             if (status === 401 || status === 403 || this.isAuthErrorCode(errorCode)) {
                 this.auth.clearToken();
-                return this.request<T>(config, false);
+                return this.request<T>(config, false, customHeaders);
             }
 
             throw error;
@@ -122,18 +130,22 @@ export class RequestHandler {
     /**
      * Fetch all pages of a paginated API endpoint.
      */
-    public async fetchPaginated<T>(path: string, params: Record<string, unknown> = {}): Promise<T[]> {
+    public async fetchPaginated<T>(path: string, params: Record<string, unknown> = {}, customHeaders?: CustomHeaders): Promise<T[]> {
         const records: T[] = [];
         let page = 1;
         let totalRows: number | undefined;
 
         // Fetch sequential pages because OpenAPI requires explicit pagination parameters.
         do {
-            const response = await this.get<OmadaApiResponse<PaginatedResult<T>>>(path, {
-                ...params,
-                page,
-                pageSize: DEFAULT_PAGE_SIZE,
-            });
+            const response = await this.get<OmadaApiResponse<PaginatedResult<T>>>(
+                path,
+                {
+                    ...params,
+                    page,
+                    pageSize: DEFAULT_PAGE_SIZE,
+                },
+                customHeaders
+            );
 
             const result = this.ensureSuccess(response);
             const pageData = result.data ?? [];

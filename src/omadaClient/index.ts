@@ -2,11 +2,13 @@ import https from 'node:https';
 
 import axios, { type AxiosInstance, type AxiosRequestConfig } from 'axios';
 
-import type { EnvironmentConfig } from '../config.js';
+import type { OmadaConnectionConfig } from '../config.js';
 import type {
     ActiveClientInfo,
     ClientActivity,
     ClientPastConnection,
+    ClientRateLimitSetting,
+    CustomHeaders,
     GetClientActivityOptions,
     GetDeviceStatsOptions,
     GetThreatListOptions,
@@ -17,6 +19,7 @@ import type {
     OmadaSiteSummary,
     OswStackDetail,
     PaginatedResult,
+    RateLimitProfile,
     ThreatInfo,
 } from '../types/index.js';
 
@@ -28,7 +31,7 @@ import { RequestHandler } from './request.js';
 import { SecurityOperations } from './security.js';
 import { SiteOperations } from './site.js';
 
-export type OmadaClientOptions = EnvironmentConfig;
+export type OmadaClientOptions = OmadaConnectionConfig;
 
 /**
  * Main client for interacting with the TP-Link Omada API.
@@ -82,93 +85,130 @@ export class OmadaClient {
     }
 
     // Site operations
-    public async listSites(): Promise<OmadaSiteSummary[]> {
-        return await this.siteOps.listSites();
+    public async listSites(customHeaders?: CustomHeaders): Promise<OmadaSiteSummary[]> {
+        return await this.siteOps.listSites(customHeaders);
     }
 
     // Device operations
-    public async listDevices(siteId?: string): Promise<OmadaDeviceInfo[]> {
-        return await this.deviceOps.listDevices(siteId);
+    public async listDevices(siteId?: string, customHeaders?: CustomHeaders): Promise<OmadaDeviceInfo[]> {
+        return await this.deviceOps.listDevices(siteId, customHeaders);
     }
 
-    public async getDevice(identifier: string, siteId?: string): Promise<OmadaDeviceInfo | undefined> {
-        return await this.deviceOps.getDevice(identifier, siteId);
+    public async getDevice(identifier: string, siteId?: string, customHeaders?: CustomHeaders): Promise<OmadaDeviceInfo | undefined> {
+        return await this.deviceOps.getDevice(identifier, siteId, customHeaders);
     }
 
-    public async getSwitchStackDetail(stackId: string, siteId?: string): Promise<OswStackDetail> {
-        return await this.deviceOps.getSwitchStackDetail(stackId, siteId);
+    public async getSwitchStackDetail(stackId: string, siteId?: string, customHeaders?: CustomHeaders): Promise<OswStackDetail> {
+        return await this.deviceOps.getSwitchStackDetail(stackId, siteId, customHeaders);
     }
 
-    public async searchDevices(searchKey: string): Promise<OmadaDeviceInfo[]> {
-        return await this.deviceOps.searchDevices(searchKey);
+    public async searchDevices(searchKey: string, customHeaders?: CustomHeaders): Promise<OmadaDeviceInfo[]> {
+        return await this.deviceOps.searchDevices(searchKey, customHeaders);
     }
 
-    public async listDevicesStats(options: GetDeviceStatsOptions): Promise<OmadaDeviceStats> {
-        return await this.deviceOps.listDevicesStats(options);
+    public async listDevicesStats(options: GetDeviceStatsOptions, customHeaders?: CustomHeaders): Promise<OmadaDeviceStats> {
+        return await this.deviceOps.listDevicesStats(options, customHeaders);
     }
 
     // Client operations
-    public async listClients(siteId?: string): Promise<OmadaClientInfo[]> {
-        return await this.clientOps.listClients(siteId);
+    public async listClients(siteId?: string, customHeaders?: CustomHeaders): Promise<OmadaClientInfo[]> {
+        return await this.clientOps.listClients(siteId, customHeaders);
     }
 
-    public async getClient(identifier: string, siteId?: string): Promise<OmadaClientInfo | undefined> {
-        return await this.clientOps.getClient(identifier, siteId);
+    public async getClient(identifier: string, siteId?: string, customHeaders?: CustomHeaders): Promise<OmadaClientInfo | undefined> {
+        return await this.clientOps.getClient(identifier, siteId, customHeaders);
     }
 
-    public async listMostActiveClients(siteId?: string): Promise<ActiveClientInfo[]> {
-        return await this.clientOps.listMostActiveClients(siteId);
+    public async listMostActiveClients(siteId?: string, customHeaders?: CustomHeaders): Promise<ActiveClientInfo[]> {
+        return await this.clientOps.listMostActiveClients(siteId, customHeaders);
     }
 
-    public async listClientsActivity(options?: GetClientActivityOptions): Promise<ClientActivity[]> {
-        return await this.clientOps.listClientsActivity(options);
+    public async listClientsActivity(options?: GetClientActivityOptions, customHeaders?: CustomHeaders): Promise<ClientActivity[]> {
+        return await this.clientOps.listClientsActivity(options, customHeaders);
     }
 
-    public async listClientsPastConnections(options: ListClientsPastConnectionsOptions): Promise<ClientPastConnection[]> {
-        return await this.clientOps.listClientsPastConnections(options);
+    public async listClientsPastConnections(
+        options: ListClientsPastConnectionsOptions,
+        customHeaders?: CustomHeaders
+    ): Promise<ClientPastConnection[]> {
+        return await this.clientOps.listClientsPastConnections(options, customHeaders);
+    }
+
+    // Rate limit operations
+    public async getRateLimitProfiles(siteId?: string, customHeaders?: CustomHeaders): Promise<RateLimitProfile[]> {
+        return await this.clientOps.getRateLimitProfiles(siteId, customHeaders);
+    }
+
+    public async setClientRateLimit(
+        clientMac: string,
+        downLimit: number,
+        upLimit: number,
+        siteId?: string,
+        customHeaders?: CustomHeaders
+    ): Promise<ClientRateLimitSetting> {
+        return await this.clientOps.setClientRateLimit(clientMac, downLimit, upLimit, siteId, customHeaders);
+    }
+
+    public async setClientRateLimitProfile(
+        clientMac: string,
+        profileId: string,
+        siteId?: string,
+        customHeaders?: CustomHeaders
+    ): Promise<ClientRateLimitSetting> {
+        return await this.clientOps.setClientRateLimitProfile(clientMac, profileId, siteId, customHeaders);
+    }
+
+    public async disableClientRateLimit(clientMac: string, siteId?: string, customHeaders?: CustomHeaders): Promise<ClientRateLimitSetting> {
+        return await this.clientOps.disableClientRateLimit(clientMac, siteId, customHeaders);
     }
 
     // Security operations
-    public async getThreatList(options: GetThreatListOptions): Promise<PaginatedResult<ThreatInfo>> {
-        return await this.securityOps.getThreatList(options);
+    public async getThreatList(options: GetThreatListOptions, customHeaders?: CustomHeaders): Promise<PaginatedResult<ThreatInfo>> {
+        return await this.securityOps.getThreatList(options, customHeaders);
     }
 
     // Network operations
-    public async getInternetInfo(siteId?: string): Promise<unknown> {
-        return await this.networkOps.getInternetInfo(siteId);
+    public async getInternetInfo(siteId?: string, customHeaders?: CustomHeaders): Promise<unknown> {
+        return await this.networkOps.getInternetInfo(siteId, customHeaders);
     }
 
-    public async getPortForwardingStatus(type: 'User' | 'UPnP', siteId?: string, page = 1, pageSize = 10): Promise<PaginatedResult<unknown>> {
-        return await this.networkOps.getPortForwardingStatus(type, siteId, page, pageSize);
+    public async getPortForwardingStatus(
+        type: 'User' | 'UPnP',
+        siteId?: string,
+        page = 1,
+        pageSize = 10,
+        customHeaders?: CustomHeaders
+    ): Promise<PaginatedResult<unknown>> {
+        return await this.networkOps.getPortForwardingStatus(type, siteId, page, pageSize, customHeaders);
     }
 
-    public async getLanNetworkList(siteId?: string): Promise<unknown[]> {
-        return await this.networkOps.getLanNetworkList(siteId);
+    public async getLanNetworkList(siteId?: string, customHeaders?: CustomHeaders): Promise<unknown[]> {
+        return await this.networkOps.getLanNetworkList(siteId, customHeaders);
     }
 
-    public async getLanProfileList(siteId?: string): Promise<unknown[]> {
-        return await this.networkOps.getLanProfileList(siteId);
+    public async getLanProfileList(siteId?: string, customHeaders?: CustomHeaders): Promise<unknown[]> {
+        return await this.networkOps.getLanProfileList(siteId, customHeaders);
     }
 
-    public async getWlanGroupList(siteId?: string): Promise<unknown[]> {
-        return await this.networkOps.getWlanGroupList(siteId);
+    public async getWlanGroupList(siteId?: string, customHeaders?: CustomHeaders): Promise<unknown[]> {
+        return await this.networkOps.getWlanGroupList(siteId, customHeaders);
     }
 
-    public async getSsidList(wlanId: string, siteId?: string): Promise<unknown[]> {
-        return await this.networkOps.getSsidList(wlanId, siteId);
+    public async getSsidList(wlanId: string, siteId?: string, customHeaders?: CustomHeaders): Promise<unknown[]> {
+        return await this.networkOps.getSsidList(wlanId, siteId, customHeaders);
     }
 
-    public async getSsidDetail(wlanId: string, ssidId: string, siteId?: string): Promise<unknown> {
-        return await this.networkOps.getSsidDetail(wlanId, ssidId, siteId);
+    public async getSsidDetail(wlanId: string, ssidId: string, siteId?: string, customHeaders?: CustomHeaders): Promise<unknown> {
+        return await this.networkOps.getSsidDetail(wlanId, ssidId, siteId, customHeaders);
     }
 
-    public async getFirewallSetting(siteId?: string): Promise<unknown> {
-        return await this.networkOps.getFirewallSetting(siteId);
+    public async getFirewallSetting(siteId?: string, customHeaders?: CustomHeaders): Promise<unknown> {
+        return await this.networkOps.getFirewallSetting(siteId, customHeaders);
     }
 
     // Generic API call
-    public async callApi<T = unknown>(config: AxiosRequestConfig): Promise<T> {
-        return await this.request.request<T>(config);
+    public async callApi<T = unknown>(config: AxiosRequestConfig, customHeaders?: CustomHeaders): Promise<T> {
+        return await this.request.request<T>(config, true, customHeaders);
     }
 
     /**

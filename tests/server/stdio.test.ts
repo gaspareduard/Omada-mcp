@@ -9,6 +9,10 @@ vi.mock('@modelcontextprotocol/sdk/server/stdio.js', () => ({
     StdioServerTransport: vi.fn(),
 }));
 
+vi.mock('../../src/tools/index.js', () => ({
+    registerAllTools: vi.fn(),
+}));
+
 describe('server/stdio', () => {
     let mockClient: OmadaClient;
     let mockServer: { connect: ReturnType<typeof vi.fn> };
@@ -34,7 +38,7 @@ describe('server/stdio', () => {
         it('should create server and connect transport', async () => {
             await startStdioServer(mockClient);
 
-            expect(commonModule.createServer).toHaveBeenCalledWith(mockClient);
+            expect(commonModule.createServer).toHaveBeenCalledWith();
             expect(StdioServerTransport).toHaveBeenCalled();
             expect(mockServer.connect).toHaveBeenCalled();
         });

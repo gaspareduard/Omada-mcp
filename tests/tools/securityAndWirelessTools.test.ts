@@ -27,7 +27,7 @@ describe('Security and Wireless Tools', () => {
                 }),
                 expect.any(Function)
             );
-            expect(mockClient.getPortForwardingStatus).toHaveBeenCalledWith('User', 'test-site', 1, 10);
+            expect(mockClient.getPortForwardingStatus).toHaveBeenCalledWith('User', 'test-site', 1, 10, undefined);
         });
 
         it('should handle UPnP type', async () => {
@@ -47,7 +47,7 @@ describe('Security and Wireless Tools', () => {
             };
 
             registerGetPortForwardingStatusTool(mockServer as never, mockClient as never);
-            expect(mockClient.getPortForwardingStatus).toHaveBeenCalledWith('UPnP', undefined, 1, 10);
+            expect(mockClient.getPortForwardingStatus).toHaveBeenCalledWith('UPnP', undefined, 1, 10, undefined);
         });
     });
 
@@ -79,7 +79,7 @@ describe('Security and Wireless Tools', () => {
                 }),
                 expect.any(Function)
             );
-            expect(mockClient.getSsidDetail).toHaveBeenCalledWith('wlan1', 'ssid1', 'test-site');
+            expect(mockClient.getSsidDetail).toHaveBeenCalledWith('wlan1', 'ssid1', 'test-site', undefined);
         });
     });
 
@@ -109,7 +109,7 @@ describe('Security and Wireless Tools', () => {
                 }),
                 expect.any(Function)
             );
-            expect(mockClient.getSsidList).toHaveBeenCalledWith('wlan1', 'test-site');
+            expect(mockClient.getSsidList).toHaveBeenCalledWith('wlan1', 'test-site', undefined);
         });
     });
 
@@ -162,17 +162,20 @@ describe('Security and Wireless Tools', () => {
                 }),
                 expect.any(Function)
             );
-            expect(mockClient.getThreatList).toHaveBeenCalledWith({
-                siteList: 'site1,site2',
-                archived: false,
-                page: 1,
-                pageSize: 20,
-                startTime: 1682000000,
-                endTime: 1682100000,
-                severity: 0,
-                sortTime: 'desc',
-                searchKey: 'malware',
-            });
+            expect(mockClient.getThreatList).toHaveBeenCalledWith(
+                {
+                    siteList: 'site1,site2',
+                    archived: false,
+                    page: 1,
+                    pageSize: 20,
+                    startTime: 1682000000,
+                    endTime: 1682100000,
+                    severity: 0,
+                    sortTime: 'desc',
+                    searchKey: 'malware',
+                },
+                undefined
+            );
         });
 
         it('should handle minimal arguments', async () => {
@@ -203,17 +206,20 @@ describe('Security and Wireless Tools', () => {
             };
 
             registerGetThreatListTool(mockServer as never, mockClient as never);
-            expect(mockClient.getThreatList).toHaveBeenCalledWith({
-                siteList: undefined,
-                archived: true,
-                page: 1,
-                pageSize: 10,
-                startTime: 1682000000,
-                endTime: 1682100000,
-                severity: undefined,
-                sortTime: undefined,
-                searchKey: undefined,
-            });
+            expect(mockClient.getThreatList).toHaveBeenCalledWith(
+                {
+                    siteList: undefined,
+                    archived: true,
+                    page: 1,
+                    pageSize: 10,
+                    startTime: 1682000000,
+                    endTime: 1682100000,
+                    severity: undefined,
+                    sortTime: undefined,
+                    searchKey: undefined,
+                },
+                undefined
+            );
         });
     });
 });

@@ -40,10 +40,9 @@ describe('tools/listSites', () => {
 
             expect(mockServer.registerTool).toHaveBeenCalledWith(
                 'listSites',
-                {
+                expect.objectContaining({
                     description: 'List all sites configured on the Omada controller.',
-                    inputSchema: {},
-                },
+                }),
                 expect.any(Function)
             );
         });
@@ -76,7 +75,7 @@ describe('tools/listSites', () => {
 
             const result = await toolHandler({}, { sessionId: 'test-session' });
 
-            expect(mockClient.listSites).toHaveBeenCalled();
+            expect(mockClient.listSites).toHaveBeenCalledWith(undefined);
             expect(result).toEqual({
                 content: [
                     {

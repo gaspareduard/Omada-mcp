@@ -10,6 +10,6 @@ export function registerGetLanNetworkListTool(server: McpServer, client: OmadaCl
             description: 'Get the list of LAN networks configured in a site, including VLAN settings, IP ranges, and DHCP configuration.',
             inputSchema: siteInputSchema.shape,
         },
-        wrapToolHandler('getLanNetworkList', async ({ siteId }) => toToolResult(await client.getLanNetworkList(siteId)))
+        wrapToolHandler('getLanNetworkList', async ({ siteId, customHeaders }) => toToolResult(await client.getLanNetworkList(siteId, customHeaders)))
     );
 }
