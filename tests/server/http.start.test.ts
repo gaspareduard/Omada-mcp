@@ -157,7 +157,7 @@ describe('startHttpServer', () => {
         await healthRes.finished;
         expect(healthRes.statusCode).toBe(200);
 
-        const streamReq = new MockRequest({ method: 'POST', url: '/mcp', headers: { 'mcp-session-id': 'stream-1' } });
+        const streamReq = new MockRequest({ method: 'POST', url: '/mcp' });
         const streamRes = new MockResponse();
         handler!(streamReq as never, streamRes as never);
         streamReq.send('{"jsonrpc":"2.0"}');
@@ -235,7 +235,7 @@ describe('startHttpServer', () => {
         const handler = httpModule.getHandler();
         expect(handler).toBeDefined();
 
-        const streamReq = new MockRequest({ method: 'POST', url: '/mcp', headers: { 'mcp-session-id': 'stream-1' } });
+        const streamReq = new MockRequest({ method: 'POST', url: '/mcp' });
         const streamRes = new MockResponse();
         handler!(streamReq as never, streamRes as never);
         streamReq.send('{"jsonrpc":"2.0"}');

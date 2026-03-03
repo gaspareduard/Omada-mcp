@@ -50,7 +50,6 @@ const envSchema = z
 
         // MCP Server HTTP Configuration
         httpPort: numericStringSchema,
-        httpTransport: z.literal('stream').optional().default('stream'),
         httpBindAddr: z.string().optional(),
         httpPath: z.string().optional(),
         httpEnableHealthcheck: createBooleanStringSchema(true),
@@ -162,7 +161,6 @@ export function loadConfigFromEnv(env: NodeJS.ProcessEnv = process.env): Environ
 
         // MCP Server HTTP Configuration
         httpPort: env.MCP_HTTP_PORT,
-        httpTransport: env.MCP_HTTP_TRANSPORT,
         httpBindAddr: env.MCP_HTTP_BIND_ADDR,
         httpPath: env.MCP_HTTP_PATH,
         httpEnableHealthcheck: env.MCP_HTTP_ENABLE_HEALTHCHECK,
@@ -207,9 +205,9 @@ export function loadConfigFromEnv(env: NodeJS.ProcessEnv = process.env): Environ
         logFormat: parsed.data.logFormat,
         useHttp: parsed.data.useHttp,
 
-        // MCP Server HTTP/SSE Configuration
+        // MCP Server HTTP Configuration
         httpPort: parsed.data.httpPort,
-        httpTransport: parsed.data.httpTransport,
+        httpTransport: 'stream' as const,
         httpBindAddr,
         httpPath,
         httpEnableHealthcheck: parsed.data.httpEnableHealthcheck,

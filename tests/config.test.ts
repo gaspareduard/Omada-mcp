@@ -179,15 +179,15 @@ describe('config', () => {
             expect(config.httpPort).toBe(8080);
         });
 
-        it('should accept valid http transports', () => {
-            mockEnv.MCP_HTTP_TRANSPORT = 'stream';
+        it('should always return stream as httpTransport regardless of env', () => {
             const config = loadConfigFromEnv(mockEnv);
             expect(config.httpTransport).toBe('stream');
         });
 
-        it('should reject invalid http transport', () => {
+        it('should ignore MCP_HTTP_TRANSPORT env var', () => {
             mockEnv.MCP_HTTP_TRANSPORT = 'sse';
-            expect(() => loadConfigFromEnv(mockEnv)).toThrow('Invalid literal value, expected "stream"');
+            const config = loadConfigFromEnv(mockEnv);
+            expect(config.httpTransport).toBe('stream');
         });
 
         it('should use default httpPath', () => {
@@ -197,7 +197,6 @@ describe('config', () => {
         });
 
         it('should override httpPath when explicitly set', () => {
-            mockEnv.MCP_HTTP_TRANSPORT = 'stream';
             mockEnv.MCP_HTTP_PATH = '/custom-path';
             const config = loadConfigFromEnv(mockEnv);
 
