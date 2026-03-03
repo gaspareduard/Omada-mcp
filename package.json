@@ -18,8 +18,8 @@
         "test:coverage": "vitest run --coverage",
         "dev": "tsx src/index.ts",
         "start": "node dist/index.js",
-        "inspector": "node scripts/run-inspector.mjs",
-        "inspector:build": "npm run build && node scripts/run-inspector.mjs build",
+        "inspector": "tsx scripts/run-inspector.ts",
+        "inspector:build": "npm run build && tsx scripts/run-inspector.ts build",
         "docker:build": "docker build -f Dockerfile -t ghcr.io/migueltvms/tplink-omada-mcp:latest .",
         "docker:run": "docker run --rm -it --env-file .env --env-file .env.local ghcr.io/migueltvms/tplink-omada-mcp:latest",
         "docker:push": "docker push ghcr.io/migueltvms/tplink-omada-mcp:latest"

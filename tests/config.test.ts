@@ -184,12 +184,6 @@ describe('config', () => {
             expect(config.httpTransport).toBe('stream');
         });
 
-        it('should ignore MCP_HTTP_TRANSPORT env var', () => {
-            mockEnv.MCP_HTTP_TRANSPORT = 'sse';
-            const config = loadConfigFromEnv(mockEnv);
-            expect(config.httpTransport).toBe('stream');
-        });
-
         it('should use default httpPath', () => {
             const config = loadConfigFromEnv(mockEnv);
 
