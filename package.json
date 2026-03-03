@@ -18,6 +18,8 @@
         "test:coverage": "vitest run --coverage",
         "dev": "tsx src/index.ts",
         "start": "node dist/index.js",
+        "inspector": "node scripts/run-inspector.mjs",
+        "inspector:build": "npm run build && node scripts/run-inspector.mjs build",
         "docker:build": "docker build -f Dockerfile -t ghcr.io/migueltvms/tplink-omada-mcp:latest .",
         "docker:run": "docker run --rm -it --env-file .env --env-file .env.local ghcr.io/migueltvms/tplink-omada-mcp:latest",
         "docker:push": "docker push ghcr.io/migueltvms/tplink-omada-mcp:latest"
@@ -38,6 +40,7 @@
     },
     "devDependencies": {
         "@biomejs/biome": "2.3.4",
+        "@modelcontextprotocol/inspector": "^0.17.2",
         "@types/node": "^24.10.0",
         "@vitest/coverage-v8": "^4.0.10",
         "@vitest/ui": "^4.0.8",

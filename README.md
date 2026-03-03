@@ -177,6 +177,20 @@ docker pull jmtvms/tplink-omada-mcp:latest
 
 The same image supports both stdio and HTTP transports - configure the desired mode using environment variables (e.g., set `MCP_SERVER_USE_HTTP=true` for HTTP mode).
 
+### Debugging with MCP Inspector
+
+Use the MCP Inspector to interactively test tools, resources, and prompts without leaving your browser. The inspector automatically adapts to your `.env` configuration:
+
+- **`npm run inspector`** — Launches the inspector based on your `.env` settings:
+  - If `MCP_SERVER_USE_HTTP=false` (or unset): Runs the server in stdio mode with `tsx src/index.ts` for live reload debugging
+  - If `MCP_SERVER_USE_HTTP=true`: Connects to an already-running HTTP server at the configured port/transport (start the server first with `npm run dev`)
+  
+- **`npm run inspector:build`** — Compiles the project first, then launches the inspector against the production build (`dist/index.js`) to verify release parity. Also adapts to stdio or HTTP mode based on `.env`.
+
+**Requirements:** The inspector requires a `.env` file at the repository root. It will load both `.env` and `.env.local` (if present) to determine the server mode, port, transport, and path.
+
+The MCP Inspector tool automatically binds to localhost and generates a session token for authentication (printed to the console and auto-filled in the browser URL).
+
 ### Transport Protocols
 
 The MCP server uses the **Streamable HTTP** transport, which implements the [MCP protocol version 2025-03-26](https://modelcontextprotocol.io/specification/2025-06-18/basic/transports#http-with-sse).
