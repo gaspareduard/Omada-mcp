@@ -239,8 +239,17 @@ In client-credentials mode the server already treats `Mcp-Session-Id` as optiona
 | Tool                          | Description                                                                 |
 | ----------------------------- | --------------------------------------------------------------------------- |
 | `getInternetInfo`             | Gets internet configuration information for a site.                         |
+| `getInternet`                 | Gets full WAN/Internet configuration for the site gateway.                  |
+| `getInternetBasicPortInfo`    | Gets WAN port summary/basic info for the site gateway.                      |
+| `getInternetLoadBalance`      | Gets WAN load balancing configuration (failover/load balance).              |
+| `getWanPortsConfig`           | Gets per-port WAN configuration including connection type and IP settings.  |
+| `getWanLanStatus`             | Gets WAN-LAN connectivity status for a site.                                |
+| `getGridVirtualWan`           | Gets virtual WAN list (paginated).                                          |
 | `getPortForwardingStatus`     | Gets port forwarding status and rules (User or UPnP types).                 |
 | `getLanNetworkList`           | Gets the list of LAN networks configured in a site.                         |
+| `getLanNetworkListV2`         | Gets LAN network list via v2 API with richer VLAN/DHCP data (paginated).    |
+| `getInterfaceLanNetwork`      | Gets interface-level LAN network bindings. Optional type filter.            |
+| `getInterfaceLanNetworkV2`    | Gets interface-level LAN network bindings via v2 API.                       |
 | `getLanProfileList`           | Gets the list of LAN profiles configured in a site.                         |
 | `getWlanGroupList`            | Gets the list of WLAN groups configured in a site.                          |
 | `getSsidList`                 | Gets the list of SSIDs in a WLAN group.                                     |
@@ -253,12 +262,32 @@ In client-credentials mode the server already treats `Mcp-Session-Id` as optiona
 | `listOsgAcls`                 | Lists gateway (OSG) ACL rules.                                              |
 | `listEapAcls`                 | Lists access point (EAP) ACL rules.                                         |
 | `listStaticRoutes`            | Lists static routing rules.                                                 |
+| `getStaticRoutingInterfaceList` | Gets available interfaces for static routing.                             |
+| `listPolicyRoutes`            | Lists policy routing rules.                                                 |
+| `getGridPolicyRouting`        | Gets policy routing rules (paginated).                                      |
+| `getGridOtoNats`              | Gets 1:1 NAT rules (paginated).                                             |
+| `getAlg`                      | Gets ALG (Application Layer Gateway) configuration.                         |
+| `getUpnpSetting`              | Gets UPnP setting for the site gateway.                                     |
+| `getDdnsGrid`                 | Gets DDNS entries (paginated).                                              |
+| `getDhcpReservationGrid`      | Gets DHCP reservations (paginated).                                         |
+| `getGridIpMacBinding`         | Gets IP-MAC binding entries (paginated).                                    |
+| `getIpMacBindingGeneralSetting` | Gets IP-MAC binding global toggle setting.                               |
+| `getBandwidthControl`         | Gets global bandwidth control configuration.                                |
+| `getGridBandwidthCtrlRule`    | Gets bandwidth control rules (paginated).                                   |
+| `getSessionLimit`             | Gets session limit global setting.                                          |
+| `getGridSessionLimitRule`     | Gets per-rule session limit rules (paginated).                              |
+| `getSnmpSetting`              | Gets SNMP configuration (version, community string).                        |
+| `getLldpSetting`              | Gets LLDP global setting.                                                   |
+| `getRemoteLoggingSetting`     | Gets remote logging (syslog) configuration.                                 |
+| `getAccessControl`            | Gets controller access control configuration.                               |
+| `getDnsCacheSetting`          | Gets DNS cache setting.                                                     |
+| `getDnsProxy`                 | Gets DNS proxy configuration.                                               |
+| `getIgmp`                     | Gets IGMP snooping and proxy setting.                                       |
 | `listRadiusProfiles`          | Lists RADIUS authentication profiles.                                       |
 | `listGroupProfiles`           | Lists group profiles (IP, MAC, or port groups).                             |
 | `getApplicationControlStatus` | Gets application control status for a site.                                 |
 | `getSshSetting`               | Gets SSH settings for a site.                                               |
 | `listTimeRangeProfiles`       | Lists time range profiles.                                                  |
-| `getWanLanStatus`             | Gets WAN-LAN connectivity status for a site.                                |
 | `getRateLimitProfiles`        | Gets the list of available rate limit profiles for bandwidth control.       |
 
 ### Security & Threat Management

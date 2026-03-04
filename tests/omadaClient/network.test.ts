@@ -563,4 +563,328 @@ describe('NetworkOperations', () => {
             expect(result).toEqual(mockData);
         });
     });
+
+    // -------------------------------------------------------------------------
+    // LAN/Network config tools (issue #38)
+    // -------------------------------------------------------------------------
+
+    describe('getLanNetworkListV2', () => {
+        it('should get LAN network list v2 with pagination', async () => {
+            const mockData = { data: [{ id: 'net-1' }], totalRows: 1 };
+            const mockResponse: OmadaApiResponse<unknown> = { errorCode: 0, result: mockData };
+            vi.mocked(mockRequest.get).mockResolvedValue(mockResponse);
+            const result = await networkOps.getLanNetworkListV2(1, 10, 'site-123');
+            expect(mockRequest.get).toHaveBeenCalledWith('/openapi/v2/test-omadac/sites/site-123/lan-networks', { page: 1, pageSize: 10 }, undefined);
+            expect(result).toEqual(mockData);
+        });
+    });
+
+    describe('getInterfaceLanNetwork', () => {
+        it('should get interface LAN network bindings', async () => {
+            const mockData = { interfaces: [] };
+            const mockResponse: OmadaApiResponse<unknown> = { errorCode: 0, result: mockData };
+            vi.mocked(mockRequest.get).mockResolvedValue(mockResponse);
+            const result = await networkOps.getInterfaceLanNetwork(1, 'site-123');
+            expect(mockRequest.get).toHaveBeenCalledWith('/openapi/v1/test-omadac/sites/site-123/lan-networks/interface', { type: 1 }, undefined);
+            expect(result).toEqual(mockData);
+        });
+
+        it('should omit type param when not provided', async () => {
+            const mockResponse: OmadaApiResponse<unknown> = { errorCode: 0, result: {} };
+            vi.mocked(mockRequest.get).mockResolvedValue(mockResponse);
+            await networkOps.getInterfaceLanNetwork(undefined, 'site-123');
+            expect(mockRequest.get).toHaveBeenCalledWith('/openapi/v1/test-omadac/sites/site-123/lan-networks/interface', undefined, undefined);
+        });
+    });
+
+    describe('getInterfaceLanNetworkV2', () => {
+        it('should get interface LAN network bindings v2', async () => {
+            const mockResponse: OmadaApiResponse<unknown> = { errorCode: 0, result: {} };
+            vi.mocked(mockRequest.get).mockResolvedValue(mockResponse);
+            await networkOps.getInterfaceLanNetworkV2(0, 'site-123');
+            expect(mockRequest.get).toHaveBeenCalledWith('/openapi/v2/test-omadac/sites/site-123/lan-networks/interface', { type: 0 }, undefined);
+        });
+    });
+
+    describe('getGridPolicyRouting', () => {
+        it('should get policy routing rules', async () => {
+            const mockData = { data: [] };
+            const mockResponse: OmadaApiResponse<unknown> = { errorCode: 0, result: mockData };
+            vi.mocked(mockRequest.get).mockResolvedValue(mockResponse);
+            const result = await networkOps.getGridPolicyRouting(1, 10, 'site-123');
+            expect(mockRequest.get).toHaveBeenCalledWith(
+                '/openapi/v1/test-omadac/sites/site-123/routing/policy-routings',
+                { page: 1, pageSize: 10 },
+                undefined
+            );
+            expect(result).toEqual(mockData);
+        });
+    });
+
+    describe('getStaticRoutingInterfaceList', () => {
+        it('should get static routing interfaces', async () => {
+            const mockData = [{ name: 'WAN1' }];
+            const mockResponse: OmadaApiResponse<unknown> = { errorCode: 0, result: mockData };
+            vi.mocked(mockRequest.get).mockResolvedValue(mockResponse);
+            const result = await networkOps.getStaticRoutingInterfaceList('site-123');
+            expect(mockRequest.get).toHaveBeenCalledWith(
+                '/openapi/v1/test-omadac/sites/site-123/routing/static-routings/interfaces',
+                undefined,
+                undefined
+            );
+            expect(result).toEqual(mockData);
+        });
+    });
+
+    describe('getGridOtoNats', () => {
+        it('should get 1:1 NAT rules', async () => {
+            const mockData = { data: [] };
+            const mockResponse: OmadaApiResponse<unknown> = { errorCode: 0, result: mockData };
+            vi.mocked(mockRequest.get).mockResolvedValue(mockResponse);
+            const result = await networkOps.getGridOtoNats(1, 10, 'site-123');
+            expect(mockRequest.get).toHaveBeenCalledWith(
+                '/openapi/v1/test-omadac/sites/site-123/nat/one-to-one-nat',
+                { page: 1, pageSize: 10 },
+                undefined
+            );
+            expect(result).toEqual(mockData);
+        });
+    });
+
+    describe('getAlg', () => {
+        it('should get ALG config', async () => {
+            const mockData = { sipEnabled: true };
+            const mockResponse: OmadaApiResponse<unknown> = { errorCode: 0, result: mockData };
+            vi.mocked(mockRequest.get).mockResolvedValue(mockResponse);
+            const result = await networkOps.getAlg('site-123');
+            expect(mockRequest.get).toHaveBeenCalledWith('/openapi/v1/test-omadac/sites/site-123/nat/alg', undefined, undefined);
+            expect(result).toEqual(mockData);
+        });
+    });
+
+    describe('getUpnpSetting', () => {
+        it('should get UPnP setting', async () => {
+            const mockResponse: OmadaApiResponse<unknown> = { errorCode: 0, result: { enabled: true } };
+            vi.mocked(mockRequest.get).mockResolvedValue(mockResponse);
+            const result = await networkOps.getUpnpSetting('site-123');
+            expect(mockRequest.get).toHaveBeenCalledWith('/openapi/v1/test-omadac/sites/site-123/upnp', undefined, undefined);
+            expect(result).toEqual({ enabled: true });
+        });
+    });
+
+    describe('getDdnsGrid', () => {
+        it('should get DDNS entries', async () => {
+            const mockData = { data: [] };
+            const mockResponse: OmadaApiResponse<unknown> = { errorCode: 0, result: mockData };
+            vi.mocked(mockRequest.get).mockResolvedValue(mockResponse);
+            const result = await networkOps.getDdnsGrid(1, 10, 'site-123');
+            expect(mockRequest.get).toHaveBeenCalledWith(
+                '/openapi/v1/test-omadac/sites/site-123/setting/service/ddns',
+                { page: 1, pageSize: 10 },
+                undefined
+            );
+            expect(result).toEqual(mockData);
+        });
+    });
+
+    describe('getDhcpReservationGrid', () => {
+        it('should get DHCP reservations', async () => {
+            const mockData = { data: [] };
+            const mockResponse: OmadaApiResponse<unknown> = { errorCode: 0, result: mockData };
+            vi.mocked(mockRequest.get).mockResolvedValue(mockResponse);
+            const result = await networkOps.getDhcpReservationGrid(1, 10, 'site-123');
+            expect(mockRequest.get).toHaveBeenCalledWith(
+                '/openapi/v1/test-omadac/sites/site-123/setting/service/dhcp',
+                { page: 1, pageSize: 10 },
+                undefined
+            );
+            expect(result).toEqual(mockData);
+        });
+    });
+
+    describe('getGridIpMacBinding', () => {
+        it('should get IP-MAC binding entries', async () => {
+            const mockData = { data: [] };
+            const mockResponse: OmadaApiResponse<unknown> = { errorCode: 0, result: mockData };
+            vi.mocked(mockRequest.get).mockResolvedValue(mockResponse);
+            const result = await networkOps.getGridIpMacBinding(1, 10, 'site-123');
+            expect(mockRequest.get).toHaveBeenCalledWith('/openapi/v1/test-omadac/sites/site-123/ip-mac-binds', { page: 1, pageSize: 10 }, undefined);
+            expect(result).toEqual(mockData);
+        });
+    });
+
+    describe('getIpMacBindingGeneralSetting', () => {
+        it('should get IP-MAC binding global toggle', async () => {
+            const mockResponse: OmadaApiResponse<unknown> = { errorCode: 0, result: { enabled: false } };
+            vi.mocked(mockRequest.get).mockResolvedValue(mockResponse);
+            const result = await networkOps.getIpMacBindingGeneralSetting('site-123');
+            expect(mockRequest.get).toHaveBeenCalledWith('/openapi/v1/test-omadac/sites/site-123/ip-mac-bind', undefined, undefined);
+            expect(result).toEqual({ enabled: false });
+        });
+    });
+
+    describe('getSnmpSetting', () => {
+        it('should get SNMP config', async () => {
+            const mockResponse: OmadaApiResponse<unknown> = { errorCode: 0, result: { version: 'v2c' } };
+            vi.mocked(mockRequest.get).mockResolvedValue(mockResponse);
+            const result = await networkOps.getSnmpSetting('site-123');
+            expect(mockRequest.get).toHaveBeenCalledWith('/openapi/v1/test-omadac/sites/site-123/setting/service/snmp', undefined, undefined);
+            expect(result).toEqual({ version: 'v2c' });
+        });
+    });
+
+    describe('getLldpSetting', () => {
+        it('should get LLDP global setting', async () => {
+            const mockResponse: OmadaApiResponse<unknown> = { errorCode: 0, result: { enabled: true } };
+            vi.mocked(mockRequest.get).mockResolvedValue(mockResponse);
+            const result = await networkOps.getLldpSetting('site-123');
+            expect(mockRequest.get).toHaveBeenCalledWith('/openapi/v1/test-omadac/sites/site-123/lldp', undefined, undefined);
+            expect(result).toEqual({ enabled: true });
+        });
+    });
+
+    describe('getRemoteLoggingSetting', () => {
+        it('should get remote logging config', async () => {
+            const mockResponse: OmadaApiResponse<unknown> = { errorCode: 0, result: { server: '10.0.0.1', port: 514 } };
+            vi.mocked(mockRequest.get).mockResolvedValue(mockResponse);
+            const result = await networkOps.getRemoteLoggingSetting('site-123');
+            expect(mockRequest.get).toHaveBeenCalledWith('/openapi/v1/test-omadac/sites/site-123/remote-logging', undefined, undefined);
+            expect(result).toEqual({ server: '10.0.0.1', port: 514 });
+        });
+    });
+
+    describe('getSessionLimit', () => {
+        it('should get session limit global setting', async () => {
+            const mockResponse: OmadaApiResponse<unknown> = { errorCode: 0, result: { enabled: true } };
+            vi.mocked(mockRequest.get).mockResolvedValue(mockResponse);
+            const result = await networkOps.getSessionLimit('site-123');
+            expect(mockRequest.get).toHaveBeenCalledWith('/openapi/v1/test-omadac/sites/site-123/session-limit', undefined, undefined);
+            expect(result).toEqual({ enabled: true });
+        });
+    });
+
+    describe('getGridSessionLimitRule', () => {
+        it('should get session limit rules', async () => {
+            const mockData = { data: [] };
+            const mockResponse: OmadaApiResponse<unknown> = { errorCode: 0, result: mockData };
+            vi.mocked(mockRequest.get).mockResolvedValue(mockResponse);
+            const result = await networkOps.getGridSessionLimitRule(1, 10, 'site-123');
+            expect(mockRequest.get).toHaveBeenCalledWith(
+                '/openapi/v1/test-omadac/sites/site-123/session-limit/rules',
+                { page: 1, pageSize: 10 },
+                undefined
+            );
+            expect(result).toEqual(mockData);
+        });
+    });
+
+    describe('getGridBandwidthCtrlRule', () => {
+        it('should get bandwidth control rules', async () => {
+            const mockData = { data: [] };
+            const mockResponse: OmadaApiResponse<unknown> = { errorCode: 0, result: mockData };
+            vi.mocked(mockRequest.get).mockResolvedValue(mockResponse);
+            const result = await networkOps.getGridBandwidthCtrlRule(1, 10, 'site-123');
+            expect(mockRequest.get).toHaveBeenCalledWith(
+                '/openapi/v1/test-omadac/sites/site-123/bandwidth-control/rules',
+                { page: 1, pageSize: 10 },
+                undefined
+            );
+            expect(result).toEqual(mockData);
+        });
+    });
+
+    describe('getAccessControl', () => {
+        it('should get controller access control config', async () => {
+            const mockResponse: OmadaApiResponse<unknown> = { errorCode: 0, result: { allowedRanges: [] } };
+            vi.mocked(mockRequest.get).mockResolvedValue(mockResponse);
+            const result = await networkOps.getAccessControl('site-123');
+            expect(mockRequest.get).toHaveBeenCalledWith('/openapi/v1/test-omadac/sites/site-123/setting/access-control', undefined, undefined);
+            expect(result).toEqual({ allowedRanges: [] });
+        });
+    });
+
+    describe('getDnsCacheSetting', () => {
+        it('should get DNS cache setting', async () => {
+            const mockResponse: OmadaApiResponse<unknown> = { errorCode: 0, result: { enabled: true, ttl: 300 } };
+            vi.mocked(mockRequest.get).mockResolvedValue(mockResponse);
+            const result = await networkOps.getDnsCacheSetting('site-123');
+            expect(mockRequest.get).toHaveBeenCalledWith('/openapi/v1/test-omadac/sites/site-123/setting/service/dns-cache', undefined, undefined);
+            expect(result).toEqual({ enabled: true, ttl: 300 });
+        });
+    });
+
+    describe('getDnsProxy', () => {
+        it('should get DNS proxy config', async () => {
+            const mockResponse: OmadaApiResponse<unknown> = { errorCode: 0, result: { enabled: true } };
+            vi.mocked(mockRequest.get).mockResolvedValue(mockResponse);
+            const result = await networkOps.getDnsProxy('site-123');
+            expect(mockRequest.get).toHaveBeenCalledWith('/openapi/v1/test-omadac/sites/site-123/setting/service/dns-proxy', undefined, undefined);
+            expect(result).toEqual({ enabled: true });
+        });
+    });
+
+    describe('getIgmp', () => {
+        it('should get IGMP setting', async () => {
+            const mockResponse: OmadaApiResponse<unknown> = { errorCode: 0, result: { snoopingEnabled: true } };
+            vi.mocked(mockRequest.get).mockResolvedValue(mockResponse);
+            const result = await networkOps.getIgmp('site-123');
+            expect(mockRequest.get).toHaveBeenCalledWith('/openapi/v1/test-omadac/sites/site-123/setting/service/igmp', undefined, undefined);
+            expect(result).toEqual({ snoopingEnabled: true });
+        });
+    });
+
+    describe('getInternetLoadBalance', () => {
+        it('should get WAN load balancing config', async () => {
+            const mockResponse: OmadaApiResponse<unknown> = { errorCode: 0, result: { mode: 'loadBalance' } };
+            vi.mocked(mockRequest.get).mockResolvedValue(mockResponse);
+            const result = await networkOps.getInternetLoadBalance('site-123');
+            expect(mockRequest.get).toHaveBeenCalledWith('/openapi/v1/test-omadac/sites/site-123/internet/load-balance', undefined, undefined);
+            expect(result).toEqual({ mode: 'loadBalance' });
+        });
+    });
+
+    describe('getWanPortsConfig', () => {
+        it('should get WAN port settings', async () => {
+            const mockResponse: OmadaApiResponse<unknown> = { errorCode: 0, result: { ports: [] } };
+            vi.mocked(mockRequest.get).mockResolvedValue(mockResponse);
+            const result = await networkOps.getWanPortsConfig('site-123');
+            expect(mockRequest.get).toHaveBeenCalledWith('/openapi/v1/test-omadac/sites/site-123/internet/ports-config', undefined, undefined);
+            expect(result).toEqual({ ports: [] });
+        });
+    });
+
+    describe('getInternetBasicPortInfo', () => {
+        it('should get WAN port summary', async () => {
+            const mockResponse: OmadaApiResponse<unknown> = { errorCode: 0, result: { wan1: 'connected' } };
+            vi.mocked(mockRequest.get).mockResolvedValue(mockResponse);
+            const result = await networkOps.getInternetBasicPortInfo('site-123');
+            expect(mockRequest.get).toHaveBeenCalledWith('/openapi/v1/test-omadac/sites/site-123/internet/basic-info', undefined, undefined);
+            expect(result).toEqual({ wan1: 'connected' });
+        });
+    });
+
+    describe('getInternet', () => {
+        it('should get full WAN/Internet configuration', async () => {
+            const mockResponse: OmadaApiResponse<unknown> = { errorCode: 0, result: { connectionType: 'dhcp' } };
+            vi.mocked(mockRequest.get).mockResolvedValue(mockResponse);
+            const result = await networkOps.getInternet('site-123');
+            expect(mockRequest.get).toHaveBeenCalledWith('/openapi/v1/test-omadac/sites/site-123/internet', undefined, undefined);
+            expect(result).toEqual({ connectionType: 'dhcp' });
+        });
+    });
+
+    describe('getGridVirtualWan', () => {
+        it('should get virtual WAN list', async () => {
+            const mockData = { data: [] };
+            const mockResponse: OmadaApiResponse<unknown> = { errorCode: 0, result: mockData };
+            vi.mocked(mockRequest.get).mockResolvedValue(mockResponse);
+            const result = await networkOps.getGridVirtualWan(1, 10, 'site-123');
+            expect(mockRequest.get).toHaveBeenCalledWith(
+                '/openapi/v1/test-omadac/sites/site-123/setting/virtual-wans',
+                { page: 1, pageSize: 10 },
+                undefined
+            );
+            expect(result).toEqual(mockData);
+        });
+    });
 });

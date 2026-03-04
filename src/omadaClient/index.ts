@@ -436,6 +436,89 @@ export class OmadaClient {
         return await this.networkOps.listBandwidthControlRules(siteId, customHeaders);
     }
 
+    // LAN/Network config tools (issue #38)
+    public async getLanNetworkListV2(page: number, pageSize: number, siteId?: string, customHeaders?: CustomHeaders): Promise<unknown> {
+        return await this.networkOps.getLanNetworkListV2(page, pageSize, siteId, customHeaders);
+    }
+    public async getInterfaceLanNetwork(type?: number, siteId?: string, customHeaders?: CustomHeaders): Promise<unknown> {
+        return await this.networkOps.getInterfaceLanNetwork(type, siteId, customHeaders);
+    }
+    public async getInterfaceLanNetworkV2(type?: number, siteId?: string, customHeaders?: CustomHeaders): Promise<unknown> {
+        return await this.networkOps.getInterfaceLanNetworkV2(type, siteId, customHeaders);
+    }
+    public async getGridPolicyRouting(page: number, pageSize: number, siteId?: string, customHeaders?: CustomHeaders): Promise<unknown> {
+        return await this.networkOps.getGridPolicyRouting(page, pageSize, siteId, customHeaders);
+    }
+    public async getStaticRoutingInterfaceList(siteId?: string, customHeaders?: CustomHeaders): Promise<unknown> {
+        return await this.networkOps.getStaticRoutingInterfaceList(siteId, customHeaders);
+    }
+    public async getGridOtoNats(page: number, pageSize: number, siteId?: string, customHeaders?: CustomHeaders): Promise<unknown> {
+        return await this.networkOps.getGridOtoNats(page, pageSize, siteId, customHeaders);
+    }
+    public async getAlg(siteId?: string, customHeaders?: CustomHeaders): Promise<unknown> {
+        return await this.networkOps.getAlg(siteId, customHeaders);
+    }
+    public async getUpnpSetting(siteId?: string, customHeaders?: CustomHeaders): Promise<unknown> {
+        return await this.networkOps.getUpnpSetting(siteId, customHeaders);
+    }
+    public async getDdnsGrid(page: number, pageSize: number, siteId?: string, customHeaders?: CustomHeaders): Promise<unknown> {
+        return await this.networkOps.getDdnsGrid(page, pageSize, siteId, customHeaders);
+    }
+    public async getDhcpReservationGrid(page: number, pageSize: number, siteId?: string, customHeaders?: CustomHeaders): Promise<unknown> {
+        return await this.networkOps.getDhcpReservationGrid(page, pageSize, siteId, customHeaders);
+    }
+    public async getGridIpMacBinding(page: number, pageSize: number, siteId?: string, customHeaders?: CustomHeaders): Promise<unknown> {
+        return await this.networkOps.getGridIpMacBinding(page, pageSize, siteId, customHeaders);
+    }
+    public async getIpMacBindingGeneralSetting(siteId?: string, customHeaders?: CustomHeaders): Promise<unknown> {
+        return await this.networkOps.getIpMacBindingGeneralSetting(siteId, customHeaders);
+    }
+    public async getSnmpSetting(siteId?: string, customHeaders?: CustomHeaders): Promise<unknown> {
+        return await this.networkOps.getSnmpSetting(siteId, customHeaders);
+    }
+    public async getLldpSetting(siteId?: string, customHeaders?: CustomHeaders): Promise<unknown> {
+        return await this.networkOps.getLldpSetting(siteId, customHeaders);
+    }
+    public async getRemoteLoggingSetting(siteId?: string, customHeaders?: CustomHeaders): Promise<unknown> {
+        return await this.networkOps.getRemoteLoggingSetting(siteId, customHeaders);
+    }
+    public async getSessionLimit(siteId?: string, customHeaders?: CustomHeaders): Promise<unknown> {
+        return await this.networkOps.getSessionLimit(siteId, customHeaders);
+    }
+    public async getGridSessionLimitRule(page: number, pageSize: number, siteId?: string, customHeaders?: CustomHeaders): Promise<unknown> {
+        return await this.networkOps.getGridSessionLimitRule(page, pageSize, siteId, customHeaders);
+    }
+    public async getGridBandwidthCtrlRule(page: number, pageSize: number, siteId?: string, customHeaders?: CustomHeaders): Promise<unknown> {
+        return await this.networkOps.getGridBandwidthCtrlRule(page, pageSize, siteId, customHeaders);
+    }
+    public async getAccessControl(siteId?: string, customHeaders?: CustomHeaders): Promise<unknown> {
+        return await this.networkOps.getAccessControl(siteId, customHeaders);
+    }
+    public async getDnsCacheSetting(siteId?: string, customHeaders?: CustomHeaders): Promise<unknown> {
+        return await this.networkOps.getDnsCacheSetting(siteId, customHeaders);
+    }
+    public async getDnsProxy(siteId?: string, customHeaders?: CustomHeaders): Promise<unknown> {
+        return await this.networkOps.getDnsProxy(siteId, customHeaders);
+    }
+    public async getIgmp(siteId?: string, customHeaders?: CustomHeaders): Promise<unknown> {
+        return await this.networkOps.getIgmp(siteId, customHeaders);
+    }
+    public async getInternetLoadBalance(siteId?: string, customHeaders?: CustomHeaders): Promise<unknown> {
+        return await this.networkOps.getInternetLoadBalance(siteId, customHeaders);
+    }
+    public async getWanPortsConfig(siteId?: string, customHeaders?: CustomHeaders): Promise<unknown> {
+        return await this.networkOps.getWanPortsConfig(siteId, customHeaders);
+    }
+    public async getInternetBasicPortInfo(siteId?: string, customHeaders?: CustomHeaders): Promise<unknown> {
+        return await this.networkOps.getInternetBasicPortInfo(siteId, customHeaders);
+    }
+    public async getInternet(siteId?: string, customHeaders?: CustomHeaders): Promise<unknown> {
+        return await this.networkOps.getInternet(siteId, customHeaders);
+    }
+    public async getGridVirtualWan(page: number, pageSize: number, siteId?: string, customHeaders?: CustomHeaders): Promise<unknown> {
+        return await this.networkOps.getGridVirtualWan(page, pageSize, siteId, customHeaders);
+    }
+
     // Monitor / dashboard operations
     public async getDashboardWifiSummary(siteId?: string, customHeaders?: CustomHeaders): Promise<unknown> {
         return await this.monitorOps.getDashboardWifiSummary(siteId, customHeaders);
