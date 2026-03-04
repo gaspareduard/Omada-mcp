@@ -256,6 +256,80 @@ export class OmadaClient {
         return await this.deviceOps.listPendingDevices(siteId, customHeaders);
     }
 
+    // Device Management — Phase 1 Read Tools (issue #36)
+    public async getAllDeviceBySite(siteId?: string, customHeaders?: CustomHeaders): Promise<unknown[]> {
+        return await this.deviceOps.getAllDeviceBySite(siteId, customHeaders);
+    }
+    public async getFirmwareInfo(deviceMac: string, siteId?: string, customHeaders?: CustomHeaders): Promise<unknown> {
+        return await this.deviceOps.getFirmwareInfo(deviceMac, siteId, customHeaders);
+    }
+    public async getGridAutoCheckUpgrade(page: number, pageSize: number, customHeaders?: CustomHeaders): Promise<unknown> {
+        return await this.deviceOps.getGridAutoCheckUpgrade(page, pageSize, customHeaders);
+    }
+    public async listSwitchNetworks(
+        switchMac: string,
+        page: number,
+        pageSize: number,
+        siteId?: string,
+        customHeaders?: CustomHeaders
+    ): Promise<unknown> {
+        return await this.deviceOps.listSwitchNetworks(switchMac, page, pageSize, siteId, customHeaders);
+    }
+    public async getSwitchGeneralConfig(switchMac: string, siteId?: string, customHeaders?: CustomHeaders): Promise<unknown> {
+        return await this.deviceOps.getSwitchGeneralConfig(switchMac, siteId, customHeaders);
+    }
+    public async getCableTestLogs(switchMac: string, siteId?: string, customHeaders?: CustomHeaders): Promise<unknown> {
+        return await this.deviceOps.getCableTestLogs(switchMac, siteId, customHeaders);
+    }
+    public async getCableTestFullResults(switchMac: string, siteId?: string, customHeaders?: CustomHeaders): Promise<unknown> {
+        return await this.deviceOps.getCableTestFullResults(switchMac, siteId, customHeaders);
+    }
+    public async getOswStackLagList(stackId: string, siteId?: string, customHeaders?: CustomHeaders): Promise<unknown[]> {
+        return await this.deviceOps.getOswStackLagList(stackId, siteId, customHeaders);
+    }
+    public async getStackNetworkList(
+        stackId: string,
+        page: number,
+        pageSize: number,
+        siteId?: string,
+        customHeaders?: CustomHeaders
+    ): Promise<unknown> {
+        return await this.deviceOps.getStackNetworkList(stackId, page, pageSize, siteId, customHeaders);
+    }
+    public async getApUplinkConfig(apMac: string, siteId?: string, customHeaders?: CustomHeaders): Promise<unknown[]> {
+        return await this.deviceOps.getApUplinkConfig(apMac, siteId, customHeaders);
+    }
+    public async getRadiosConfig(apMac: string, siteId?: string, customHeaders?: CustomHeaders): Promise<unknown> {
+        return await this.deviceOps.getRadiosConfig(apMac, siteId, customHeaders);
+    }
+    public async getApVlanConfig(apMac: string, siteId?: string, customHeaders?: CustomHeaders): Promise<unknown> {
+        return await this.deviceOps.getApVlanConfig(apMac, siteId, customHeaders);
+    }
+    public async getMeshStatistics(apMac: string, siteId?: string, customHeaders?: CustomHeaders): Promise<unknown> {
+        return await this.deviceOps.getMeshStatistics(apMac, siteId, customHeaders);
+    }
+    public async getRFScanResult(apMac: string, siteId?: string, customHeaders?: CustomHeaders): Promise<unknown> {
+        return await this.deviceOps.getRFScanResult(apMac, siteId, customHeaders);
+    }
+    public async getSpeedTestResults(apMac: string, siteId?: string, customHeaders?: CustomHeaders): Promise<unknown> {
+        return await this.deviceOps.getSpeedTestResults(apMac, siteId, customHeaders);
+    }
+    public async getApSnmpConfig(apMac: string, siteId?: string, customHeaders?: CustomHeaders): Promise<unknown> {
+        return await this.deviceOps.getApSnmpConfig(apMac, siteId, customHeaders);
+    }
+    public async getApLldpConfig(apMac: string, siteId?: string, customHeaders?: CustomHeaders): Promise<unknown> {
+        return await this.deviceOps.getApLldpConfig(apMac, siteId, customHeaders);
+    }
+    public async getApGeneralConfig(apMac: string, siteId?: string, customHeaders?: CustomHeaders): Promise<unknown> {
+        return await this.deviceOps.getApGeneralConfig(apMac, siteId, customHeaders);
+    }
+    public async getUplinkWiredDetail(apMac: string, siteId?: string, customHeaders?: CustomHeaders): Promise<unknown> {
+        return await this.deviceOps.getUplinkWiredDetail(apMac, siteId, customHeaders);
+    }
+    public async getDownlinkWiredDevices(apMac: string, siteId?: string, customHeaders?: CustomHeaders): Promise<unknown[]> {
+        return await this.deviceOps.getDownlinkWiredDevices(apMac, siteId, customHeaders);
+    }
+
     // Security operations (extended)
     public async getTopThreats(customHeaders?: CustomHeaders): Promise<unknown[]> {
         return await this.securityOps.getTopThreats(customHeaders);

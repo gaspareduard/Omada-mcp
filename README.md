@@ -296,6 +296,26 @@ In client-credentials mode the server already treats `Mcp-Session-Id` as optiona
 | `getApRadios`           | Gets radio information for a specific access point.                               |
 | `getStackPorts`         | Gets port information for a switch stack.                                         |
 | `listPendingDevices`    | Lists devices pending adoption in a site.                                         |
+| `getAllDeviceBySite`    | Gets all devices in a site including offline and disconnected devices.             |
+| `getFirmwareInfo`       | Gets the latest available firmware info for a device. Use `listDevices` for MACs. |
+| `getGridAutoCheckUpgrade` | Gets the auto-check firmware upgrade plan list (paginated).                     |
+| `listSwitchNetworks`    | Lists VLAN network assignments for a switch (paginated). Requires `switchMac`.    |
+| `getSwitchGeneralConfig` | Gets general configuration for a switch. Requires `switchMac`.                  |
+| `getCableTestLogs`      | Gets cable test history for a switch. Requires `switchMac`.                       |
+| `getCableTestFullResults` | Gets full per-port cable diagnostics for a switch. Requires `switchMac`.        |
+| `getOswStackLagList`    | Gets Link Aggregation Group (LAG) list for a switch stack. Requires `stackId`.    |
+| `getStackNetworkList`   | Gets VLAN network list for a switch stack (paginated). Requires `stackId`.        |
+| `getApUplinkConfig`     | Gets uplink configuration for an AP (wired/mesh mode). Requires `apMac`.          |
+| `getRadiosConfig`       | Gets per-radio configuration for an AP (channel, power, width). Requires `apMac`. |
+| `getApVlanConfig`       | Gets VLAN configuration for an AP. Requires `apMac`.                              |
+| `getMeshStatistics`     | Gets mesh link statistics for an AP. Requires `apMac`.                            |
+| `getRFScanResult`       | Gets last RF scan results for an AP. Requires `apMac`.                            |
+| `getSpeedTestResults`   | Gets last speed test results for an AP. Requires `apMac`.                         |
+| `getApSnmpConfig`       | Gets SNMP configuration for an AP. Requires `apMac`.                              |
+| `getApLldpConfig`       | Gets LLDP configuration for an AP. Requires `apMac`.                              |
+| `getApGeneralConfig`    | Gets general configuration for an AP (name, LED, country). Requires `apMac`.     |
+| `getUplinkWiredDetail`  | Gets wired uplink detail for an AP (switch port, PoE). Requires `apMac`.          |
+| `getDownlinkWiredDevices` | Gets wired downlink devices on an AP's LAN ports. Requires `apMac`.            |
 
 ### Network
 

@@ -407,4 +407,298 @@ describe('omadaClient/device', () => {
             expect(mockRequest.fetchPaginated).toHaveBeenCalledWith('/api/sites/default-site/grid/devices/pending', {}, undefined);
         });
     });
+
+    // -------------------------------------------------------------------------
+    // Phase 1 Read Tools (issue #36)
+    // -------------------------------------------------------------------------
+
+    describe('getAllDeviceBySite', () => {
+        it('should fetch all devices including offline', async () => {
+            const mockDevices = [{ mac: 'AA:BB:CC:DD:EE:FF' }];
+            const mockResponse: OmadaApiResponse<unknown[]> = { errorCode: 0, result: mockDevices };
+            (mockRequest.get as ReturnType<typeof vi.fn>).mockResolvedValue(mockResponse);
+            const result = await deviceOps.getAllDeviceBySite('site-1');
+            expect(result).toEqual(mockDevices);
+            expect(mockRequest.get).toHaveBeenCalledWith('/api/sites/site-1/devices/all', undefined, undefined);
+        });
+    });
+
+    describe('getFirmwareInfo', () => {
+        it('should return firmware info for a device', async () => {
+            const mockResponse: OmadaApiResponse<unknown> = { errorCode: 0, result: { latestFirmware: '1.2.3' } };
+            (mockRequest.get as ReturnType<typeof vi.fn>).mockResolvedValue(mockResponse);
+            const result = await deviceOps.getFirmwareInfo('AA-BB-CC-DD-EE-FF', 'site-1');
+            expect(result).toEqual({ latestFirmware: '1.2.3' });
+            expect(mockRequest.get).toHaveBeenCalledWith('/api/sites/site-1/devices/AA-BB-CC-DD-EE-FF/latest-firmware-info', undefined, undefined);
+        });
+
+        it('should throw if deviceMac is empty', async () => {
+            await expect(deviceOps.getFirmwareInfo('', 'site-1')).rejects.toThrow('A deviceMac must be provided.');
+        });
+    });
+
+    describe('getGridAutoCheckUpgrade', () => {
+        it('should return upgrade plan list', async () => {
+            const mockResponse: OmadaApiResponse<unknown> = { errorCode: 0, result: { data: [] } };
+            (mockRequest.get as ReturnType<typeof vi.fn>).mockResolvedValue(mockResponse);
+            const result = await deviceOps.getGridAutoCheckUpgrade(1, 10);
+            expect(result).toEqual({ data: [] });
+            expect(mockRequest.get).toHaveBeenCalledWith('/api/upgrade/autoCheck', { page: 1, pageSize: 10 }, undefined);
+        });
+    });
+
+    describe('listSwitchNetworks', () => {
+        it('should return switch VLAN network list', async () => {
+            const mockResponse: OmadaApiResponse<unknown> = { errorCode: 0, result: { data: [] } };
+            (mockRequest.get as ReturnType<typeof vi.fn>).mockResolvedValue(mockResponse);
+            const result = await deviceOps.listSwitchNetworks('AA-BB-CC-DD-EE-FF', 1, 10, 'site-1');
+            expect(result).toEqual({ data: [] });
+            expect(mockRequest.get).toHaveBeenCalledWith(
+                '/api/sites/site-1/switches/AA-BB-CC-DD-EE-FF/networks',
+                { page: 1, pageSize: 10 },
+                undefined
+            );
+        });
+
+        it('should throw if switchMac is empty', async () => {
+            await expect(deviceOps.listSwitchNetworks('', 1, 10, 'site-1')).rejects.toThrow('A switchMac must be provided.');
+        });
+    });
+
+    describe('getSwitchGeneralConfig', () => {
+        it('should return switch general config', async () => {
+            const mockResponse: OmadaApiResponse<unknown> = { errorCode: 0, result: { ledEnabled: true } };
+            (mockRequest.get as ReturnType<typeof vi.fn>).mockResolvedValue(mockResponse);
+            const result = await deviceOps.getSwitchGeneralConfig('AA-BB-CC-DD-EE-FF', 'site-1');
+            expect(result).toEqual({ ledEnabled: true });
+            expect(mockRequest.get).toHaveBeenCalledWith('/api/sites/site-1/switches/AA-BB-CC-DD-EE-FF/general-config', undefined, undefined);
+        });
+
+        it('should throw if switchMac is empty', async () => {
+            await expect(deviceOps.getSwitchGeneralConfig('', 'site-1')).rejects.toThrow('A switchMac must be provided.');
+        });
+    });
+
+    describe('getCableTestLogs', () => {
+        it('should return cable test logs', async () => {
+            const mockResponse: OmadaApiResponse<unknown> = { errorCode: 0, result: { logs: [] } };
+            (mockRequest.get as ReturnType<typeof vi.fn>).mockResolvedValue(mockResponse);
+            const result = await deviceOps.getCableTestLogs('AA-BB-CC-DD-EE-FF', 'site-1');
+            expect(result).toEqual({ logs: [] });
+            expect(mockRequest.get).toHaveBeenCalledWith('/api/sites/site-1/cable-test/switches/AA-BB-CC-DD-EE-FF/logs', undefined, undefined);
+        });
+
+        it('should throw if switchMac is empty', async () => {
+            await expect(deviceOps.getCableTestLogs('', 'site-1')).rejects.toThrow('A switchMac must be provided.');
+        });
+    });
+
+    describe('getCableTestFullResults', () => {
+        it('should return full cable test results', async () => {
+            const mockResponse: OmadaApiResponse<unknown> = { errorCode: 0, result: { ports: [] } };
+            (mockRequest.get as ReturnType<typeof vi.fn>).mockResolvedValue(mockResponse);
+            const result = await deviceOps.getCableTestFullResults('AA-BB-CC-DD-EE-FF', 'site-1');
+            expect(result).toEqual({ ports: [] });
+            expect(mockRequest.get).toHaveBeenCalledWith(
+                '/api/sites/site-1/cable-test/switches/AA-BB-CC-DD-EE-FF/full-results',
+                undefined,
+                undefined
+            );
+        });
+
+        it('should throw if switchMac is empty', async () => {
+            await expect(deviceOps.getCableTestFullResults('', 'site-1')).rejects.toThrow('A switchMac must be provided.');
+        });
+    });
+
+    describe('getOswStackLagList', () => {
+        it('should return stack LAG list', async () => {
+            const mockLags = [{ lagId: 'lag-1' }];
+            const mockResponse: OmadaApiResponse<unknown[]> = { errorCode: 0, result: mockLags };
+            (mockRequest.get as ReturnType<typeof vi.fn>).mockResolvedValue(mockResponse);
+            const result = await deviceOps.getOswStackLagList('stack-1', 'site-1');
+            expect(result).toEqual(mockLags);
+            expect(mockRequest.get).toHaveBeenCalledWith('/api/sites/site-1/stacks/stack-1/lags', undefined, undefined);
+        });
+
+        it('should throw if stackId is empty', async () => {
+            await expect(deviceOps.getOswStackLagList('', 'site-1')).rejects.toThrow('A stackId must be provided.');
+        });
+    });
+
+    describe('getStackNetworkList', () => {
+        it('should return stack VLAN network list', async () => {
+            const mockResponse: OmadaApiResponse<unknown> = { errorCode: 0, result: { data: [] } };
+            (mockRequest.get as ReturnType<typeof vi.fn>).mockResolvedValue(mockResponse);
+            const result = await deviceOps.getStackNetworkList('stack-1', 1, 10, 'site-1');
+            expect(result).toEqual({ data: [] });
+            expect(mockRequest.get).toHaveBeenCalledWith('/api/sites/site-1/stacks/stack-1/networks', { page: 1, pageSize: 10 }, undefined);
+        });
+
+        it('should throw if stackId is empty', async () => {
+            await expect(deviceOps.getStackNetworkList('', 1, 10, 'site-1')).rejects.toThrow('A stackId must be provided.');
+        });
+    });
+
+    describe('getApUplinkConfig', () => {
+        it('should return AP uplink config', async () => {
+            const mockResponse: OmadaApiResponse<unknown> = { errorCode: 0, result: { uplinkMode: 1 } };
+            (mockRequest.get as ReturnType<typeof vi.fn>).mockResolvedValue(mockResponse);
+            const result = await deviceOps.getApUplinkConfig('AA-BB-CC-DD-EE-FF', 'site-1');
+            expect(result).toEqual({ uplinkMode: 1 });
+            expect(mockRequest.get).toHaveBeenCalledWith('/api/sites/site-1/aps/AA-BB-CC-DD-EE-FF/uplink-config', undefined, undefined);
+        });
+
+        it('should throw if apMac is empty', async () => {
+            await expect(deviceOps.getApUplinkConfig('', 'site-1')).rejects.toThrow('An apMac must be provided.');
+        });
+    });
+
+    describe('getRadiosConfig', () => {
+        it('should return AP radio config', async () => {
+            const mockResponse: OmadaApiResponse<unknown> = { errorCode: 0, result: { radios: [] } };
+            (mockRequest.get as ReturnType<typeof vi.fn>).mockResolvedValue(mockResponse);
+            const result = await deviceOps.getRadiosConfig('AA-BB-CC-DD-EE-FF', 'site-1');
+            expect(result).toEqual({ radios: [] });
+            expect(mockRequest.get).toHaveBeenCalledWith('/api/sites/site-1/aps/AA-BB-CC-DD-EE-FF/radio-config', undefined, undefined);
+        });
+
+        it('should throw if apMac is empty', async () => {
+            await expect(deviceOps.getRadiosConfig('', 'site-1')).rejects.toThrow('An apMac must be provided.');
+        });
+    });
+
+    describe('getApVlanConfig', () => {
+        it('should return AP VLAN config', async () => {
+            const mockResponse: OmadaApiResponse<unknown> = { errorCode: 0, result: { managementVlan: 10 } };
+            (mockRequest.get as ReturnType<typeof vi.fn>).mockResolvedValue(mockResponse);
+            const result = await deviceOps.getApVlanConfig('AA-BB-CC-DD-EE-FF', 'site-1');
+            expect(result).toEqual({ managementVlan: 10 });
+            expect(mockRequest.get).toHaveBeenCalledWith('/api/sites/site-1/aps/AA-BB-CC-DD-EE-FF/vlan', undefined, undefined);
+        });
+
+        it('should throw if apMac is empty', async () => {
+            await expect(deviceOps.getApVlanConfig('', 'site-1')).rejects.toThrow('An apMac must be provided.');
+        });
+    });
+
+    describe('getMeshStatistics', () => {
+        it('should return AP mesh statistics', async () => {
+            const mockResponse: OmadaApiResponse<unknown> = { errorCode: 0, result: { linkQuality: 90 } };
+            (mockRequest.get as ReturnType<typeof vi.fn>).mockResolvedValue(mockResponse);
+            const result = await deviceOps.getMeshStatistics('AA-BB-CC-DD-EE-FF', 'site-1');
+            expect(result).toEqual({ linkQuality: 90 });
+            expect(mockRequest.get).toHaveBeenCalledWith('/api/sites/site-1/aps/AA-BB-CC-DD-EE-FF/mesh/statistics', undefined, undefined);
+        });
+
+        it('should throw if apMac is empty', async () => {
+            await expect(deviceOps.getMeshStatistics('', 'site-1')).rejects.toThrow('An apMac must be provided.');
+        });
+    });
+
+    describe('getRFScanResult', () => {
+        it('should return RF scan results', async () => {
+            const mockResponse: OmadaApiResponse<unknown> = { errorCode: 0, result: { channels: [] } };
+            (mockRequest.get as ReturnType<typeof vi.fn>).mockResolvedValue(mockResponse);
+            const result = await deviceOps.getRFScanResult('AA-BB-CC-DD-EE-FF', 'site-1');
+            expect(result).toEqual({ channels: [] });
+            expect(mockRequest.get).toHaveBeenCalledWith('/api/sites/site-1/aps/AA-BB-CC-DD-EE-FF/rf-scan-result', undefined, undefined);
+        });
+
+        it('should throw if apMac is empty', async () => {
+            await expect(deviceOps.getRFScanResult('', 'site-1')).rejects.toThrow('An apMac must be provided.');
+        });
+    });
+
+    describe('getSpeedTestResults', () => {
+        it('should return speed test results', async () => {
+            const mockResponse: OmadaApiResponse<unknown> = { errorCode: 0, result: { download: 500, upload: 200 } };
+            (mockRequest.get as ReturnType<typeof vi.fn>).mockResolvedValue(mockResponse);
+            const result = await deviceOps.getSpeedTestResults('AA-BB-CC-DD-EE-FF', 'site-1');
+            expect(result).toEqual({ download: 500, upload: 200 });
+            expect(mockRequest.get).toHaveBeenCalledWith('/api/sites/site-1/aps/AA-BB-CC-DD-EE-FF/speed-test-result', undefined, undefined);
+        });
+
+        it('should throw if apMac is empty', async () => {
+            await expect(deviceOps.getSpeedTestResults('', 'site-1')).rejects.toThrow('An apMac must be provided.');
+        });
+    });
+
+    describe('getApSnmpConfig', () => {
+        it('should return AP SNMP config', async () => {
+            const mockResponse: OmadaApiResponse<unknown> = { errorCode: 0, result: { snmpEnabled: true } };
+            (mockRequest.get as ReturnType<typeof vi.fn>).mockResolvedValue(mockResponse);
+            const result = await deviceOps.getApSnmpConfig('AA-BB-CC-DD-EE-FF', 'site-1');
+            expect(result).toEqual({ snmpEnabled: true });
+            expect(mockRequest.get).toHaveBeenCalledWith('/api/sites/site-1/aps/AA-BB-CC-DD-EE-FF/snmp', undefined, undefined);
+        });
+
+        it('should throw if apMac is empty', async () => {
+            await expect(deviceOps.getApSnmpConfig('', 'site-1')).rejects.toThrow('An apMac must be provided.');
+        });
+    });
+
+    describe('getApLldpConfig', () => {
+        it('should return AP LLDP config', async () => {
+            const mockResponse: OmadaApiResponse<unknown> = { errorCode: 0, result: { lldpEnabled: true } };
+            (mockRequest.get as ReturnType<typeof vi.fn>).mockResolvedValue(mockResponse);
+            const result = await deviceOps.getApLldpConfig('AA-BB-CC-DD-EE-FF', 'site-1');
+            expect(result).toEqual({ lldpEnabled: true });
+            expect(mockRequest.get).toHaveBeenCalledWith('/api/sites/site-1/aps/AA-BB-CC-DD-EE-FF/lldp', undefined, undefined);
+        });
+
+        it('should throw if apMac is empty', async () => {
+            await expect(deviceOps.getApLldpConfig('', 'site-1')).rejects.toThrow('An apMac must be provided.');
+        });
+    });
+
+    describe('getApGeneralConfig', () => {
+        it('should return AP general config', async () => {
+            const mockResponse: OmadaApiResponse<unknown> = { errorCode: 0, result: { deviceName: 'AP-1' } };
+            (mockRequest.get as ReturnType<typeof vi.fn>).mockResolvedValue(mockResponse);
+            const result = await deviceOps.getApGeneralConfig('AA-BB-CC-DD-EE-FF', 'site-1');
+            expect(result).toEqual({ deviceName: 'AP-1' });
+            expect(mockRequest.get).toHaveBeenCalledWith('/api/sites/site-1/aps/AA-BB-CC-DD-EE-FF/general-config', undefined, undefined);
+        });
+
+        it('should throw if apMac is empty', async () => {
+            await expect(deviceOps.getApGeneralConfig('', 'site-1')).rejects.toThrow('An apMac must be provided.');
+        });
+    });
+
+    describe('getUplinkWiredDetail', () => {
+        it('should return AP wired uplink detail', async () => {
+            const mockResponse: OmadaApiResponse<unknown> = { errorCode: 0, result: { switchMac: '11:22:33:44:55:66', port: 3 } };
+            (mockRequest.get as ReturnType<typeof vi.fn>).mockResolvedValue(mockResponse);
+            const result = await deviceOps.getUplinkWiredDetail('AA-BB-CC-DD-EE-FF', 'site-1');
+            expect(result).toEqual({ switchMac: '11:22:33:44:55:66', port: 3 });
+            expect(mockRequest.get).toHaveBeenCalledWith('/api/sites/site-1/aps/AA-BB-CC-DD-EE-FF/wired-uplink', undefined, undefined);
+        });
+
+        it('should throw if apMac is empty', async () => {
+            await expect(deviceOps.getUplinkWiredDetail('', 'site-1')).rejects.toThrow('An apMac must be provided.');
+        });
+    });
+
+    describe('getDownlinkWiredDevices', () => {
+        it('should return AP wired downlink devices from wiredDownlinkList', async () => {
+            const mockDevices = [{ mac: '11:22:33:44:55:66' }];
+            const mockResponse: OmadaApiResponse<unknown> = { errorCode: 0, result: { wiredDownlinkList: mockDevices } };
+            (mockRequest.get as ReturnType<typeof vi.fn>).mockResolvedValue(mockResponse);
+            const result = await deviceOps.getDownlinkWiredDevices('AA-BB-CC-DD-EE-FF', 'site-1');
+            expect(result).toEqual(mockDevices);
+            expect(mockRequest.get).toHaveBeenCalledWith('/api/sites/site-1/aps/AA-BB-CC-DD-EE-FF/wired-downlink', undefined, undefined);
+        });
+
+        it('should return empty array when wiredDownlinkList is absent', async () => {
+            const mockResponse: OmadaApiResponse<unknown> = { errorCode: 0, result: {} };
+            (mockRequest.get as ReturnType<typeof vi.fn>).mockResolvedValue(mockResponse);
+            const result = await deviceOps.getDownlinkWiredDevices('AA-BB-CC-DD-EE-FF', 'site-1');
+            expect(result).toEqual([]);
+        });
+
+        it('should throw if apMac is empty', async () => {
+            await expect(deviceOps.getDownlinkWiredDevices('', 'site-1')).rejects.toThrow('An apMac must be provided.');
+        });
+    });
 });
