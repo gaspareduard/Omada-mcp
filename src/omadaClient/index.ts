@@ -26,10 +26,15 @@ import type {
 import { AuthManager } from './auth.js';
 import { ClientOperations } from './client.js';
 import { DeviceOperations } from './device.js';
+import { InsightOperations, type SiteThreatListOptions } from './insight.js';
+import { LogOperations, type LogQueryOptions } from './log.js';
+import { MonitorOperations } from './monitor.js';
 import { NetworkOperations } from './network.js';
 import { RequestHandler } from './request.js';
 import { SecurityOperations } from './security.js';
 import { SiteOperations } from './site.js';
+
+export type { LogQueryOptions, SiteThreatListOptions };
 
 export type OmadaClientOptions = OmadaConnectionConfig;
 
@@ -53,6 +58,12 @@ export class OmadaClient {
     private readonly securityOps: SecurityOperations;
 
     private readonly networkOps: NetworkOperations;
+
+    private readonly monitorOps: MonitorOperations;
+
+    private readonly insightOps: InsightOperations;
+
+    private readonly logOps: LogOperations;
 
     private readonly omadacId: string;
 
@@ -82,6 +93,9 @@ export class OmadaClient {
         this.clientOps = new ClientOperations(this.request, this.siteOps, this.buildOmadaPath.bind(this));
         this.securityOps = new SecurityOperations(this.request, this.buildOmadaPath.bind(this));
         this.networkOps = new NetworkOperations(this.request, this.siteOps, this.buildOmadaPath.bind(this));
+        this.monitorOps = new MonitorOperations(this.request, this.siteOps, this.buildOmadaPath.bind(this));
+        this.insightOps = new InsightOperations(this.request, this.siteOps, this.buildOmadaPath.bind(this));
+        this.logOps = new LogOperations(this.request, this.siteOps, this.buildOmadaPath.bind(this));
     }
 
     // Site operations
@@ -204,6 +218,264 @@ export class OmadaClient {
 
     public async getFirewallSetting(siteId?: string, customHeaders?: CustomHeaders): Promise<unknown> {
         return await this.networkOps.getFirewallSetting(siteId, customHeaders);
+    }
+
+    public async getSwitchDetail(switchMac: string, siteId?: string, customHeaders?: CustomHeaders): Promise<unknown> {
+        return await this.deviceOps.getSwitchDetail(switchMac, siteId, customHeaders);
+    }
+
+    public async getGatewayDetail(gatewayMac: string, siteId?: string, customHeaders?: CustomHeaders): Promise<unknown> {
+        return await this.deviceOps.getGatewayDetail(gatewayMac, siteId, customHeaders);
+    }
+
+    public async getGatewayWanStatus(gatewayMac: string, siteId?: string, customHeaders?: CustomHeaders): Promise<unknown> {
+        return await this.deviceOps.getGatewayWanStatus(gatewayMac, siteId, customHeaders);
+    }
+
+    public async getGatewayLanStatus(gatewayMac: string, siteId?: string, customHeaders?: CustomHeaders): Promise<unknown> {
+        return await this.deviceOps.getGatewayLanStatus(gatewayMac, siteId, customHeaders);
+    }
+
+    public async getGatewayPorts(gatewayMac: string, siteId?: string, customHeaders?: CustomHeaders): Promise<unknown[]> {
+        return await this.deviceOps.getGatewayPorts(gatewayMac, siteId, customHeaders);
+    }
+
+    public async getApDetail(apMac: string, siteId?: string, customHeaders?: CustomHeaders): Promise<unknown> {
+        return await this.deviceOps.getApDetail(apMac, siteId, customHeaders);
+    }
+
+    public async getApRadios(apMac: string, siteId?: string, customHeaders?: CustomHeaders): Promise<unknown[]> {
+        return await this.deviceOps.getApRadios(apMac, siteId, customHeaders);
+    }
+
+    public async getStackPorts(stackId: string, siteId?: string, customHeaders?: CustomHeaders): Promise<unknown[]> {
+        return await this.deviceOps.getStackPorts(stackId, siteId, customHeaders);
+    }
+
+    public async listPendingDevices(siteId?: string, customHeaders?: CustomHeaders): Promise<unknown[]> {
+        return await this.deviceOps.listPendingDevices(siteId, customHeaders);
+    }
+
+    // Security operations (extended)
+    public async getTopThreats(customHeaders?: CustomHeaders): Promise<unknown[]> {
+        return await this.securityOps.getTopThreats(customHeaders);
+    }
+
+    public async getThreatSeverity(customHeaders?: CustomHeaders): Promise<unknown> {
+        return await this.securityOps.getThreatSeverity(customHeaders);
+    }
+
+    // Network operations (extended)
+    public async getVpnSettings(siteId?: string, customHeaders?: CustomHeaders): Promise<unknown> {
+        return await this.networkOps.getVpnSettings(siteId, customHeaders);
+    }
+
+    public async listSiteToSiteVpns(siteId?: string, customHeaders?: CustomHeaders): Promise<unknown[]> {
+        return await this.networkOps.listSiteToSiteVpns(siteId, customHeaders);
+    }
+
+    public async listClientToSiteVpnServers(siteId?: string, customHeaders?: CustomHeaders): Promise<unknown[]> {
+        return await this.networkOps.listClientToSiteVpnServers(siteId, customHeaders);
+    }
+
+    public async listPortForwardingRules(siteId?: string, customHeaders?: CustomHeaders): Promise<unknown[]> {
+        return await this.networkOps.listPortForwardingRules(siteId, customHeaders);
+    }
+
+    public async listOneToOneNatRules(siteId?: string, customHeaders?: CustomHeaders): Promise<unknown[]> {
+        return await this.networkOps.listOneToOneNatRules(siteId, customHeaders);
+    }
+
+    public async listOsgAcls(siteId?: string, customHeaders?: CustomHeaders): Promise<unknown[]> {
+        return await this.networkOps.listOsgAcls(siteId, customHeaders);
+    }
+
+    public async listEapAcls(siteId?: string, customHeaders?: CustomHeaders): Promise<unknown[]> {
+        return await this.networkOps.listEapAcls(siteId, customHeaders);
+    }
+
+    public async listOswAcls(siteId?: string, customHeaders?: CustomHeaders): Promise<unknown[]> {
+        return await this.networkOps.listOswAcls(siteId, customHeaders);
+    }
+
+    public async listStaticRoutes(siteId?: string, customHeaders?: CustomHeaders): Promise<unknown[]> {
+        return await this.networkOps.listStaticRoutes(siteId, customHeaders);
+    }
+
+    public async listPolicyRoutes(siteId?: string, customHeaders?: CustomHeaders): Promise<unknown[]> {
+        return await this.networkOps.listPolicyRoutes(siteId, customHeaders);
+    }
+
+    public async listRadiusProfiles(siteId?: string, customHeaders?: CustomHeaders): Promise<unknown[]> {
+        return await this.networkOps.listRadiusProfiles(siteId, customHeaders);
+    }
+
+    public async listGroupProfiles(groupType?: string, siteId?: string, customHeaders?: CustomHeaders): Promise<unknown[]> {
+        return await this.networkOps.listGroupProfiles(groupType, siteId, customHeaders);
+    }
+
+    public async getApplicationControlStatus(siteId?: string, customHeaders?: CustomHeaders): Promise<unknown> {
+        return await this.networkOps.getApplicationControlStatus(siteId, customHeaders);
+    }
+
+    public async getBandwidthControl(siteId?: string, customHeaders?: CustomHeaders): Promise<unknown> {
+        return await this.networkOps.getBandwidthControl(siteId, customHeaders);
+    }
+
+    public async getSshSetting(siteId?: string, customHeaders?: CustomHeaders): Promise<unknown> {
+        return await this.networkOps.getSshSetting(siteId, customHeaders);
+    }
+
+    public async getLedSetting(siteId?: string, customHeaders?: CustomHeaders): Promise<unknown> {
+        return await this.networkOps.getLedSetting(siteId, customHeaders);
+    }
+
+    public async listTimeRangeProfiles(siteId?: string, customHeaders?: CustomHeaders): Promise<unknown[]> {
+        return await this.networkOps.listTimeRangeProfiles(siteId, customHeaders);
+    }
+
+    public async listPortSchedules(siteId?: string, customHeaders?: CustomHeaders): Promise<unknown[]> {
+        return await this.networkOps.listPortSchedules(siteId, customHeaders);
+    }
+
+    public async listPoeSchedules(siteId?: string, customHeaders?: CustomHeaders): Promise<unknown[]> {
+        return await this.networkOps.listPoeSchedules(siteId, customHeaders);
+    }
+
+    public async getGatewayUrlFilters(siteId?: string, customHeaders?: CustomHeaders): Promise<unknown> {
+        return await this.networkOps.getGatewayUrlFilters(siteId, customHeaders);
+    }
+
+    public async getEapUrlFilters(siteId?: string, customHeaders?: CustomHeaders): Promise<unknown> {
+        return await this.networkOps.getEapUrlFilters(siteId, customHeaders);
+    }
+
+    public async listAllSsids(siteId?: string, customHeaders?: CustomHeaders): Promise<unknown[]> {
+        return await this.networkOps.listAllSsids(siteId, customHeaders);
+    }
+
+    public async getWanLanStatus(siteId?: string, customHeaders?: CustomHeaders): Promise<unknown> {
+        return await this.networkOps.getWanLanStatus(siteId, customHeaders);
+    }
+
+    public async listBandwidthControlRules(siteId?: string, customHeaders?: CustomHeaders): Promise<unknown[]> {
+        return await this.networkOps.listBandwidthControlRules(siteId, customHeaders);
+    }
+
+    // Monitor / dashboard operations
+    public async getDashboardWifiSummary(siteId?: string, customHeaders?: CustomHeaders): Promise<unknown> {
+        return await this.monitorOps.getDashboardWifiSummary(siteId, customHeaders);
+    }
+
+    public async getDashboardSwitchSummary(siteId?: string, customHeaders?: CustomHeaders): Promise<unknown> {
+        return await this.monitorOps.getDashboardSwitchSummary(siteId, customHeaders);
+    }
+
+    public async getDashboardTrafficDistribution(siteId?: string, customHeaders?: CustomHeaders): Promise<unknown> {
+        return await this.monitorOps.getDashboardTrafficDistribution(siteId, customHeaders);
+    }
+
+    public async getDashboardTrafficActivities(siteId?: string, customHeaders?: CustomHeaders): Promise<unknown> {
+        return await this.monitorOps.getDashboardTrafficActivities(siteId, customHeaders);
+    }
+
+    public async getDashboardPoEUsage(siteId?: string, customHeaders?: CustomHeaders): Promise<unknown> {
+        return await this.monitorOps.getDashboardPoEUsage(siteId, customHeaders);
+    }
+
+    public async getDashboardTopCpuUsage(siteId?: string, customHeaders?: CustomHeaders): Promise<unknown[]> {
+        return await this.monitorOps.getDashboardTopCpuUsage(siteId, customHeaders);
+    }
+
+    public async getDashboardTopMemoryUsage(siteId?: string, customHeaders?: CustomHeaders): Promise<unknown[]> {
+        return await this.monitorOps.getDashboardTopMemoryUsage(siteId, customHeaders);
+    }
+
+    public async getDashboardMostActiveSwitches(siteId?: string, customHeaders?: CustomHeaders): Promise<unknown[]> {
+        return await this.monitorOps.getDashboardMostActiveSwitches(siteId, customHeaders);
+    }
+
+    public async getDashboardMostActiveEaps(siteId?: string, customHeaders?: CustomHeaders): Promise<unknown[]> {
+        return await this.monitorOps.getDashboardMostActiveEaps(siteId, customHeaders);
+    }
+
+    public async getDashboardOverview(siteId?: string, customHeaders?: CustomHeaders): Promise<unknown> {
+        return await this.monitorOps.getDashboardOverview(siteId, customHeaders);
+    }
+
+    public async getDashboardChannels(siteId?: string, customHeaders?: CustomHeaders): Promise<unknown> {
+        return await this.monitorOps.getDashboardChannels(siteId, customHeaders);
+    }
+
+    public async getDashboardIspLoad(siteId?: string, customHeaders?: CustomHeaders): Promise<unknown> {
+        return await this.monitorOps.getDashboardIspLoad(siteId, customHeaders);
+    }
+
+    // Insight operations
+    public async listSiteThreatManagement(
+        options: SiteThreatListOptions,
+        siteId?: string,
+        customHeaders?: CustomHeaders
+    ): Promise<PaginatedResult<unknown>> {
+        return await this.insightOps.listSiteThreatManagement(options, siteId, customHeaders);
+    }
+
+    public async getWids(siteId?: string, customHeaders?: CustomHeaders): Promise<unknown> {
+        return await this.insightOps.getWids(siteId, customHeaders);
+    }
+
+    public async getWidsBlacklist(siteId?: string, customHeaders?: CustomHeaders): Promise<unknown[]> {
+        return await this.insightOps.getWidsBlacklist(siteId, customHeaders);
+    }
+
+    public async getRogueAps(siteId?: string, customHeaders?: CustomHeaders): Promise<unknown[]> {
+        return await this.insightOps.getRogueAps(siteId, customHeaders);
+    }
+
+    public async getVpnTunnelStats(siteId?: string, customHeaders?: CustomHeaders): Promise<unknown> {
+        return await this.insightOps.getVpnTunnelStats(siteId, customHeaders);
+    }
+
+    public async getIpsecVpnStats(siteId?: string, customHeaders?: CustomHeaders): Promise<unknown> {
+        return await this.insightOps.getIpsecVpnStats(siteId, customHeaders);
+    }
+
+    public async listInsightClients(
+        page: number,
+        pageSize: number,
+        siteId?: string,
+        customHeaders?: CustomHeaders
+    ): Promise<PaginatedResult<unknown>> {
+        return await this.insightOps.listInsightClients(page, pageSize, siteId, customHeaders);
+    }
+
+    public async getRoutingTable(type: string, siteId?: string, customHeaders?: CustomHeaders): Promise<unknown[]> {
+        return await this.insightOps.getRoutingTable(type, siteId, customHeaders);
+    }
+
+    // Log operations
+    public async listSiteEvents(options: LogQueryOptions, siteId?: string, customHeaders?: CustomHeaders): Promise<PaginatedResult<unknown>> {
+        return await this.logOps.listSiteEvents(options, siteId, customHeaders);
+    }
+
+    public async listSiteAlerts(options: LogQueryOptions, siteId?: string, customHeaders?: CustomHeaders): Promise<PaginatedResult<unknown>> {
+        return await this.logOps.listSiteAlerts(options, siteId, customHeaders);
+    }
+
+    public async listSiteAuditLogs(options: LogQueryOptions, siteId?: string, customHeaders?: CustomHeaders): Promise<PaginatedResult<unknown>> {
+        return await this.logOps.listSiteAuditLogs(options, siteId, customHeaders);
+    }
+
+    public async listGlobalEvents(options: LogQueryOptions, customHeaders?: CustomHeaders): Promise<PaginatedResult<unknown>> {
+        return await this.logOps.listGlobalEvents(options, customHeaders);
+    }
+
+    public async listGlobalAlerts(options: LogQueryOptions, customHeaders?: CustomHeaders): Promise<PaginatedResult<unknown>> {
+        return await this.logOps.listGlobalAlerts(options, customHeaders);
+    }
+
+    public async listGlobalAuditLogs(options: LogQueryOptions, customHeaders?: CustomHeaders): Promise<PaginatedResult<unknown>> {
+        return await this.logOps.listGlobalAuditLogs(options, customHeaders);
     }
 
     // Generic API call

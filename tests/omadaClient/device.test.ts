@@ -224,4 +224,187 @@ describe('omadaClient/device', () => {
             );
         });
     });
+
+    describe('getSwitchDetail', () => {
+        it('should get switch detail by MAC', async () => {
+            const mockDetail = { mac: 'AA:BB:CC:DD:EE:FF', model: 'TL-SG3428', ports: 28 };
+            const mockResponse: OmadaApiResponse<unknown> = { errorCode: 0, result: mockDetail };
+            (mockRequest.get as ReturnType<typeof vi.fn>).mockResolvedValue(mockResponse);
+            (mockRequest.ensureSuccess as ReturnType<typeof vi.fn>).mockReturnValue(mockDetail);
+
+            const result = await deviceOps.getSwitchDetail('AA:BB:CC:DD:EE:FF', 'site-1');
+
+            expect(mockSite.resolveSiteId).toHaveBeenCalledWith('site-1');
+            expect(mockRequest.get).toHaveBeenCalledWith('/api/sites/site-1/switches/AA%3ABB%3ACC%3ADD%3AEE%3AFF', undefined, undefined);
+            expect(result).toEqual(mockDetail);
+        });
+
+        it('should throw when switchMac is empty', async () => {
+            await expect(deviceOps.getSwitchDetail('')).rejects.toThrow('A switchMac must be provided.');
+        });
+    });
+
+    describe('getGatewayDetail', () => {
+        it('should get gateway detail by MAC', async () => {
+            const mockDetail = { mac: 'AA:BB:CC:DD:EE:FF', model: 'ER7206' };
+            const mockResponse: OmadaApiResponse<unknown> = { errorCode: 0, result: mockDetail };
+            (mockRequest.get as ReturnType<typeof vi.fn>).mockResolvedValue(mockResponse);
+            (mockRequest.ensureSuccess as ReturnType<typeof vi.fn>).mockReturnValue(mockDetail);
+
+            const result = await deviceOps.getGatewayDetail('AA:BB:CC:DD:EE:FF', 'site-1');
+
+            expect(mockRequest.get).toHaveBeenCalledWith('/api/sites/site-1/gateways/AA%3ABB%3ACC%3ADD%3AEE%3AFF', undefined, undefined);
+            expect(result).toEqual(mockDetail);
+        });
+
+        it('should throw when gatewayMac is empty', async () => {
+            await expect(deviceOps.getGatewayDetail('')).rejects.toThrow('A gatewayMac must be provided.');
+        });
+    });
+
+    describe('getGatewayWanStatus', () => {
+        it('should get gateway WAN status', async () => {
+            const mockStatus = { wan1: { connected: true } };
+            const mockResponse: OmadaApiResponse<unknown> = { errorCode: 0, result: mockStatus };
+            (mockRequest.get as ReturnType<typeof vi.fn>).mockResolvedValue(mockResponse);
+            (mockRequest.ensureSuccess as ReturnType<typeof vi.fn>).mockReturnValue(mockStatus);
+
+            const result = await deviceOps.getGatewayWanStatus('AA:BB:CC:DD:EE:FF', 'site-1');
+
+            expect(mockRequest.get).toHaveBeenCalledWith('/api/sites/site-1/gateways/AA%3ABB%3ACC%3ADD%3AEE%3AFF/wan-status', undefined, undefined);
+            expect(result).toEqual(mockStatus);
+        });
+
+        it('should throw when gatewayMac is empty', async () => {
+            await expect(deviceOps.getGatewayWanStatus('')).rejects.toThrow('A gatewayMac must be provided.');
+        });
+    });
+
+    describe('getGatewayLanStatus', () => {
+        it('should get gateway LAN status', async () => {
+            const mockStatus = { lan1: { connected: true } };
+            const mockResponse: OmadaApiResponse<unknown> = { errorCode: 0, result: mockStatus };
+            (mockRequest.get as ReturnType<typeof vi.fn>).mockResolvedValue(mockResponse);
+            (mockRequest.ensureSuccess as ReturnType<typeof vi.fn>).mockReturnValue(mockStatus);
+
+            const result = await deviceOps.getGatewayLanStatus('AA:BB:CC:DD:EE:FF', 'site-1');
+
+            expect(mockRequest.get).toHaveBeenCalledWith('/api/sites/site-1/gateways/AA%3ABB%3ACC%3ADD%3AEE%3AFF/lan-status', undefined, undefined);
+            expect(result).toEqual(mockStatus);
+        });
+
+        it('should throw when gatewayMac is empty', async () => {
+            await expect(deviceOps.getGatewayLanStatus('')).rejects.toThrow('A gatewayMac must be provided.');
+        });
+    });
+
+    describe('getGatewayPorts', () => {
+        it('should get gateway ports', async () => {
+            const mockPorts = [{ id: 'port1', type: 'wan' }];
+            const mockResponse: OmadaApiResponse<unknown[]> = { errorCode: 0, result: mockPorts };
+            (mockRequest.get as ReturnType<typeof vi.fn>).mockResolvedValue(mockResponse);
+            (mockRequest.ensureSuccess as ReturnType<typeof vi.fn>).mockReturnValue(mockPorts);
+
+            const result = await deviceOps.getGatewayPorts('AA:BB:CC:DD:EE:FF', 'site-1');
+
+            expect(mockRequest.get).toHaveBeenCalledWith('/api/sites/site-1/gateways/AA%3ABB%3ACC%3ADD%3AEE%3AFF/ports', undefined, undefined);
+            expect(result).toEqual(mockPorts);
+        });
+
+        it('should return empty array when ensureSuccess returns null', async () => {
+            const mockResponse: OmadaApiResponse<unknown[]> = { errorCode: 0, result: [] };
+            (mockRequest.get as ReturnType<typeof vi.fn>).mockResolvedValue(mockResponse);
+            (mockRequest.ensureSuccess as ReturnType<typeof vi.fn>).mockReturnValue(null);
+
+            const result = await deviceOps.getGatewayPorts('AA:BB:CC:DD:EE:FF', 'site-1');
+            expect(result).toEqual([]);
+        });
+
+        it('should throw when gatewayMac is empty', async () => {
+            await expect(deviceOps.getGatewayPorts('')).rejects.toThrow('A gatewayMac must be provided.');
+        });
+    });
+
+    describe('getApDetail', () => {
+        it('should get AP detail by MAC', async () => {
+            const mockDetail = { mac: 'AA:BB:CC:DD:EE:FF', model: 'EAP670' };
+            const mockResponse: OmadaApiResponse<unknown> = { errorCode: 0, result: mockDetail };
+            (mockRequest.get as ReturnType<typeof vi.fn>).mockResolvedValue(mockResponse);
+            (mockRequest.ensureSuccess as ReturnType<typeof vi.fn>).mockReturnValue(mockDetail);
+
+            const result = await deviceOps.getApDetail('AA:BB:CC:DD:EE:FF', 'site-1');
+
+            expect(mockRequest.get).toHaveBeenCalledWith('/api/sites/site-1/aps/AA%3ABB%3ACC%3ADD%3AEE%3AFF', undefined, undefined);
+            expect(result).toEqual(mockDetail);
+        });
+
+        it('should throw when apMac is empty', async () => {
+            await expect(deviceOps.getApDetail('')).rejects.toThrow('An apMac must be provided.');
+        });
+    });
+
+    describe('getApRadios', () => {
+        it('should get AP radio info', async () => {
+            const mockRadios = [{ band: '5GHz', channel: 36 }];
+            const mockResponse: OmadaApiResponse<unknown[]> = { errorCode: 0, result: mockRadios };
+            (mockRequest.get as ReturnType<typeof vi.fn>).mockResolvedValue(mockResponse);
+            (mockRequest.ensureSuccess as ReturnType<typeof vi.fn>).mockReturnValue(mockRadios);
+
+            const result = await deviceOps.getApRadios('AA:BB:CC:DD:EE:FF', 'site-1');
+
+            expect(mockRequest.get).toHaveBeenCalledWith('/api/sites/site-1/aps/AA%3ABB%3ACC%3ADD%3AEE%3AFF/radios', undefined, undefined);
+            expect(result).toEqual(mockRadios);
+        });
+
+        it('should return empty array when ensureSuccess returns null', async () => {
+            const mockResponse: OmadaApiResponse<unknown[]> = { errorCode: 0, result: [] };
+            (mockRequest.get as ReturnType<typeof vi.fn>).mockResolvedValue(mockResponse);
+            (mockRequest.ensureSuccess as ReturnType<typeof vi.fn>).mockReturnValue(null);
+
+            const result = await deviceOps.getApRadios('AA:BB:CC:DD:EE:FF', 'site-1');
+            expect(result).toEqual([]);
+        });
+
+        it('should throw when apMac is empty', async () => {
+            await expect(deviceOps.getApRadios('')).rejects.toThrow('An apMac must be provided.');
+        });
+    });
+
+    describe('getStackPorts', () => {
+        it('should get stack ports', async () => {
+            const mockPorts = [{ portId: 'p1', speed: '1G' }];
+            (mockRequest.fetchPaginated as ReturnType<typeof vi.fn>).mockResolvedValue(mockPorts);
+
+            const result = await deviceOps.getStackPorts('stack-1', 'site-1');
+
+            expect(mockRequest.fetchPaginated).toHaveBeenCalledWith('/api/sites/site-1/stacks/stack-1/ports', {}, undefined);
+            expect(result).toEqual(mockPorts);
+        });
+
+        it('should throw when stackId is empty', async () => {
+            await expect(deviceOps.getStackPorts('')).rejects.toThrow('A stackId must be provided.');
+        });
+    });
+
+    describe('listPendingDevices', () => {
+        it('should list pending devices for a site', async () => {
+            const mockDevices = [{ mac: 'AA:BB:CC:DD:EE:FF', type: 'EAP' }];
+            (mockRequest.fetchPaginated as ReturnType<typeof vi.fn>).mockResolvedValue(mockDevices);
+
+            const result = await deviceOps.listPendingDevices('site-1');
+
+            expect(mockSite.resolveSiteId).toHaveBeenCalledWith('site-1');
+            expect(mockRequest.fetchPaginated).toHaveBeenCalledWith('/api/sites/site-1/grid/devices/pending', {}, undefined);
+            expect(result).toEqual(mockDevices);
+        });
+
+        it('should use default site when siteId is not provided', async () => {
+            (mockRequest.fetchPaginated as ReturnType<typeof vi.fn>).mockResolvedValue([]);
+
+            await deviceOps.listPendingDevices();
+
+            expect(mockSite.resolveSiteId).toHaveBeenCalledWith(undefined);
+            expect(mockRequest.fetchPaginated).toHaveBeenCalledWith('/api/sites/default-site/grid/devices/pending', {}, undefined);
+        });
+    });
 });

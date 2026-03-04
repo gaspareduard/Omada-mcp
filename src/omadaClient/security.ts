@@ -56,4 +56,24 @@ export class SecurityOperations {
             customHeaders
         );
     }
+
+    /**
+     * Get top threats from the global view threat management.
+     * OperationId: getTopThreatList
+     */
+    public async getTopThreats(customHeaders?: CustomHeaders): Promise<unknown[]> {
+        const path = this.buildPath('/security/threat-management/top');
+        const response = await this.request.get<{ errorCode: number; result: unknown[] }>(path, undefined, customHeaders);
+        return response.result ?? [];
+    }
+
+    /**
+     * Get threat severity summary from the global view.
+     * OperationId: getThreatSeverity
+     */
+    public async getThreatSeverity(customHeaders?: CustomHeaders): Promise<unknown> {
+        const path = this.buildPath('/security/threat-management/severity');
+        const response = await this.request.get<{ errorCode: number; result: unknown }>(path, undefined, customHeaders);
+        return response.result;
+    }
 }

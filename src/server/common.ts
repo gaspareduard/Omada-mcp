@@ -9,8 +9,14 @@ import { logger } from '../utils/logger.js';
 export const customHeadersSchema = z.record(z.string(), z.string()).optional();
 
 export const siteInputSchema = z.object({
-    siteId: z.string().min(1).optional(),
-    customHeaders: customHeadersSchema,
+    siteId: z
+        .string()
+        .min(1)
+        .optional()
+        .describe('Site ID to target. If omitted, uses the default site from OMADA_SITE_ID config. Use listSites to discover available site IDs.'),
+    customHeaders: customHeadersSchema.describe(
+        'Optional HTTP headers to include in the Omada API request (e.g. {"X-Custom-Header": "value"}). Rarely needed.'
+    ),
 });
 
 export const clientIdSchema = siteInputSchema.extend({
