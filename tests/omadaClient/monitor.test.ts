@@ -70,12 +70,12 @@ describe('MonitorOperations', () => {
         });
     });
 
-    describe('getDashboardTrafficDistribution', () => {
+    describe('getTrafficDistribution', () => {
         it('should fetch traffic distribution', async () => {
             const mockResponse: OmadaApiResponse<unknown> = { errorCode: 0, result: { categories: [] } };
             vi.mocked(mockRequest.get).mockResolvedValue(mockResponse);
 
-            const result = await monitorOps.getDashboardTrafficDistribution('site-123');
+            const result = await monitorOps.getTrafficDistribution('site-123', 1000000, 2000000);
 
             expect(result).toEqual({ categories: [] });
         });
@@ -170,25 +170,80 @@ describe('MonitorOperations', () => {
         });
     });
 
-    describe('getDashboardChannels', () => {
+    describe('getChannels', () => {
         it('should fetch channel information', async () => {
             const mockResponse: OmadaApiResponse<unknown> = { errorCode: 0, result: { channels: [] } };
             vi.mocked(mockRequest.get).mockResolvedValue(mockResponse);
 
-            const result = await monitorOps.getDashboardChannels('site-123');
+            const result = await monitorOps.getChannels('site-123');
 
             expect(result).toEqual({ channels: [] });
         });
     });
 
-    describe('getDashboardIspLoad', () => {
+    describe('getIspLoad', () => {
         it('should fetch ISP load information', async () => {
             const mockResponse: OmadaApiResponse<unknown> = { errorCode: 0, result: { load: 0.5 } };
             vi.mocked(mockRequest.get).mockResolvedValue(mockResponse);
 
-            const result = await monitorOps.getDashboardIspLoad('site-123');
+            const result = await monitorOps.getIspLoad('site-123', 1000000, 2000000);
 
             expect(result).toEqual({ load: 0.5 });
+        });
+    });
+
+    describe('getRetryAndDroppedRate', () => {
+        it('should fetch retry and dropped rate', async () => {
+            const mockResponse: OmadaApiResponse<unknown> = { errorCode: 0, result: { retryRate: 0.1, dropRate: 0.02 } };
+            vi.mocked(mockRequest.get).mockResolvedValue(mockResponse);
+
+            const result = await monitorOps.getRetryAndDroppedRate('site-123', 1000000, 2000000);
+
+            expect(result).toEqual({ retryRate: 0.1, dropRate: 0.02 });
+        });
+    });
+
+    describe('getInterference', () => {
+        it('should fetch interference data', async () => {
+            const mockResponse: OmadaApiResponse<unknown> = { errorCode: 0, result: [] };
+            vi.mocked(mockRequest.get).mockResolvedValue(mockResponse);
+
+            const result = await monitorOps.getInterference('site-123');
+
+            expect(result).toEqual([]);
+        });
+    });
+
+    describe('getGridDashboardTunnelStats', () => {
+        it('should fetch tunnel stats by type', async () => {
+            const mockResponse: OmadaApiResponse<unknown> = { errorCode: 0, result: { total: 2 } };
+            vi.mocked(mockRequest.get).mockResolvedValue(mockResponse);
+
+            const result = await monitorOps.getGridDashboardTunnelStats('site-123', 0);
+
+            expect(result).toEqual({ total: 2 });
+        });
+    });
+
+    describe('getGridDashboardIpsecTunnelStats', () => {
+        it('should fetch IPsec tunnel stats', async () => {
+            const mockResponse: OmadaApiResponse<unknown> = { errorCode: 0, result: { connected: 1 } };
+            vi.mocked(mockRequest.get).mockResolvedValue(mockResponse);
+
+            const result = await monitorOps.getGridDashboardIpsecTunnelStats('site-123');
+
+            expect(result).toEqual({ connected: 1 });
+        });
+    });
+
+    describe('getGridDashboardOpenVpnTunnelStats', () => {
+        it('should fetch OpenVPN tunnel stats by type', async () => {
+            const mockResponse: OmadaApiResponse<unknown> = { errorCode: 0, result: { connected: 3 } };
+            vi.mocked(mockRequest.get).mockResolvedValue(mockResponse);
+
+            const result = await monitorOps.getGridDashboardOpenVpnTunnelStats('site-123', 0);
+
+            expect(result).toEqual({ connected: 3 });
         });
     });
 });

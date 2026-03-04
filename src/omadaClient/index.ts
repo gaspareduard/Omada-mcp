@@ -371,8 +371,12 @@ export class OmadaClient {
         return await this.monitorOps.getDashboardSwitchSummary(siteId, customHeaders);
     }
 
-    public async getDashboardTrafficDistribution(siteId?: string, customHeaders?: CustomHeaders): Promise<unknown> {
-        return await this.monitorOps.getDashboardTrafficDistribution(siteId, customHeaders);
+    public async getTrafficDistribution(siteId?: string, start?: number, end?: number, customHeaders?: CustomHeaders): Promise<unknown> {
+        return await this.monitorOps.getTrafficDistribution(siteId, start, end, customHeaders);
+    }
+
+    public async getRetryAndDroppedRate(siteId?: string, start?: number, end?: number, customHeaders?: CustomHeaders): Promise<unknown> {
+        return await this.monitorOps.getRetryAndDroppedRate(siteId, start, end, customHeaders);
     }
 
     public async getDashboardTrafficActivities(siteId?: string, customHeaders?: CustomHeaders): Promise<unknown> {
@@ -403,12 +407,28 @@ export class OmadaClient {
         return await this.monitorOps.getDashboardOverview(siteId, customHeaders);
     }
 
-    public async getDashboardChannels(siteId?: string, customHeaders?: CustomHeaders): Promise<unknown> {
-        return await this.monitorOps.getDashboardChannels(siteId, customHeaders);
+    public async getChannels(siteId?: string, customHeaders?: CustomHeaders): Promise<unknown> {
+        return await this.monitorOps.getChannels(siteId, customHeaders);
     }
 
-    public async getDashboardIspLoad(siteId?: string, customHeaders?: CustomHeaders): Promise<unknown> {
-        return await this.monitorOps.getDashboardIspLoad(siteId, customHeaders);
+    public async getIspLoad(siteId?: string, start?: number, end?: number, customHeaders?: CustomHeaders): Promise<unknown> {
+        return await this.monitorOps.getIspLoad(siteId, start, end, customHeaders);
+    }
+
+    public async getInterference(siteId?: string, customHeaders?: CustomHeaders): Promise<unknown> {
+        return await this.monitorOps.getInterference(siteId, customHeaders);
+    }
+
+    public async getGridDashboardTunnelStats(siteId?: string, type?: number, customHeaders?: CustomHeaders): Promise<unknown> {
+        return await this.monitorOps.getGridDashboardTunnelStats(siteId, type, customHeaders);
+    }
+
+    public async getGridDashboardIpsecTunnelStats(siteId?: string, customHeaders?: CustomHeaders): Promise<unknown> {
+        return await this.monitorOps.getGridDashboardIpsecTunnelStats(siteId, customHeaders);
+    }
+
+    public async getGridDashboardOpenVpnTunnelStats(siteId?: string, type?: number, customHeaders?: CustomHeaders): Promise<unknown> {
+        return await this.monitorOps.getGridDashboardOpenVpnTunnelStats(siteId, type, customHeaders);
     }
 
     // Insight operations

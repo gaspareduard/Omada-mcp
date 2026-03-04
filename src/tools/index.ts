@@ -5,6 +5,7 @@ import { registerDisableClientRateLimitTool } from './disableClientRateLimit.js'
 import { registerGetApDetailTool } from './getApDetail.js';
 import { registerGetApplicationControlStatusTool } from './getApplicationControlStatus.js';
 import { registerGetApRadiosTool } from './getApRadios.js';
+import { registerGetChannelsTool } from './getChannels.js';
 import { registerGetClientTool } from './getClient.js';
 import { registerGetDashboardMostActiveEapsTool } from './getDashboardMostActiveEaps.js';
 import { registerGetDashboardMostActiveSwitchesTool } from './getDashboardMostActiveSwitches.js';
@@ -21,11 +22,17 @@ import { registerGetGatewayDetailTool } from './getGatewayDetail.js';
 import { registerGetGatewayLanStatusTool } from './getGatewayLanStatus.js';
 import { registerGetGatewayPortsTool } from './getGatewayPorts.js';
 import { registerGetGatewayWanStatusTool } from './getGatewayWanStatus.js';
+import { registerGetGridDashboardIpsecTunnelStatsTool } from './getGridDashboardIpsecTunnelStats.js';
+import { registerGetGridDashboardOpenVpnTunnelStatsTool } from './getGridDashboardOpenVpnTunnelStats.js';
+import { registerGetGridDashboardTunnelStatsTool } from './getGridDashboardTunnelStats.js';
+import { registerGetInterferenceTool } from './getInterference.js';
 import { registerGetInternetInfoTool } from './getInternetInfo.js';
+import { registerGetIspLoadTool } from './getIspLoad.js';
 import { registerGetLanNetworkListTool } from './getLanNetworkList.js';
 import { registerGetLanProfileListTool } from './getLanProfileList.js';
 import { registerGetPortForwardingStatusTool } from './getPortForwardingStatus.js';
 import { registerGetRateLimitProfilesTool } from './getRateLimitProfiles.js';
+import { registerGetRetryAndDroppedRateTool } from './getRetryAndDroppedRate.js';
 import { registerGetRogueApsTool } from './getRogueAps.js';
 import { registerGetSshSettingTool } from './getSshSetting.js';
 import { registerGetSsidDetailTool } from './getSsidDetail.js';
@@ -35,6 +42,7 @@ import { registerGetSwitchDetailTool } from './getSwitchDetail.js';
 import { registerGetSwitchStackDetailTool } from './getSwitchStackDetail.js';
 import { registerGetThreatListTool } from './getThreatList.js';
 import { registerGetTopThreatsTool } from './getTopThreats.js';
+import { registerGetTrafficDistributionTool } from './getTrafficDistribution.js';
 import { registerGetVpnSettingsTool } from './getVpnSettings.js';
 import { registerGetVpnTunnelStatsTool } from './getVpnTunnelStats.js';
 import { registerGetWanLanStatusTool } from './getWanLanStatus.js';
@@ -138,6 +146,14 @@ export function registerAllTools(server: McpServer, client: OmadaClient): void {
     registerGetDashboardMostActiveSwitchesTool(server, client);
     registerGetDashboardMostActiveEapsTool(server, client);
     registerGetDashboardOverviewTool(server, client);
+    registerGetTrafficDistributionTool(server, client);
+    registerGetRetryAndDroppedRateTool(server, client);
+    registerGetIspLoadTool(server, client);
+    registerGetChannelsTool(server, client);
+    registerGetInterferenceTool(server, client);
+    registerGetGridDashboardTunnelStatsTool(server, client);
+    registerGetGridDashboardIpsecTunnelStatsTool(server, client);
+    registerGetGridDashboardOpenVpnTunnelStatsTool(server, client);
 
     // Insight operations
     registerGetWidsTool(server, client);

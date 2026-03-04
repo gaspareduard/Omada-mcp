@@ -261,6 +261,14 @@ In client-credentials mode the server already treats `Mcp-Session-Id` as optiona
 | `getDashboardMostActiveSwitches` | Gets most active switches from the site dashboard.              |
 | `getDashboardMostActiveEaps`     | Gets most active access points from the site dashboard.         |
 | `getDashboardOverview`           | Gets overview data from the site dashboard.                     |
+| `getTrafficDistribution`         | Gets traffic distribution by protocol/app type over a time range. Requires `start` and `end` timestamps (seconds). |
+| `getRetryAndDroppedRate`         | Gets wireless retry rate and dropped packet rate over a time range. Requires `start` and `end` timestamps (seconds). |
+| `getIspLoad`                     | Gets per-WAN ISP link load over a time range. Requires `start` and `end` timestamps (seconds). |
+| `getChannels`                    | Gets channel distribution and utilization across all APs.       |
+| `getInterference`                | Gets top RF interference sources detected by APs.               |
+| `getGridDashboardTunnelStats`    | Gets VPN tunnel statistics by type. Requires `type` parameter.  |
+| `getGridDashboardIpsecTunnelStats` | Gets IPsec tunnel statistics.                                 |
+| `getGridDashboardOpenVpnTunnelStats` | Gets OpenVPN tunnel statistics by type. Requires `type` parameter. |
 
 ### Insight
 

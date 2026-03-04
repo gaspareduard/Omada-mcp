@@ -40,10 +40,21 @@ export class MonitorOperations {
      * Get traffic distribution statistics for a site dashboard.
      * OperationId: getTrafficDistribution
      */
-    public async getDashboardTrafficDistribution(siteId?: string, customHeaders?: CustomHeaders): Promise<unknown> {
+    public async getTrafficDistribution(siteId?: string, start?: number, end?: number, customHeaders?: CustomHeaders): Promise<unknown> {
         const resolvedSiteId = this.site.resolveSiteId(siteId);
         const path = this.buildPath(`/sites/${encodeURIComponent(resolvedSiteId)}/dashboard/traffic-distribution`);
-        const response = await this.request.get<OmadaApiResponse<unknown>>(path, undefined, customHeaders);
+        const response = await this.request.get<OmadaApiResponse<unknown>>(path, { start, end }, customHeaders);
+        return this.request.ensureSuccess(response);
+    }
+
+    /**
+     * Get wireless retry rate and dropped packet rate over a time range.
+     * OperationId: getRetryAndDroppedRate
+     */
+    public async getRetryAndDroppedRate(siteId?: string, start?: number, end?: number, customHeaders?: CustomHeaders): Promise<unknown> {
+        const resolvedSiteId = this.site.resolveSiteId(siteId);
+        const path = this.buildPath(`/sites/${encodeURIComponent(resolvedSiteId)}/dashboard/retry-dropped-rate`);
+        const response = await this.request.get<OmadaApiResponse<unknown>>(path, { start, end }, customHeaders);
         return this.request.ensureSuccess(response);
     }
 
@@ -125,10 +136,10 @@ export class MonitorOperations {
     }
 
     /**
-     * Get channel usage statistics for a site dashboard.
+     * Get channel distribution and utilization across all APs.
      * OperationId: getChannels
      */
-    public async getDashboardChannels(siteId?: string, customHeaders?: CustomHeaders): Promise<unknown> {
+    public async getChannels(siteId?: string, customHeaders?: CustomHeaders): Promise<unknown> {
         const resolvedSiteId = this.site.resolveSiteId(siteId);
         const path = this.buildPath(`/sites/${encodeURIComponent(resolvedSiteId)}/dashboard/channels`);
         const response = await this.request.get<OmadaApiResponse<unknown>>(path, undefined, customHeaders);
@@ -136,13 +147,57 @@ export class MonitorOperations {
     }
 
     /**
-     * Get ISP load balance statistics for a site dashboard.
+     * Get per-WAN ISP link load over a time range.
      * OperationId: getIspLoad
      */
-    public async getDashboardIspLoad(siteId?: string, customHeaders?: CustomHeaders): Promise<unknown> {
+    public async getIspLoad(siteId?: string, start?: number, end?: number, customHeaders?: CustomHeaders): Promise<unknown> {
         const resolvedSiteId = this.site.resolveSiteId(siteId);
         const path = this.buildPath(`/sites/${encodeURIComponent(resolvedSiteId)}/dashboard/isp-load`);
+        const response = await this.request.get<OmadaApiResponse<unknown>>(path, { start, end }, customHeaders);
+        return this.request.ensureSuccess(response);
+    }
+
+    /**
+     * Get top RF interference sources detected by APs.
+     * OperationId: getInterference
+     */
+    public async getInterference(siteId?: string, customHeaders?: CustomHeaders): Promise<unknown> {
+        const resolvedSiteId = this.site.resolveSiteId(siteId);
+        const path = this.buildPath(`/sites/${encodeURIComponent(resolvedSiteId)}/dashboard/top-interference`);
         const response = await this.request.get<OmadaApiResponse<unknown>>(path, undefined, customHeaders);
+        return this.request.ensureSuccess(response);
+    }
+
+    /**
+     * Get VPN tunnel statistics by type.
+     * OperationId: getGridDashboardTunnelStats
+     */
+    public async getGridDashboardTunnelStats(siteId?: string, type?: number, customHeaders?: CustomHeaders): Promise<unknown> {
+        const resolvedSiteId = this.site.resolveSiteId(siteId);
+        const path = this.buildPath(`/sites/${encodeURIComponent(resolvedSiteId)}/dashboard/vpn-tunnel-stats`);
+        const response = await this.request.get<OmadaApiResponse<unknown>>(path, { type }, customHeaders);
+        return this.request.ensureSuccess(response);
+    }
+
+    /**
+     * Get IPsec tunnel statistics.
+     * OperationId: getGridDashboardIpsecTunnelStats
+     */
+    public async getGridDashboardIpsecTunnelStats(siteId?: string, customHeaders?: CustomHeaders): Promise<unknown> {
+        const resolvedSiteId = this.site.resolveSiteId(siteId);
+        const path = this.buildPath(`/sites/${encodeURIComponent(resolvedSiteId)}/dashboard/lpset-tunnel-stats`);
+        const response = await this.request.get<OmadaApiResponse<unknown>>(path, undefined, customHeaders);
+        return this.request.ensureSuccess(response);
+    }
+
+    /**
+     * Get OpenVPN tunnel statistics by type.
+     * OperationId: getGridDashboardOpenVpnTunnelStats
+     */
+    public async getGridDashboardOpenVpnTunnelStats(siteId?: string, type?: number, customHeaders?: CustomHeaders): Promise<unknown> {
+        const resolvedSiteId = this.site.resolveSiteId(siteId);
+        const path = this.buildPath(`/sites/${encodeURIComponent(resolvedSiteId)}/dashboard/open-vpn-tunnel-stats`);
+        const response = await this.request.get<OmadaApiResponse<unknown>>(path, { type }, customHeaders);
         return this.request.ensureSuccess(response);
     }
 }
