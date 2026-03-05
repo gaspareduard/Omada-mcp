@@ -112,7 +112,7 @@ describe('tools/index', () => {
             expect(mockServer.registerTool).toHaveBeenCalledWith('listGlobalAlerts', expect.any(Object), expect.any(Function));
 
             // Verify total number of tools registered
-            expect(mockServer.registerTool).toHaveBeenCalledTimes(148);
+            expect(mockServer.registerTool).toHaveBeenCalledTimes(159);
         });
     });
 });

@@ -617,6 +617,63 @@ export class OmadaClient {
         return await this.networkOps.getEapDot1xSetting(siteId, customHeaders);
     }
 
+    // Firewall / ACL / IPS / URL-filter tools (issue #37)
+    public async getAclConfigTypeSetting(siteId?: string, customHeaders?: CustomHeaders): Promise<unknown> {
+        return await this.networkOps.getAclConfigTypeSetting(siteId, customHeaders);
+    }
+
+    public async getOsgCustomAclList(page: number, pageSize: number, siteId?: string, customHeaders?: CustomHeaders): Promise<unknown> {
+        return await this.networkOps.getOsgCustomAclList(page, pageSize, siteId, customHeaders);
+    }
+
+    public async getOswAclList(page: number, pageSize: number, siteId?: string, customHeaders?: CustomHeaders): Promise<unknown> {
+        return await this.networkOps.getOswAclList(page, pageSize, siteId, customHeaders);
+    }
+
+    public async getIpsConfig(siteId?: string, customHeaders?: CustomHeaders): Promise<unknown> {
+        return await this.networkOps.getIpsConfig(siteId, customHeaders);
+    }
+
+    public async getGridSignature(page: number, pageSize: number, siteId?: string, customHeaders?: CustomHeaders): Promise<unknown> {
+        return await this.networkOps.getGridSignature(page, pageSize, siteId, customHeaders);
+    }
+
+    public async getGridAllowList(
+        page: number,
+        pageSize: number,
+        searchKey?: string,
+        siteId?: string,
+        customHeaders?: CustomHeaders
+    ): Promise<unknown> {
+        return await this.networkOps.getGridAllowList(page, pageSize, searchKey, siteId, customHeaders);
+    }
+
+    public async getGridBlockList(
+        page: number,
+        pageSize: number,
+        searchKey?: string,
+        siteId?: string,
+        customHeaders?: CustomHeaders
+    ): Promise<unknown> {
+        return await this.networkOps.getGridBlockList(page, pageSize, searchKey, siteId, customHeaders);
+    }
+
+    public async getAttackDefenseSetting(siteId?: string, customHeaders?: CustomHeaders): Promise<unknown> {
+        return await this.networkOps.getAttackDefenseSetting(siteId, customHeaders);
+    }
+
+    public async getUrlFilterGeneral(siteId?: string, customHeaders?: CustomHeaders): Promise<unknown> {
+        return await this.networkOps.getUrlFilterGeneral(siteId, customHeaders);
+    }
+
+    public async getGridGatewayRule(page: number, pageSize: number, siteId?: string, customHeaders?: CustomHeaders): Promise<unknown> {
+        return await this.networkOps.getGridGatewayRule(page, pageSize, siteId, customHeaders);
+    }
+
+    public async getGridEapRule(page: number, pageSize: number, siteId?: string, customHeaders?: CustomHeaders): Promise<unknown> {
+        return await this.networkOps.getGridEapRule(page, pageSize, siteId, customHeaders);
+    }
+
     // Monitor / dashboard operations
     public async getDashboardWifiSummary(siteId?: string, customHeaders?: CustomHeaders): Promise<unknown> {
         return await this.monitorOps.getDashboardWifiSummary(siteId, customHeaders);

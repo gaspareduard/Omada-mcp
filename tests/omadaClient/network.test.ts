@@ -1039,4 +1039,142 @@ describe('NetworkOperations', () => {
             expect(mockRequest.get).toHaveBeenCalledWith('/openapi/v1/test-omadac/sites/site-123/dot1x/eap', undefined, undefined);
         });
     });
+
+    describe('getAclConfigTypeSetting', () => {
+        it('should get ACL config type setting', async () => {
+            const mockResponse: OmadaApiResponse<unknown> = { errorCode: 0, result: {} };
+            vi.mocked(mockRequest.get).mockResolvedValue(mockResponse);
+            await networkOps.getAclConfigTypeSetting('site-123');
+            expect(mockRequest.get).toHaveBeenCalledWith('/openapi/v1/test-omadac/sites/site-123/acls/osg-config-mode', undefined, undefined);
+        });
+    });
+
+    describe('getOsgCustomAclList', () => {
+        it('should get custom gateway ACL list with pagination', async () => {
+            const mockResponse: OmadaApiResponse<unknown> = { errorCode: 0, result: { data: [] } };
+            vi.mocked(mockRequest.get).mockResolvedValue(mockResponse);
+            await networkOps.getOsgCustomAclList(1, 10, 'site-123');
+            expect(mockRequest.get).toHaveBeenCalledWith(
+                '/openapi/v1/test-omadac/sites/site-123/acls/osg-custom-acls',
+                { page: 1, pageSize: 10 },
+                undefined
+            );
+        });
+    });
+
+    describe('getOswAclList', () => {
+        it('should get switch ACL list with pagination', async () => {
+            const mockResponse: OmadaApiResponse<unknown> = { errorCode: 0, result: { data: [] } };
+            vi.mocked(mockRequest.get).mockResolvedValue(mockResponse);
+            await networkOps.getOswAclList(1, 10, 'site-123');
+            expect(mockRequest.get).toHaveBeenCalledWith(
+                '/openapi/v1/test-omadac/sites/site-123/acls/osw-acls',
+                { page: 1, pageSize: 10 },
+                undefined
+            );
+        });
+    });
+
+    describe('getIpsConfig', () => {
+        it('should get IPS global config', async () => {
+            const mockResponse: OmadaApiResponse<unknown> = { errorCode: 0, result: {} };
+            vi.mocked(mockRequest.get).mockResolvedValue(mockResponse);
+            await networkOps.getIpsConfig('site-123');
+            expect(mockRequest.get).toHaveBeenCalledWith('/openapi/v1/test-omadac/sites/site-123/network-security/ips', undefined, undefined);
+        });
+    });
+
+    describe('getGridSignature', () => {
+        it('should get IPS signature list with pagination', async () => {
+            const mockResponse: OmadaApiResponse<unknown> = { errorCode: 0, result: { data: [] } };
+            vi.mocked(mockRequest.get).mockResolvedValue(mockResponse);
+            await networkOps.getGridSignature(1, 10, 'site-123');
+            expect(mockRequest.get).toHaveBeenCalledWith(
+                '/openapi/v1/test-omadac/sites/site-123/network-security/ips/signature',
+                { page: 1, pageSize: 10 },
+                undefined
+            );
+        });
+    });
+
+    describe('getGridAllowList', () => {
+        it('should get IPS allow list with pagination', async () => {
+            const mockResponse: OmadaApiResponse<unknown> = { errorCode: 0, result: { data: [] } };
+            vi.mocked(mockRequest.get).mockResolvedValue(mockResponse);
+            await networkOps.getGridAllowList(1, 10, undefined, 'site-123');
+            expect(mockRequest.get).toHaveBeenCalledWith(
+                '/openapi/v1/test-omadac/sites/site-123/network-security/ips/grid/allow-list',
+                { page: 1, pageSize: 10 },
+                undefined
+            );
+        });
+
+        it('should include searchKey when provided', async () => {
+            const mockResponse: OmadaApiResponse<unknown> = { errorCode: 0, result: {} };
+            vi.mocked(mockRequest.get).mockResolvedValue(mockResponse);
+            await networkOps.getGridAllowList(1, 10, 'safe.com', 'site-123');
+            expect(mockRequest.get).toHaveBeenCalledWith(
+                '/openapi/v1/test-omadac/sites/site-123/network-security/ips/grid/allow-list',
+                { page: 1, pageSize: 10, searchKey: 'safe.com' },
+                undefined
+            );
+        });
+    });
+
+    describe('getGridBlockList', () => {
+        it('should get IPS block list with pagination', async () => {
+            const mockResponse: OmadaApiResponse<unknown> = { errorCode: 0, result: { data: [] } };
+            vi.mocked(mockRequest.get).mockResolvedValue(mockResponse);
+            await networkOps.getGridBlockList(1, 10, undefined, 'site-123');
+            expect(mockRequest.get).toHaveBeenCalledWith(
+                '/openapi/v1/test-omadac/sites/site-123/network-security/ips/grid/block-list',
+                { page: 1, pageSize: 10 },
+                undefined
+            );
+        });
+    });
+
+    describe('getAttackDefenseSetting', () => {
+        it('should get attack defense config', async () => {
+            const mockResponse: OmadaApiResponse<unknown> = { errorCode: 0, result: {} };
+            vi.mocked(mockRequest.get).mockResolvedValue(mockResponse);
+            await networkOps.getAttackDefenseSetting('site-123');
+            expect(mockRequest.get).toHaveBeenCalledWith('/openapi/v1/test-omadac/sites/site-123/attack-defense', undefined, undefined);
+        });
+    });
+
+    describe('getUrlFilterGeneral', () => {
+        it('should get URL filter global setting', async () => {
+            const mockResponse: OmadaApiResponse<unknown> = { errorCode: 0, result: {} };
+            vi.mocked(mockRequest.get).mockResolvedValue(mockResponse);
+            await networkOps.getUrlFilterGeneral('site-123');
+            expect(mockRequest.get).toHaveBeenCalledWith('/openapi/v1/test-omadac/sites/site-123/url-filters/globalUrlFilter', undefined, undefined);
+        });
+    });
+
+    describe('getGridGatewayRule', () => {
+        it('should get URL filter gateway rules with pagination', async () => {
+            const mockResponse: OmadaApiResponse<unknown> = { errorCode: 0, result: { data: [] } };
+            vi.mocked(mockRequest.get).mockResolvedValue(mockResponse);
+            await networkOps.getGridGatewayRule(1, 10, 'site-123');
+            expect(mockRequest.get).toHaveBeenCalledWith(
+                '/openapi/v1/test-omadac/sites/site-123/url-filters/gateway',
+                { page: 1, pageSize: 10 },
+                undefined
+            );
+        });
+    });
+
+    describe('getGridEapRule', () => {
+        it('should get URL filter AP rules with pagination', async () => {
+            const mockResponse: OmadaApiResponse<unknown> = { errorCode: 0, result: { data: [] } };
+            vi.mocked(mockRequest.get).mockResolvedValue(mockResponse);
+            await networkOps.getGridEapRule(1, 10, 'site-123');
+            expect(mockRequest.get).toHaveBeenCalledWith(
+                '/openapi/v1/test-omadac/sites/site-123/url-filters/eap',
+                { page: 1, pageSize: 10 },
+                undefined
+            );
+        });
+    });
 });
