@@ -18,6 +18,8 @@ import { registerGetCableTestFullResultsTool } from './getCableTestFullResults.j
 import { registerGetCableTestLogsTool } from './getCableTestLogs.js';
 import { registerGetChannelsTool } from './getChannels.js';
 import { registerGetClientTool } from './getClient.js';
+import { registerGetClientDetailTool } from './getClientDetail.js';
+import { registerGetClientsDistributionTool } from './getClientsDistribution.js';
 import { registerGetDashboardMostActiveEapsTool } from './getDashboardMostActiveEaps.js';
 import { registerGetDashboardMostActiveSwitchesTool } from './getDashboardMostActiveSwitches.js';
 import { registerGetDashboardOverviewTool } from './getDashboardOverview.js';
@@ -41,10 +43,12 @@ import { registerGetGatewayPortsTool } from './getGatewayPorts.js';
 import { registerGetGatewayWanStatusTool } from './getGatewayWanStatus.js';
 import { registerGetGridAutoCheckUpgradeTool } from './getGridAutoCheckUpgrade.js';
 import { registerGetGridBandwidthCtrlRuleTool } from './getGridBandwidthCtrlRule.js';
+import { registerGetGridClientHistoryTool } from './getGridClientHistory.js';
 import { registerGetGridDashboardIpsecTunnelStatsTool } from './getGridDashboardIpsecTunnelStats.js';
 import { registerGetGridDashboardOpenVpnTunnelStatsTool } from './getGridDashboardOpenVpnTunnelStats.js';
 import { registerGetGridDashboardTunnelStatsTool } from './getGridDashboardTunnelStats.js';
 import { registerGetGridIpMacBindingTool } from './getGridIpMacBinding.js';
+import { registerGetGridKnownClientsTool } from './getGridKnownClients.js';
 import { registerGetGridOtoNatsTool } from './getGridOtoNats.js';
 import { registerGetGridPolicyRoutingTool } from './getGridPolicyRouting.js';
 import { registerGetGridSessionLimitRuleTool } from './getGridSessionLimitRule.js';
@@ -66,6 +70,7 @@ import { registerGetLanProfileListTool } from './getLanProfileList.js';
 import { registerGetLldpSettingTool } from './getLldpSetting.js';
 import { registerGetMeshStatisticsTool } from './getMeshStatistics.js';
 import { registerGetOswStackLagListTool } from './getOswStackLagList.js';
+import { registerGetPastClientNumTool } from './getPastClientNum.js';
 import { registerGetPortForwardingStatusTool } from './getPortForwardingStatus.js';
 import { registerGetRadiosConfigTool } from './getRadiosConfig.js';
 import { registerGetRateLimitProfilesTool } from './getRateLimitProfiles.js';
@@ -176,6 +181,11 @@ export function registerAllTools(server: McpServer, client: OmadaClient): void {
     registerListMostActiveClientsTool(server, client);
     registerListClientsActivityTool(server, client);
     registerListClientsPastConnectionsTool(server, client);
+    registerGetClientDetailTool(server, client);
+    registerGetGridKnownClientsTool(server, client);
+    registerGetGridClientHistoryTool(server, client);
+    registerGetClientsDistributionTool(server, client);
+    registerGetPastClientNumTool(server, client);
 
     // Rate limit operations
     registerGetRateLimitProfilesTool(server, client);

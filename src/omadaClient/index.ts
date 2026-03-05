@@ -176,6 +176,39 @@ export class OmadaClient {
         return await this.clientOps.disableClientRateLimit(clientMac, siteId, customHeaders);
     }
 
+    public async getClientDetail(clientMac: string, siteId?: string, customHeaders?: CustomHeaders): Promise<unknown> {
+        return await this.clientOps.getClientDetail(clientMac, siteId, customHeaders);
+    }
+
+    public async getGridKnownClients(
+        page: number,
+        pageSize: number,
+        options?: { sortLastSeen?: string; timeStart?: string; timeEnd?: string; guest?: string; searchKey?: string },
+        siteId?: string,
+        customHeaders?: CustomHeaders
+    ): Promise<unknown> {
+        return await this.clientOps.getGridKnownClients(page, pageSize, options, siteId, customHeaders);
+    }
+
+    public async getGridClientHistory(
+        clientMac: string,
+        page: number,
+        pageSize: number,
+        searchKey?: string,
+        siteId?: string,
+        customHeaders?: CustomHeaders
+    ): Promise<unknown> {
+        return await this.clientOps.getGridClientHistory(clientMac, page, pageSize, searchKey, siteId, customHeaders);
+    }
+
+    public async getClientsDistribution(siteId?: string, customHeaders?: CustomHeaders): Promise<unknown> {
+        return await this.clientOps.getClientsDistribution(siteId, customHeaders);
+    }
+
+    public async getPastClientNum(start: number, end: number, siteId?: string, customHeaders?: CustomHeaders): Promise<unknown> {
+        return await this.clientOps.getPastClientNum(start, end, siteId, customHeaders);
+    }
+
     // Security operations
     public async getThreatList(options: GetThreatListOptions, customHeaders?: CustomHeaders): Promise<PaginatedResult<ThreatInfo>> {
         return await this.securityOps.getThreatList(options, customHeaders);
