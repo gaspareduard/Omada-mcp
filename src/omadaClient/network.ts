@@ -688,4 +688,180 @@ export class NetworkOperations {
         const response = await this.request.get<OmadaApiResponse<unknown>>(path, { page, pageSize }, customHeaders);
         return this.request.ensureSuccess(response);
     }
+
+    /**
+     * Get flat SSID list by device type.
+     * OperationId: getSsidsBySite
+     */
+    public async getSsidsBySite(type: number, siteId?: string, customHeaders?: CustomHeaders): Promise<unknown> {
+        const resolvedSiteId = this.site.resolveSiteId(siteId);
+        const path = this.buildPath(`/sites/${encodeURIComponent(resolvedSiteId)}/wireless-network/ssids`);
+        const response = await this.request.get<OmadaApiResponse<unknown>>(path, { type }, customHeaders);
+        return this.request.ensureSuccess(response);
+    }
+
+    /**
+     * Get RF planning configuration.
+     * OperationId: getRadioFrequencyPlanningConfig
+     */
+    public async getRadioFrequencyPlanningConfig(siteId?: string, customHeaders?: CustomHeaders): Promise<unknown> {
+        const resolvedSiteId = this.site.resolveSiteId(siteId);
+        const path = this.buildPath(`/sites/${encodeURIComponent(resolvedSiteId)}/rfPlanning`);
+        const response = await this.request.get<OmadaApiResponse<unknown>>(path, undefined, customHeaders);
+        return this.request.ensureSuccess(response);
+    }
+
+    /**
+     * Get RF planning result.
+     * OperationId: getRadioFrequencyPlanningResult
+     */
+    public async getRadioFrequencyPlanningResult(siteId?: string, customHeaders?: CustomHeaders): Promise<unknown> {
+        const resolvedSiteId = this.site.resolveSiteId(siteId);
+        const path = this.buildPath(`/sites/${encodeURIComponent(resolvedSiteId)}/rfPlanning/result`);
+        const response = await this.request.get<OmadaApiResponse<unknown>>(path, undefined, customHeaders);
+        return this.request.ensureSuccess(response);
+    }
+
+    /**
+     * Get band steering configuration.
+     * OperationId: getBandSteeringSetting
+     */
+    public async getBandSteeringSetting(siteId?: string, customHeaders?: CustomHeaders): Promise<unknown> {
+        const resolvedSiteId = this.site.resolveSiteId(siteId);
+        const path = this.buildPath(`/sites/${encodeURIComponent(resolvedSiteId)}/band-steering`);
+        const response = await this.request.get<OmadaApiResponse<unknown>>(path, undefined, customHeaders);
+        return this.request.ensureSuccess(response);
+    }
+
+    /**
+     * Get beacon control setting.
+     * OperationId: getBeaconControlSetting
+     */
+    public async getBeaconControlSetting(siteId?: string, customHeaders?: CustomHeaders): Promise<unknown> {
+        const resolvedSiteId = this.site.resolveSiteId(siteId);
+        const path = this.buildPath(`/sites/${encodeURIComponent(resolvedSiteId)}/beacon-control`);
+        const response = await this.request.get<OmadaApiResponse<unknown>>(path, undefined, customHeaders);
+        return this.request.ensureSuccess(response);
+    }
+
+    /**
+     * Get channel limit setting.
+     * OperationId: getChannelLimitSetting
+     */
+    public async getChannelLimitSetting(siteId?: string, customHeaders?: CustomHeaders): Promise<unknown> {
+        const resolvedSiteId = this.site.resolveSiteId(siteId);
+        const path = this.buildPath(`/sites/${encodeURIComponent(resolvedSiteId)}/channel-limit`);
+        const response = await this.request.get<OmadaApiResponse<unknown>>(path, undefined, customHeaders);
+        return this.request.ensureSuccess(response);
+    }
+
+    /**
+     * Get mesh configuration.
+     * OperationId: getMeshSetting
+     */
+    public async getMeshSetting(siteId?: string, customHeaders?: CustomHeaders): Promise<unknown> {
+        const resolvedSiteId = this.site.resolveSiteId(siteId);
+        const path = this.buildPath(`/sites/${encodeURIComponent(resolvedSiteId)}/mesh`);
+        const response = await this.request.get<OmadaApiResponse<unknown>>(path, undefined, customHeaders);
+        return this.request.ensureSuccess(response);
+    }
+
+    /**
+     * Get client roaming configuration.
+     * OperationId: getRoamingSetting
+     */
+    public async getRoamingSetting(siteId?: string, customHeaders?: CustomHeaders): Promise<unknown> {
+        const resolvedSiteId = this.site.resolveSiteId(siteId);
+        const path = this.buildPath(`/sites/${encodeURIComponent(resolvedSiteId)}/roaming`);
+        const response = await this.request.get<OmadaApiResponse<unknown>>(path, undefined, customHeaders);
+        return this.request.ensureSuccess(response);
+    }
+
+    /**
+     * Get OUI-based device profile list (paginated).
+     * OperationId: getOuiProfileList
+     */
+    public async getOuiProfileList(page: number, pageSize: number, siteId?: string, customHeaders?: CustomHeaders): Promise<unknown> {
+        const resolvedSiteId = this.site.resolveSiteId(siteId);
+        const path = this.buildPath(`/sites/${encodeURIComponent(resolvedSiteId)}/oui-profiles`);
+        const response = await this.request.get<OmadaApiResponse<unknown>>(path, { page, pageSize }, customHeaders);
+        return this.request.ensureSuccess(response);
+    }
+
+    /**
+     * Get MAC authentication global setting.
+     * OperationId: getMacAuthSetting
+     */
+    public async getMacAuthSetting(siteId?: string, customHeaders?: CustomHeaders): Promise<unknown> {
+        const resolvedSiteId = this.site.resolveSiteId(siteId);
+        const path = this.buildPath(`/sites/${encodeURIComponent(resolvedSiteId)}/mac-auth`);
+        const response = await this.request.get<OmadaApiResponse<unknown>>(path, undefined, customHeaders);
+        return this.request.ensureSuccess(response);
+    }
+
+    /**
+     * Get per-SSID MAC authentication settings.
+     * OperationId: getMacAuthSsids
+     */
+    public async getMacAuthSsids(siteId?: string, customHeaders?: CustomHeaders): Promise<unknown> {
+        const resolvedSiteId = this.site.resolveSiteId(siteId);
+        const path = this.buildPath(`/sites/${encodeURIComponent(resolvedSiteId)}/mac-auth/ssids`);
+        const response = await this.request.get<OmadaApiResponse<unknown>>(path, undefined, customHeaders);
+        return this.request.ensureSuccess(response);
+    }
+
+    /**
+     * Get MAC filtering global setting.
+     * OperationId: getMacFilteringGeneralSetting
+     */
+    public async getMacFilteringGeneralSetting(siteId?: string, customHeaders?: CustomHeaders): Promise<unknown> {
+        const resolvedSiteId = this.site.resolveSiteId(siteId);
+        const path = this.buildPath(`/sites/${encodeURIComponent(resolvedSiteId)}/mac-filter`);
+        const response = await this.request.get<OmadaApiResponse<unknown>>(path, undefined, customHeaders);
+        return this.request.ensureSuccess(response);
+    }
+
+    /**
+     * Get MAC allow-list entries (paginated).
+     * OperationId: getGridAllowMacFiltering
+     */
+    public async getGridAllowMacFiltering(page: number, pageSize: number, siteId?: string, customHeaders?: CustomHeaders): Promise<unknown> {
+        const resolvedSiteId = this.site.resolveSiteId(siteId);
+        const path = this.buildPath(`/sites/${encodeURIComponent(resolvedSiteId)}/mac-filters/allow`);
+        const response = await this.request.get<OmadaApiResponse<unknown>>(path, { page, pageSize }, customHeaders);
+        return this.request.ensureSuccess(response);
+    }
+
+    /**
+     * Get MAC deny-list entries (paginated).
+     * OperationId: getGridDenyMacFiltering
+     */
+    public async getGridDenyMacFiltering(page: number, pageSize: number, siteId?: string, customHeaders?: CustomHeaders): Promise<unknown> {
+        const resolvedSiteId = this.site.resolveSiteId(siteId);
+        const path = this.buildPath(`/sites/${encodeURIComponent(resolvedSiteId)}/mac-filters/deny`);
+        const response = await this.request.get<OmadaApiResponse<unknown>>(path, { page, pageSize }, customHeaders);
+        return this.request.ensureSuccess(response);
+    }
+
+    /**
+     * Get 802.1X switch setting.
+     * OperationId: getSwitchDot1xSetting
+     */
+    public async getSwitchDot1xSetting(siteId?: string, customHeaders?: CustomHeaders): Promise<unknown> {
+        const resolvedSiteId = this.site.resolveSiteId(siteId);
+        const path = this.buildPath(`/sites/${encodeURIComponent(resolvedSiteId)}/dot1x`);
+        const response = await this.request.get<OmadaApiResponse<unknown>>(path, undefined, customHeaders);
+        return this.request.ensureSuccess(response);
+    }
+
+    /**
+     * Get 802.1X EAP setting.
+     * OperationId: getEapDot1xSetting
+     */
+    public async getEapDot1xSetting(siteId?: string, customHeaders?: CustomHeaders): Promise<unknown> {
+        const resolvedSiteId = this.site.resolveSiteId(siteId);
+        const path = this.buildPath(`/sites/${encodeURIComponent(resolvedSiteId)}/dot1x/eap`);
+        const response = await this.request.get<OmadaApiResponse<unknown>>(path, undefined, customHeaders);
+        return this.request.ensureSuccess(response);
+    }
 }

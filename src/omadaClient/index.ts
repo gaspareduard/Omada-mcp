@@ -552,6 +552,71 @@ export class OmadaClient {
         return await this.networkOps.getGridVirtualWan(page, pageSize, siteId, customHeaders);
     }
 
+    // Wireless/SSID tools (issue #35)
+    public async getSsidsBySite(type: number, siteId?: string, customHeaders?: CustomHeaders): Promise<unknown> {
+        return await this.networkOps.getSsidsBySite(type, siteId, customHeaders);
+    }
+
+    public async getRadioFrequencyPlanningConfig(siteId?: string, customHeaders?: CustomHeaders): Promise<unknown> {
+        return await this.networkOps.getRadioFrequencyPlanningConfig(siteId, customHeaders);
+    }
+
+    public async getRadioFrequencyPlanningResult(siteId?: string, customHeaders?: CustomHeaders): Promise<unknown> {
+        return await this.networkOps.getRadioFrequencyPlanningResult(siteId, customHeaders);
+    }
+
+    public async getBandSteeringSetting(siteId?: string, customHeaders?: CustomHeaders): Promise<unknown> {
+        return await this.networkOps.getBandSteeringSetting(siteId, customHeaders);
+    }
+
+    public async getBeaconControlSetting(siteId?: string, customHeaders?: CustomHeaders): Promise<unknown> {
+        return await this.networkOps.getBeaconControlSetting(siteId, customHeaders);
+    }
+
+    public async getChannelLimitSetting(siteId?: string, customHeaders?: CustomHeaders): Promise<unknown> {
+        return await this.networkOps.getChannelLimitSetting(siteId, customHeaders);
+    }
+
+    public async getMeshSetting(siteId?: string, customHeaders?: CustomHeaders): Promise<unknown> {
+        return await this.networkOps.getMeshSetting(siteId, customHeaders);
+    }
+
+    public async getRoamingSetting(siteId?: string, customHeaders?: CustomHeaders): Promise<unknown> {
+        return await this.networkOps.getRoamingSetting(siteId, customHeaders);
+    }
+
+    public async getOuiProfileList(page: number, pageSize: number, siteId?: string, customHeaders?: CustomHeaders): Promise<unknown> {
+        return await this.networkOps.getOuiProfileList(page, pageSize, siteId, customHeaders);
+    }
+
+    public async getMacAuthSetting(siteId?: string, customHeaders?: CustomHeaders): Promise<unknown> {
+        return await this.networkOps.getMacAuthSetting(siteId, customHeaders);
+    }
+
+    public async getMacAuthSsids(siteId?: string, customHeaders?: CustomHeaders): Promise<unknown> {
+        return await this.networkOps.getMacAuthSsids(siteId, customHeaders);
+    }
+
+    public async getMacFilteringGeneralSetting(siteId?: string, customHeaders?: CustomHeaders): Promise<unknown> {
+        return await this.networkOps.getMacFilteringGeneralSetting(siteId, customHeaders);
+    }
+
+    public async getGridAllowMacFiltering(page: number, pageSize: number, siteId?: string, customHeaders?: CustomHeaders): Promise<unknown> {
+        return await this.networkOps.getGridAllowMacFiltering(page, pageSize, siteId, customHeaders);
+    }
+
+    public async getGridDenyMacFiltering(page: number, pageSize: number, siteId?: string, customHeaders?: CustomHeaders): Promise<unknown> {
+        return await this.networkOps.getGridDenyMacFiltering(page, pageSize, siteId, customHeaders);
+    }
+
+    public async getSwitchDot1xSetting(siteId?: string, customHeaders?: CustomHeaders): Promise<unknown> {
+        return await this.networkOps.getSwitchDot1xSetting(siteId, customHeaders);
+    }
+
+    public async getEapDot1xSetting(siteId?: string, customHeaders?: CustomHeaders): Promise<unknown> {
+        return await this.networkOps.getEapDot1xSetting(siteId, customHeaders);
+    }
+
     // Monitor / dashboard operations
     public async getDashboardWifiSummary(siteId?: string, customHeaders?: CustomHeaders): Promise<unknown> {
         return await this.monitorOps.getDashboardWifiSummary(siteId, customHeaders);

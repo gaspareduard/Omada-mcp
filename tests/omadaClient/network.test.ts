@@ -887,4 +887,156 @@ describe('NetworkOperations', () => {
             expect(result).toEqual(mockData);
         });
     });
+
+    describe('getSsidsBySite', () => {
+        it('should get flat SSID list by device type', async () => {
+            const mockResponse: OmadaApiResponse<unknown> = { errorCode: 0, result: [] };
+            vi.mocked(mockRequest.get).mockResolvedValue(mockResponse);
+            await networkOps.getSsidsBySite(1, 'site-123');
+            expect(mockRequest.get).toHaveBeenCalledWith('/openapi/v1/test-omadac/sites/site-123/wireless-network/ssids', { type: 1 }, undefined);
+        });
+    });
+
+    describe('getRadioFrequencyPlanningConfig', () => {
+        it('should get RF planning config', async () => {
+            const mockResponse: OmadaApiResponse<unknown> = { errorCode: 0, result: {} };
+            vi.mocked(mockRequest.get).mockResolvedValue(mockResponse);
+            await networkOps.getRadioFrequencyPlanningConfig('site-123');
+            expect(mockRequest.get).toHaveBeenCalledWith('/openapi/v1/test-omadac/sites/site-123/rfPlanning', undefined, undefined);
+        });
+    });
+
+    describe('getRadioFrequencyPlanningResult', () => {
+        it('should get RF planning result', async () => {
+            const mockResponse: OmadaApiResponse<unknown> = { errorCode: 0, result: {} };
+            vi.mocked(mockRequest.get).mockResolvedValue(mockResponse);
+            await networkOps.getRadioFrequencyPlanningResult('site-123');
+            expect(mockRequest.get).toHaveBeenCalledWith('/openapi/v1/test-omadac/sites/site-123/rfPlanning/result', undefined, undefined);
+        });
+    });
+
+    describe('getBandSteeringSetting', () => {
+        it('should get band steering config', async () => {
+            const mockResponse: OmadaApiResponse<unknown> = { errorCode: 0, result: {} };
+            vi.mocked(mockRequest.get).mockResolvedValue(mockResponse);
+            await networkOps.getBandSteeringSetting('site-123');
+            expect(mockRequest.get).toHaveBeenCalledWith('/openapi/v1/test-omadac/sites/site-123/band-steering', undefined, undefined);
+        });
+    });
+
+    describe('getBeaconControlSetting', () => {
+        it('should get beacon control setting', async () => {
+            const mockResponse: OmadaApiResponse<unknown> = { errorCode: 0, result: {} };
+            vi.mocked(mockRequest.get).mockResolvedValue(mockResponse);
+            await networkOps.getBeaconControlSetting('site-123');
+            expect(mockRequest.get).toHaveBeenCalledWith('/openapi/v1/test-omadac/sites/site-123/beacon-control', undefined, undefined);
+        });
+    });
+
+    describe('getChannelLimitSetting', () => {
+        it('should get channel limit setting', async () => {
+            const mockResponse: OmadaApiResponse<unknown> = { errorCode: 0, result: {} };
+            vi.mocked(mockRequest.get).mockResolvedValue(mockResponse);
+            await networkOps.getChannelLimitSetting('site-123');
+            expect(mockRequest.get).toHaveBeenCalledWith('/openapi/v1/test-omadac/sites/site-123/channel-limit', undefined, undefined);
+        });
+    });
+
+    describe('getMeshSetting', () => {
+        it('should get mesh config', async () => {
+            const mockResponse: OmadaApiResponse<unknown> = { errorCode: 0, result: {} };
+            vi.mocked(mockRequest.get).mockResolvedValue(mockResponse);
+            await networkOps.getMeshSetting('site-123');
+            expect(mockRequest.get).toHaveBeenCalledWith('/openapi/v1/test-omadac/sites/site-123/mesh', undefined, undefined);
+        });
+    });
+
+    describe('getRoamingSetting', () => {
+        it('should get roaming config', async () => {
+            const mockResponse: OmadaApiResponse<unknown> = { errorCode: 0, result: {} };
+            vi.mocked(mockRequest.get).mockResolvedValue(mockResponse);
+            await networkOps.getRoamingSetting('site-123');
+            expect(mockRequest.get).toHaveBeenCalledWith('/openapi/v1/test-omadac/sites/site-123/roaming', undefined, undefined);
+        });
+    });
+
+    describe('getOuiProfileList', () => {
+        it('should get OUI profile list with pagination', async () => {
+            const mockResponse: OmadaApiResponse<unknown> = { errorCode: 0, result: { data: [] } };
+            vi.mocked(mockRequest.get).mockResolvedValue(mockResponse);
+            await networkOps.getOuiProfileList(1, 10, 'site-123');
+            expect(mockRequest.get).toHaveBeenCalledWith('/openapi/v1/test-omadac/sites/site-123/oui-profiles', { page: 1, pageSize: 10 }, undefined);
+        });
+    });
+
+    describe('getMacAuthSetting', () => {
+        it('should get MAC auth setting', async () => {
+            const mockResponse: OmadaApiResponse<unknown> = { errorCode: 0, result: {} };
+            vi.mocked(mockRequest.get).mockResolvedValue(mockResponse);
+            await networkOps.getMacAuthSetting('site-123');
+            expect(mockRequest.get).toHaveBeenCalledWith('/openapi/v1/test-omadac/sites/site-123/mac-auth', undefined, undefined);
+        });
+    });
+
+    describe('getMacAuthSsids', () => {
+        it('should get per-SSID MAC auth settings', async () => {
+            const mockResponse: OmadaApiResponse<unknown> = { errorCode: 0, result: [] };
+            vi.mocked(mockRequest.get).mockResolvedValue(mockResponse);
+            await networkOps.getMacAuthSsids('site-123');
+            expect(mockRequest.get).toHaveBeenCalledWith('/openapi/v1/test-omadac/sites/site-123/mac-auth/ssids', undefined, undefined);
+        });
+    });
+
+    describe('getMacFilteringGeneralSetting', () => {
+        it('should get MAC filtering global setting', async () => {
+            const mockResponse: OmadaApiResponse<unknown> = { errorCode: 0, result: {} };
+            vi.mocked(mockRequest.get).mockResolvedValue(mockResponse);
+            await networkOps.getMacFilteringGeneralSetting('site-123');
+            expect(mockRequest.get).toHaveBeenCalledWith('/openapi/v1/test-omadac/sites/site-123/mac-filter', undefined, undefined);
+        });
+    });
+
+    describe('getGridAllowMacFiltering', () => {
+        it('should get MAC allow-list with pagination', async () => {
+            const mockResponse: OmadaApiResponse<unknown> = { errorCode: 0, result: { data: [] } };
+            vi.mocked(mockRequest.get).mockResolvedValue(mockResponse);
+            await networkOps.getGridAllowMacFiltering(1, 20, 'site-123');
+            expect(mockRequest.get).toHaveBeenCalledWith(
+                '/openapi/v1/test-omadac/sites/site-123/mac-filters/allow',
+                { page: 1, pageSize: 20 },
+                undefined
+            );
+        });
+    });
+
+    describe('getGridDenyMacFiltering', () => {
+        it('should get MAC deny-list with pagination', async () => {
+            const mockResponse: OmadaApiResponse<unknown> = { errorCode: 0, result: { data: [] } };
+            vi.mocked(mockRequest.get).mockResolvedValue(mockResponse);
+            await networkOps.getGridDenyMacFiltering(1, 20, 'site-123');
+            expect(mockRequest.get).toHaveBeenCalledWith(
+                '/openapi/v1/test-omadac/sites/site-123/mac-filters/deny',
+                { page: 1, pageSize: 20 },
+                undefined
+            );
+        });
+    });
+
+    describe('getSwitchDot1xSetting', () => {
+        it('should get 802.1X switch setting', async () => {
+            const mockResponse: OmadaApiResponse<unknown> = { errorCode: 0, result: {} };
+            vi.mocked(mockRequest.get).mockResolvedValue(mockResponse);
+            await networkOps.getSwitchDot1xSetting('site-123');
+            expect(mockRequest.get).toHaveBeenCalledWith('/openapi/v1/test-omadac/sites/site-123/dot1x', undefined, undefined);
+        });
+    });
+
+    describe('getEapDot1xSetting', () => {
+        it('should get 802.1X EAP setting', async () => {
+            const mockResponse: OmadaApiResponse<unknown> = { errorCode: 0, result: {} };
+            vi.mocked(mockRequest.get).mockResolvedValue(mockResponse);
+            await networkOps.getEapDot1xSetting('site-123');
+            expect(mockRequest.get).toHaveBeenCalledWith('/openapi/v1/test-omadac/sites/site-123/dot1x/eap', undefined, undefined);
+        });
+    });
 });
