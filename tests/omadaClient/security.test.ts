@@ -160,9 +160,13 @@ describe('omadaClient/security', () => {
             const mockResponse: OmadaApiResponse<unknown> = { errorCode: 0, result: mockSeverity };
             (mockRequest.get as ReturnType<typeof vi.fn>).mockResolvedValue(mockResponse);
 
-            const result = await securityOps.getThreatSeverity();
+            const result = await securityOps.getThreatSeverity(1700000000, 1700086400);
 
-            expect(mockRequest.get).toHaveBeenCalledWith('/api/security/threat-management/severity', undefined, undefined);
+            expect(mockRequest.get).toHaveBeenCalledWith(
+                '/api/security/threat-management/severity',
+                { startTime: 1700000000, endTime: 1700086400 },
+                undefined
+            );
             expect(result).toEqual(mockSeverity);
         });
 
@@ -170,7 +174,7 @@ describe('omadaClient/security', () => {
             const mockResponse = { errorCode: 0 };
             (mockRequest.get as ReturnType<typeof vi.fn>).mockResolvedValue(mockResponse);
 
-            const result = await securityOps.getThreatSeverity();
+            const result = await securityOps.getThreatSeverity(1700000000, 1700086400);
             expect(result).toBeUndefined();
         });
     });

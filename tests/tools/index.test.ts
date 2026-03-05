@@ -98,6 +98,11 @@ describe('tools/index', () => {
             expect(mockServer.registerTool).toHaveBeenCalledWith('getWids', expect.any(Object), expect.any(Function));
             expect(mockServer.registerTool).toHaveBeenCalledWith('getRogueAps', expect.any(Object), expect.any(Function));
             expect(mockServer.registerTool).toHaveBeenCalledWith('getVpnTunnelStats', expect.any(Object), expect.any(Function));
+            expect(mockServer.registerTool).toHaveBeenCalledWith('getIpsecVpnStats', expect.any(Object), expect.any(Function));
+            expect(mockServer.registerTool).toHaveBeenCalledWith('getWidsBlacklist', expect.any(Object), expect.any(Function));
+            expect(mockServer.registerTool).toHaveBeenCalledWith('getRoutingTable', expect.any(Object), expect.any(Function));
+            expect(mockServer.registerTool).toHaveBeenCalledWith('getThreatDetail', expect.any(Object), expect.any(Function));
+            expect(mockServer.registerTool).toHaveBeenCalledWith('getThreatCount', expect.any(Object), expect.any(Function));
 
             // Log tools
             expect(mockServer.registerTool).toHaveBeenCalledWith('listSiteEvents', expect.any(Object), expect.any(Function));
@@ -107,7 +112,7 @@ describe('tools/index', () => {
             expect(mockServer.registerTool).toHaveBeenCalledWith('listGlobalAlerts', expect.any(Object), expect.any(Function));
 
             // Verify total number of tools registered
-            expect(mockServer.registerTool).toHaveBeenCalledTimes(122);
+            expect(mockServer.registerTool).toHaveBeenCalledTimes(127);
         });
     });
 });

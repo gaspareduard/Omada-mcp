@@ -271,9 +271,9 @@ describe('tools - new GET operations', () => {
 
     it('getVpnTunnelStats handler executes successfully', async () => {
         registerGetVpnTunnelStatsTool(mockServer, mockClient);
-        const result = await toolHandler({}, {});
+        const result = await toolHandler({ page: 1, pageSize: 10 }, {});
         expect(result).toBeDefined();
-        expect(mockClient.getVpnTunnelStats).toHaveBeenCalled();
+        expect(mockClient.getVpnTunnelStats).toHaveBeenCalledWith(1, 10, undefined, undefined);
     });
 
     it('getWanLanStatus handler executes successfully', async () => {

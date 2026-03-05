@@ -71,9 +71,9 @@ export class SecurityOperations {
      * Get threat severity summary from the global view.
      * OperationId: getThreatSeverity
      */
-    public async getThreatSeverity(customHeaders?: CustomHeaders): Promise<unknown> {
+    public async getThreatSeverity(startTime: number, endTime: number, customHeaders?: CustomHeaders): Promise<unknown> {
         const path = this.buildPath('/security/threat-management/severity');
-        const response = await this.request.get<{ errorCode: number; result: unknown }>(path, undefined, customHeaders);
+        const response = await this.request.get<{ errorCode: number; result: unknown }>(path, { startTime, endTime }, customHeaders);
         return response.result;
     }
 }

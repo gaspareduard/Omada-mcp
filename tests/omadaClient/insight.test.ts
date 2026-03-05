@@ -118,8 +118,13 @@ describe('InsightOperations', () => {
             const mockResponse: OmadaApiResponse<unknown> = { errorCode: 0, result: { activeTunnels: 2 } };
             vi.mocked(mockRequest.get).mockResolvedValue(mockResponse);
 
-            const result = await insightOps.getVpnTunnelStats('site-123');
+            const result = await insightOps.getVpnTunnelStats(1, 10, 'site-123');
 
+            expect(mockRequest.get).toHaveBeenCalledWith(
+                '/openapi/v1/test-omadac/sites/site-123/setting/vpn/stats/tunnel',
+                { page: 1, pageSize: 10 },
+                undefined
+            );
             expect(result).toEqual({ activeTunnels: 2 });
         });
     });
@@ -129,8 +134,13 @@ describe('InsightOperations', () => {
             const mockResponse: OmadaApiResponse<unknown> = { errorCode: 0, result: { tunnels: 1 } };
             vi.mocked(mockRequest.get).mockResolvedValue(mockResponse);
 
-            const result = await insightOps.getIpsecVpnStats('site-123');
+            const result = await insightOps.getIpsecVpnStats(1, 10, 'site-123');
 
+            expect(mockRequest.get).toHaveBeenCalledWith(
+                '/openapi/v1/test-omadac/sites/site-123/setting/vpn/stats/ipsec',
+                { page: 1, pageSize: 10 },
+                undefined
+            );
             expect(result).toEqual({ tunnels: 1 });
         });
     });

@@ -58,6 +58,7 @@ import { registerGetInternetBasicPortInfoTool } from './getInternetBasicPortInfo
 import { registerGetInternetInfoTool } from './getInternetInfo.js';
 import { registerGetInternetLoadBalanceTool } from './getInternetLoadBalance.js';
 import { registerGetIpMacBindingGeneralSettingTool } from './getIpMacBindingGeneralSetting.js';
+import { registerGetIpsecVpnStatsTool } from './getIpsecVpnStats.js';
 import { registerGetIspLoadTool } from './getIspLoad.js';
 import { registerGetLanNetworkListTool } from './getLanNetworkList.js';
 import { registerGetLanNetworkListV2Tool } from './getLanNetworkListV2.js';
@@ -72,6 +73,7 @@ import { registerGetRemoteLoggingSettingTool } from './getRemoteLoggingSetting.j
 import { registerGetRetryAndDroppedRateTool } from './getRetryAndDroppedRate.js';
 import { registerGetRFScanResultTool } from './getRFScanResult.js';
 import { registerGetRogueApsTool } from './getRogueAps.js';
+import { registerGetRoutingTableTool } from './getRoutingTable.js';
 import { registerGetSessionLimitTool } from './getSessionLimit.js';
 import { registerGetSnmpSettingTool } from './getSnmpSetting.js';
 import { registerGetSpeedTestResultsTool } from './getSpeedTestResults.js';
@@ -84,6 +86,8 @@ import { registerGetStaticRoutingInterfaceListTool } from './getStaticRoutingInt
 import { registerGetSwitchDetailTool } from './getSwitchDetail.js';
 import { registerGetSwitchGeneralConfigTool } from './getSwitchGeneralConfig.js';
 import { registerGetSwitchStackDetailTool } from './getSwitchStackDetail.js';
+import { registerGetThreatCountTool } from './getThreatCount.js';
+import { registerGetThreatDetailTool } from './getThreatDetail.js';
 import { registerGetThreatListTool } from './getThreatList.js';
 import { registerGetTopThreatsTool } from './getTopThreats.js';
 import { registerGetTrafficDistributionTool } from './getTrafficDistribution.js';
@@ -94,6 +98,7 @@ import { registerGetVpnTunnelStatsTool } from './getVpnTunnelStats.js';
 import { registerGetWanLanStatusTool } from './getWanLanStatus.js';
 import { registerGetWanPortsConfigTool } from './getWanPortsConfig.js';
 import { registerGetWidsTool } from './getWids.js';
+import { registerGetWidsBlacklistTool } from './getWidsBlacklist.js';
 import { registerGetWlanGroupListTool } from './getWlanGroupList.js';
 import { registerListAllSsidsTool } from './listAllSsids.js';
 import { registerListClientsTool } from './listClients.js';
@@ -256,8 +261,13 @@ export function registerAllTools(server: McpServer, client: OmadaClient): void {
 
     // Insight operations
     registerGetWidsTool(server, client);
+    registerGetWidsBlacklistTool(server, client);
     registerGetRogueApsTool(server, client);
     registerGetVpnTunnelStatsTool(server, client);
+    registerGetIpsecVpnStatsTool(server, client);
+    registerGetRoutingTableTool(server, client);
+    registerGetThreatDetailTool(server, client);
+    registerGetThreatCountTool(server, client);
 
     // Log operations
     registerListSiteEventsTool(server, client);
