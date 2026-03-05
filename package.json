@@ -1,6 +1,6 @@
 {
     "name": "tplink-omada-mcp",
-    "version": "0.7.0",
+    "version": "0.8.0",
     "description": "Model Context Protocol server that exposes TP-Link Omada controller APIs",
     "type": "module",
     "main": "dist/index.js",
@@ -24,7 +24,11 @@
         "docker:run": "docker run --rm -it --env-file .env --env-file .env.local ghcr.io/migueltvms/tplink-omada-mcp:latest",
         "docker:push": "docker push ghcr.io/migueltvms/tplink-omada-mcp:latest"
     },
-    "keywords": ["mcp", "tp-link", "omada"],
+    "keywords": [
+        "mcp",
+        "tp-link",
+        "omada"
+    ],
     "engines": {
         "node": ">=24.0.0"
     },
