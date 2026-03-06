@@ -1284,4 +1284,90 @@ describe('NetworkOperations', () => {
             );
         });
     });
+
+    describe('listServiceType', () => {
+        it('should list service type profiles with pagination', async () => {
+            const mockResponse: OmadaApiResponse<unknown> = { errorCode: 0, result: { data: [] } };
+            vi.mocked(mockRequest.get).mockResolvedValue(mockResponse);
+            await networkOps.listServiceType(1, 10, 'site-123');
+            expect(mockRequest.get).toHaveBeenCalledWith(
+                '/openapi/v1/test-omadac/sites/site-123/profiles/service-type',
+                { page: 1, pageSize: 10 },
+                undefined
+            );
+        });
+    });
+
+    describe('getServiceTypeSummary', () => {
+        it('should get service type summary', async () => {
+            const mockResponse: OmadaApiResponse<unknown> = { errorCode: 0, result: {} };
+            vi.mocked(mockRequest.get).mockResolvedValue(mockResponse);
+            await networkOps.getServiceTypeSummary('site-123');
+            expect(mockRequest.get).toHaveBeenCalledWith(
+                '/openapi/v1/test-omadac/sites/site-123/profiles/service-type-summary',
+                undefined,
+                undefined
+            );
+        });
+    });
+
+    describe('getGroupProfilesByType', () => {
+        it('should get group profiles by type', async () => {
+            const mockResponse: OmadaApiResponse<unknown> = { errorCode: 0, result: {} };
+            vi.mocked(mockRequest.get).mockResolvedValue(mockResponse);
+            await networkOps.getGroupProfilesByType('ip', 'site-123');
+            expect(mockRequest.get).toHaveBeenCalledWith('/openapi/v1/test-omadac/sites/site-123/profiles/groups/ip', undefined, undefined);
+        });
+    });
+
+    describe('getLdapProfileList', () => {
+        it('should list LDAP profiles', async () => {
+            const mockResponse: OmadaApiResponse<unknown> = { errorCode: 0, result: [] };
+            vi.mocked(mockRequest.get).mockResolvedValue(mockResponse);
+            await networkOps.getLdapProfileList('site-123');
+            expect(mockRequest.get).toHaveBeenCalledWith('/openapi/v1/test-omadac/sites/site-123/profiles/ldap', undefined, undefined);
+        });
+    });
+
+    describe('getRadiusUserList', () => {
+        it('should list RADIUS users with pagination', async () => {
+            const mockResponse: OmadaApiResponse<unknown> = { errorCode: 0, result: { data: [] } };
+            vi.mocked(mockRequest.get).mockResolvedValue(mockResponse);
+            await networkOps.getRadiusUserList(1, 10, undefined, 'site-123');
+            expect(mockRequest.get).toHaveBeenCalledWith(
+                '/openapi/v1/test-omadac/sites/site-123/profiles/radius-server/users',
+                { page: 1, pageSize: 10 },
+                undefined
+            );
+        });
+
+        it('should include sorts.username when provided', async () => {
+            const mockResponse: OmadaApiResponse<unknown> = { errorCode: 0, result: { data: [] } };
+            vi.mocked(mockRequest.get).mockResolvedValue(mockResponse);
+            await networkOps.getRadiusUserList(1, 10, 'asc', 'site-123');
+            expect(mockRequest.get).toHaveBeenCalledWith(
+                '/openapi/v1/test-omadac/sites/site-123/profiles/radius-server/users',
+                { page: 1, pageSize: 10, 'sorts.username': 'asc' },
+                undefined
+            );
+        });
+    });
+
+    describe('getPPSKProfiles', () => {
+        it('should get PPSK profiles by type', async () => {
+            const mockResponse: OmadaApiResponse<unknown> = { errorCode: 0, result: [] };
+            vi.mocked(mockRequest.get).mockResolvedValue(mockResponse);
+            await networkOps.getPPSKProfiles(1, 'site-123');
+            expect(mockRequest.get).toHaveBeenCalledWith('/openapi/v1/test-omadac/sites/site-123/ppsk-profiles', { type: 1 }, undefined);
+        });
+    });
+
+    describe('listMdnsProfile', () => {
+        it('should list Bonjour/mDNS service profiles', async () => {
+            const mockResponse: OmadaApiResponse<unknown> = { errorCode: 0, result: [] };
+            vi.mocked(mockRequest.get).mockResolvedValue(mockResponse);
+            await networkOps.listMdnsProfile('site-123');
+            expect(mockRequest.get).toHaveBeenCalledWith('/openapi/v1/test-omadac/sites/site-123/profiles/bonjour-service', undefined, undefined);
+        });
+    });
 });

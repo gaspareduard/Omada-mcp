@@ -1095,4 +1095,91 @@ export class NetworkOperations {
         const response = await this.request.get<OmadaApiResponse<unknown>>(path, { page, pageSize }, customHeaders);
         return this.request.ensureSuccess(response);
     }
+
+    // Profiles & Policies tools (issue #40)
+
+    /**
+     * List service type profiles (paginated).
+     * OperationId: listServiceType
+     */
+    public async listServiceType(page: number, pageSize: number, siteId?: string, customHeaders?: CustomHeaders): Promise<unknown> {
+        const resolvedSiteId = this.site.resolveSiteId(siteId);
+        const path = this.buildPath(`/sites/${encodeURIComponent(resolvedSiteId)}/profiles/service-type`);
+        const response = await this.request.get<OmadaApiResponse<unknown>>(path, { page, pageSize }, customHeaders);
+        return this.request.ensureSuccess(response);
+    }
+
+    /**
+     * Get service type profile summary.
+     * OperationId: getServiceTypeSummary
+     */
+    public async getServiceTypeSummary(siteId?: string, customHeaders?: CustomHeaders): Promise<unknown> {
+        const resolvedSiteId = this.site.resolveSiteId(siteId);
+        const path = this.buildPath(`/sites/${encodeURIComponent(resolvedSiteId)}/profiles/service-type-summary`);
+        const response = await this.request.get<OmadaApiResponse<unknown>>(path, undefined, customHeaders);
+        return this.request.ensureSuccess(response);
+    }
+
+    /**
+     * Get group profiles filtered by type.
+     * OperationId: getGroupProfilesByType
+     */
+    public async getGroupProfilesByType(groupType: string, siteId?: string, customHeaders?: CustomHeaders): Promise<unknown> {
+        const resolvedSiteId = this.site.resolveSiteId(siteId);
+        const path = this.buildPath(`/sites/${encodeURIComponent(resolvedSiteId)}/profiles/groups/${encodeURIComponent(groupType)}`);
+        const response = await this.request.get<OmadaApiResponse<unknown>>(path, undefined, customHeaders);
+        return this.request.ensureSuccess(response);
+    }
+
+    /**
+     * List LDAP profiles.
+     * OperationId: getLdapProfileList
+     */
+    public async getLdapProfileList(siteId?: string, customHeaders?: CustomHeaders): Promise<unknown> {
+        const resolvedSiteId = this.site.resolveSiteId(siteId);
+        const path = this.buildPath(`/sites/${encodeURIComponent(resolvedSiteId)}/profiles/ldap`);
+        const response = await this.request.get<OmadaApiResponse<unknown>>(path, undefined, customHeaders);
+        return this.request.ensureSuccess(response);
+    }
+
+    /**
+     * List RADIUS server local users (paginated, optional sort).
+     * OperationId: getRadiusUserList
+     */
+    public async getRadiusUserList(
+        page: number,
+        pageSize: number,
+        sortUsername?: string,
+        siteId?: string,
+        customHeaders?: CustomHeaders
+    ): Promise<unknown> {
+        const resolvedSiteId = this.site.resolveSiteId(siteId);
+        const path = this.buildPath(`/sites/${encodeURIComponent(resolvedSiteId)}/profiles/radius-server/users`);
+        const params: Record<string, unknown> = { page, pageSize };
+        if (sortUsername !== undefined) params['sorts.username'] = sortUsername;
+        const response = await this.request.get<OmadaApiResponse<unknown>>(path, params, customHeaders);
+        return this.request.ensureSuccess(response);
+    }
+
+    /**
+     * List PPSK (Private PSK) profiles.
+     * OperationId: getPPSKProfiles
+     */
+    public async getPPSKProfiles(type: number, siteId?: string, customHeaders?: CustomHeaders): Promise<unknown> {
+        const resolvedSiteId = this.site.resolveSiteId(siteId);
+        const path = this.buildPath(`/sites/${encodeURIComponent(resolvedSiteId)}/ppsk-profiles`);
+        const response = await this.request.get<OmadaApiResponse<unknown>>(path, { type }, customHeaders);
+        return this.request.ensureSuccess(response);
+    }
+
+    /**
+     * List Bonjour/mDNS service profiles.
+     * OperationId: listMdnsProfile
+     */
+    public async listMdnsProfile(siteId?: string, customHeaders?: CustomHeaders): Promise<unknown> {
+        const resolvedSiteId = this.site.resolveSiteId(siteId);
+        const path = this.buildPath(`/sites/${encodeURIComponent(resolvedSiteId)}/profiles/bonjour-service`);
+        const response = await this.request.get<OmadaApiResponse<unknown>>(path, undefined, customHeaders);
+        return this.request.ensureSuccess(response);
+    }
 }

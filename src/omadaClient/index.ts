@@ -418,6 +418,41 @@ export class OmadaClient {
         return await this.networkOps.getGridIpsecFailover(page, pageSize, siteId, customHeaders);
     }
 
+    // Profiles & Policies tools (issue #40)
+    public async listServiceType(page: number, pageSize: number, siteId?: string, customHeaders?: CustomHeaders): Promise<unknown> {
+        return await this.networkOps.listServiceType(page, pageSize, siteId, customHeaders);
+    }
+
+    public async getServiceTypeSummary(siteId?: string, customHeaders?: CustomHeaders): Promise<unknown> {
+        return await this.networkOps.getServiceTypeSummary(siteId, customHeaders);
+    }
+
+    public async getGroupProfilesByType(groupType: string, siteId?: string, customHeaders?: CustomHeaders): Promise<unknown> {
+        return await this.networkOps.getGroupProfilesByType(groupType, siteId, customHeaders);
+    }
+
+    public async getLdapProfileList(siteId?: string, customHeaders?: CustomHeaders): Promise<unknown> {
+        return await this.networkOps.getLdapProfileList(siteId, customHeaders);
+    }
+
+    public async getRadiusUserList(
+        page: number,
+        pageSize: number,
+        sortUsername?: string,
+        siteId?: string,
+        customHeaders?: CustomHeaders
+    ): Promise<unknown> {
+        return await this.networkOps.getRadiusUserList(page, pageSize, sortUsername, siteId, customHeaders);
+    }
+
+    public async getPPSKProfiles(type: number, siteId?: string, customHeaders?: CustomHeaders): Promise<unknown> {
+        return await this.networkOps.getPPSKProfiles(type, siteId, customHeaders);
+    }
+
+    public async listMdnsProfile(siteId?: string, customHeaders?: CustomHeaders): Promise<unknown> {
+        return await this.networkOps.listMdnsProfile(siteId, customHeaders);
+    }
+
     public async listPortForwardingRules(siteId?: string, customHeaders?: CustomHeaders): Promise<unknown[]> {
         return await this.networkOps.listPortForwardingRules(siteId, customHeaders);
     }
