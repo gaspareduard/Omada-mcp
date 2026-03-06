@@ -295,6 +295,113 @@ describe('NetworkOperations', () => {
         });
     });
 
+    describe('getSiteToSiteVpnInfo', () => {
+        it('should get single site-to-site VPN by ID', async () => {
+            const mockResponse: OmadaApiResponse<unknown> = { errorCode: 0, result: { id: 'vpn-001' } };
+            vi.mocked(mockRequest.get).mockResolvedValue(mockResponse);
+            await networkOps.getSiteToSiteVpnInfo('vpn-001', 'site-123');
+            expect(mockRequest.get).toHaveBeenCalledWith(
+                '/openapi/v1/test-omadac/sites/site-123/vpn/site-to-site-vpns/vpn-001',
+                undefined,
+                undefined
+            );
+        });
+    });
+
+    describe('listWireguard', () => {
+        it('should list WireGuard tunnels with pagination', async () => {
+            const mockResponse: OmadaApiResponse<unknown> = { errorCode: 0, result: { data: [] } };
+            vi.mocked(mockRequest.get).mockResolvedValue(mockResponse);
+            await networkOps.listWireguard(1, 10, undefined, 'site-123');
+            expect(mockRequest.get).toHaveBeenCalledWith(
+                '/openapi/v1/test-omadac/sites/site-123/vpn/wireguards',
+                { page: 1, pageSize: 10 },
+                undefined
+            );
+        });
+
+        it('should include searchKey when provided', async () => {
+            const mockResponse: OmadaApiResponse<unknown> = { errorCode: 0, result: { data: [] } };
+            vi.mocked(mockRequest.get).mockResolvedValue(mockResponse);
+            await networkOps.listWireguard(1, 10, 'wg0', 'site-123');
+            expect(mockRequest.get).toHaveBeenCalledWith(
+                '/openapi/v1/test-omadac/sites/site-123/vpn/wireguards',
+                { page: 1, pageSize: 10, searchKey: 'wg0' },
+                undefined
+            );
+        });
+    });
+
+    describe('listWireguardPeers', () => {
+        it('should list WireGuard peers with pagination', async () => {
+            const mockResponse: OmadaApiResponse<unknown> = { errorCode: 0, result: { data: [] } };
+            vi.mocked(mockRequest.get).mockResolvedValue(mockResponse);
+            await networkOps.listWireguardPeers(1, 10, 'site-123');
+            expect(mockRequest.get).toHaveBeenCalledWith(
+                '/openapi/v1/test-omadac/sites/site-123/vpn/wireguard-peers',
+                { page: 1, pageSize: 10 },
+                undefined
+            );
+        });
+    });
+
+    describe('getWireguardSummary', () => {
+        it('should get WireGuard summary', async () => {
+            const mockResponse: OmadaApiResponse<unknown> = { errorCode: 0, result: {} };
+            vi.mocked(mockRequest.get).mockResolvedValue(mockResponse);
+            await networkOps.getWireguardSummary('site-123');
+            expect(mockRequest.get).toHaveBeenCalledWith('/openapi/v1/test-omadac/sites/site-123/vpn/wireguard-summarys', undefined, undefined);
+        });
+    });
+
+    describe('listClientToSiteVpnClients', () => {
+        it('should list C2S VPN clients', async () => {
+            const mockResponse: OmadaApiResponse<unknown> = { errorCode: 0, result: { data: [], supportL2tp: true } };
+            vi.mocked(mockRequest.get).mockResolvedValue(mockResponse);
+            await networkOps.listClientToSiteVpnClients('site-123');
+            expect(mockRequest.get).toHaveBeenCalledWith(
+                '/openapi/v1/test-omadac/sites/site-123/vpn/client-to-site-vpn-clients',
+                undefined,
+                undefined
+            );
+        });
+    });
+
+    describe('getClientToSiteVpnServerInfo', () => {
+        it('should get single C2S VPN server by ID', async () => {
+            const mockResponse: OmadaApiResponse<unknown> = { errorCode: 0, result: { id: 'srv-001' } };
+            vi.mocked(mockRequest.get).mockResolvedValue(mockResponse);
+            await networkOps.getClientToSiteVpnServerInfo('srv-001', 'site-123');
+            expect(mockRequest.get).toHaveBeenCalledWith(
+                '/openapi/v1/test-omadac/sites/site-123/vpn/client-to-site-vpn-servers/srv-001',
+                undefined,
+                undefined
+            );
+        });
+    });
+
+    describe('getSslVpnServerSetting', () => {
+        it('should get SSL VPN server config', async () => {
+            const mockResponse: OmadaApiResponse<unknown> = { errorCode: 0, result: {} };
+            vi.mocked(mockRequest.get).mockResolvedValue(mockResponse);
+            await networkOps.getSslVpnServerSetting('site-123');
+            expect(mockRequest.get).toHaveBeenCalledWith('/openapi/v1/test-omadac/sites/site-123/vpn/ssl-vpn-server/setting', undefined, undefined);
+        });
+    });
+
+    describe('getGridIpsecFailover', () => {
+        it('should get IPsec failover config with pagination', async () => {
+            const mockResponse: OmadaApiResponse<unknown> = { errorCode: 0, result: { data: [] } };
+            vi.mocked(mockRequest.get).mockResolvedValue(mockResponse);
+            await networkOps.getGridIpsecFailover(1, 10, 'site-123');
+            expect(mockRequest.get).toHaveBeenCalledWith(
+                '/openapi/v1/test-omadac/sites/site-123/vpn/ipsec_failovers',
+                { page: 1, pageSize: 10 },
+                undefined
+            );
+        });
+    });
+
     describe('listPortForwardingRules', () => {
         it('should list NAT port forwarding rules', async () => {
             const mockData = [{ id: 'rule-1', externalPort: 80 }];

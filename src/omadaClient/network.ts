@@ -1003,4 +1003,96 @@ export class NetworkOperations {
         const response = await this.request.get<OmadaApiResponse<unknown>>(path, { page, pageSize }, customHeaders);
         return this.request.ensureSuccess(response);
     }
+
+    // VPN tools (issue #39)
+
+    /**
+     * Get single site-to-site VPN detail by ID.
+     * OperationId: getSiteToSiteVpnInfo
+     */
+    public async getSiteToSiteVpnInfo(vpnId: string, siteId?: string, customHeaders?: CustomHeaders): Promise<unknown> {
+        const resolvedSiteId = this.site.resolveSiteId(siteId);
+        const path = this.buildPath(`/sites/${encodeURIComponent(resolvedSiteId)}/vpn/site-to-site-vpns/${encodeURIComponent(vpnId)}`);
+        const response = await this.request.get<OmadaApiResponse<unknown>>(path, undefined, customHeaders);
+        return this.request.ensureSuccess(response);
+    }
+
+    /**
+     * List WireGuard tunnels (paginated, optional searchKey).
+     * OperationId: listWireguard
+     */
+    public async listWireguard(page: number, pageSize: number, searchKey?: string, siteId?: string, customHeaders?: CustomHeaders): Promise<unknown> {
+        const resolvedSiteId = this.site.resolveSiteId(siteId);
+        const path = this.buildPath(`/sites/${encodeURIComponent(resolvedSiteId)}/vpn/wireguards`);
+        const params: Record<string, unknown> = { page, pageSize };
+        if (searchKey !== undefined) params.searchKey = searchKey;
+        const response = await this.request.get<OmadaApiResponse<unknown>>(path, params, customHeaders);
+        return this.request.ensureSuccess(response);
+    }
+
+    /**
+     * List WireGuard peers (paginated).
+     * OperationId: listPeer
+     */
+    public async listWireguardPeers(page: number, pageSize: number, siteId?: string, customHeaders?: CustomHeaders): Promise<unknown> {
+        const resolvedSiteId = this.site.resolveSiteId(siteId);
+        const path = this.buildPath(`/sites/${encodeURIComponent(resolvedSiteId)}/vpn/wireguard-peers`);
+        const response = await this.request.get<OmadaApiResponse<unknown>>(path, { page, pageSize }, customHeaders);
+        return this.request.ensureSuccess(response);
+    }
+
+    /**
+     * Get WireGuard summary.
+     * OperationId: getWireguardSummary
+     */
+    public async getWireguardSummary(siteId?: string, customHeaders?: CustomHeaders): Promise<unknown> {
+        const resolvedSiteId = this.site.resolveSiteId(siteId);
+        const path = this.buildPath(`/sites/${encodeURIComponent(resolvedSiteId)}/vpn/wireguard-summarys`);
+        const response = await this.request.get<OmadaApiResponse<unknown>>(path, undefined, customHeaders);
+        return this.request.ensureSuccess(response);
+    }
+
+    /**
+     * Get client-to-site VPN client list.
+     * OperationId: getClientToSiteVpnClientList
+     */
+    public async listClientToSiteVpnClients(siteId?: string, customHeaders?: CustomHeaders): Promise<unknown> {
+        const resolvedSiteId = this.site.resolveSiteId(siteId);
+        const path = this.buildPath(`/sites/${encodeURIComponent(resolvedSiteId)}/vpn/client-to-site-vpn-clients`);
+        const response = await this.request.get<OmadaApiResponse<unknown>>(path, undefined, customHeaders);
+        return this.request.ensureSuccess(response);
+    }
+
+    /**
+     * Get single client-to-site VPN server detail by ID.
+     * OperationId: getClientToSiteVpnServerInfo
+     */
+    public async getClientToSiteVpnServerInfo(vpnId: string, siteId?: string, customHeaders?: CustomHeaders): Promise<unknown> {
+        const resolvedSiteId = this.site.resolveSiteId(siteId);
+        const path = this.buildPath(`/sites/${encodeURIComponent(resolvedSiteId)}/vpn/client-to-site-vpn-servers/${encodeURIComponent(vpnId)}`);
+        const response = await this.request.get<OmadaApiResponse<unknown>>(path, undefined, customHeaders);
+        return this.request.ensureSuccess(response);
+    }
+
+    /**
+     * Get SSL VPN server configuration.
+     * OperationId: getSslVpnServerSetting
+     */
+    public async getSslVpnServerSetting(siteId?: string, customHeaders?: CustomHeaders): Promise<unknown> {
+        const resolvedSiteId = this.site.resolveSiteId(siteId);
+        const path = this.buildPath(`/sites/${encodeURIComponent(resolvedSiteId)}/vpn/ssl-vpn-server/setting`);
+        const response = await this.request.get<OmadaApiResponse<unknown>>(path, undefined, customHeaders);
+        return this.request.ensureSuccess(response);
+    }
+
+    /**
+     * Get IPsec failover configuration (paginated).
+     * OperationId: getGridIpsecFailover
+     */
+    public async getGridIpsecFailover(page: number, pageSize: number, siteId?: string, customHeaders?: CustomHeaders): Promise<unknown> {
+        const resolvedSiteId = this.site.resolveSiteId(siteId);
+        const path = this.buildPath(`/sites/${encodeURIComponent(resolvedSiteId)}/vpn/ipsec_failovers`);
+        const response = await this.request.get<OmadaApiResponse<unknown>>(path, { page, pageSize }, customHeaders);
+        return this.request.ensureSuccess(response);
+    }
 }

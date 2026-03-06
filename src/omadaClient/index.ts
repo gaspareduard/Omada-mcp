@@ -385,6 +385,39 @@ export class OmadaClient {
         return await this.networkOps.listClientToSiteVpnServers(siteId, customHeaders);
     }
 
+    // VPN tools (issue #39)
+    public async getSiteToSiteVpnInfo(vpnId: string, siteId?: string, customHeaders?: CustomHeaders): Promise<unknown> {
+        return await this.networkOps.getSiteToSiteVpnInfo(vpnId, siteId, customHeaders);
+    }
+
+    public async listWireguard(page: number, pageSize: number, searchKey?: string, siteId?: string, customHeaders?: CustomHeaders): Promise<unknown> {
+        return await this.networkOps.listWireguard(page, pageSize, searchKey, siteId, customHeaders);
+    }
+
+    public async listWireguardPeers(page: number, pageSize: number, siteId?: string, customHeaders?: CustomHeaders): Promise<unknown> {
+        return await this.networkOps.listWireguardPeers(page, pageSize, siteId, customHeaders);
+    }
+
+    public async getWireguardSummary(siteId?: string, customHeaders?: CustomHeaders): Promise<unknown> {
+        return await this.networkOps.getWireguardSummary(siteId, customHeaders);
+    }
+
+    public async listClientToSiteVpnClients(siteId?: string, customHeaders?: CustomHeaders): Promise<unknown> {
+        return await this.networkOps.listClientToSiteVpnClients(siteId, customHeaders);
+    }
+
+    public async getClientToSiteVpnServerInfo(vpnId: string, siteId?: string, customHeaders?: CustomHeaders): Promise<unknown> {
+        return await this.networkOps.getClientToSiteVpnServerInfo(vpnId, siteId, customHeaders);
+    }
+
+    public async getSslVpnServerSetting(siteId?: string, customHeaders?: CustomHeaders): Promise<unknown> {
+        return await this.networkOps.getSslVpnServerSetting(siteId, customHeaders);
+    }
+
+    public async getGridIpsecFailover(page: number, pageSize: number, siteId?: string, customHeaders?: CustomHeaders): Promise<unknown> {
+        return await this.networkOps.getGridIpsecFailover(page, pageSize, siteId, customHeaders);
+    }
+
     public async listPortForwardingRules(siteId?: string, customHeaders?: CustomHeaders): Promise<unknown[]> {
         return await this.networkOps.listPortForwardingRules(siteId, customHeaders);
     }
