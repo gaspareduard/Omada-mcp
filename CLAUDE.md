@@ -71,8 +71,11 @@ Reference `.env.example`. Primary variables:
 
 - The project uses **Vitest** as the test framework.
 - All test files should be placed in the `tests/` directory with the `.test.ts` extension.
-- The test folder structure **must mirror** the `src/` folder structure for consistency and maintainability.
+- The test folder structure **must mirror** the `src/` folder structure with strict 1:1 file matching.
   - Example: `src/tools/getClientDetail.ts` → `tests/tools/getClientDetail.test.ts`
+  - Every `src/tools/<name>.ts` (except `index.ts` and `types.ts`) must have a matching `tests/tools/<name>.test.ts`.
+  - Every `src/omadaClient/<name>.ts` (except `index.ts`) must have a matching `tests/omadaClient/<name>.test.ts`.
+  - CI enforces this via `scripts/check-tool-tests.mjs` on every PR.
 - Run tests with `npm test` or `npm run test:watch` for watch mode.
 - Test coverage can be generated with `npm run test:coverage`.
 - All configuration validations must be implemented in `src/utils/config-validations.ts` and tested thoroughly.
@@ -99,7 +102,7 @@ Coverage is enforced at two levels:
 
 ### Integration Tests (Docker)
 
-> **Not implemented yet** — this section documents the planned integration testing strategy tracked in **#57** (v0.10.0 gate) and **#58** (v1.0.0 Docker infra).
+> **Not implemented yet** — this section documents the planned integration testing strategy tracked in **#58** (v1.0.0 Docker infra).
 
 Integration tests will run against a real Omada Software Controller in a Docker container. They are **not** planned to run on every PR — they serve as a milestone release gate and a harness for Phase 2 (write tools).
 
