@@ -178,4 +178,33 @@ describe('InsightOperations', () => {
             expect(mockRequest.fetchPaginated).toHaveBeenCalledWith('/openapi/v1/test-omadac/sites/site-123/insight/routing/static', {}, undefined);
         });
     });
+
+    describe('getThreatDetail', () => {
+        it('should get threat detail with explicit time', async () => {
+            const mockResponse = { errorCode: 0, result: { id: 'threat-1' } };
+            vi.mocked(mockRequest.get).mockResolvedValue(mockResponse);
+            (mockRequest.ensureSuccess as ReturnType<typeof vi.fn>).mockReturnValue(mockResponse.result);
+
+            await insightOps.getThreatDetail('threat-1', 1640000000, 'site-123');
+
+            expect(mockRequest.get).toHaveBeenCalledWith(
+                '/openapi/v1/test-omadac/sites/site-123/ips/threat/threat-1',
+                { time: 1640000000 },
+                undefined
+            );
+        });
+
+        it('should use current time when time is not provided', async () => {
+            const mockResponse = { errorCode: 0, result: {} };
+            vi.mocked(mockRequest.get).mockResolvedValue(mockResponse);
+            (mockRequest.ensureSuccess as ReturnType<typeof vi.fn>).mockReturnValue(mockResponse.result);
+            const before = Math.floor(Date.now() / 1000);
+
+            await insightOps.getThreatDetail('threat-2', undefined, 'site-123');
+
+            const callArgs = (mockRequest.get as ReturnType<typeof vi.fn>).mock.calls[0][1] as { time: number };
+            expect(callArgs.time).toBeGreaterThanOrEqual(before);
+            expect(callArgs.time).toBeLessThanOrEqual(Math.floor(Date.now() / 1000) + 1);
+        });
+    });
 });

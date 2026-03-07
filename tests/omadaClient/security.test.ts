@@ -12,6 +12,7 @@ describe('omadaClient/security', () => {
         mockRequest = {
             request: vi.fn(),
             get: vi.fn(),
+            ensureSuccess: vi.fn((response: { result: unknown }) => response.result),
         } as unknown as RequestHandler;
 
         buildPath = (path: string) => `/api${path}`;
@@ -176,6 +177,126 @@ describe('omadaClient/security', () => {
 
             const result = await securityOps.getThreatSeverity(1700000000, 1700086400);
             expect(result).toBeUndefined();
+        });
+    });
+
+    describe('getControllerStatus', () => {
+        it('should get controller status', async () => {
+            const mockResponse = { errorCode: 0, result: { status: 'running' } };
+            (mockRequest.get as ReturnType<typeof vi.fn>).mockResolvedValue(mockResponse);
+            const result = await securityOps.getControllerStatus();
+            expect(mockRequest.get).toHaveBeenCalledWith('/api/system/setting/controller-status', undefined, undefined);
+            expect(result).toEqual({ status: 'running' });
+        });
+    });
+
+    describe('getGeneralSettings', () => {
+        it('should get global general settings', async () => {
+            const mockResponse = { errorCode: 0, result: {} };
+            (mockRequest.get as ReturnType<typeof vi.fn>).mockResolvedValue(mockResponse);
+            await securityOps.getGeneralSettings();
+            expect(mockRequest.get).toHaveBeenCalledWith('/api/global/controller/setting/general', undefined, undefined);
+        });
+    });
+
+    describe('getRetention', () => {
+        it('should get data retention settings', async () => {
+            const mockResponse = { errorCode: 0, result: {} };
+            (mockRequest.get as ReturnType<typeof vi.fn>).mockResolvedValue(mockResponse);
+            await securityOps.getRetention();
+            expect(mockRequest.get).toHaveBeenCalledWith('/api/controller/setting/retention', undefined, undefined);
+        });
+    });
+
+    describe('getMailServerStatus', () => {
+        it('should get mail server status', async () => {
+            const mockResponse = { errorCode: 0, result: { connected: true } };
+            (mockRequest.get as ReturnType<typeof vi.fn>).mockResolvedValue(mockResponse);
+            const result = await securityOps.getMailServerStatus();
+            expect(mockRequest.get).toHaveBeenCalledWith('/api/mail/status', undefined, undefined);
+            expect(result).toEqual({ connected: true });
+        });
+    });
+
+    describe('getWebhookLogsForGlobal', () => {
+        it('should get webhook dispatch logs with required params', async () => {
+            const mockResponse = { errorCode: 0, result: { data: [] } };
+            (mockRequest.get as ReturnType<typeof vi.fn>).mockResolvedValue(mockResponse);
+            await securityOps.getWebhookLogsForGlobal(1, 10, 'wh-1', 1700000000000, 1700086400000);
+            expect(mockRequest.get).toHaveBeenCalledWith(
+                '/api/webhook/settings/dispatch-logs',
+                {
+                    page: 1,
+                    pageSize: 10,
+                    'filters.webhookId': 'wh-1',
+                    'filters.timeStart': 1700000000000,
+                    'filters.timeEnd': 1700086400000,
+                },
+                undefined
+            );
+        });
+    });
+
+    describe('getClientActiveTimeout', () => {
+        it('should get client active timeout', async () => {
+            const mockResponse = { errorCode: 0, result: { timeout: 300 } };
+            (mockRequest.get as ReturnType<typeof vi.fn>).mockResolvedValue(mockResponse);
+            await securityOps.getClientActiveTimeout();
+            expect(mockRequest.get).toHaveBeenCalledWith('/api/controller/setting/active-timeout', undefined, undefined);
+        });
+    });
+
+    describe('getRemoteLogging', () => {
+        it('should get remote logging config', async () => {
+            const mockResponse = { errorCode: 0, result: {} };
+            (mockRequest.get as ReturnType<typeof vi.fn>).mockResolvedValue(mockResponse);
+            await securityOps.getRemoteLogging();
+            expect(mockRequest.get).toHaveBeenCalledWith('/api/global/controller/setting/syslog', undefined, undefined);
+        });
+    });
+
+    describe('getRadiusServer', () => {
+        it('should get global RADIUS server config', async () => {
+            const mockResponse = { errorCode: 0, result: {} };
+            (mockRequest.get as ReturnType<typeof vi.fn>).mockResolvedValue(mockResponse);
+            await securityOps.getRadiusServer();
+            expect(mockRequest.get).toHaveBeenCalledWith('/api/global/controller/setting/network/radius-server', undefined, undefined);
+        });
+    });
+
+    describe('getLogging', () => {
+        it('should get logging config', async () => {
+            const mockResponse = { errorCode: 0, result: {} };
+            (mockRequest.get as ReturnType<typeof vi.fn>).mockResolvedValue(mockResponse);
+            await securityOps.getLogging();
+            expect(mockRequest.get).toHaveBeenCalledWith('/api/system/setting/logging', undefined, undefined);
+        });
+    });
+
+    describe('getUiInterface', () => {
+        it('should get UI interface settings', async () => {
+            const mockResponse = { errorCode: 0, result: {} };
+            (mockRequest.get as ReturnType<typeof vi.fn>).mockResolvedValue(mockResponse);
+            await securityOps.getUiInterface();
+            expect(mockRequest.get).toHaveBeenCalledWith('/api/controller/setting/ui-interface', undefined, undefined);
+        });
+    });
+
+    describe('getDeviceAccessManagement', () => {
+        it('should get device access management settings', async () => {
+            const mockResponse = { errorCode: 0, result: {} };
+            (mockRequest.get as ReturnType<typeof vi.fn>).mockResolvedValue(mockResponse);
+            await securityOps.getDeviceAccessManagement();
+            expect(mockRequest.get).toHaveBeenCalledWith('/api/controller/setting/services/device-access', undefined, undefined);
+        });
+    });
+
+    describe('getWebhookForGlobal', () => {
+        it('should get webhook settings', async () => {
+            const mockResponse = { errorCode: 0, result: {} };
+            (mockRequest.get as ReturnType<typeof vi.fn>).mockResolvedValue(mockResponse);
+            await securityOps.getWebhookForGlobal();
+            expect(mockRequest.get).toHaveBeenCalledWith('/api/webhook/settings', undefined, undefined);
         });
     });
 });

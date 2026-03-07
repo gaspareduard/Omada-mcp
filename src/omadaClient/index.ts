@@ -372,6 +372,62 @@ export class OmadaClient {
         return await this.securityOps.getThreatSeverity(startTime, endTime, customHeaders);
     }
 
+    // Global Controller settings (issue #41)
+    public async getControllerStatus(customHeaders?: CustomHeaders): Promise<unknown> {
+        return await this.securityOps.getControllerStatus(customHeaders);
+    }
+
+    public async getGeneralSettings(customHeaders?: CustomHeaders): Promise<unknown> {
+        return await this.securityOps.getGeneralSettings(customHeaders);
+    }
+
+    public async getRetention(customHeaders?: CustomHeaders): Promise<unknown> {
+        return await this.securityOps.getRetention(customHeaders);
+    }
+
+    public async getClientActiveTimeout(customHeaders?: CustomHeaders): Promise<unknown> {
+        return await this.securityOps.getClientActiveTimeout(customHeaders);
+    }
+
+    public async getRemoteLogging(customHeaders?: CustomHeaders): Promise<unknown> {
+        return await this.securityOps.getRemoteLogging(customHeaders);
+    }
+
+    public async getRadiusServer(customHeaders?: CustomHeaders): Promise<unknown> {
+        return await this.securityOps.getRadiusServer(customHeaders);
+    }
+
+    public async getLogging(customHeaders?: CustomHeaders): Promise<unknown> {
+        return await this.securityOps.getLogging(customHeaders);
+    }
+
+    public async getUiInterface(customHeaders?: CustomHeaders): Promise<unknown> {
+        return await this.securityOps.getUiInterface(customHeaders);
+    }
+
+    public async getDeviceAccessManagement(customHeaders?: CustomHeaders): Promise<unknown> {
+        return await this.securityOps.getDeviceAccessManagement(customHeaders);
+    }
+
+    public async getWebhookForGlobal(customHeaders?: CustomHeaders): Promise<unknown> {
+        return await this.securityOps.getWebhookForGlobal(customHeaders);
+    }
+
+    public async getWebhookLogsForGlobal(
+        page: number,
+        pageSize: number,
+        webhookId: string,
+        timeStart: number,
+        timeEnd: number,
+        customHeaders?: CustomHeaders
+    ): Promise<unknown> {
+        return await this.securityOps.getWebhookLogsForGlobal(page, pageSize, webhookId, timeStart, timeEnd, customHeaders);
+    }
+
+    public async getMailServerStatus(customHeaders?: CustomHeaders): Promise<unknown> {
+        return await this.securityOps.getMailServerStatus(customHeaders);
+    }
+
     // Network operations (extended)
     public async getVpnSettings(siteId?: string, customHeaders?: CustomHeaders): Promise<unknown> {
         return await this.networkOps.getVpnSettings(siteId, customHeaders);
@@ -880,6 +936,47 @@ export class OmadaClient {
 
     public async listGlobalAuditLogs(options: LogQueryOptions, customHeaders?: CustomHeaders): Promise<PaginatedResult<unknown>> {
         return await this.logOps.listGlobalAuditLogs(options, customHeaders);
+    }
+
+    // Logs, Events & Alerts tools (issue #42)
+    public async getLogSettingForSite(siteId?: string, customHeaders?: CustomHeaders): Promise<unknown> {
+        return await this.logOps.getLogSettingForSite(siteId, customHeaders);
+    }
+
+    public async getLogSettingForSiteV2(siteId?: string, customHeaders?: CustomHeaders): Promise<unknown> {
+        return await this.logOps.getLogSettingForSiteV2(siteId, customHeaders);
+    }
+
+    public async getAuditLogSettingForSite(siteId?: string, customHeaders?: CustomHeaders): Promise<unknown> {
+        return await this.logOps.getAuditLogSettingForSite(siteId, customHeaders);
+    }
+
+    public async getLogSettingForGlobal(customHeaders?: CustomHeaders): Promise<unknown> {
+        return await this.logOps.getLogSettingForGlobal(customHeaders);
+    }
+
+    public async getLogSettingForGlobalV2(customHeaders?: CustomHeaders): Promise<unknown> {
+        return await this.logOps.getLogSettingForGlobalV2(customHeaders);
+    }
+
+    public async getAuditLogSettingForGlobal(customHeaders?: CustomHeaders): Promise<unknown> {
+        return await this.logOps.getAuditLogSettingForGlobal(customHeaders);
+    }
+
+    public async getAuditLogsForGlobal(
+        page: number,
+        pageSize: number,
+        options?: {
+            sortTime?: string;
+            filterResult?: number;
+            filterLevel?: string;
+            filterAuditTypes?: string;
+            filterTimes?: string;
+            searchKey?: string;
+        },
+        customHeaders?: CustomHeaders
+    ): Promise<unknown> {
+        return await this.logOps.getAuditLogsForGlobal(page, pageSize, options, customHeaders);
     }
 
     // Generic API call

@@ -9,7 +9,7 @@ describe('LogOperations', () => {
     let logOps: LogOperations;
     let mockRequest: RequestHandler;
     let mockSite: SiteOperations;
-    let mockBuildPath: (path: string) => string;
+    let mockBuildPath: (path: string, version?: string) => string;
 
     const makePaginatedResponse = (data: unknown[] = []): OmadaApiResponse<PaginatedResult<unknown>> => ({
         errorCode: 0,
@@ -32,7 +32,7 @@ describe('LogOperations', () => {
             resolveSiteId: vi.fn((siteId?: string) => siteId ?? 'default-site'),
         } as unknown as SiteOperations;
 
-        mockBuildPath = vi.fn((path: string) => `/openapi/v1/test-omadac${path}`);
+        mockBuildPath = vi.fn((path: string, version = 'v1') => `/openapi/${version}/test-omadac${path}`);
 
         logOps = new LogOperations(mockRequest, mockSite, mockBuildPath);
     });
@@ -133,6 +133,125 @@ describe('LogOperations', () => {
             const result = await logOps.listGlobalAuditLogs({ page: 1, pageSize: 10 });
 
             expect(mockRequest.get).toHaveBeenCalledWith('/openapi/v1/test-omadac/audit-logs', { page: 1, pageSize: 10 }, undefined);
+            expect(result.data).toHaveLength(1);
+        });
+    });
+
+    const makeSimpleResponse = (result: unknown = {}): { errorCode: number; result: unknown } => ({
+        errorCode: 0,
+        result,
+    });
+
+    describe('getLogSettingForSite', () => {
+        it('should get site log notification settings (v1)', async () => {
+            vi.mocked(mockRequest.get).mockResolvedValue(makeSimpleResponse({ enabled: true }));
+            await logOps.getLogSettingForSite();
+            expect(mockRequest.get).toHaveBeenCalledWith('/openapi/v1/test-omadac/sites/default-site/site/log-notification', undefined, undefined);
+        });
+    });
+
+    describe('getLogSettingForSiteV2', () => {
+        it('should get site log notification settings (v2)', async () => {
+            vi.mocked(mockRequest.get).mockResolvedValue(makeSimpleResponse({}));
+            await logOps.getLogSettingForSiteV2();
+            expect(mockRequest.get).toHaveBeenCalledWith('/openapi/v2/test-omadac/sites/default-site/site/log-notification', undefined, undefined);
+        });
+    });
+
+    describe('getAuditLogSettingForSite', () => {
+        it('should get site audit log notification settings', async () => {
+            vi.mocked(mockRequest.get).mockResolvedValue(makeSimpleResponse({}));
+            await logOps.getAuditLogSettingForSite();
+            expect(mockRequest.get).toHaveBeenCalledWith('/openapi/v1/test-omadac/sites/default-site/site/audit-notification', undefined, undefined);
+        });
+    });
+
+    describe('getLogSettingForGlobal', () => {
+        it('should get global log notification settings (v1)', async () => {
+            vi.mocked(mockRequest.get).mockResolvedValue(makeSimpleResponse({}));
+            await logOps.getLogSettingForGlobal();
+            expect(mockRequest.get).toHaveBeenCalledWith('/openapi/v1/test-omadac/log-notification', undefined, undefined);
+        });
+    });
+
+    describe('getLogSettingForGlobalV2', () => {
+        it('should get global log notification settings (v2)', async () => {
+            vi.mocked(mockRequest.get).mockResolvedValue(makeSimpleResponse({}));
+            await logOps.getLogSettingForGlobalV2();
+            expect(mockRequest.get).toHaveBeenCalledWith('/openapi/v2/test-omadac/log-notification', undefined, undefined);
+        });
+    });
+
+    describe('getAuditLogSettingForGlobal', () => {
+        it('should get global audit log notification settings', async () => {
+            vi.mocked(mockRequest.get).mockResolvedValue(makeSimpleResponse({}));
+            await logOps.getAuditLogSettingForGlobal();
+            expect(mockRequest.get).toHaveBeenCalledWith('/openapi/v1/test-omadac/audit-notification', undefined, undefined);
+        });
+    });
+
+    describe('getAuditLogsForGlobal', () => {
+        it('should get global audit logs with pagination only', async () => {
+            vi.mocked(mockRequest.get).mockResolvedValue(makeSimpleResponse({ data: [] }));
+            await logOps.getAuditLogsForGlobal(1, 10);
+            expect(mockRequest.get).toHaveBeenCalledWith('/openapi/v1/test-omadac/audit-logs', { page: 1, pageSize: 10 }, undefined);
+        });
+
+        it('should pass optional filters', async () => {
+            vi.mocked(mockRequest.get).mockResolvedValue(makeSimpleResponse({ data: [] }));
+            await logOps.getAuditLogsForGlobal(1, 10, { sortTime: 'desc', filterLevel: 'warning', searchKey: 'admin' });
+            expect(mockRequest.get).toHaveBeenCalledWith(
+                '/openapi/v1/test-omadac/audit-logs',
+                { page: 1, pageSize: 10, 'sorts.time': 'desc', 'filters.level': 'warning', searchKey: 'admin' },
+                undefined
+            );
+        });
+    });
+
+    describe('listSiteAlerts - optional params', () => {
+        it('should pass optional startTime, endTime, searchKey', async () => {
+            vi.mocked(mockRequest.get).mockResolvedValue(makePaginatedResponse([{ id: 'alert-1' }]));
+            await logOps.listSiteAlerts({ page: 1, pageSize: 10, startTime: 1640000000000, endTime: 1640100000000, searchKey: 'test' }, 'site-123');
+            expect(mockRequest.get).toHaveBeenCalledWith(
+                '/openapi/v1/test-omadac/sites/site-123/logs/alerts',
+                { page: 1, pageSize: 10, 'filters.startTime': 1640000000000, 'filters.endTime': 1640100000000, searchKey: 'test' },
+                undefined
+            );
+        });
+    });
+
+    describe('listSiteAuditLogs - optional params', () => {
+        it('should pass optional startTime, endTime, searchKey', async () => {
+            vi.mocked(mockRequest.get).mockResolvedValue(makePaginatedResponse([{ id: 'audit-1' }]));
+            await logOps.listSiteAuditLogs(
+                { page: 1, pageSize: 10, startTime: 1640000000000, endTime: 1640100000000, searchKey: 'test' },
+                'site-123'
+            );
+            expect(mockRequest.get).toHaveBeenCalledWith(
+                '/openapi/v1/test-omadac/sites/site-123/audit-logs',
+                { page: 1, pageSize: 10, 'filters.startTime': 1640000000000, 'filters.endTime': 1640100000000, searchKey: 'test' },
+                undefined
+            );
+        });
+    });
+
+    describe('listGlobalAuditLogs - optional params', () => {
+        it('should pass optional startTime, endTime, searchKey', async () => {
+            vi.mocked(mockRequest.get).mockResolvedValue(makePaginatedResponse([{ id: 'audit-1' }]));
+
+            const result = await logOps.listGlobalAuditLogs({
+                page: 1,
+                pageSize: 10,
+                startTime: 1640000000000,
+                endTime: 1640100000000,
+                searchKey: 'admin',
+            });
+
+            expect(mockRequest.get).toHaveBeenCalledWith(
+                '/openapi/v1/test-omadac/audit-logs',
+                { page: 1, pageSize: 10, 'filters.startTime': 1640000000000, 'filters.endTime': 1640100000000, searchKey: 'admin' },
+                undefined
+            );
             expect(result.data).toHaveLength(1);
         });
     });
