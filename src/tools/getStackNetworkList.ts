@@ -20,7 +20,7 @@ export function registerGetStackNetworkListTool(server: McpServer, client: Omada
             inputSchema: inputSchema.shape,
         },
         wrapToolHandler('getStackNetworkList', async ({ stackId, page, pageSize, siteId, customHeaders }) =>
-            toToolResult(await client.getStackNetworkList(stackId, page, pageSize, siteId, customHeaders))
+            toToolResult(await client.getStackNetworkList(stackId, page ?? 1, pageSize ?? 10, siteId, customHeaders))
         )
     );
 }

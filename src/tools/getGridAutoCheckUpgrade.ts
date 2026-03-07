@@ -15,7 +15,7 @@ export function registerGetGridAutoCheckUpgradeTool(server: McpServer, client: O
             inputSchema,
         },
         wrapToolHandler('getGridAutoCheckUpgrade', async ({ page, pageSize, customHeaders }) =>
-            toToolResult(await client.getGridAutoCheckUpgrade(page, pageSize, customHeaders))
+            toToolResult(await client.getGridAutoCheckUpgrade(page ?? 1, pageSize ?? 10, customHeaders))
         )
     );
 }
