@@ -414,6 +414,23 @@ describe('NetworkOperations', () => {
         });
     });
 
+    describe('getPortForwardingListPage', () => {
+        it('should get a single page of port forwarding rules', async () => {
+            const mockData = { data: [{ id: 'rule-1', externalPort: 80 }], totalRows: 1 };
+            const mockResponse: OmadaApiResponse<unknown> = { errorCode: 0, result: mockData };
+            vi.mocked(mockRequest.get).mockResolvedValue(mockResponse);
+
+            const result = await networkOps.getPortForwardingListPage(1, 10, 'site-123');
+
+            expect(mockRequest.get).toHaveBeenCalledWith(
+                '/openapi/v1/test-omadac/sites/site-123/nat/port-forwardings',
+                { page: 1, pageSize: 10 },
+                undefined
+            );
+            expect(result).toEqual(mockData);
+        });
+    });
+
     describe('listOneToOneNatRules', () => {
         it('should list one-to-one NAT rules', async () => {
             const mockData = [{ id: 'nat-1', externalIp: '1.2.3.4' }];
@@ -721,6 +738,21 @@ describe('NetworkOperations', () => {
             const result = await networkOps.getGridPolicyRouting(1, 10, 'site-123');
             expect(mockRequest.get).toHaveBeenCalledWith(
                 '/openapi/v1/test-omadac/sites/site-123/routing/policy-routings',
+                { page: 1, pageSize: 10 },
+                undefined
+            );
+            expect(result).toEqual(mockData);
+        });
+    });
+
+    describe('getGridStaticRouting', () => {
+        it('should get static routing rules with pagination', async () => {
+            const mockData = { data: [{ id: 'r1', destination: '10.0.0.0/8' }], totalRows: 1 };
+            const mockResponse: OmadaApiResponse<unknown> = { errorCode: 0, result: mockData };
+            vi.mocked(mockRequest.get).mockResolvedValue(mockResponse);
+            const result = await networkOps.getGridStaticRouting(1, 10, 'site-123');
+            expect(mockRequest.get).toHaveBeenCalledWith(
+                '/openapi/v1/test-omadac/sites/site-123/routing/static-routings',
                 { page: 1, pageSize: 10 },
                 undefined
             );

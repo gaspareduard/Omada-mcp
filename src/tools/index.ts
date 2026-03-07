@@ -20,6 +20,7 @@ import { registerGetAuditLogSettingForSiteTool } from './getAuditLogSettingForSi
 import { registerGetAuditLogsForGlobalTool } from './getAuditLogsForGlobal.js';
 import { registerGetBandSteeringSettingTool } from './getBandSteeringSetting.js';
 import { registerGetBandwidthControlTool } from './getBandwidthControl.js';
+import { registerGetBandwidthCtrlTool } from './getBandwidthCtrl.js';
 import { registerGetBeaconControlSettingTool } from './getBeaconControlSetting.js';
 import { registerGetCableTestFullResultsTool } from './getCableTestFullResults.js';
 import { registerGetCableTestLogsTool } from './getCableTestLogs.js';
@@ -74,6 +75,7 @@ import { registerGetGridOtoNatsTool } from './getGridOtoNats.js';
 import { registerGetGridPolicyRoutingTool } from './getGridPolicyRouting.js';
 import { registerGetGridSessionLimitRuleTool } from './getGridSessionLimitRule.js';
 import { registerGetGridSignatureTool } from './getGridSignature.js';
+import { registerGetGridStaticRoutingTool } from './getGridStaticRouting.js';
 import { registerGetGridVirtualWanTool } from './getGridVirtualWan.js';
 import { registerGetGroupProfilesByTypeTool } from './getGroupProfilesByType.js';
 import { registerGetIgmpTool } from './getIgmp.js';
@@ -109,6 +111,7 @@ import { registerGetOswAclListTool } from './getOswAclList.js';
 import { registerGetOswStackLagListTool } from './getOswStackLagList.js';
 import { registerGetOuiProfileListTool } from './getOuiProfileList.js';
 import { registerGetPastClientNumTool } from './getPastClientNum.js';
+import { registerGetPortForwardingListTool } from './getPortForwardingList.js';
 import { registerGetPortForwardingStatusTool } from './getPortForwardingStatus.js';
 import { registerGetPPSKProfilesTool } from './getPPSKProfiles.js';
 import { registerGetRadioFrequencyPlanningConfigTool } from './getRadioFrequencyPlanningConfig.js';
@@ -264,6 +267,7 @@ export function registerAllTools(server: McpServer, client: OmadaClient): void {
     registerGetInternetInfoTool(server, client);
     registerGetWanLanStatusTool(server, client);
     registerGetPortForwardingStatusTool(server, client);
+    registerGetPortForwardingListTool(server, client);
     registerListPortForwardingRulesTool(server, client);
     registerGetLanNetworkListTool(server, client);
     registerGetLanProfileListTool(server, client);
@@ -327,6 +331,7 @@ export function registerAllTools(server: McpServer, client: OmadaClient): void {
     registerListEapAclsTool(server, client);
     registerListStaticRoutesTool(server, client);
     registerGetStaticRoutingInterfaceListTool(server, client);
+    registerGetGridStaticRoutingTool(server, client);
     registerListPolicyRoutesTool(server, client);
     registerGetGridPolicyRoutingTool(server, client);
     registerGetGridOtoNatsTool(server, client);
@@ -340,6 +345,7 @@ export function registerAllTools(server: McpServer, client: OmadaClient): void {
     registerGetInterfaceLanNetworkTool(server, client);
     registerGetInterfaceLanNetworkV2Tool(server, client);
     registerGetBandwidthControlTool(server, client);
+    registerGetBandwidthCtrlTool(server, client);
     registerGetGridBandwidthCtrlRuleTool(server, client);
     registerGetSessionLimitTool(server, client);
     registerGetGridSessionLimitRuleTool(server, client);

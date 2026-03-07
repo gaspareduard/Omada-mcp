@@ -169,13 +169,26 @@ export class NetworkOperations {
     }
 
     /**
-     * List NAT port forwarding rules.
+     * List NAT port forwarding rules (all pages, paginated internally).
      * OperationId: getPortForwardingList
      */
     public async listPortForwardingRules(siteId?: string, customHeaders?: CustomHeaders): Promise<unknown[]> {
         const resolvedSiteId = this.site.resolveSiteId(siteId);
         const path = this.buildPath(`/sites/${encodeURIComponent(resolvedSiteId)}/nat/port-forwardings`);
         return await this.request.fetchPaginated<unknown>(path, {}, customHeaders);
+    }
+
+    /**
+     * Get a single page of NAT port forwarding rules.
+     * OperationId: getPortForwardingList (paginated)
+     * @param page - Page number (required by API, default: 1)
+     * @param pageSize - Page size (required by API, range: 1-1000, default: 10)
+     */
+    public async getPortForwardingListPage(page = 1, pageSize = 10, siteId?: string, customHeaders?: CustomHeaders): Promise<unknown> {
+        const resolvedSiteId = this.site.resolveSiteId(siteId);
+        const path = this.buildPath(`/sites/${encodeURIComponent(resolvedSiteId)}/nat/port-forwardings`);
+        const response = await this.request.get<OmadaApiResponse<unknown>>(path, { page, pageSize }, customHeaders);
+        return this.request.ensureSuccess(response);
     }
 
     /**
@@ -226,6 +239,17 @@ export class NetworkOperations {
         const resolvedSiteId = this.site.resolveSiteId(siteId);
         const path = this.buildPath(`/sites/${encodeURIComponent(resolvedSiteId)}/routing/static-routings`);
         return await this.request.fetchPaginated<unknown>(path, {}, customHeaders);
+    }
+
+    /**
+     * Get static routing rules with explicit pagination.
+     * OperationId: getGridStaticRouting
+     */
+    public async getGridStaticRouting(page: number, pageSize: number, siteId?: string, customHeaders?: CustomHeaders): Promise<unknown> {
+        const resolvedSiteId = this.site.resolveSiteId(siteId);
+        const path = this.buildPath(`/sites/${encodeURIComponent(resolvedSiteId)}/routing/static-routings`);
+        const response = await this.request.get<OmadaApiResponse<unknown>>(path, { page, pageSize }, customHeaders);
+        return this.request.ensureSuccess(response);
     }
 
     /**

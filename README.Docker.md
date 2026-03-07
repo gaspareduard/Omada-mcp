@@ -394,6 +394,81 @@ In client-credentials mode the server already treats `Mcp-Session-Id` as optiona
 | `getSiteAuditLogs`                  | List site audit logs.                                     | `listSiteAuditLogs`           |
 | `getEvents`                         | List global event logs across all sites.                  | `listGlobalEvents`            |
 | `getAlerts`                         | List global alert logs across all sites.                  | `listGlobalAlerts`            |
+| `getAclConfigTypeSetting` | Get the ACL configuration type setting for the site gateway (L2 or .... | `getAclConfigTypeSetting` |
+| `getAttackDefenseSetting` | Get the DDoS and attack defense configuration, including flood prot.... | `getAttackDefenseSetting` |
+| `getAuditLogSettingForGlobal` | Get global audit log notification settings for the controller. | `getAuditLogSettingForGlobal` |
+| `getAuditLogSettingForSite` | Get site-level audit log notification settings, including audit eve.... | `getAuditLogSettingForSite` |
+| `getAuditLogsForGlobal` | Get global audit logs (paginated). | `getAuditLogsForGlobal` |
+| `getBandSteeringSetting` | Get the band steering configuration. | `getBandSteeringSetting` |
+| `getBandwidthCtrl` | Get the global bandwidth control configuration for the site. | `getBandwidthControl` |
+| `getBeaconControlSetting` | Get the beacon control setting, which manages 802.11 beacon transmi.... | `getBeaconControlSetting` |
+| `getChannelLimitSetting` | [DEPRECATED] Get the channel limit setting that restricts which cha.... | `getChannelLimitSetting` |
+| `getClientActiveTimeout` | Get the client inactivity timeout setting. | `getClientActiveTimeout` |
+| `getClientDetail` | Get full detail for a specific client by MAC address, including con.... | `getClientDetail` |
+| `getClientToSiteVpnServerInfo` | Get detailed configuration for a specific client-to-site VPN server.... | `getClientToSiteVpnServerInfo` |
+| `getClientsDistribution` | Get client count distribution by connection type and band (wired, 2.... | `getClientsDistribution` |
+| `getControllerStatus` | Get the Omada controller health and status, including running state.... | `getControllerStatus` |
+| `getDeviceAccessManagement` | Get the device access management settings, controlling which device.... | `getDeviceAccessManagement` |
+| `getEapDot1xSetting` | Get the 802.1X EAP setting for access points, controlling port-base.... | `—` |
+| `getGeneralSettings` | Get the global general settings for the Omada controller, including.... | `getGeneralSettings` |
+| `getGridAllowList` | Get the IPS allow list (paginated). | `getGridAllowList` |
+| `getGridAllowMacFiltering` | Get the MAC address allow-list entries (paginated). | `getGridAllowMacFiltering` |
+| `getGridBlockList` | Get the IPS block list (paginated). | `getGridBlockList` |
+| `getGridClientHistory` | Get per-client connection history (paginated). | `getGridClientHistory` |
+| `getGridDenyMacFiltering` | Get the MAC address deny-list entries (paginated). | `getGridDenyMacFiltering` |
+| `getGridEapRule` | Get the URL filter AP rules (paginated). | `getGridEapRule` |
+| `getGridGatewayRule` | Get the URL filter gateway rules (paginated). | `getGridGatewayRule` |
+| `getGridIpsecFailover` | Get IPsec failover configuration (paginated). | `getGridIpsecFailover` |
+| `getGridKnownClients` | Get historical known clients list (paginated). | `getGridKnownClients` |
+| `getGridSignature` | Get the IPS signature list (paginated). | `getGridSignature` |
+| `getGridStaticRouting` | Get static routing rules for the site gateway with explicit pagination. | `getGridStaticRouting` |
+| `getGroupProfilesByType` | Get group profiles filtered by type (e.g. | `getGroupProfilesByType` |
+| `getIpsConfig` | Get the IPS (Intrusion Prevention System) global configuration, inc.... | `getIpsConfig` |
+| `getIpsecVpnStats` | Get IPsec VPN tunnel statistics for a site (paginated), including a.... | `getIpsecVpnStats` |
+| `getLdapProfileList` | List all LDAP authentication profiles configured on the site. | `getLdapProfileList` |
+| `getLogSettingForGlobal` | Get global log notification settings (v1), including global alert r.... | `getLogSettingForGlobal` |
+| `getLogSettingForGlobalV2` | Get global log notification settings (v2), with extended notificati.... | `—` |
+| `getLogSettingForSite` | Get site-level log notification settings (v1), including alert reci.... | `getLogSettingForSite` |
+| `getLogSettingForSiteV2` | Get site-level log notification settings (v2), with extended notifi.... | `—` |
+| `getLogging` | Get the controller logging configuration, including log levels and .... | `getLogging` |
+| `getMacAuthSetting` | Get the MAC authentication global setting. | `getMacAuthSetting` |
+| `getMacAuthSsids` | Get per-SSID MAC authentication settings showing which SSIDs have M.... | `getMacAuthSsids` |
+| `getMacFilteringGeneralSetting` | Get the MAC filtering global setting. | `getMacFilteringGeneralSetting` |
+| `getMailServerStatus` | Get the mail server connection status for the controller. | `getMailServerStatus` |
+| `getMeshSetting` | Get the mesh networking configuration including mesh topology mode .... | `getMeshSetting` |
+| `getOsgCustomAclList` | Get the custom gateway ACL rules list (paginated). | `getOsgCustomAclList` |
+| `getOswAclList` | Get the switch ACL list (paginated). | `getOswAclList` |
+| `getOuiProfileList` | Get the OUI-based device profile list (paginated). | `getOuiProfileList` |
+| `getPPSKProfiles` | List Private PSK (PPSK) profiles for the site by type. | `getPPSKProfiles` |
+| `getPastClientNum` | Get historical client count trend over a time range. | `getPastClientNum` |
+| `getRadioFrequencyPlanningConfig` | Get the RF planning configuration for the site, including frequency.... | `getRadioFrequencyPlanningConfig` |
+| `getRadioFrequencyPlanningResult` | Get the RF planning result for the site. | `getRadioFrequencyPlanningResult` |
+| `getRadiusServer` | Get the global RADIUS server configuration for the controller. | `getRadiusServer` |
+| `getRadiusUserList` | List local RADIUS server users (paginated). | `getRadiusUserList` |
+| `getRemoteLogging` | Get the global syslog/remote logging configuration, including syslo.... | `getRemoteLogging` |
+| `getRetention` | Get the data retention configuration for the controller, including .... | `getRetention` |
+| `getRoamingSetting` | Get the client roaming configuration, including 802.11r/k/v setting.... | `getRoamingSetting` |
+| `getRoutingTable` | Get the live routing table for a site filtered by type. | `getRoutingTable` |
+| `getServiceTypeSummary` | Get a summary of service type profiles for the site, including pred.... | `getServiceTypeSummary` |
+| `getSiteToSiteVpnInfo` | Get detailed information about a specific site-to-site VPN by ID, i.... | `getSiteToSiteVpnInfo` |
+| `getSsidsBySite` | Get a flat SSID list filtered by device type. | `getSsidsBySite` |
+| `getSslVpnServerSetting` | Get the SSL VPN server configuration, including port, protocol, and.... | `getSslVpnServerSetting` |
+| `getSwitchDot1xSetting` | Get the 802.1X switch port authentication setting. | `—` |
+| `getThreatCount` | Get the global threat count grouped by severity level (critical, hi.... | `getThreatSeverity` |
+| `getThreatDetail` | Get detailed information about a specific IPS threat event by its ID. | `getThreatDetail` |
+| `getUiInterface` | Get the UI interface settings for the controller, including timeout.... | `getUiInterface` |
+| `getUrlFilterGeneral` | Get the URL filter global setting, including whether URL filtering .... | `getUrlFilterGeneral` |
+| `getWebhookForGlobal` | Get the global webhook notification settings, including webhook URL.... | `getWebhookForGlobal` |
+| `getWebhookLogsForGlobal` | Get webhook dispatch logs (paginated). | `getWebhookLogsForGlobal` |
+| `getWidsBlacklist` | Get the WIPS (Wireless Intrusion Prevention System) rogue AP blackl.... | `getWidsBlacklist` |
+| `getWireguardSummary` | Get a summary of WireGuard VPN configurations for the site, includi.... | `getWireguardSummary` |
+| `listClientToSiteVpnClients` | List all client-to-site VPN client configurations on the site. | `listClientToSiteVpnClients` |
+| `listClientToSiteVpnServers` | List all client-to-site VPN server configurations on the site, incl.... | `listClientToSiteVpnServers` |
+| `listDevicesStats` | Query statistics for global adopted devices with pagination and fil.... | `listDevicesStats` |
+| `listMdnsProfile` | List all Bonjour/mDNS service profiles configured on the site for c.... | `listMdnsProfile` |
+| `listServiceType` | List service type profiles (paginated). | `listServiceType` |
+| `listWireguard` | List WireGuard VPN tunnels (paginated). | `listWireguard` |
+| `listWireguardPeers` | List WireGuard peers (paginated). | `listWireguardPeers` |
 
 ## Contributing
 

@@ -122,3 +122,60 @@ describe('Network Configuration Tools', () => {
         });
     });
 });
+
+describe('registerGetGridStaticRoutingTool', () => {
+    it('should register the tool and handle successful response', async () => {
+        const { registerGetGridStaticRoutingTool } = await import('../../src/tools/getGridStaticRouting.js');
+
+        const mockResult = { data: [{ id: 'route1', destination: '10.0.0.0/8', gateway: '192.168.1.1' }], totalRows: 1 };
+        const mockClient = { getGridStaticRouting: vi.fn().mockResolvedValue(mockResult) };
+        const mockServer = { registerTool: vi.fn((_, _schema, handler) => handler({ page: 1, pageSize: 10, siteId: 'site1' }, {})) };
+
+        registerGetGridStaticRoutingTool(mockServer as never, mockClient as never);
+
+        expect(mockServer.registerTool).toHaveBeenCalledWith(
+            'getGridStaticRouting',
+            expect.objectContaining({ description: expect.any(String) }),
+            expect.any(Function)
+        );
+        expect(mockClient.getGridStaticRouting).toHaveBeenCalledWith(1, 10, 'site1', undefined);
+    });
+});
+
+describe('registerGetPortForwardingListTool', () => {
+    it('should register the tool and handle successful response', async () => {
+        const { registerGetPortForwardingListTool } = await import('../../src/tools/getPortForwardingList.js');
+
+        const mockResult = { data: [{ id: 'fwd1', externalPort: 80, internalPort: 8080, internalIp: '192.168.1.10' }], totalRows: 1 };
+        const mockClient = { getPortForwardingListPage: vi.fn().mockResolvedValue(mockResult) };
+        const mockServer = { registerTool: vi.fn((_, _schema, handler) => handler({ page: 1, pageSize: 10, siteId: 'site1' }, {})) };
+
+        registerGetPortForwardingListTool(mockServer as never, mockClient as never);
+
+        expect(mockServer.registerTool).toHaveBeenCalledWith(
+            'getPortForwardingList',
+            expect.objectContaining({ description: expect.any(String) }),
+            expect.any(Function)
+        );
+        expect(mockClient.getPortForwardingListPage).toHaveBeenCalledWith(1, 10, 'site1', undefined);
+    });
+});
+
+describe('registerGetBandwidthCtrlTool', () => {
+    it('should register the tool and handle successful response', async () => {
+        const { registerGetBandwidthCtrlTool } = await import('../../src/tools/getBandwidthCtrl.js');
+
+        const mockConfig = { enable: true, upBandwidth: 100, downBandwidth: 100 };
+        const mockClient = { getBandwidthControl: vi.fn().mockResolvedValue(mockConfig) };
+        const mockServer = { registerTool: vi.fn((_, _schema, handler) => handler({ siteId: 'site1' }, {})) };
+
+        registerGetBandwidthCtrlTool(mockServer as never, mockClient as never);
+
+        expect(mockServer.registerTool).toHaveBeenCalledWith(
+            'getBandwidthCtrl',
+            expect.objectContaining({ description: expect.any(String) }),
+            expect.any(Function)
+        );
+        expect(mockClient.getBandwidthControl).toHaveBeenCalledWith('site1', undefined);
+    });
+});
