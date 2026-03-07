@@ -1,6 +1,6 @@
 {
     "name": "tplink-omada-mcp",
-    "version": "0.9.0",
+    "version": "0.10.0",
     "description": "Model Context Protocol server that exposes TP-Link Omada controller APIs",
     "type": "module",
     "main": "dist/index.js",
