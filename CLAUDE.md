@@ -67,15 +67,49 @@ Reference `.env.example`. Primary variables:
 
 ## Testing
 
+### Unit Tests
+
 - The project uses **Vitest** as the test framework.
 - All test files should be placed in the `tests/` directory with the `.test.ts` extension.
 - The test folder structure **must mirror** the `src/` folder structure for consistency and maintainability.
+  - Example: `src/tools/getClientDetail.ts` → `tests/tools/getClientDetail.test.ts`
 - Run tests with `npm test` or `npm run test:watch` for watch mode.
-- Test coverage can be generated with `npm run test:coverage`. The coverage needs to be above 80% on Lines, Branches, Functions, and Statements for the entire project. Focus on covering edge cases and error handling. Always validate after making changes.
+- Test coverage can be generated with `npm run test:coverage`.
 - All configuration validations must be implemented in `src/utils/config-validations.ts` and tested thoroughly.
 - No validation logic should exist outside of `src/config.ts` and `src/utils/config-validations.ts`.
 - Mock external dependencies (e.g., Omada API calls) in tests to ensure isolation. Use Vitest's mocking capabilities for this purpose.
-- Keep the coverage above 90% for all source files. Focus on covering edge cases and error handling. Always validate after making changes.
+
+### Coverage Thresholds
+
+Coverage is enforced at two levels:
+
+| Level | Metric | Threshold |
+|-------|--------|-----------|
+| Per-file | Lines, Statements, Functions | **90%** |
+| Global | Branches | **70%** |
+
+- Per-file thresholds are enforced by Vitest (`vitest.config.ts` — `thresholds.perFile: true`).
+- Global branch coverage is enforced by a dedicated CI step reading `coverage-summary.json`.
+- The following files are excluded from coverage reporting (infrastructure/bootstrap code):
+  - `src/omadaClient/index.ts`
+  - `src/server/http.ts`
+  - `src/server/stream.ts`
+  - `src/omadaClient/request.ts`
+- Focus on meaningful coverage — edge cases, error handling, optional params — not just line-hitting.
+
+### Integration Tests (Docker)
+
+> **Not implemented yet** — this section documents the planned integration testing strategy tracked in **#57** (v0.10.0 gate) and **#58** (v1.0.0 Docker infra).
+
+Integration tests will run against a real Omada Software Controller in a Docker container. They are **not** planned to run on every PR — they serve as a milestone release gate and a harness for Phase 2 (write tools).
+
+Planned components:
+- `tests/integration/`
+- `npm run test:integration`
+- `test/docker/` + `test/docker/README.md`
+- CI workflow `integration-tests.yml` (on demand or nightly; not per-PR)
+
+**Phase 2 write tools MUST be tested against the Docker controller — never against `omada.miguel.ms` or any production controller.**
 
 ## Development Workflow
 

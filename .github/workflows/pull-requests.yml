@@ -8,8 +8,10 @@ on:
     paths:
       - "src/**"
       - "tests/**"
+      - "scripts/**"
       - "*.json"
       - "*.ts"
+      - "*.md"
       - ".github/workflows/*.yml"
 
 concurrency:
@@ -63,6 +65,12 @@ jobs:
             }
             if (failed) process.exit(1);
           "
+
+      - name: Check all tools have test coverage
+        run: node scripts/check-tool-tests.mjs
+
+      - name: Check README sync
+        run: node scripts/check-readme-sync.mjs
 
       - name: Upload coverage reports
         uses: actions/upload-artifact@v4
