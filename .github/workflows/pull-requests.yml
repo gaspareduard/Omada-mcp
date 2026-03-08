@@ -85,6 +85,27 @@ jobs:
         id: readme_sync
         run: node scripts/check-readme-sync.mjs
 
+      - name: Check AI instruction symlinks
+        id: symlinks
+        run: |
+          FAIL=0
+          for link in AGENTS.md .github/copilot-instructions.md .github/AGENTS.md; do
+            if [ ! -L "$link" ]; then
+              echo "❌ $link is missing or not a symlink"
+              FAIL=1
+            else
+              target=$(readlink "$link")
+              resolved=$(realpath "$link" 2>/dev/null || true)
+              if [ ! -f "$resolved" ]; then
+                echo "❌ $link -> $target (broken — target does not exist)"
+                FAIL=1
+              else
+                echo "✅ $link -> $target"
+              fi
+            fi
+          done
+          exit $FAIL
+
       - name: Upload coverage reports
         uses: actions/upload-artifact@v4
         if: always()
@@ -105,6 +126,7 @@ jobs:
               coverage:   '${{ steps.coverage.outcome }}',
               tool_tests: '${{ steps.tool_tests.outcome }}',
               readme_sync:'${{ steps.readme_sync.outcome }}',
+              symlinks:   '${{ steps.symlinks.outcome }}',
             };
 
             const icon = (outcome) =>
@@ -140,6 +162,7 @@ jobs:
             | Coverage thresholds | ${icon(steps.coverage)} ${steps.coverage} |
             | 1:1 test file mirroring | ${icon(steps.tool_tests)} ${steps.tool_tests} |
             | README sync | ${icon(steps.readme_sync)} ${steps.readme_sync} |
+            | AI instruction symlinks | ${icon(steps.symlinks)} ${steps.symlinks} |
             ${coverageTable}
             <sub>🤖 Posted by CI · ${new Date().toUTCString()}</sub>`;
 
