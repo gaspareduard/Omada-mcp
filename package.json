@@ -22,7 +22,10 @@
         "inspector:build": "npm run build && tsx scripts/run-inspector.ts build",
         "docker:build": "docker build -f Dockerfile -t ghcr.io/migueltvms/tplink-omada-mcp:latest .",
         "docker:run": "docker run --rm -it --env-file .env --env-file .env.local ghcr.io/migueltvms/tplink-omada-mcp:latest",
-        "docker:push": "docker push ghcr.io/migueltvms/tplink-omada-mcp:latest"
+        "docker:push": "docker push ghcr.io/migueltvms/tplink-omada-mcp:latest",
+        "prepare": "husky",
+        "symlinks:fix": "bash scripts/fix-symlinks.sh",
+        "symlinks:check": "bash -e -c \"for l in AGENTS.md .github/copilot-instructions.md .github/AGENTS.md; do [ -L $l ] || { echo ❌ $l missing; exit 1; }; done && echo ✅ symlinks OK\""
     },
     "keywords": ["mcp", "tp-link", "omada"],
     "engines": {
@@ -45,6 +48,7 @@
         "@vitest/coverage-v8": "^4.0.10",
         "@vitest/ui": "^4.0.8",
         "concurrently": "^9.1.0",
+        "husky": "^9.1.7",
         "tsx": "^4.20.6",
         "typescript": "^5.9.3",
         "vitest": "^4.0.8"
