@@ -114,6 +114,36 @@ Planned components:
 
 **Phase 2 write tools MUST be tested against the Docker controller — never against `omada.miguel.ms` or any production controller.**
 
+## AI Instruction Files
+
+This repo exposes a single source of truth for AI agent instructions: **`CLAUDE.md`** (this file).
+
+Three symlinks point to it so every AI agent picks it up automatically:
+
+| Symlink | Used by |
+|---|---|
+| `AGENTS.md` | Codex / OpenAI agents |
+| `.github/copilot-instructions.md` | GitHub Copilot |
+| `.github/AGENTS.md` | Codex (alternate location) |
+
+### Keeping symlinks intact
+
+Symlink integrity is enforced at three levels:
+
+1. **husky pre-commit hook** (`.husky/pre-commit`) — blocks any local commit if a symlink is missing or broken.
+2. **PR CI check** (`.github/workflows/pull-requests.yml`) — fails the PR if symlinks are gone.
+3. **Push CI check** (`.github/workflows/integrity.yml`) — fires on every direct push to `develop`/`main`.
+
+**If symlinks are ever lost**, recreate them with:
+
+```bash
+npm run symlinks:fix
+git add AGENTS.md .github/copilot-instructions.md .github/AGENTS.md
+git commit -m "chore: restore AI instruction symlinks"
+```
+
+> **Never replace these symlinks with copies of the file.** A copy will drift out of sync. Always keep them as symlinks.
+
 ## Development Workflow
 
 - Install dependencies: `npm install` (runs automatically on container create).
@@ -134,9 +164,10 @@ Planned components:
 
 - Keep environment secrets out of the repo; only commit `.env.example`.
 - **Before every commit**, all of the following must pass:
-  1. `npm run lint` — Biome lint and import ordering
+  1. `npm run check` — Biome lint + TypeScript type check
   2. `npm run build` — TypeScript compilation
   3. `npm test` — full test suite
+  4. `npm run symlinks:check` — AI instruction symlinks intact (auto-enforced by husky pre-commit)
 - If any of the above fail, fix the issues first, then commit.
 - Reference the OpenAPI spec in `docs/` when adding or updating Omada API interactions.
 
