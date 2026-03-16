@@ -1,5 +1,6 @@
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import type { ToolCategory, ToolPermission } from '../../src/config.js';
 import type { OmadaClient } from '../../src/omadaClient/index.js';
 import * as commonModule from '../../src/server/common.js';
 import { startStdioServer } from '../../src/server/stdio.js';
@@ -56,6 +57,13 @@ describe('server/stdio', () => {
             mockServer.connect.mockRejectedValue(error);
 
             await expect(startStdioServer(mockClient)).rejects.toThrow('Connection failed');
+        });
+
+        it('should pass activeCategories to registerAllTools', async () => {
+            const { registerAllTools } = await import('../../src/tools/index.js');
+            const activeCategories = new Map<ToolCategory, Set<ToolPermission>>([['dashboard' as ToolCategory, new Set<ToolPermission>(['read'])]]);
+            await startStdioServer(mockClient, activeCategories);
+            expect(registerAllTools).toHaveBeenCalledWith(mockServer, mockClient, activeCategories);
         });
     });
 });

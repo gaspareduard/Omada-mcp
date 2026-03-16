@@ -1,6 +1,8 @@
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 
+import type { ToolCategory, ToolPermission } from '../config.js';
 import type { OmadaClient } from '../omadaClient/index.js';
+import { logger } from '../utils/logger.js';
 import { registerDisableClientRateLimitTool } from './disableClientRateLimit.js';
 import { registerGetAccessControlTool } from './getAccessControl.js';
 import { registerGetAclConfigTypeSettingTool } from './getAclConfigTypeSetting.js';
@@ -199,230 +201,307 @@ import { registerSearchDevicesTool } from './searchDevices.js';
 import { registerSetClientRateLimitTool } from './setClientRateLimit.js';
 import { registerSetClientRateLimitProfileTool } from './setClientRateLimitProfile.js';
 
-export function registerAllTools(server: McpServer, client: OmadaClient): void {
-    // Site operations
-    registerListSitesTool(server, client);
+// ---------------------------------------------------------------------------
+// Tool registry: each entry maps a register-function to its category and
+// permission type ('read' for pure read operations, 'write' for mutations).
+// ---------------------------------------------------------------------------
 
-    // Device operations
-    registerListDevicesTool(server, client);
-    registerGetDeviceTool(server, client);
-    registerGetSwitchStackDetailTool(server, client);
-    registerGetSwitchDetailTool(server, client);
-    registerGetGatewayDetailTool(server, client);
-    registerGetGatewayWanStatusTool(server, client);
-    registerGetGatewayLanStatusTool(server, client);
-    registerGetGatewayPortsTool(server, client);
-    registerGetApDetailTool(server, client);
-    registerGetApRadiosTool(server, client);
-    registerGetStackPortsTool(server, client);
-    registerListPendingDevicesTool(server, client);
-    registerSearchDevicesTool(server, client);
-    registerListDevicesStatsTool(server, client);
-    // Issue #36 — Device management read tools
-    registerGetAllDeviceBySiteTool(server, client);
-    registerGetFirmwareInfoTool(server, client);
-    registerGetGridAutoCheckUpgradeTool(server, client);
-    registerListSwitchNetworksTool(server, client);
-    registerGetSwitchGeneralConfigTool(server, client);
-    registerGetCableTestLogsTool(server, client);
-    registerGetCableTestFullResultsTool(server, client);
-    registerGetOswStackLagListTool(server, client);
-    registerGetStackNetworkListTool(server, client);
-    registerGetApUplinkConfigTool(server, client);
-    registerGetRadiosConfigTool(server, client);
-    registerGetApVlanConfigTool(server, client);
-    registerGetMeshStatisticsTool(server, client);
-    registerGetRFScanResultTool(server, client);
-    registerGetSpeedTestResultsTool(server, client);
-    registerGetApSnmpConfigTool(server, client);
-    registerGetApLldpConfigTool(server, client);
-    registerGetApGeneralConfigTool(server, client);
-    registerGetUplinkWiredDetailTool(server, client);
-    registerGetDownlinkWiredDevicesTool(server, client);
+interface ToolEntry {
+    fn: (server: McpServer, client: OmadaClient) => void;
+    category: ToolCategory;
+    permission: ToolPermission;
+}
 
-    // Client operations
-    registerListClientsTool(server, client);
-    registerGetClientTool(server, client);
-    registerListMostActiveClientsTool(server, client);
-    registerListClientsActivityTool(server, client);
-    registerListClientsPastConnectionsTool(server, client);
-    registerGetClientDetailTool(server, client);
-    registerGetGridKnownClientsTool(server, client);
-    registerGetGridClientHistoryTool(server, client);
-    registerGetClientsDistributionTool(server, client);
-    registerGetPastClientNumTool(server, client);
+const TOOL_REGISTRY: ToolEntry[] = [
+    // --- Sites ---
+    { fn: registerListSitesTool, category: 'sites', permission: 'read' },
 
-    // Rate limit operations
-    registerGetRateLimitProfilesTool(server, client);
-    registerSetClientRateLimitTool(server, client);
-    registerSetClientRateLimitProfileTool(server, client);
-    registerDisableClientRateLimitTool(server, client);
+    // --- Devices (general) ---
+    { fn: registerListDevicesTool, category: 'devices-general', permission: 'read' },
+    { fn: registerGetDeviceTool, category: 'devices-general', permission: 'read' },
+    { fn: registerListPendingDevicesTool, category: 'devices-general', permission: 'read' },
+    { fn: registerSearchDevicesTool, category: 'devices-general', permission: 'read' },
+    { fn: registerListDevicesStatsTool, category: 'devices-general', permission: 'read' },
+    { fn: registerGetAllDeviceBySiteTool, category: 'devices-general', permission: 'read' },
+    { fn: registerGetFirmwareInfoTool, category: 'devices-general', permission: 'read' },
+    { fn: registerGetGridAutoCheckUpgradeTool, category: 'devices-general', permission: 'read' },
+    { fn: registerGetUplinkWiredDetailTool, category: 'devices-general', permission: 'read' },
+    { fn: registerGetDownlinkWiredDevicesTool, category: 'devices-general', permission: 'read' },
+    { fn: registerGetSpeedTestResultsTool, category: 'devices-general', permission: 'read' },
 
-    // Security / threat operations
-    registerGetThreatListTool(server, client);
-    registerGetTopThreatsTool(server, client);
-    registerListSiteThreatManagementTool(server, client);
+    // --- Devices (switch) ---
+    { fn: registerGetSwitchStackDetailTool, category: 'devices-switch', permission: 'read' },
+    { fn: registerGetSwitchDetailTool, category: 'devices-switch', permission: 'read' },
+    { fn: registerGetStackPortsTool, category: 'devices-switch', permission: 'read' },
+    { fn: registerListSwitchNetworksTool, category: 'devices-switch', permission: 'read' },
+    { fn: registerGetSwitchGeneralConfigTool, category: 'devices-switch', permission: 'read' },
+    { fn: registerGetCableTestLogsTool, category: 'devices-switch', permission: 'read' },
+    { fn: registerGetCableTestFullResultsTool, category: 'devices-switch', permission: 'read' },
+    { fn: registerGetOswStackLagListTool, category: 'devices-switch', permission: 'read' },
+    { fn: registerGetStackNetworkListTool, category: 'devices-switch', permission: 'read' },
+    { fn: registerGetSwitchDot1xSettingTool, category: 'devices-switch', permission: 'read' },
 
-    // Network operations
-    registerGetInternetInfoTool(server, client);
-    registerGetWanLanStatusTool(server, client);
-    registerGetPortForwardingStatusTool(server, client);
-    registerGetPortForwardingListTool(server, client);
-    registerListPortForwardingRulesTool(server, client);
-    registerGetLanNetworkListTool(server, client);
-    registerGetLanProfileListTool(server, client);
-    registerGetWlanGroupListTool(server, client);
-    registerGetSsidListTool(server, client);
-    registerGetSsidDetailTool(server, client);
-    registerListAllSsidsTool(server, client);
-    registerGetSsidsBySiteTool(server, client);
-    registerGetRadioFrequencyPlanningConfigTool(server, client);
-    registerGetRadioFrequencyPlanningResultTool(server, client);
-    registerGetBandSteeringSettingTool(server, client);
-    registerGetBeaconControlSettingTool(server, client);
-    registerGetChannelLimitSettingTool(server, client);
-    registerGetMeshSettingTool(server, client);
-    registerGetRoamingSettingTool(server, client);
-    registerGetOuiProfileListTool(server, client);
-    registerGetMacAuthSettingTool(server, client);
-    registerGetMacAuthSsidsTool(server, client);
-    registerGetMacFilteringGeneralSettingTool(server, client);
-    registerGetGridAllowMacFilteringTool(server, client);
-    registerGetGridDenyMacFilteringTool(server, client);
-    registerGetSwitchDot1xSettingTool(server, client);
-    registerGetEapDot1xSettingTool(server, client);
+    // --- Devices (AP) ---
+    { fn: registerGetApDetailTool, category: 'devices-ap', permission: 'read' },
+    { fn: registerGetApRadiosTool, category: 'devices-ap', permission: 'read' },
+    { fn: registerGetApUplinkConfigTool, category: 'devices-ap', permission: 'read' },
+    { fn: registerGetRadiosConfigTool, category: 'devices-ap', permission: 'read' },
+    { fn: registerGetApVlanConfigTool, category: 'devices-ap', permission: 'read' },
+    { fn: registerGetMeshStatisticsTool, category: 'devices-ap', permission: 'read' },
+    { fn: registerGetRFScanResultTool, category: 'devices-ap', permission: 'read' },
+    { fn: registerGetApSnmpConfigTool, category: 'devices-ap', permission: 'read' },
+    { fn: registerGetApLldpConfigTool, category: 'devices-ap', permission: 'read' },
+    { fn: registerGetApGeneralConfigTool, category: 'devices-ap', permission: 'read' },
 
-    // Firewall / ACL / IPS / URL-filter tools (issue #37)
-    registerGetAclConfigTypeSettingTool(server, client);
-    registerGetOsgCustomAclListTool(server, client);
-    registerGetOswAclListTool(server, client);
-    registerGetIpsConfigTool(server, client);
-    registerGetGridSignatureTool(server, client);
-    registerGetGridAllowListTool(server, client);
-    registerGetGridBlockListTool(server, client);
-    registerGetAttackDefenseSettingTool(server, client);
-    registerGetUrlFilterGeneralTool(server, client);
-    registerGetGridGatewayRuleTool(server, client);
-    registerGetGridEapRuleTool(server, client);
-    registerGetFirewallSettingTool(server, client);
-    registerGetVpnSettingsTool(server, client);
-    registerListSiteToSiteVpnsTool(server, client);
+    // --- Devices (gateway) ---
+    { fn: registerGetGatewayDetailTool, category: 'devices-gateway', permission: 'read' },
+    { fn: registerGetGatewayWanStatusTool, category: 'devices-gateway', permission: 'read' },
+    { fn: registerGetGatewayLanStatusTool, category: 'devices-gateway', permission: 'read' },
+    { fn: registerGetGatewayPortsTool, category: 'devices-gateway', permission: 'read' },
 
-    // VPN tools (issue #39)
-    registerGetSiteToSiteVpnInfoTool(server, client);
-    registerListWireguardTool(server, client);
-    registerListWireguardPeersTool(server, client);
-    registerGetWireguardSummaryTool(server, client);
-    registerListClientToSiteVpnServersTool(server, client);
-    registerListClientToSiteVpnClientsTool(server, client);
-    registerGetClientToSiteVpnServerInfoTool(server, client);
-    registerGetSslVpnServerSettingTool(server, client);
-    registerGetGridIpsecFailoverTool(server, client);
+    // --- Clients ---
+    { fn: registerListClientsTool, category: 'clients', permission: 'read' },
+    { fn: registerGetClientTool, category: 'clients', permission: 'read' },
+    { fn: registerGetClientDetailTool, category: 'clients', permission: 'read' },
+    { fn: registerGetGridKnownClientsTool, category: 'clients', permission: 'read' },
+    { fn: registerGetGridClientHistoryTool, category: 'clients', permission: 'read' },
+    { fn: registerSetClientRateLimitTool, category: 'clients', permission: 'write' },
+    { fn: registerSetClientRateLimitProfileTool, category: 'clients', permission: 'write' },
+    { fn: registerDisableClientRateLimitTool, category: 'clients', permission: 'write' },
 
-    // Profiles & Policies tools (issue #40)
-    registerListServiceTypeTool(server, client);
-    registerGetServiceTypeSummaryTool(server, client);
-    registerGetGroupProfilesByTypeTool(server, client);
-    registerGetLdapProfileListTool(server, client);
-    registerGetRadiusUserListTool(server, client);
-    registerGetPPSKProfilesTool(server, client);
-    registerListMdnsProfileTool(server, client);
-    registerListOsgAclsTool(server, client);
-    registerListEapAclsTool(server, client);
-    registerListStaticRoutesTool(server, client);
-    registerGetStaticRoutingInterfaceListTool(server, client);
-    registerGetGridStaticRoutingTool(server, client);
-    registerListPolicyRoutesTool(server, client);
-    registerGetGridPolicyRoutingTool(server, client);
-    registerGetGridOtoNatsTool(server, client);
-    registerGetAlgTool(server, client);
-    registerGetUpnpSettingTool(server, client);
-    registerGetDdnsGridTool(server, client);
-    registerGetDhcpReservationGridTool(server, client);
-    registerGetGridIpMacBindingTool(server, client);
-    registerGetIpMacBindingGeneralSettingTool(server, client);
-    registerGetLanNetworkListV2Tool(server, client);
-    registerGetInterfaceLanNetworkTool(server, client);
-    registerGetInterfaceLanNetworkV2Tool(server, client);
-    registerGetBandwidthControlTool(server, client);
-    registerGetBandwidthCtrlTool(server, client);
-    registerGetGridBandwidthCtrlRuleTool(server, client);
-    registerGetSessionLimitTool(server, client);
-    registerGetGridSessionLimitRuleTool(server, client);
-    registerGetSnmpSettingTool(server, client);
-    registerGetLldpSettingTool(server, client);
-    registerGetRemoteLoggingSettingTool(server, client);
-    registerGetAccessControlTool(server, client);
-    registerGetDnsCacheSettingTool(server, client);
-    registerGetDnsProxyTool(server, client);
-    registerGetIgmpTool(server, client);
-    registerGetInternetLoadBalanceTool(server, client);
-    registerGetWanPortsConfigTool(server, client);
-    registerGetInternetBasicPortInfoTool(server, client);
-    registerGetInternetTool(server, client);
-    registerGetGridVirtualWanTool(server, client);
-    registerListRadiusProfilesTool(server, client);
-    registerListGroupProfilesTool(server, client);
-    registerGetApplicationControlStatusTool(server, client);
-    registerGetSshSettingTool(server, client);
-    registerListTimeRangeProfilesTool(server, client);
+    // --- Client insights ---
+    { fn: registerListMostActiveClientsTool, category: 'client-insights', permission: 'read' },
+    { fn: registerListClientsActivityTool, category: 'client-insights', permission: 'read' },
+    { fn: registerListClientsPastConnectionsTool, category: 'client-insights', permission: 'read' },
+    { fn: registerGetClientsDistributionTool, category: 'client-insights', permission: 'read' },
+    { fn: registerGetPastClientNumTool, category: 'client-insights', permission: 'read' },
 
-    // Monitor / dashboard operations
-    registerGetDashboardWifiSummaryTool(server, client);
-    registerGetDashboardSwitchSummaryTool(server, client);
-    registerGetDashboardTrafficActivitiesTool(server, client);
-    registerGetDashboardPoEUsageTool(server, client);
-    registerGetDashboardTopCpuUsageTool(server, client);
-    registerGetDashboardTopMemoryUsageTool(server, client);
-    registerGetDashboardMostActiveSwitchesTool(server, client);
-    registerGetDashboardMostActiveEapsTool(server, client);
-    registerGetDashboardOverviewTool(server, client);
-    registerGetTrafficDistributionTool(server, client);
-    registerGetRetryAndDroppedRateTool(server, client);
-    registerGetIspLoadTool(server, client);
-    registerGetChannelsTool(server, client);
-    registerGetInterferenceTool(server, client);
-    registerGetGridDashboardTunnelStatsTool(server, client);
-    registerGetGridDashboardIpsecTunnelStatsTool(server, client);
-    registerGetGridDashboardOpenVpnTunnelStatsTool(server, client);
+    // --- Security threat ---
+    { fn: registerGetThreatListTool, category: 'security-threat', permission: 'read' },
+    { fn: registerGetTopThreatsTool, category: 'security-threat', permission: 'read' },
+    { fn: registerListSiteThreatManagementTool, category: 'security-threat', permission: 'read' },
+    { fn: registerGetThreatDetailTool, category: 'security-threat', permission: 'read' },
+    { fn: registerGetThreatCountTool, category: 'security-threat', permission: 'read' },
 
-    // Insight operations
-    registerGetWidsTool(server, client);
-    registerGetWidsBlacklistTool(server, client);
-    registerGetRogueApsTool(server, client);
-    registerGetVpnTunnelStatsTool(server, client);
-    registerGetIpsecVpnStatsTool(server, client);
-    registerGetRoutingTableTool(server, client);
-    registerGetThreatDetailTool(server, client);
-    registerGetThreatCountTool(server, client);
+    // --- Security WIDS ---
+    { fn: registerGetWidsTool, category: 'security-wids', permission: 'read' },
+    { fn: registerGetWidsBlacklistTool, category: 'security-wids', permission: 'read' },
+    { fn: registerGetRogueApsTool, category: 'security-wids', permission: 'read' },
 
-    // Log operations
-    registerListSiteEventsTool(server, client);
-    registerListSiteAlertsTool(server, client);
-    registerListSiteAuditLogsTool(server, client);
-    registerListGlobalEventsTool(server, client);
-    registerListGlobalAlertsTool(server, client);
+    // --- Network WAN ---
+    { fn: registerGetInternetInfoTool, category: 'network-wan', permission: 'read' },
+    { fn: registerGetWanLanStatusTool, category: 'network-wan', permission: 'read' },
+    { fn: registerGetWanPortsConfigTool, category: 'network-wan', permission: 'read' },
+    { fn: registerGetInternetBasicPortInfoTool, category: 'network-wan', permission: 'read' },
+    { fn: registerGetInternetTool, category: 'network-wan', permission: 'read' },
+    { fn: registerGetGridVirtualWanTool, category: 'network-wan', permission: 'read' },
+    { fn: registerGetInternetLoadBalanceTool, category: 'network-wan', permission: 'read' },
 
-    // Global Controller settings (issue #41)
-    registerGetControllerStatusTool(server, client);
-    registerGetGeneralSettingsTool(server, client);
-    registerGetRetentionTool(server, client);
-    registerGetClientActiveTimeoutTool(server, client);
-    registerGetRemoteLoggingTool(server, client);
-    registerGetRadiusServerTool(server, client);
-    registerGetLoggingTool(server, client);
-    registerGetUiInterfaceTool(server, client);
-    registerGetDeviceAccessManagementTool(server, client);
-    registerGetWebhookForGlobalTool(server, client);
-    registerGetWebhookLogsForGlobalTool(server, client);
-    registerGetMailServerStatusTool(server, client);
+    // --- Network LAN ---
+    { fn: registerGetLanNetworkListTool, category: 'network-lan', permission: 'read' },
+    { fn: registerGetLanNetworkListV2Tool, category: 'network-lan', permission: 'read' },
+    { fn: registerGetLanProfileListTool, category: 'network-lan', permission: 'read' },
+    { fn: registerGetInterfaceLanNetworkTool, category: 'network-lan', permission: 'read' },
+    { fn: registerGetInterfaceLanNetworkV2Tool, category: 'network-lan', permission: 'read' },
+    { fn: registerGetDhcpReservationGridTool, category: 'network-lan', permission: 'read' },
+    { fn: registerGetIpMacBindingGeneralSettingTool, category: 'network-lan', permission: 'read' },
+    { fn: registerGetGridIpMacBindingTool, category: 'network-lan', permission: 'read' },
+    { fn: registerGetDnsCacheSettingTool, category: 'network-lan', permission: 'read' },
+    { fn: registerGetDnsProxyTool, category: 'network-lan', permission: 'read' },
+    { fn: registerGetIgmpTool, category: 'network-lan', permission: 'read' },
 
-    // Logs, Events & Alerts tools (issue #42)
-    registerGetLogSettingForSiteTool(server, client);
-    registerGetLogSettingForSiteV2Tool(server, client);
-    registerGetAuditLogSettingForSiteTool(server, client);
-    registerGetLogSettingForGlobalTool(server, client);
-    registerGetLogSettingForGlobalV2Tool(server, client);
-    registerGetAuditLogSettingForGlobalTool(server, client);
-    registerGetAuditLogsForGlobalTool(server, client);
+    // --- Network NAT ---
+    { fn: registerGetPortForwardingStatusTool, category: 'network-nat', permission: 'read' },
+    { fn: registerGetPortForwardingListTool, category: 'network-nat', permission: 'read' },
+    { fn: registerListPortForwardingRulesTool, category: 'network-nat', permission: 'read' },
+    { fn: registerGetGridOtoNatsTool, category: 'network-nat', permission: 'read' },
+
+    // --- Network routing ---
+    { fn: registerListStaticRoutesTool, category: 'network-routing', permission: 'read' },
+    { fn: registerGetStaticRoutingInterfaceListTool, category: 'network-routing', permission: 'read' },
+    { fn: registerGetGridStaticRoutingTool, category: 'network-routing', permission: 'read' },
+    { fn: registerListPolicyRoutesTool, category: 'network-routing', permission: 'read' },
+    { fn: registerGetGridPolicyRoutingTool, category: 'network-routing', permission: 'read' },
+    { fn: registerGetRoutingTableTool, category: 'network-routing', permission: 'read' },
+
+    // --- Network services ---
+    { fn: registerGetAlgTool, category: 'network-services', permission: 'read' },
+    { fn: registerGetUpnpSettingTool, category: 'network-services', permission: 'read' },
+    { fn: registerGetDdnsGridTool, category: 'network-services', permission: 'read' },
+    { fn: registerGetBandwidthControlTool, category: 'network-services', permission: 'read' },
+    { fn: registerGetBandwidthCtrlTool, category: 'network-services', permission: 'read' },
+    { fn: registerGetGridBandwidthCtrlRuleTool, category: 'network-services', permission: 'read' },
+    { fn: registerGetSessionLimitTool, category: 'network-services', permission: 'read' },
+    { fn: registerGetGridSessionLimitRuleTool, category: 'network-services', permission: 'read' },
+    { fn: registerGetSnmpSettingTool, category: 'network-services', permission: 'read' },
+    { fn: registerGetLldpSettingTool, category: 'network-services', permission: 'read' },
+    { fn: registerGetRemoteLoggingSettingTool, category: 'network-services', permission: 'read' },
+    { fn: registerGetAccessControlTool, category: 'network-services', permission: 'read' },
+    { fn: registerGetSshSettingTool, category: 'network-services', permission: 'read' },
+
+    // --- Wireless SSID ---
+    { fn: registerGetWlanGroupListTool, category: 'wireless-ssid', permission: 'read' },
+    { fn: registerGetSsidListTool, category: 'wireless-ssid', permission: 'read' },
+    { fn: registerGetSsidDetailTool, category: 'wireless-ssid', permission: 'read' },
+    { fn: registerListAllSsidsTool, category: 'wireless-ssid', permission: 'read' },
+    { fn: registerGetSsidsBySiteTool, category: 'wireless-ssid', permission: 'read' },
+
+    // --- Wireless radio ---
+    { fn: registerGetRadioFrequencyPlanningConfigTool, category: 'wireless-radio', permission: 'read' },
+    { fn: registerGetRadioFrequencyPlanningResultTool, category: 'wireless-radio', permission: 'read' },
+    { fn: registerGetBandSteeringSettingTool, category: 'wireless-radio', permission: 'read' },
+    { fn: registerGetBeaconControlSettingTool, category: 'wireless-radio', permission: 'read' },
+    { fn: registerGetChannelLimitSettingTool, category: 'wireless-radio', permission: 'read' },
+    { fn: registerGetMeshSettingTool, category: 'wireless-radio', permission: 'read' },
+    { fn: registerGetRoamingSettingTool, category: 'wireless-radio', permission: 'read' },
+    { fn: registerGetChannelsTool, category: 'wireless-radio', permission: 'read' },
+    { fn: registerGetInterferenceTool, category: 'wireless-radio', permission: 'read' },
+    { fn: registerGetRetryAndDroppedRateTool, category: 'wireless-radio', permission: 'read' },
+
+    // --- Wireless auth ---
+    { fn: registerGetOuiProfileListTool, category: 'wireless-auth', permission: 'read' },
+    { fn: registerGetMacAuthSettingTool, category: 'wireless-auth', permission: 'read' },
+    { fn: registerGetMacAuthSsidsTool, category: 'wireless-auth', permission: 'read' },
+    { fn: registerGetMacFilteringGeneralSettingTool, category: 'wireless-auth', permission: 'read' },
+    { fn: registerGetGridAllowMacFilteringTool, category: 'wireless-auth', permission: 'read' },
+    { fn: registerGetGridDenyMacFilteringTool, category: 'wireless-auth', permission: 'read' },
+    { fn: registerGetEapDot1xSettingTool, category: 'wireless-auth', permission: 'read' },
+
+    // --- Firewall ACL ---
+    { fn: registerGetAclConfigTypeSettingTool, category: 'firewall-acl', permission: 'read' },
+    { fn: registerGetOsgCustomAclListTool, category: 'firewall-acl', permission: 'read' },
+    { fn: registerGetOswAclListTool, category: 'firewall-acl', permission: 'read' },
+    { fn: registerGetGridAllowListTool, category: 'firewall-acl', permission: 'read' },
+    { fn: registerGetGridBlockListTool, category: 'firewall-acl', permission: 'read' },
+    { fn: registerGetGridGatewayRuleTool, category: 'firewall-acl', permission: 'read' },
+    { fn: registerGetGridEapRuleTool, category: 'firewall-acl', permission: 'read' },
+    { fn: registerGetFirewallSettingTool, category: 'firewall-acl', permission: 'read' },
+    { fn: registerListOsgAclsTool, category: 'firewall-acl', permission: 'read' },
+    { fn: registerListEapAclsTool, category: 'firewall-acl', permission: 'read' },
+
+    // --- Firewall traffic ---
+    { fn: registerGetUrlFilterGeneralTool, category: 'firewall-traffic', permission: 'read' },
+    { fn: registerGetApplicationControlStatusTool, category: 'firewall-traffic', permission: 'read' },
+    { fn: registerGetAttackDefenseSettingTool, category: 'firewall-traffic', permission: 'read' },
+
+    // --- Firewall IDS ---
+    { fn: registerGetIpsConfigTool, category: 'firewall-ids', permission: 'read' },
+    { fn: registerGetGridSignatureTool, category: 'firewall-ids', permission: 'read' },
+
+    // --- VPN ---
+    { fn: registerGetVpnSettingsTool, category: 'vpn', permission: 'read' },
+    { fn: registerListSiteToSiteVpnsTool, category: 'vpn', permission: 'read' },
+    { fn: registerGetSiteToSiteVpnInfoTool, category: 'vpn', permission: 'read' },
+    { fn: registerListWireguardTool, category: 'vpn', permission: 'read' },
+    { fn: registerListWireguardPeersTool, category: 'vpn', permission: 'read' },
+    { fn: registerGetWireguardSummaryTool, category: 'vpn', permission: 'read' },
+    { fn: registerListClientToSiteVpnServersTool, category: 'vpn', permission: 'read' },
+    { fn: registerListClientToSiteVpnClientsTool, category: 'vpn', permission: 'read' },
+    { fn: registerGetClientToSiteVpnServerInfoTool, category: 'vpn', permission: 'read' },
+    { fn: registerGetSslVpnServerSettingTool, category: 'vpn', permission: 'read' },
+    { fn: registerGetGridIpsecFailoverTool, category: 'vpn', permission: 'read' },
+    { fn: registerGetVpnTunnelStatsTool, category: 'vpn', permission: 'read' },
+    { fn: registerGetIpsecVpnStatsTool, category: 'vpn', permission: 'read' },
+    { fn: registerGetGridDashboardTunnelStatsTool, category: 'vpn', permission: 'read' },
+    { fn: registerGetGridDashboardIpsecTunnelStatsTool, category: 'vpn', permission: 'read' },
+    { fn: registerGetGridDashboardOpenVpnTunnelStatsTool, category: 'vpn', permission: 'read' },
+
+    // --- Profiles ---
+    { fn: registerListServiceTypeTool, category: 'profiles', permission: 'read' },
+    { fn: registerGetServiceTypeSummaryTool, category: 'profiles', permission: 'read' },
+    { fn: registerGetGroupProfilesByTypeTool, category: 'profiles', permission: 'read' },
+    { fn: registerGetPPSKProfilesTool, category: 'profiles', permission: 'read' },
+    { fn: registerListMdnsProfileTool, category: 'profiles', permission: 'read' },
+    { fn: registerListGroupProfilesTool, category: 'profiles', permission: 'read' },
+    { fn: registerListTimeRangeProfilesTool, category: 'profiles', permission: 'read' },
+    { fn: registerGetRateLimitProfilesTool, category: 'profiles', permission: 'read' },
+
+    // --- Auth profiles ---
+    { fn: registerGetLdapProfileListTool, category: 'auth-profiles', permission: 'read' },
+    { fn: registerGetRadiusUserListTool, category: 'auth-profiles', permission: 'read' },
+    { fn: registerGetRadiusServerTool, category: 'auth-profiles', permission: 'read' },
+    { fn: registerListRadiusProfilesTool, category: 'auth-profiles', permission: 'read' },
+
+    // --- Logs ---
+    { fn: registerListSiteEventsTool, category: 'logs', permission: 'read' },
+    { fn: registerListSiteAlertsTool, category: 'logs', permission: 'read' },
+    { fn: registerListSiteAuditLogsTool, category: 'logs', permission: 'read' },
+    { fn: registerListGlobalEventsTool, category: 'logs', permission: 'read' },
+    { fn: registerListGlobalAlertsTool, category: 'logs', permission: 'read' },
+    { fn: registerGetLogSettingForSiteTool, category: 'logs', permission: 'read' },
+    { fn: registerGetLogSettingForSiteV2Tool, category: 'logs', permission: 'read' },
+    { fn: registerGetAuditLogSettingForSiteTool, category: 'logs', permission: 'read' },
+    { fn: registerGetLogSettingForGlobalTool, category: 'logs', permission: 'read' },
+    { fn: registerGetLogSettingForGlobalV2Tool, category: 'logs', permission: 'read' },
+    { fn: registerGetAuditLogSettingForGlobalTool, category: 'logs', permission: 'read' },
+    { fn: registerGetAuditLogsForGlobalTool, category: 'logs', permission: 'read' },
+
+    // --- Controller ---
+    { fn: registerGetControllerStatusTool, category: 'controller', permission: 'read' },
+    { fn: registerGetGeneralSettingsTool, category: 'controller', permission: 'read' },
+    { fn: registerGetRetentionTool, category: 'controller', permission: 'read' },
+    { fn: registerGetClientActiveTimeoutTool, category: 'controller', permission: 'read' },
+    { fn: registerGetRemoteLoggingTool, category: 'controller', permission: 'read' },
+    { fn: registerGetLoggingTool, category: 'controller', permission: 'read' },
+    { fn: registerGetUiInterfaceTool, category: 'controller', permission: 'read' },
+    { fn: registerGetDeviceAccessManagementTool, category: 'controller', permission: 'read' },
+    { fn: registerGetWebhookForGlobalTool, category: 'controller', permission: 'read' },
+    { fn: registerGetWebhookLogsForGlobalTool, category: 'controller', permission: 'read' },
+    { fn: registerGetMailServerStatusTool, category: 'controller', permission: 'read' },
+
+    // --- Dashboard ---
+    { fn: registerGetDashboardWifiSummaryTool, category: 'dashboard', permission: 'read' },
+    { fn: registerGetDashboardSwitchSummaryTool, category: 'dashboard', permission: 'read' },
+    { fn: registerGetDashboardTrafficActivitiesTool, category: 'dashboard', permission: 'read' },
+    { fn: registerGetDashboardPoEUsageTool, category: 'dashboard', permission: 'read' },
+    { fn: registerGetDashboardTopCpuUsageTool, category: 'dashboard', permission: 'read' },
+    { fn: registerGetDashboardTopMemoryUsageTool, category: 'dashboard', permission: 'read' },
+    { fn: registerGetDashboardMostActiveSwitchesTool, category: 'dashboard', permission: 'read' },
+    { fn: registerGetDashboardMostActiveEapsTool, category: 'dashboard', permission: 'read' },
+    { fn: registerGetDashboardOverviewTool, category: 'dashboard', permission: 'read' },
+    { fn: registerGetTrafficDistributionTool, category: 'dashboard', permission: 'read' },
+    { fn: registerGetIspLoadTool, category: 'dashboard', permission: 'read' },
+];
+
+// ---------------------------------------------------------------------------
+// registerAllTools — filters by active categories and permissions, then
+// registers matching tools with the MCP server.
+// ---------------------------------------------------------------------------
+
+export function registerAllTools(server: McpServer, client: OmadaClient, activeCategories?: Map<ToolCategory, Set<ToolPermission>>): void {
+    // If no filter map provided, register everything (backward-compat / tests)
+    if (!activeCategories) {
+        for (const entry of TOOL_REGISTRY) {
+            entry.fn(server, client);
+        }
+        return;
+    }
+
+    // Deduplicate: some tools appear in multiple categories; track which fns we've already called.
+    const registered = new Set<(server: McpServer, client: OmadaClient) => void>();
+
+    let toolCount = 0;
+    for (const entry of TOOL_REGISTRY) {
+        const allowed = activeCategories.get(entry.category);
+        if (!allowed) continue;
+        if (!allowed.has(entry.permission)) continue;
+        if (registered.has(entry.fn)) continue;
+
+        registered.add(entry.fn);
+        entry.fn(server, client);
+        toolCount++;
+    }
+
+    // Startup log
+    const categoryList = [...activeCategories.entries()]
+        .map(([cat, perms]) => {
+            const p = [...perms].sort().join('+');
+            return `${cat}:${p}`;
+        })
+        .join(', ');
+
+    logger.info('Tool categories loaded', {
+        categories: categoryList,
+        toolCount,
+    });
 }

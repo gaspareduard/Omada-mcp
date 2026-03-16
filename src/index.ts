@@ -15,6 +15,10 @@ async function main(): Promise<void> {
     // Initialize logger with configured level, format, and output stream
     initLogger(config.logLevel, config.logFormat, useStderr);
 
+    for (const warning of config.startupWarnings) {
+        logger.warn(warning);
+    }
+
     logger.info('Loaded Omada configuration', {
         baseUrl: config.baseUrl,
         omadacId: config.omadacId ?? '(from headers)',
@@ -37,11 +41,13 @@ async function main(): Promise<void> {
             requestTimeout: config.requestTimeout,
         };
         const client = new OmadaClient(omadaConfig);
-        await startStdioServer(client);
+        await startStdioServer(client, config.toolCategories);
     }
 }
 main().catch((error) => {
     const message = error instanceof Error ? error.message : String(error);
-    logger.error('Failed to start Omada MCP server', { error: message });
+    // Use process.stderr.write directly — logger may not have been initialized yet
+    // (e.g. if loadConfigFromEnv() threw before initLogger() was called)
+    process.stderr.write(`Failed to start Omada MCP server: ${message}\n`);
     process.exitCode = 1;
 });

@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { loadConfigFromEnv } from '../src/config.js';
+import { DEFAULT_TOOL_CATEGORIES, loadConfigFromEnv, parseToolCategories } from '../src/config.js';
 import * as loggerModule from '../src/utils/logger.js';
 
 describe('config', () => {
@@ -276,7 +276,7 @@ describe('config', () => {
             const config = loadConfigFromEnv(mockEnv);
 
             expect(config.httpAllowedOrigins).toEqual([]);
-            expect(loggerModule.logger.warn).toHaveBeenCalledWith(expect.stringContaining('Wildcard (*) origin allowed'));
+            expect(config.startupWarnings.some((w) => w.includes('Wildcard (*) origin allowed'))).toBe(true);
         });
 
         it('should throw error for invalid origin', () => {
@@ -331,7 +331,7 @@ describe('config', () => {
 
             const config = loadConfigFromEnv(mockEnv);
 
-            expect(config).toEqual({
+            expect(config).toMatchObject({
                 baseUrl: 'https://omada.example.com',
                 clientId: 'client-123',
                 clientSecret: 'secret-456',
@@ -353,6 +353,119 @@ describe('config', () => {
                 httpNgrokEnabled: true,
                 httpNgrokAuthToken: 'ngrok-token-xyz',
             });
+            expect(config.toolCategories).toBeInstanceOf(Map);
         });
+    });
+});
+
+describe('parseToolCategories', () => {
+    it('should return empty categories and no warnings for empty string', () => {
+        const { categories, warnings } = parseToolCategories('');
+        expect(categories.size).toBe(0);
+        expect(warnings).toEqual([]);
+    });
+
+    it('should parse valid categories correctly', () => {
+        const { categories, warnings } = parseToolCategories('dashboard:r,clients:rw');
+        expect(categories.get('dashboard')).toEqual(new Set(['read']));
+        expect(categories.get('clients')).toEqual(new Set(['read', 'write']));
+        expect(warnings).toEqual([]);
+    });
+
+    it('should return warning for unknown category without calling logger.warn', () => {
+        const warnSpy = vi.spyOn(loggerModule.logger, 'warn');
+        const { warnings } = parseToolCategories('totally-unknown-cat:r');
+        expect(warnings).toHaveLength(1);
+        expect(warnings[0]).toContain('unknown category "totally-unknown-cat"');
+        expect(warnSpy).not.toHaveBeenCalled();
+        vi.restoreAllMocks();
+    });
+
+    it('should return warning for future category and skip it from the map', () => {
+        const warnSpy = vi.spyOn(loggerModule.logger, 'warn');
+        const { categories, warnings } = parseToolCategories('insights:r');
+        expect(categories.has('insights')).toBe(false);
+        expect(warnings).toHaveLength(1);
+        expect(warnings[0]).toContain('"insights"');
+        expect(warnings[0]).toContain('future phase');
+        expect(warnSpy).not.toHaveBeenCalled();
+        vi.restoreAllMocks();
+    });
+
+    it('should warn for future atomic categories used directly', () => {
+        const { categories, warnings } = parseToolCategories('insights:r');
+        expect(categories.has('insights')).toBe(false);
+        expect(warnings.some((w) => w.includes('insights'))).toBe(true);
+    });
+
+    it('network-all no longer contains future categories and expands without warnings', () => {
+        const { categories, warnings } = parseToolCategories('network-all:r');
+        expect(categories.has('network-sim-lte')).toBe(false);
+        expect(warnings.some((w) => w.includes('network-sim-lte'))).toBe(false);
+        expect(warnings.length).toBe(0);
+    });
+
+    it('should not warn for valid implemented categories in group aliases', () => {
+        const { categories, warnings } = parseToolCategories('devices-all:r');
+        expect(categories.has('devices-general')).toBe(true);
+        expect(categories.has('devices-ap')).toBe(true);
+        expect(categories.has('devices-switch')).toBe(true);
+        expect(categories.has('devices-gateway')).toBe(true);
+        expect(warnings).toHaveLength(0);
+    });
+
+    it('DEFAULT_TOOL_CATEGORIES should not contain any future categories', () => {
+        const { warnings } = parseToolCategories(DEFAULT_TOOL_CATEGORIES);
+        expect(warnings.filter((w) => w.includes('future phase'))).toHaveLength(0);
+    });
+
+    it('should not call logger.warn during parsing — warnings are buffered', () => {
+        const warnSpy = vi.spyOn(loggerModule.logger, 'warn');
+        // Parse with multiple future and unknown categories
+        parseToolCategories('insights:r,maintenance:r,unknown-thing:r');
+        expect(warnSpy).not.toHaveBeenCalled();
+        vi.restoreAllMocks();
+    });
+});
+
+describe('loadConfigFromEnv (startupWarnings)', () => {
+    it('should include startupWarnings in the returned config', () => {
+        const env = {
+            OMADA_BASE_URL: 'https://controller.example.com',
+            OMADA_CLIENT_ID: 'client-id',
+            OMADA_CLIENT_SECRET: 'client-secret',
+            OMADA_OMADAC_ID: 'omadac-id',
+            OMADA_TOOL_CATEGORIES: 'dashboard:r',
+        };
+        const config = loadConfigFromEnv(env as NodeJS.ProcessEnv);
+        expect(config).toHaveProperty('startupWarnings');
+        expect(Array.isArray(config.startupWarnings)).toBe(true);
+    });
+
+    it('startupWarnings should be empty when no problematic categories specified', () => {
+        const env = {
+            OMADA_BASE_URL: 'https://controller.example.com',
+            OMADA_CLIENT_ID: 'client-id',
+            OMADA_CLIENT_SECRET: 'client-secret',
+            OMADA_OMADAC_ID: 'omadac-id',
+            OMADA_TOOL_CATEGORIES: 'dashboard:r',
+        };
+        const config = loadConfigFromEnv(env as NodeJS.ProcessEnv);
+        expect(config.startupWarnings).toEqual([]);
+    });
+
+    it('startupWarnings should contain warning for future categories without calling logger.warn', () => {
+        const warnSpy = vi.spyOn(loggerModule.logger, 'warn');
+        const env = {
+            OMADA_BASE_URL: 'https://controller.example.com',
+            OMADA_CLIENT_ID: 'client-id',
+            OMADA_CLIENT_SECRET: 'client-secret',
+            OMADA_OMADAC_ID: 'omadac-id',
+            OMADA_TOOL_CATEGORIES: 'insights:r',
+        };
+        const config = loadConfigFromEnv(env as NodeJS.ProcessEnv);
+        expect(config.startupWarnings.some((w) => w.includes('future phase'))).toBe(true);
+        expect(warnSpy).not.toHaveBeenCalled();
+        vi.restoreAllMocks();
     });
 });
