@@ -160,10 +160,21 @@ git commit -m "chore: restore AI instruction symlinks"
 - **IMPORTANT** All source files must use LF (Unix-style) line endings, not CRLF (Windows-style). Biome will automatically convert line endings when running `npm run format`.
 - If you encounter formatting errors related to line endings (shown as `␍` in error messages), run `npm run format` to fix them automatically.
 
+## API Validation Before Implementation (MANDATORY)
+
+Before implementing any new tool, the following rules apply:
+
+1. **Verify the endpoint exists** — check `docs/openapi/` to confirm the API route is documented before writing any code.
+2. **Use `OMADA_TOOLS.md` as ground truth** — every tool in that file has a verified route. If a tool is listed there with a route, you can implement it.
+3. **If not in `OMADA_TOOLS.md` and not in `docs/openapi/`** — do NOT implement it. Instead, raise a GitHub issue or add a comment to the existing issue noting the missing endpoint, and skip the tool.
+4. **Never infer or guess API routes** — only implement against verified spec paths.
+5. **When fixing route mismatches** — always check `docs/openapi/` for the correct path. Do not assume the current code is correct.
+
 ## Contribution Guidelines
 
 - Keep environment secrets out of the repo; only commit `.env.example`.
 - **Before every commit**, all of the following must pass:
+  0. **API route verification** — every new tool's route must exist in `docs/openapi/` or `OMADA_TOOLS.md`. Run: `grep -c "your-route" docs/openapi/*.json` to confirm.
   1. `npm run check` — Biome lint + TypeScript type check
   2. `npm run build` — TypeScript compilation
   3. `npm test` — full test suite
