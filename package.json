@@ -1,6 +1,6 @@
 {
     "name": "tplink-omada-mcp",
-    "version": "0.10.1",
+    "version": "0.11.0",
     "description": "Model Context Protocol server that exposes TP-Link Omada controller APIs",
     "type": "module",
     "main": "dist/index.js",
@@ -27,7 +27,11 @@
         "symlinks:fix": "bash scripts/fix-symlinks.sh",
         "symlinks:check": "bash -e -c \"for l in AGENTS.md .github/copilot-instructions.md .github/AGENTS.md; do [ -L $l ] || { echo ❌ $l missing; exit 1; }; done && echo ✅ symlinks OK\""
     },
-    "keywords": ["mcp", "tp-link", "omada"],
+    "keywords": [
+        "mcp",
+        "tp-link",
+        "omada"
+    ],
     "engines": {
         "node": ">=24.0.0"
     },
