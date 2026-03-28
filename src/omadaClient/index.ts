@@ -363,6 +363,121 @@ export class OmadaClient {
         return await this.deviceOps.getDownlinkWiredDevices(apMac, siteId, customHeaders);
     }
 
+    // Device Management — Phase 2 Read Tools (issue #73)
+
+    // devices-general
+    public async getFirmwareUpgradePlan(page: number, pageSize: number, customHeaders?: CustomHeaders): Promise<unknown> {
+        return await this.deviceOps.getFirmwareUpgradePlan(page, pageSize, customHeaders);
+    }
+    public async getUpgradeLogs(page: number, pageSize: number, customHeaders?: CustomHeaders): Promise<unknown> {
+        return await this.deviceOps.getUpgradeLogs(page, pageSize, customHeaders);
+    }
+    public async getDeviceTagList(siteId?: string, customHeaders?: CustomHeaders): Promise<unknown> {
+        return await this.deviceOps.getDeviceTagList(siteId, customHeaders);
+    }
+
+    // devices-ap
+    public async getApQosConfig(apMac: string, siteId?: string, customHeaders?: CustomHeaders): Promise<unknown> {
+        return await this.deviceOps.getApQosConfig(apMac, siteId, customHeaders);
+    }
+    public async getApIpv6Config(apMac: string, siteId?: string, customHeaders?: CustomHeaders): Promise<unknown> {
+        return await this.deviceOps.getApIpv6Config(apMac, siteId, customHeaders);
+    }
+
+    // Device operations — Phase 2 additional
+
+    public async getSitesGatewaysGeneralConfig(gatewayMac: string, siteId?: string, customHeaders?: CustomHeaders): Promise<unknown> {
+        return await this.deviceOps.getSitesGatewaysGeneralConfig(gatewayMac, siteId, customHeaders);
+    }
+
+    public async getSitesGatewaysPin(gatewayMac: string, siteId?: string, customHeaders?: CustomHeaders): Promise<unknown> {
+        return await this.deviceOps.getSitesGatewaysPin(gatewayMac, siteId, customHeaders);
+    }
+
+    public async getSitesGatewaysSimCardUsed(gatewayMac: string, siteId?: string, customHeaders?: CustomHeaders): Promise<unknown> {
+        return await this.deviceOps.getSitesGatewaysSimCardUsed(gatewayMac, siteId, customHeaders);
+    }
+
+    public async getSitesHealthGatewaysWansDetails(gatewayMac: string, siteId?: string, customHeaders?: CustomHeaders): Promise<unknown> {
+        return await this.deviceOps.getSitesHealthGatewaysWansDetails(gatewayMac, siteId, customHeaders);
+    }
+
+    public async getSitesApsIpSetting(apMac: string, siteId?: string, customHeaders?: CustomHeaders): Promise<unknown> {
+        return await this.deviceOps.getSitesApsIpSetting(apMac, siteId, customHeaders);
+    }
+
+    public async getSitesApsChannelLimit(apMac: string, siteId?: string, customHeaders?: CustomHeaders): Promise<unknown> {
+        return await this.deviceOps.getSitesApsChannelLimit(apMac, siteId, customHeaders);
+    }
+
+    public async getSitesApsAvailableChannel(apMac: string, siteId?: string, customHeaders?: CustomHeaders): Promise<unknown> {
+        return await this.deviceOps.getSitesApsAvailableChannel(apMac, siteId, customHeaders);
+    }
+
+    public async getSitesApsLoadBalance(apMac: string, siteId?: string, customHeaders?: CustomHeaders): Promise<unknown> {
+        return await this.deviceOps.getSitesApsLoadBalance(apMac, siteId, customHeaders);
+    }
+
+    public async getSitesApsOfdma(apMac: string, siteId?: string, customHeaders?: CustomHeaders): Promise<unknown> {
+        return await this.deviceOps.getSitesApsOfdma(apMac, siteId, customHeaders);
+    }
+
+    public async getSitesApsPowerSaving(apMac: string, siteId?: string, customHeaders?: CustomHeaders): Promise<unknown> {
+        return await this.deviceOps.getSitesApsPowerSaving(apMac, siteId, customHeaders);
+    }
+
+    public async getSitesApsTrunkSetting(apMac: string, siteId?: string, customHeaders?: CustomHeaders): Promise<unknown> {
+        return await this.deviceOps.getSitesApsTrunkSetting(apMac, siteId, customHeaders);
+    }
+
+    public async getSitesApsBridge(apMac: string, siteId?: string, customHeaders?: CustomHeaders): Promise<unknown> {
+        return await this.deviceOps.getSitesApsBridge(apMac, siteId, customHeaders);
+    }
+
+    public async listSitesApsPorts(apMac: string, siteId?: string, customHeaders?: CustomHeaders): Promise<unknown[]> {
+        return await this.deviceOps.listSitesApsPorts(apMac, siteId, customHeaders);
+    }
+
+    public async getSitesSwitchesEs(switchMac: string, siteId?: string, customHeaders?: CustomHeaders): Promise<unknown> {
+        return await this.deviceOps.getSitesSwitchesEs(switchMac, siteId, customHeaders);
+    }
+
+    public async getSitesSwitchesEsGeneralConfig(switchMac: string, siteId?: string, customHeaders?: CustomHeaders): Promise<unknown> {
+        return await this.deviceOps.getSitesSwitchesEsGeneralConfig(switchMac, siteId, customHeaders);
+    }
+
+    public async listSitesCableTestSwitchesPorts(switchMac: string, siteId?: string, customHeaders?: CustomHeaders): Promise<unknown[]> {
+        return await this.deviceOps.listSitesCableTestSwitchesPorts(switchMac, siteId, customHeaders);
+    }
+
+    public async listSitesCableTestSwitchesIncrementResults(switchMac: string, siteId?: string, customHeaders?: CustomHeaders): Promise<unknown> {
+        return await this.deviceOps.listSitesCableTestSwitchesIncrementResults(switchMac, siteId, customHeaders);
+    }
+
+    public async getUpgradeOverviewCritical(customHeaders?: CustomHeaders): Promise<unknown> {
+        return await this.deviceOps.getUpgradeOverviewCritical(customHeaders);
+    }
+
+    public async getUpgradeOverviewTryBeta(customHeaders?: CustomHeaders): Promise<unknown> {
+        return await this.deviceOps.getUpgradeOverviewTryBeta(customHeaders);
+    }
+
+    public async listUpgradeFirmwares(page: number, pageSize: number, customHeaders?: CustomHeaders): Promise<unknown> {
+        return await this.deviceOps.listUpgradeFirmwares(page, pageSize, customHeaders);
+    }
+
+    public async listUpgradeOverviewFirmwares(page: number, pageSize: number, customHeaders?: CustomHeaders): Promise<unknown> {
+        return await this.deviceOps.listUpgradeOverviewFirmwares(page, pageSize, customHeaders);
+    }
+
+    public async listSitesStacks(siteId?: string, page?: number, pageSize?: number, customHeaders?: CustomHeaders): Promise<unknown> {
+        return await this.deviceOps.listSitesStacks(siteId, page, pageSize, customHeaders);
+    }
+
+    public async getSitesDeviceWhiteList(siteId?: string, page?: number, pageSize?: number, customHeaders?: CustomHeaders): Promise<unknown> {
+        return await this.deviceOps.getSitesDeviceWhiteList(siteId, page, pageSize, customHeaders);
+    }
+
     // Security operations (extended)
     public async getTopThreats(customHeaders?: CustomHeaders): Promise<unknown[]> {
         return await this.securityOps.getTopThreats(customHeaders);

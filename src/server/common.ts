@@ -8,6 +8,12 @@ import { logger } from '../utils/logger.js';
 // Custom headers schema for optional HTTP headers
 export const customHeadersSchema = z.record(z.string(), z.string()).optional();
 
+// Reusable MAC address schema for device identifiers (AP, switch, gateway)
+export const deviceMacSchema = z
+    .string()
+    .trim()
+    .regex(/^[0-9A-Fa-f]{2}([:-][0-9A-Fa-f]{2}){5}$/, 'Invalid MAC address format. Expected "AA-BB-CC-DD-EE-FF" or "AA:BB:CC:DD:EE:FF".');
+
 export const siteInputSchema = z.object({
     siteId: z
         .string()

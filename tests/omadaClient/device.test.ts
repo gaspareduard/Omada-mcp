@@ -320,6 +320,15 @@ describe('omadaClient/device', () => {
             expect(result).toEqual([]);
         });
 
+        it('should return empty array when ensureSuccess returns a non-array object', async () => {
+            const mockResponse: OmadaApiResponse<unknown[]> = { errorCode: 0, result: [] };
+            (mockRequest.get as ReturnType<typeof vi.fn>).mockResolvedValue(mockResponse);
+            (mockRequest.ensureSuccess as ReturnType<typeof vi.fn>).mockReturnValue({});
+
+            const result = await deviceOps.getGatewayPorts('AA:BB:CC:DD:EE:FF', 'site-1');
+            expect(result).toEqual([]);
+        });
+
         it('should throw when gatewayMac is empty', async () => {
             await expect(deviceOps.getGatewayPorts('')).rejects.toThrow('A gatewayMac must be provided.');
         });
@@ -360,6 +369,15 @@ describe('omadaClient/device', () => {
             const mockResponse: OmadaApiResponse<unknown[]> = { errorCode: 0, result: [] };
             (mockRequest.get as ReturnType<typeof vi.fn>).mockResolvedValue(mockResponse);
             (mockRequest.ensureSuccess as ReturnType<typeof vi.fn>).mockReturnValue(null);
+
+            const result = await deviceOps.getApRadios('AA:BB:CC:DD:EE:FF', 'site-1');
+            expect(result).toEqual([]);
+        });
+
+        it('should return empty array when ensureSuccess returns a non-array object', async () => {
+            const mockResponse: OmadaApiResponse<unknown[]> = { errorCode: 0, result: [] };
+            (mockRequest.get as ReturnType<typeof vi.fn>).mockResolvedValue(mockResponse);
+            (mockRequest.ensureSuccess as ReturnType<typeof vi.fn>).mockReturnValue({});
 
             const result = await deviceOps.getApRadios('AA:BB:CC:DD:EE:FF', 'site-1');
             expect(result).toEqual([]);
@@ -699,6 +717,318 @@ describe('omadaClient/device', () => {
 
         it('should throw if apMac is empty', async () => {
             await expect(deviceOps.getDownlinkWiredDevices('', 'site-1')).rejects.toThrow('An apMac must be provided.');
+        });
+    });
+
+    // -------------------------------------------------------------------------
+    // Phase 2 Read Tools (issue #73)
+    // -------------------------------------------------------------------------
+
+    const mockSimpleResponse = (result: unknown): OmadaApiResponse<unknown> => ({ errorCode: 0, result });
+
+    // Helper: test a MAC-param method that lives on DeviceOperations
+    async function testMacMethod(method: keyof DeviceOperations, macArg: string, expectedPath: string, errorMsg: string): Promise<void> {
+        const mockData = { ok: true };
+        const resp = mockSimpleResponse(mockData);
+        (mockRequest.get as ReturnType<typeof vi.fn>).mockResolvedValue(resp);
+        (mockRequest.ensureSuccess as ReturnType<typeof vi.fn>).mockReturnValue(mockData);
+
+        const result = await (deviceOps[method] as (mac: string, siteId: string) => Promise<unknown>)(macArg, 'site-1');
+        expect(result).toEqual(mockData);
+        expect(mockRequest.get).toHaveBeenCalledWith(expectedPath, undefined, undefined);
+        vi.clearAllMocks();
+
+        // Test empty mac throws
+        await expect((deviceOps[method] as (mac: string, siteId: string) => Promise<unknown>)('', 'site-1')).rejects.toThrow(errorMsg);
+    }
+
+    describe('getFirmwareUpgradePlan', () => {
+        it('should return upgrade plan', async () => {
+            const resp = mockSimpleResponse({ data: [] });
+            (mockRequest.get as ReturnType<typeof vi.fn>).mockResolvedValue(resp);
+            const result = await deviceOps.getFirmwareUpgradePlan(1, 10);
+            expect(mockRequest.get).toHaveBeenCalledWith('/api/upgrade/overview/plans', { page: 1, pageSize: 10 }, undefined);
+            expect(result).toEqual({ data: [] });
+        });
+    });
+
+    describe('getUpgradeLogs', () => {
+        it('should return upgrade logs', async () => {
+            const resp = mockSimpleResponse({ data: [] });
+            (mockRequest.get as ReturnType<typeof vi.fn>).mockResolvedValue(resp);
+            await deviceOps.getUpgradeLogs(1, 10);
+            expect(mockRequest.get).toHaveBeenCalledWith('/api/upgrade/overview/logs', { page: 1, pageSize: 10 }, undefined);
+        });
+    });
+
+    describe('getDeviceTagList', () => {
+        it('should return tag list for site', async () => {
+            const resp = mockSimpleResponse({ tags: [] });
+            (mockRequest.get as ReturnType<typeof vi.fn>).mockResolvedValue(resp);
+            await deviceOps.getDeviceTagList('site-1');
+            expect(mockRequest.get).toHaveBeenCalledWith('/api/sites/site-1/devices/tag', undefined, undefined);
+        });
+    });
+
+    describe('getApQosConfig', () => {
+        it('should return AP QoS config', async () => {
+            await testMacMethod('getApQosConfig', 'AA-BB', '/api/sites/site-1/aps/AA-BB/qos', 'An apMac must be provided.');
+        });
+    });
+
+    describe('getApIpv6Config', () => {
+        it('should return AP IPv6 setting', async () => {
+            await testMacMethod('getApIpv6Config', 'AA-BB', '/api/sites/site-1/aps/AA-BB/ipv6-setting', 'An apMac must be provided.');
+        });
+    });
+
+    // -------------------------------------------------------------------------
+    // Phase 2 additional Read Tools (issue #73)
+    // -------------------------------------------------------------------------
+
+    describe('getSitesGatewaysGeneralConfig', () => {
+        it('should return gateway general config', async () => {
+            await testMacMethod(
+                'getSitesGatewaysGeneralConfig',
+                'GW-01',
+                '/api/sites/site-1/gateways/GW-01/general-config',
+                'A gatewayMac must be provided.'
+            );
+        });
+    });
+
+    describe('getSitesGatewaysPin', () => {
+        it('should return gateway PIN info', async () => {
+            await testMacMethod('getSitesGatewaysPin', 'GW-01', '/api/sites/site-1/gateways/GW-01/pin', 'A gatewayMac must be provided.');
+        });
+    });
+
+    describe('getSitesGatewaysSimCardUsed', () => {
+        it('should return gateway SIM card usage', async () => {
+            await testMacMethod(
+                'getSitesGatewaysSimCardUsed',
+                'GW-01',
+                '/api/sites/site-1/gateways/GW-01/simCardUsed',
+                'A gatewayMac must be provided.'
+            );
+        });
+    });
+
+    describe('getSitesHealthGatewaysWansDetails', () => {
+        it('should return gateway WAN health details', async () => {
+            await testMacMethod(
+                'getSitesHealthGatewaysWansDetails',
+                'GW-01',
+                '/api/sites/site-1/health/gateways/GW-01/wans/details',
+                'A gatewayMac must be provided.'
+            );
+        });
+    });
+
+    describe('getSitesApsIpSetting', () => {
+        it('should return AP IP setting', async () => {
+            await testMacMethod('getSitesApsIpSetting', 'AP-01', '/api/sites/site-1/aps/AP-01/ip-setting', 'An apMac must be provided.');
+        });
+    });
+
+    describe('getSitesApsChannelLimit', () => {
+        it('should return AP channel limit', async () => {
+            await testMacMethod('getSitesApsChannelLimit', 'AP-01', '/api/sites/site-1/aps/AP-01/channel-limit', 'An apMac must be provided.');
+        });
+    });
+
+    describe('getSitesApsAvailableChannel', () => {
+        it('should return AP available channel', async () => {
+            await testMacMethod(
+                'getSitesApsAvailableChannel',
+                'AP-01',
+                '/api/sites/site-1/aps/AP-01/available-channel',
+                'An apMac must be provided.'
+            );
+        });
+    });
+
+    describe('getSitesApsLoadBalance', () => {
+        it('should return AP load balance config', async () => {
+            await testMacMethod('getSitesApsLoadBalance', 'AP-01', '/api/sites/site-1/aps/AP-01/load-balance', 'An apMac must be provided.');
+        });
+    });
+
+    describe('getSitesApsOfdma', () => {
+        it('should return AP OFDMA config', async () => {
+            await testMacMethod('getSitesApsOfdma', 'AP-01', '/api/sites/site-1/aps/AP-01/ofdma', 'An apMac must be provided.');
+        });
+    });
+
+    describe('getSitesApsPowerSaving', () => {
+        it('should return AP power saving config', async () => {
+            await testMacMethod('getSitesApsPowerSaving', 'AP-01', '/api/sites/site-1/aps/AP-01/power-saving', 'An apMac must be provided.');
+        });
+    });
+
+    describe('getSitesApsTrunkSetting', () => {
+        it('should return AP trunk setting', async () => {
+            await testMacMethod('getSitesApsTrunkSetting', 'AP-01', '/api/sites/site-1/aps/AP-01/trunk-setting', 'An apMac must be provided.');
+        });
+    });
+
+    describe('getSitesApsBridge', () => {
+        it('should return AP bridge config', async () => {
+            await testMacMethod('getSitesApsBridge', 'AP-01', '/api/sites/site-1/aps/AP-01/bridge', 'An apMac must be provided.');
+        });
+    });
+
+    describe('listSitesApsPorts', () => {
+        it('should return AP port list', async () => {
+            const mockData = [{ port: 1 }];
+            const resp = mockSimpleResponse(mockData);
+            (mockRequest.get as ReturnType<typeof vi.fn>).mockResolvedValue(resp);
+            (mockRequest.ensureSuccess as ReturnType<typeof vi.fn>).mockReturnValue(mockData);
+            const result = await deviceOps.listSitesApsPorts('AP-01', 'site-1');
+            expect(result).toEqual(mockData);
+            expect(mockRequest.get).toHaveBeenCalledWith('/api/sites/site-1/aps/AP-01/ports', undefined, undefined);
+        });
+
+        it('should throw if apMac is empty', async () => {
+            await expect(deviceOps.listSitesApsPorts('', 'site-1')).rejects.toThrow('An apMac must be provided.');
+        });
+    });
+
+    describe('getSitesSwitchesEs', () => {
+        it('should return switch ES detail', async () => {
+            const mockData = { model: 'TL-SG3428' };
+            const resp = mockSimpleResponse(mockData);
+            (mockRequest.get as ReturnType<typeof vi.fn>).mockResolvedValue(resp);
+            (mockRequest.ensureSuccess as ReturnType<typeof vi.fn>).mockReturnValue(mockData);
+            const result = await deviceOps.getSitesSwitchesEs('SW-01', 'site-1');
+            expect(result).toEqual(mockData);
+            expect(mockRequest.get).toHaveBeenCalledWith('/api/sites/site-1/switches/es/SW-01', undefined, undefined);
+        });
+
+        it('should throw if switchMac is empty', async () => {
+            await expect(deviceOps.getSitesSwitchesEs('', 'site-1')).rejects.toThrow('A switchMac must be provided.');
+        });
+    });
+
+    describe('getSitesSwitchesEsGeneralConfig', () => {
+        it('should return switch ES general config', async () => {
+            const mockData = { deviceName: 'SW-1' };
+            const resp = mockSimpleResponse(mockData);
+            (mockRequest.get as ReturnType<typeof vi.fn>).mockResolvedValue(resp);
+            (mockRequest.ensureSuccess as ReturnType<typeof vi.fn>).mockReturnValue(mockData);
+            const result = await deviceOps.getSitesSwitchesEsGeneralConfig('SW-01', 'site-1');
+            expect(result).toEqual(mockData);
+            expect(mockRequest.get).toHaveBeenCalledWith('/api/sites/site-1/switches/es/SW-01/general-config', undefined, undefined);
+        });
+
+        it('should throw if switchMac is empty', async () => {
+            await expect(deviceOps.getSitesSwitchesEsGeneralConfig('', 'site-1')).rejects.toThrow('A switchMac must be provided.');
+        });
+    });
+
+    describe('listSitesCableTestSwitchesPorts', () => {
+        it('should return cable test switch ports', async () => {
+            const mockData = [{ portId: 1 }];
+            const resp = mockSimpleResponse(mockData);
+            (mockRequest.get as ReturnType<typeof vi.fn>).mockResolvedValue(resp);
+            (mockRequest.ensureSuccess as ReturnType<typeof vi.fn>).mockReturnValue(mockData);
+            const result = await deviceOps.listSitesCableTestSwitchesPorts('SW-01', 'site-1');
+            expect(result).toEqual(mockData);
+            expect(mockRequest.get).toHaveBeenCalledWith('/api/sites/site-1/cable-test/switches/SW-01/ports', undefined, undefined);
+        });
+
+        it('should throw if switchMac is empty', async () => {
+            await expect(deviceOps.listSitesCableTestSwitchesPorts('', 'site-1')).rejects.toThrow('A switchMac must be provided.');
+        });
+    });
+
+    describe('listSitesCableTestSwitchesIncrementResults', () => {
+        it('should return cable test increment results', async () => {
+            const mockData = { results: [] };
+            const resp = mockSimpleResponse(mockData);
+            (mockRequest.get as ReturnType<typeof vi.fn>).mockResolvedValue(resp);
+            (mockRequest.ensureSuccess as ReturnType<typeof vi.fn>).mockReturnValue(mockData);
+            const result = await deviceOps.listSitesCableTestSwitchesIncrementResults('SW-01', 'site-1');
+            expect(result).toEqual(mockData);
+            expect(mockRequest.get).toHaveBeenCalledWith('/api/sites/site-1/cable-test/switches/SW-01/increment-results', undefined, undefined);
+        });
+
+        it('should throw if switchMac is empty', async () => {
+            await expect(deviceOps.listSitesCableTestSwitchesIncrementResults('', 'site-1')).rejects.toThrow('A switchMac must be provided.');
+        });
+    });
+
+    describe('getUpgradeOverviewCritical', () => {
+        it('should return critical upgrade overview', async () => {
+            const mockData = { count: 2 };
+            const resp = mockSimpleResponse(mockData);
+            (mockRequest.get as ReturnType<typeof vi.fn>).mockResolvedValue(resp);
+            (mockRequest.ensureSuccess as ReturnType<typeof vi.fn>).mockReturnValue(mockData);
+            const result = await deviceOps.getUpgradeOverviewCritical();
+            expect(result).toEqual(mockData);
+            expect(mockRequest.get).toHaveBeenCalledWith('/api/upgrade/overview/critical', undefined, undefined);
+        });
+    });
+
+    describe('getUpgradeOverviewTryBeta', () => {
+        it('should return try-beta upgrade overview', async () => {
+            const mockData = { count: 5 };
+            const resp = mockSimpleResponse(mockData);
+            (mockRequest.get as ReturnType<typeof vi.fn>).mockResolvedValue(resp);
+            (mockRequest.ensureSuccess as ReturnType<typeof vi.fn>).mockReturnValue(mockData);
+            const result = await deviceOps.getUpgradeOverviewTryBeta();
+            expect(result).toEqual(mockData);
+            expect(mockRequest.get).toHaveBeenCalledWith('/api/upgrade/overview/try-beta', undefined, undefined);
+        });
+    });
+
+    describe('listUpgradeFirmwares', () => {
+        it('should return paginated firmware list', async () => {
+            const resp = mockSimpleResponse({ data: [] });
+            (mockRequest.get as ReturnType<typeof vi.fn>).mockResolvedValue(resp);
+            await deviceOps.listUpgradeFirmwares(1, 10);
+            expect(mockRequest.get).toHaveBeenCalledWith('/api/upgrade/firmwares', { page: 1, pageSize: 10 }, undefined);
+        });
+    });
+
+    describe('listUpgradeOverviewFirmwares', () => {
+        it('should return paginated overview firmware list', async () => {
+            const resp = mockSimpleResponse({ data: [] });
+            (mockRequest.get as ReturnType<typeof vi.fn>).mockResolvedValue(resp);
+            await deviceOps.listUpgradeOverviewFirmwares(1, 10);
+            expect(mockRequest.get).toHaveBeenCalledWith('/api/upgrade/overview/firmwares', { page: 1, pageSize: 10 }, undefined);
+        });
+    });
+
+    describe('listSitesStacks', () => {
+        it('should return stacks for site with default pagination', async () => {
+            const resp = mockSimpleResponse({ data: [] });
+            (mockRequest.get as ReturnType<typeof vi.fn>).mockResolvedValue(resp);
+            await deviceOps.listSitesStacks('site-1');
+            expect(mockRequest.get).toHaveBeenCalledWith('/api/sites/site-1/stacks', { page: 1, pageSize: 10 }, undefined);
+        });
+
+        it('should use provided page and pageSize', async () => {
+            const resp = mockSimpleResponse({ data: [] });
+            (mockRequest.get as ReturnType<typeof vi.fn>).mockResolvedValue(resp);
+            await deviceOps.listSitesStacks('site-1', 2, 20);
+            expect(mockRequest.get).toHaveBeenCalledWith('/api/sites/site-1/stacks', { page: 2, pageSize: 20 }, undefined);
+        });
+    });
+
+    describe('getSitesDeviceWhiteList', () => {
+        it('should return device white list with default pagination', async () => {
+            const resp = mockSimpleResponse({ data: [] });
+            (mockRequest.get as ReturnType<typeof vi.fn>).mockResolvedValue(resp);
+            await deviceOps.getSitesDeviceWhiteList('site-1');
+            expect(mockRequest.get).toHaveBeenCalledWith('/api/sites/site-1/device-white-list', { page: 1, pageSize: 10 }, undefined);
+        });
+
+        it('should use provided page and pageSize', async () => {
+            const resp = mockSimpleResponse({ data: [] });
+            (mockRequest.get as ReturnType<typeof vi.fn>).mockResolvedValue(resp);
+            await deviceOps.getSitesDeviceWhiteList('site-1', 3, 15);
+            expect(mockRequest.get).toHaveBeenCalledWith('/api/sites/site-1/device-white-list', { page: 3, pageSize: 15 }, undefined);
         });
     });
 });

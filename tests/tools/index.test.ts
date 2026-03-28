@@ -111,8 +111,44 @@ describe('tools/index', () => {
             expect(mockServer.registerTool).toHaveBeenCalledWith('listGlobalEvents', expect.any(Object), expect.any(Function));
             expect(mockServer.registerTool).toHaveBeenCalledWith('listGlobalAlerts', expect.any(Object), expect.any(Function));
 
+            // Device read tools (issue #73) — spec-verified only
+            expect(mockServer.registerTool).toHaveBeenCalledWith('getFirmwareUpgradePlan', expect.any(Object), expect.any(Function));
+            expect(mockServer.registerTool).toHaveBeenCalledWith('getUpgradeLogs', expect.any(Object), expect.any(Function));
+            expect(mockServer.registerTool).toHaveBeenCalledWith('getDeviceTagList', expect.any(Object), expect.any(Function));
+            expect(mockServer.registerTool).toHaveBeenCalledWith('getApQosConfig', expect.any(Object), expect.any(Function));
+            expect(mockServer.registerTool).toHaveBeenCalledWith('getApIpv6Config', expect.any(Object), expect.any(Function));
+
+            // Phase 2 device read tools (issue #73)
+            expect(mockServer.registerTool).toHaveBeenCalledWith('getUpgradeOverviewCritical', expect.any(Object), expect.any(Function));
+            expect(mockServer.registerTool).toHaveBeenCalledWith('getUpgradeOverviewTryBeta', expect.any(Object), expect.any(Function));
+            expect(mockServer.registerTool).toHaveBeenCalledWith('listUpgradeFirmwares', expect.any(Object), expect.any(Function));
+            expect(mockServer.registerTool).toHaveBeenCalledWith('listUpgradeOverviewFirmwares', expect.any(Object), expect.any(Function));
+            expect(mockServer.registerTool).toHaveBeenCalledWith('listSitesStacks', expect.any(Object), expect.any(Function));
+            expect(mockServer.registerTool).toHaveBeenCalledWith('getSitesDeviceWhiteList', expect.any(Object), expect.any(Function));
+            expect(mockServer.registerTool).toHaveBeenCalledWith('getSitesSwitchesEs', expect.any(Object), expect.any(Function));
+            expect(mockServer.registerTool).toHaveBeenCalledWith('getSitesSwitchesEsGeneralConfig', expect.any(Object), expect.any(Function));
+            expect(mockServer.registerTool).toHaveBeenCalledWith('listSitesCableTestSwitchesPorts', expect.any(Object), expect.any(Function));
+            expect(mockServer.registerTool).toHaveBeenCalledWith(
+                'listSitesCableTestSwitchesIncrementResults',
+                expect.any(Object),
+                expect.any(Function)
+            );
+            expect(mockServer.registerTool).toHaveBeenCalledWith('getSitesApsIpSetting', expect.any(Object), expect.any(Function));
+            expect(mockServer.registerTool).toHaveBeenCalledWith('getSitesApsChannelLimit', expect.any(Object), expect.any(Function));
+            expect(mockServer.registerTool).toHaveBeenCalledWith('getSitesApsAvailableChannel', expect.any(Object), expect.any(Function));
+            expect(mockServer.registerTool).toHaveBeenCalledWith('getSitesApsLoadBalance', expect.any(Object), expect.any(Function));
+            expect(mockServer.registerTool).toHaveBeenCalledWith('getSitesApsOfdma', expect.any(Object), expect.any(Function));
+            expect(mockServer.registerTool).toHaveBeenCalledWith('getSitesApsPowerSaving', expect.any(Object), expect.any(Function));
+            expect(mockServer.registerTool).toHaveBeenCalledWith('getSitesApsTrunkSetting', expect.any(Object), expect.any(Function));
+            expect(mockServer.registerTool).toHaveBeenCalledWith('getSitesApsBridge', expect.any(Object), expect.any(Function));
+            expect(mockServer.registerTool).toHaveBeenCalledWith('listSitesApsPorts', expect.any(Object), expect.any(Function));
+            expect(mockServer.registerTool).toHaveBeenCalledWith('getSitesGatewaysGeneralConfig', expect.any(Object), expect.any(Function));
+            expect(mockServer.registerTool).toHaveBeenCalledWith('getSitesGatewaysPin', expect.any(Object), expect.any(Function));
+            expect(mockServer.registerTool).toHaveBeenCalledWith('getSitesGatewaysSimCardUsed', expect.any(Object), expect.any(Function));
+            expect(mockServer.registerTool).toHaveBeenCalledWith('getSitesHealthGatewaysWansDetails', expect.any(Object), expect.any(Function));
+
             // Verify total number of tools registered
-            expect(mockServer.registerTool).toHaveBeenCalledTimes(197);
+            expect(mockServer.registerTool).toHaveBeenCalledTimes(225);
         });
     });
 });
