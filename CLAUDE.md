@@ -281,3 +281,28 @@ Before adding a new method to any `*Operations` class (`NetworkOperations`, `Dev
   - Devcontainer support
   - Local testing and debugging
 - `README.Docker.md` should include a "Contributing" section with the GitHub repository URL to invite contributions.
+
+### README Table Format (CRITICAL — affects CI)
+
+The `scripts/check-readme-sync.mjs` script validates that every registered tool appears in both README files. It detects tool rows using this exact regex:
+
+```
+/^\| `([^`]+)` \|/gm
+```
+
+This means rows **must** use tight format — no padding between the closing backtick and the pipe:
+
+```
+✅ | `toolName` | Short description. |
+❌ | `toolName`              | Short description.           |
+```
+
+Padded/aligned table rows (common when auto-generating or formatting tables for readability) will **silently pass `npm test` but fail the CI README sync check**.
+
+**Rule:** After adding any tool entries to README.md or README.Docker.md, run:
+
+```bash
+node scripts/check-readme-sync.mjs
+```
+
+This must pass before opening a PR. If it reports missing tools, check for padding — the tool name is likely present but in padded format that the regex cannot match.
