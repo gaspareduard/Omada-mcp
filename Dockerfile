@@ -28,6 +28,6 @@ RUN apt-get update \
   && apt-get install -y --no-install-recommends curl \
   && rm -rf /var/lib/apt/lists/*
 COPY package*.json ./
-RUN npm install --omit=dev
+RUN HUSKY=0 npm install --omit=dev
 COPY --from=build /app/dist ./dist
 CMD ["node", "dist/index.js"]
