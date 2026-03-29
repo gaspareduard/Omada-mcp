@@ -624,6 +624,94 @@ export class OmadaClient {
         return await this.networkOps.listMdnsProfile(siteId, customHeaders);
     }
 
+    // --- network-wan (#74) ---
+
+    public async getIspBandScan(portUuid: string, siteId?: string, customHeaders?: CustomHeaders): Promise<unknown> {
+        return await this.networkOps.getIspBandScan(portUuid, siteId, customHeaders);
+    }
+
+    public async getDisableNatList(page = 1, pageSize = 10, siteId?: string, customHeaders?: CustomHeaders): Promise<unknown> {
+        return await this.networkOps.getDisableNatList(page, pageSize, siteId, customHeaders);
+    }
+
+    public async getLtePortConfig(siteId?: string, customHeaders?: CustomHeaders): Promise<unknown> {
+        return await this.networkOps.getLtePortConfig(siteId, customHeaders);
+    }
+
+    public async getWanPortDetail(siteId?: string, customHeaders?: CustomHeaders): Promise<unknown> {
+        return await this.networkOps.getWanPortDetail(siteId, customHeaders);
+    }
+
+    public async getWanIspProfile(portUuid: string, siteId?: string, customHeaders?: CustomHeaders): Promise<unknown> {
+        return await this.networkOps.getWanIspProfile(portUuid, siteId, customHeaders);
+    }
+
+    public async getWanQosConfig(siteId?: string, customHeaders?: CustomHeaders): Promise<unknown> {
+        return await this.networkOps.getWanQosConfig(siteId, customHeaders);
+    }
+
+    public async getWanHealthDetail(gatewayMac: string, siteId?: string, customHeaders?: CustomHeaders): Promise<unknown> {
+        return await this.getSitesHealthGatewaysWansDetails(gatewayMac, siteId, customHeaders);
+    }
+
+    public async getWanUsageStats(siteId?: string, customHeaders?: CustomHeaders): Promise<unknown> {
+        return await this.networkOps.getWanUsageStats(siteId, customHeaders);
+    }
+
+    public async getWanNatConfig(page = 1, pageSize = 10, siteId?: string, customHeaders?: CustomHeaders): Promise<unknown> {
+        return await this.networkOps.getWanNatConfig(page, pageSize, siteId, customHeaders);
+    }
+
+    // --- network-lan (#74) ---
+
+    public async getSwitchVlanInterface(switchMac: string, siteId?: string, customHeaders?: CustomHeaders): Promise<unknown> {
+        return await this.networkOps.getSwitchVlanInterface(switchMac, siteId, customHeaders);
+    }
+
+    public async getLanDnsRules(page = 1, pageSize = 10, siteId?: string, customHeaders?: CustomHeaders): Promise<unknown> {
+        return await this.networkOps.getLanDnsRules(page, pageSize, siteId, customHeaders);
+    }
+
+    public async getLanProfileEsUsage(profileId: string, siteId?: string, customHeaders?: CustomHeaders): Promise<unknown> {
+        return await this.networkOps.getLanProfileEsUsage(profileId, siteId, customHeaders);
+    }
+
+    public async getLanClientCount(siteId?: string, customHeaders?: CustomHeaders): Promise<unknown> {
+        return await this.networkOps.getLanClientCount(siteId, customHeaders);
+    }
+
+    // --- network-routing (#74) ---
+
+    public async getOspfProcess(siteId?: string, customHeaders?: CustomHeaders): Promise<unknown> {
+        return await this.networkOps.getOspfProcess(siteId, customHeaders);
+    }
+
+    public async getOspfInterface(siteId?: string, customHeaders?: CustomHeaders): Promise<unknown> {
+        return await this.networkOps.getOspfInterface(siteId, customHeaders);
+    }
+
+    public async getVrrpConfig(siteId?: string, customHeaders?: CustomHeaders): Promise<unknown> {
+        return await this.networkOps.getVrrpConfig(siteId, customHeaders);
+    }
+
+    public async getOspfNeighbors(siteId?: string, customHeaders?: CustomHeaders): Promise<unknown> {
+        return await this.networkOps.getOspfNeighbors(siteId, customHeaders);
+    }
+
+    // --- network-services (#74) ---
+
+    public async getDnsCacheDataList(page = 1, pageSize = 10, siteId?: string, customHeaders?: CustomHeaders): Promise<unknown> {
+        return await this.networkOps.getDnsCacheDataList(page, pageSize, siteId, customHeaders);
+    }
+
+    public async getIptvSetting(siteId?: string, customHeaders?: CustomHeaders): Promise<unknown> {
+        return await this.networkOps.getIptvSetting(siteId, customHeaders);
+    }
+
+    public async getNtpSetting(siteId?: string, customHeaders?: CustomHeaders): Promise<unknown> {
+        return await this.networkOps.getNtpSetting(siteId, customHeaders);
+    }
+
     public async listPortForwardingRules(siteId?: string, customHeaders?: CustomHeaders): Promise<unknown[]> {
         return await this.networkOps.listPortForwardingRules(siteId, customHeaders);
     }

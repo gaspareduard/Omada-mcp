@@ -248,6 +248,23 @@ git push -u origin hotfix/<short-description>
 - DNS rebinding protection is implemented via origin validation and bind address restrictions for security.
 - Always reuse the pagination schema in `src/utils/pagination-schema.ts` when implementing list operations that support pagination.
 
+## Deprecated Tool Convention
+
+When a tool is marked as deprecated (alias of another tool):
+
+1. **Use the `[DEPRECATED]` prefix** in the tool description string — this is the repo convention. See `src/tools/getRFScanResult.ts` for the canonical format. Do NOT use bare words like "DEPRECATED" or "Deprecated" without the brackets.
+2. **README.md and README.Docker.md must match the code** — if the tool description says `[DEPRECATED]`, the corresponding row in both tool tables must also reflect that (add the deprecated/alias note to the description column). Never leave a deprecated tool listed as a normal tool in the docs.
+3. **Both READMEs must be updated in the same commit** as the tool description change — never defer doc alignment to a follow-up.
+
+## Avoid Duplicate Endpoint Implementations
+
+Before adding a new method to any `*Operations` class (`NetworkOperations`, `DeviceOperations`, etc.):
+
+1. **Search the entire `src/omadaClient/` directory** for the target API path — the endpoint may already be implemented in a different Operations class.
+2. **If a matching method already exists elsewhere**, delegate to it rather than re-implementing the request. Add a wrapper method that calls the existing one.
+3. **Check `OmadaClient` (`src/omadaClient/index.ts`)** to see what is already publicly exposed — if the public API already covers the endpoint, do not add a duplicate private implementation.
+4. Duplication across Operations classes causes inconsistent validation, diverging behaviour, and dead code — Copilot and reviewers will flag it every time.
+
 ## Documentation Synchronization
 
 - **Two README files must be kept in sync** for Docker container usage information and MCP configuration:

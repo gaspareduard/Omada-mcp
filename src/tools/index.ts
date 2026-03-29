@@ -50,6 +50,8 @@ import { registerGetDeviceTool } from './getDevice.js';
 import { registerGetDeviceAccessManagementTool } from './getDeviceAccessManagement.js';
 import { registerGetDeviceTagListTool } from './getDeviceTagList.js';
 import { registerGetDhcpReservationGridTool } from './getDhcpReservationGrid.js';
+import { registerGetDisableNatListTool } from './getDisableNatList.js';
+import { registerGetDnsCacheDataListTool } from './getDnsCacheDataList.js';
 import { registerGetDnsCacheSettingTool } from './getDnsCacheSetting.js';
 import { registerGetDnsProxyTool } from './getDnsProxy.js';
 import { registerGetDownlinkWiredDevicesTool } from './getDownlinkWiredDevices.js';
@@ -95,9 +97,14 @@ import { registerGetInternetLoadBalanceTool } from './getInternetLoadBalance.js'
 import { registerGetIpMacBindingGeneralSettingTool } from './getIpMacBindingGeneralSetting.js';
 import { registerGetIpsConfigTool } from './getIpsConfig.js';
 import { registerGetIpsecVpnStatsTool } from './getIpsecVpnStats.js';
+import { registerGetIptvSettingTool } from './getIptvSetting.js';
+import { registerGetIspBandScanTool } from './getIspBandScan.js';
 import { registerGetIspLoadTool } from './getIspLoad.js';
+import { registerGetLanClientCountTool } from './getLanClientCount.js';
+import { registerGetLanDnsRulesTool } from './getLanDnsRules.js';
 import { registerGetLanNetworkListTool } from './getLanNetworkList.js';
 import { registerGetLanNetworkListV2Tool } from './getLanNetworkListV2.js';
+import { registerGetLanProfileEsUsageTool } from './getLanProfileEsUsage.js';
 import { registerGetLanProfileListTool } from './getLanProfileList.js';
 import { registerGetLdapProfileListTool } from './getLdapProfileList.js';
 import { registerGetLldpSettingTool } from './getLldpSetting.js';
@@ -106,13 +113,18 @@ import { registerGetLogSettingForGlobalTool } from './getLogSettingForGlobal.js'
 import { registerGetLogSettingForGlobalV2Tool } from './getLogSettingForGlobalV2.js';
 import { registerGetLogSettingForSiteTool } from './getLogSettingForSite.js';
 import { registerGetLogSettingForSiteV2Tool } from './getLogSettingForSiteV2.js';
+import { registerGetLtePortConfigTool } from './getLtePortConfig.js';
 import { registerGetMacAuthSettingTool } from './getMacAuthSetting.js';
 import { registerGetMacAuthSsidsTool } from './getMacAuthSsids.js';
 import { registerGetMacFilteringGeneralSettingTool } from './getMacFilteringGeneralSetting.js';
 import { registerGetMailServerStatusTool } from './getMailServerStatus.js';
 import { registerGetMeshSettingTool } from './getMeshSetting.js';
 import { registerGetMeshStatisticsTool } from './getMeshStatistics.js';
+import { registerGetNtpSettingTool } from './getNtpSetting.js';
 import { registerGetOsgCustomAclListTool } from './getOsgCustomAclList.js';
+import { registerGetOspfInterfaceTool } from './getOspfInterface.js';
+import { registerGetOspfNeighborsTool } from './getOspfNeighbors.js';
+import { registerGetOspfProcessTool } from './getOspfProcess.js';
 import { registerGetOswAclListTool } from './getOswAclList.js';
 import { registerGetOswStackLagListTool } from './getOswStackLagList.js';
 import { registerGetOuiProfileListTool } from './getOuiProfileList.js';
@@ -166,6 +178,8 @@ import { registerGetSwitchDetailTool } from './getSwitchDetail.js';
 import { registerGetSwitchDot1xSettingTool } from './getSwitchDot1xSetting.js';
 import { registerGetSwitchGeneralConfigTool } from './getSwitchGeneralConfig.js';
 import { registerGetSwitchStackDetailTool } from './getSwitchStackDetail.js';
+import { registerGetSwitchVlanInterfaceTool } from './getSwitchVlanInterface.js';
+import { registerGetSyslogConfigTool } from './getSyslogConfig.js';
 import { registerGetThreatCountTool } from './getThreatCount.js';
 import { registerGetThreatDetailTool } from './getThreatDetail.js';
 import { registerGetThreatListTool } from './getThreatList.js';
@@ -180,8 +194,15 @@ import { registerGetUpnpSettingTool } from './getUpnpSetting.js';
 import { registerGetUrlFilterGeneralTool } from './getUrlFilterGeneral.js';
 import { registerGetVpnSettingsTool } from './getVpnSettings.js';
 import { registerGetVpnTunnelStatsTool } from './getVpnTunnelStats.js';
+import { registerGetVrrpConfigTool } from './getVrrpConfig.js';
+import { registerGetWanHealthDetailTool } from './getWanHealthDetail.js';
+import { registerGetWanIspProfileTool } from './getWanIspProfile.js';
 import { registerGetWanLanStatusTool } from './getWanLanStatus.js';
+import { registerGetWanNatConfigTool } from './getWanNatConfig.js';
+import { registerGetWanPortDetailTool } from './getWanPortDetail.js';
 import { registerGetWanPortsConfigTool } from './getWanPortsConfig.js';
+import { registerGetWanQosConfigTool } from './getWanQosConfig.js';
+import { registerGetWanUsageStatsTool } from './getWanUsageStats.js';
 import { registerGetWebhookForGlobalTool } from './getWebhookForGlobal.js';
 import { registerGetWebhookLogsForGlobalTool } from './getWebhookLogsForGlobal.js';
 import { registerGetWidsTool } from './getWids.js';
@@ -352,6 +373,15 @@ const TOOL_REGISTRY: ToolEntry[] = [
     { fn: registerGetInternetTool, category: 'network-wan', permission: 'read' },
     { fn: registerGetGridVirtualWanTool, category: 'network-wan', permission: 'read' },
     { fn: registerGetInternetLoadBalanceTool, category: 'network-wan', permission: 'read' },
+    { fn: registerGetIspBandScanTool, category: 'network-wan', permission: 'read' },
+    { fn: registerGetDisableNatListTool, category: 'network-wan', permission: 'read' },
+    { fn: registerGetLtePortConfigTool, category: 'network-wan', permission: 'read' },
+    { fn: registerGetWanPortDetailTool, category: 'network-wan', permission: 'read' },
+    { fn: registerGetWanIspProfileTool, category: 'network-wan', permission: 'read' },
+    { fn: registerGetWanQosConfigTool, category: 'network-wan', permission: 'read' },
+    { fn: registerGetWanHealthDetailTool, category: 'network-wan', permission: 'read' },
+    { fn: registerGetWanUsageStatsTool, category: 'network-wan', permission: 'read' },
+    { fn: registerGetWanNatConfigTool, category: 'network-wan', permission: 'read' },
 
     // --- Network LAN ---
     { fn: registerGetLanNetworkListTool, category: 'network-lan', permission: 'read' },
@@ -365,6 +395,10 @@ const TOOL_REGISTRY: ToolEntry[] = [
     { fn: registerGetDnsCacheSettingTool, category: 'network-lan', permission: 'read' },
     { fn: registerGetDnsProxyTool, category: 'network-lan', permission: 'read' },
     { fn: registerGetIgmpTool, category: 'network-lan', permission: 'read' },
+    { fn: registerGetSwitchVlanInterfaceTool, category: 'network-lan', permission: 'read' },
+    { fn: registerGetLanDnsRulesTool, category: 'network-lan', permission: 'read' },
+    { fn: registerGetLanProfileEsUsageTool, category: 'network-lan', permission: 'read' },
+    { fn: registerGetLanClientCountTool, category: 'network-lan', permission: 'read' },
 
     // --- Network NAT ---
     { fn: registerGetPortForwardingStatusTool, category: 'network-nat', permission: 'read' },
@@ -379,6 +413,10 @@ const TOOL_REGISTRY: ToolEntry[] = [
     { fn: registerListPolicyRoutesTool, category: 'network-routing', permission: 'read' },
     { fn: registerGetGridPolicyRoutingTool, category: 'network-routing', permission: 'read' },
     { fn: registerGetRoutingTableTool, category: 'network-routing', permission: 'read' },
+    { fn: registerGetOspfProcessTool, category: 'network-routing', permission: 'read' },
+    { fn: registerGetOspfInterfaceTool, category: 'network-routing', permission: 'read' },
+    { fn: registerGetVrrpConfigTool, category: 'network-routing', permission: 'read' },
+    { fn: registerGetOspfNeighborsTool, category: 'network-routing', permission: 'read' },
 
     // --- Network services ---
     { fn: registerGetAlgTool, category: 'network-services', permission: 'read' },
@@ -394,6 +432,10 @@ const TOOL_REGISTRY: ToolEntry[] = [
     { fn: registerGetRemoteLoggingSettingTool, category: 'network-services', permission: 'read' },
     { fn: registerGetAccessControlTool, category: 'network-services', permission: 'read' },
     { fn: registerGetSshSettingTool, category: 'network-services', permission: 'read' },
+    { fn: registerGetDnsCacheDataListTool, category: 'network-services', permission: 'read' },
+    { fn: registerGetIptvSettingTool, category: 'network-services', permission: 'read' },
+    { fn: registerGetNtpSettingTool, category: 'network-services', permission: 'read' },
+    { fn: registerGetSyslogConfigTool, category: 'network-services', permission: 'read' },
 
     // --- Wireless SSID ---
     { fn: registerGetWlanGroupListTool, category: 'wireless-ssid', permission: 'read' },

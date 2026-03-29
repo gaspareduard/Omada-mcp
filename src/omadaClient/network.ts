@@ -1206,4 +1206,226 @@ export class NetworkOperations {
         const response = await this.request.get<OmadaApiResponse<unknown>>(path, undefined, customHeaders);
         return this.request.ensureSuccess(response);
     }
+
+    // -------------------------------------------------------------------------
+    // network-wan additions (#74)
+    // -------------------------------------------------------------------------
+
+    /**
+     * Get ISP band scan result for a WAN port.
+     * OperationId: getBandScanResult
+     */
+    public async getIspBandScan(portUuid: string, siteId?: string, customHeaders?: CustomHeaders): Promise<unknown> {
+        const resolvedSiteId = this.site.resolveSiteId(siteId);
+        const path = this.buildPath(`/sites/${encodeURIComponent(resolvedSiteId)}/internet/band-scan/${encodeURIComponent(portUuid)}`);
+        const response = await this.request.get<OmadaApiResponse<unknown>>(path, undefined, customHeaders);
+        return this.request.ensureSuccess(response);
+    }
+
+    /**
+     * Get the disable-NAT grid for wired networks (entries where NAT is disabled on a WAN interface).
+     * OperationId: getDisableNatGrid
+     */
+    public async getDisableNatList(page = 1, pageSize = 10, siteId?: string, customHeaders?: CustomHeaders): Promise<unknown> {
+        const resolvedSiteId = this.site.resolveSiteId(siteId);
+        const path = this.buildPath(`/sites/${encodeURIComponent(resolvedSiteId)}/wired-networks/disable-nats`);
+        const response = await this.request.get<OmadaApiResponse<unknown>>(path, { page, pageSize }, customHeaders);
+        return this.request.ensureSuccess(response);
+    }
+
+    /**
+     * Get LTE/cellular WAN port configuration.
+     * OperationId: getLteWanPortsConfig
+     */
+    public async getLtePortConfig(siteId?: string, customHeaders?: CustomHeaders): Promise<unknown> {
+        const resolvedSiteId = this.site.resolveSiteId(siteId);
+        const path = this.buildPath(`/sites/${encodeURIComponent(resolvedSiteId)}/internet/lte/ports-config`);
+        const response = await this.request.get<OmadaApiResponse<unknown>>(path, undefined, customHeaders);
+        return this.request.ensureSuccess(response);
+    }
+
+    /**
+     * Get detailed WAN port configuration (alias for getWanPortsConfig).
+     * OperationId: getWanPortsConfig
+     */
+    public getWanPortDetail(siteId?: string, customHeaders?: CustomHeaders): Promise<unknown> {
+        return this.getWanPortsConfig(siteId, customHeaders);
+    }
+
+    /**
+     * Get ISP scan result for a WAN port.
+     * OperationId: getIspScanResult
+     */
+    public async getWanIspProfile(portUuid: string, siteId?: string, customHeaders?: CustomHeaders): Promise<unknown> {
+        const resolvedSiteId = this.site.resolveSiteId(siteId);
+        const path = this.buildPath(`/sites/${encodeURIComponent(resolvedSiteId)}/internet/isp-scan/${encodeURIComponent(portUuid)}`);
+        const response = await this.request.get<OmadaApiResponse<unknown>>(path, undefined, customHeaders);
+        return this.request.ensureSuccess(response);
+    }
+
+    /**
+     * Get QoS configuration for gateway WAN ports.
+     * OperationId: getQosWans
+     */
+    public async getWanQosConfig(siteId?: string, customHeaders?: CustomHeaders): Promise<unknown> {
+        const resolvedSiteId = this.site.resolveSiteId(siteId);
+        const path = this.buildPath(`/sites/${encodeURIComponent(resolvedSiteId)}/qos/gateway/wans`);
+        const response = await this.request.get<OmadaApiResponse<unknown>>(path, undefined, customHeaders);
+        return this.request.ensureSuccess(response);
+    }
+
+    /**
+     * Get WAN traffic usage statistics.
+     * OperationId: getTrafficActivities
+     */
+    public async getWanUsageStats(siteId?: string, customHeaders?: CustomHeaders): Promise<unknown> {
+        const resolvedSiteId = this.site.resolveSiteId(siteId);
+        const path = this.buildPath(`/sites/${encodeURIComponent(resolvedSiteId)}/dashboard/traffic-activities`);
+        const response = await this.request.get<OmadaApiResponse<unknown>>(path, undefined, customHeaders);
+        return this.request.ensureSuccess(response);
+    }
+
+    /**
+     * Get one-to-one NAT config (WAN NAT config view).
+     * OperationId: getGridOtoNats
+     */
+    public async getWanNatConfig(page = 1, pageSize = 10, siteId?: string, customHeaders?: CustomHeaders): Promise<unknown> {
+        const resolvedSiteId = this.site.resolveSiteId(siteId);
+        const path = this.buildPath(`/sites/${encodeURIComponent(resolvedSiteId)}/nat/one-to-one-nat`);
+        const response = await this.request.get<OmadaApiResponse<unknown>>(path, { page, pageSize }, customHeaders);
+        return this.request.ensureSuccess(response);
+    }
+
+    // -------------------------------------------------------------------------
+    // network-lan additions (#74)
+    // -------------------------------------------------------------------------
+
+    /**
+     * Get VLAN interface config for a switch.
+     * OperationId: getOswVlanIf
+     */
+    public async getSwitchVlanInterface(switchMac: string, siteId?: string, customHeaders?: CustomHeaders): Promise<unknown> {
+        const resolvedSiteId = this.site.resolveSiteId(siteId);
+        const path = this.buildPath(`/sites/${encodeURIComponent(resolvedSiteId)}/vlan-interface/switches/${encodeURIComponent(switchMac)}`);
+        const response = await this.request.get<OmadaApiResponse<unknown>>(path, undefined, customHeaders);
+        return this.request.ensureSuccess(response);
+    }
+
+    /**
+     * Get LAN DNS rules list.
+     * OperationId: getGridLanDns
+     */
+    public async getLanDnsRules(page = 1, pageSize = 10, siteId?: string, customHeaders?: CustomHeaders): Promise<unknown> {
+        const resolvedSiteId = this.site.resolveSiteId(siteId);
+        const path = this.buildPath(`/sites/${encodeURIComponent(resolvedSiteId)}/setting/lan/dns`);
+        const response = await this.request.get<OmadaApiResponse<unknown>>(path, { page, pageSize }, customHeaders);
+        return this.request.ensureSuccess(response);
+    }
+
+    /**
+     * Get LAN profile usage on EAP/switch devices.
+     * OperationId: getUseLanProfileES
+     */
+    public async getLanProfileEsUsage(profileId: string, siteId?: string, customHeaders?: CustomHeaders): Promise<unknown> {
+        const resolvedSiteId = this.site.resolveSiteId(siteId);
+        const path = this.buildPath(`/sites/${encodeURIComponent(resolvedSiteId)}/lan-profiles/${encodeURIComponent(profileId)}/es`);
+        const response = await this.request.get<OmadaApiResponse<unknown>>(path, undefined, customHeaders);
+        return this.request.ensureSuccess(response);
+    }
+
+    /**
+     * Get client distribution breakdown across network segments.
+     * OperationId: getClientsDistribution
+     */
+    public async getLanClientCount(siteId?: string, customHeaders?: CustomHeaders): Promise<unknown> {
+        const resolvedSiteId = this.site.resolveSiteId(siteId);
+        const path = this.buildPath(`/sites/${encodeURIComponent(resolvedSiteId)}/dashboard/client-distribution`);
+        const response = await this.request.get<OmadaApiResponse<unknown>>(path, undefined, customHeaders);
+        return this.request.ensureSuccess(response);
+    }
+
+    // -------------------------------------------------------------------------
+    // network-routing additions (#74)
+    // -------------------------------------------------------------------------
+
+    /**
+     * Get OSPF process configuration.
+     * OperationId: getGridOspfProcess
+     */
+    public async getOspfProcess(siteId?: string, customHeaders?: CustomHeaders): Promise<unknown> {
+        const resolvedSiteId = this.site.resolveSiteId(siteId);
+        const path = this.buildPath(`/sites/${encodeURIComponent(resolvedSiteId)}/ospf/process`);
+        const response = await this.request.get<OmadaApiResponse<unknown>>(path, undefined, customHeaders);
+        return this.request.ensureSuccess(response);
+    }
+
+    /**
+     * Get OSPF interface configuration.
+     * OperationId: getGridOspfInterface
+     */
+    public async getOspfInterface(siteId?: string, customHeaders?: CustomHeaders): Promise<unknown> {
+        const resolvedSiteId = this.site.resolveSiteId(siteId);
+        const path = this.buildPath(`/sites/${encodeURIComponent(resolvedSiteId)}/ospf/interface`);
+        const response = await this.request.get<OmadaApiResponse<unknown>>(path, undefined, customHeaders);
+        return this.request.ensureSuccess(response);
+    }
+
+    /**
+     * Get VRRP configuration for OSW devices.
+     * OperationId: getGridOswVrrp
+     */
+    public async getVrrpConfig(siteId?: string, customHeaders?: CustomHeaders): Promise<unknown> {
+        const resolvedSiteId = this.site.resolveSiteId(siteId);
+        const path = this.buildPath(`/sites/${encodeURIComponent(resolvedSiteId)}/osw-vrrp`);
+        const response = await this.request.get<OmadaApiResponse<unknown>>(path, undefined, customHeaders);
+        return this.request.ensureSuccess(response);
+    }
+
+    /**
+     * Get OSPF neighbor devices.
+     * OperationId: getOspfDevice
+     */
+    public async getOspfNeighbors(siteId?: string, customHeaders?: CustomHeaders): Promise<unknown> {
+        const resolvedSiteId = this.site.resolveSiteId(siteId);
+        const path = this.buildPath(`/sites/${encodeURIComponent(resolvedSiteId)}/ospf/device`);
+        const response = await this.request.get<OmadaApiResponse<unknown>>(path, undefined, customHeaders);
+        return this.request.ensureSuccess(response);
+    }
+
+    // -------------------------------------------------------------------------
+    // network-services additions (#74)
+    // -------------------------------------------------------------------------
+
+    /**
+     * Get DNS cache data list.
+     * OperationId: getDnsCacheList
+     */
+    public async getDnsCacheDataList(page = 1, pageSize = 10, siteId?: string, customHeaders?: CustomHeaders): Promise<unknown> {
+        const resolvedSiteId = this.site.resolveSiteId(siteId);
+        const path = this.buildPath(`/sites/${encodeURIComponent(resolvedSiteId)}/setting/dns-cache-data`);
+        const response = await this.request.get<OmadaApiResponse<unknown>>(path, { page, pageSize }, customHeaders);
+        return this.request.ensureSuccess(response);
+    }
+
+    /**
+     * Get IPTV service setting.
+     * OperationId: getIptv
+     */
+    public async getIptvSetting(siteId?: string, customHeaders?: CustomHeaders): Promise<unknown> {
+        const resolvedSiteId = this.site.resolveSiteId(siteId);
+        const path = this.buildPath(`/sites/${encodeURIComponent(resolvedSiteId)}/setting/service/iptv`);
+        const response = await this.request.get<OmadaApiResponse<unknown>>(path, undefined, customHeaders);
+        return this.request.ensureSuccess(response);
+    }
+
+    /**
+     * Get NTP server configuration and status.
+     * OperationId: getNtpServerStatus
+     */
+    public async getNtpSetting(siteId?: string, customHeaders?: CustomHeaders): Promise<unknown> {
+        const resolvedSiteId = this.site.resolveSiteId(siteId);
+        const path = this.buildPath(`/sites/${encodeURIComponent(resolvedSiteId)}/setting/ntp`);
+        const response = await this.request.get<OmadaApiResponse<unknown>>(path, undefined, customHeaders);
+        return this.request.ensureSuccess(response);
+    }
 }

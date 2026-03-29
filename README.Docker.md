@@ -273,6 +273,15 @@ In client-credentials mode the server already treats `Mcp-Session-Id` as optiona
 | `getWanPortsConfig`           | Gets per-port WAN configuration including connection type and IP settings.  |
 | `getWanLanStatus`             | Gets WAN-LAN connectivity status for a site.                                |
 | `getGridVirtualWan`           | Gets virtual WAN list (paginated).                                          |
+| `getIspBandScan`              | Gets ISP band scan results for a WAN port. Requires `portUuid`.             |
+| `getDisableNatList`           | Gets the list of wired networks with NAT disabled (paginated).              |
+| `getLtePortConfig`            | Gets LTE/cellular WAN port configuration.                                   |
+| `getWanPortDetail`            | Gets detailed WAN port configuration for all gateway WAN ports.             |
+| `getWanIspProfile`            | Gets ISP scan profile result for a WAN port. Requires `portUuid`.           |
+| `getWanQosConfig`             | Gets QoS configuration for gateway WAN ports.                               |
+| `getWanHealthDetail`          | Deprecated alias. Gets WAN health details for a specific gateway. Requires `gatewayMac`. |
+| `getWanUsageStats`            | Gets WAN traffic usage statistics for the site.                             |
+| `getWanNatConfig`             | Gets one-to-one NAT rules (paginated).                                      |
 | `getPortForwardingStatus`     | Gets port forwarding status and rules (User or UPnP types).                 |
 | `getLanNetworkList`           | Gets the list of LAN networks configured in a site.                         |
 | `getLanNetworkListV2` | Get the LAN network list using the v2 API, with richer VLAN and DHCP data (paginated). |
@@ -293,6 +302,10 @@ In client-credentials mode the server already treats `Mcp-Session-Id` as optiona
 | `getStaticRoutingInterfaceList` | Gets available interfaces for static routing.                             |
 | `listPolicyRoutes`            | Lists policy routing rules.                                                 |
 | `getGridPolicyRouting`        | Gets policy routing rules (paginated).                                      |
+| `getOspfProcess`              | Gets OSPF process configuration for the site gateway.                       |
+| `getOspfInterface`            | Gets OSPF interface configuration for the site gateway.                     |
+| `getVrrpConfig`               | Gets VRRP configuration for OSW devices.                                    |
+| `getOspfNeighbors`            | Gets OSPF neighbor devices for the site gateway.                            |
 | `getGridOtoNats`              | Gets 1:1 NAT rules (paginated).                                             |
 | `getAlg`                      | Gets ALG (Application Layer Gateway) configuration.                         |
 | `getUpnpSetting`              | Gets UPnP setting for the site gateway.                                     |
@@ -311,6 +324,14 @@ In client-credentials mode the server already treats `Mcp-Session-Id` as optiona
 | `getDnsCacheSetting`          | Gets DNS cache setting.                                                     |
 | `getDnsProxy`                 | Gets DNS proxy configuration.                                               |
 | `getIgmp`                     | Gets IGMP snooping and proxy setting.                                       |
+| `getSwitchVlanInterface`      | Gets VLAN interface configuration for a specific switch. Requires `switchMac`. |
+| `getLanDnsRules`              | Gets LAN DNS rules for the site (paginated).                                |
+| `getLanProfileEsUsage`        | Gets EAP/switch device usage for a LAN profile. Requires `profileId`.      |
+| `getLanClientCount`           | Gets client distribution breakdown across LAN segments.                     |
+| `getDnsCacheDataList`         | Gets the DNS cache data list (paginated).                                   |
+| `getIptvSetting`              | Gets IPTV service configuration for the site.                               |
+| `getNtpSetting`               | Gets NTP server configuration and synchronisation status.                   |
+| `getSyslogConfig`             | Deprecated alias of `getRemoteLoggingSetting`; use that tool instead.       |
 | `listRadiusProfiles`          | Lists RADIUS authentication profiles.                                       |
 | `listGroupProfiles`           | Lists group profiles (IP, MAC, or port groups).                             |
 | `getApplicationControlStatus` | Gets application control status for a site.                                 |
@@ -467,9 +488,14 @@ In client-credentials mode the server already treats `Mcp-Session-Id` as optiona
 | `getInternetBasicPortInfo` | Get WAN port summary / basic info for the site gateway. | `getInternetBasicPortInfo` |
 | `getInternetInfo` | Get internet configuration information for a site, including WAN se.... | `getInternetInfo` |
 | `getInternetLoadBalance` | Get WAN load balancing configuration for the site gateway. | `getInternetLoadBalance` |
+| `getIspBandScan` | Get ISP band scan results for a WAN port. Requires `portUuid`. | `getIspBandScan` |
 | `getIspLoad` | Get per-WAN ISP link load over a time range. | `getIspLoad` |
+| `getLanClientCount` | Get client distribution breakdown across LAN segments. | `getLanClientCount` |
+| `getLanDnsRules` | Get LAN DNS rules configured for the site (paginated). | `getLanDnsRules` |
 | `getLanNetworkList` | Get the list of LAN networks configured in a site, including VLAN s.... | `getLanNetworkList` |
+| `getLanProfileEsUsage` | Get EAP/switch device usage for a specific LAN profile. Requires `profileId`. | `getLanProfileEsUsage` |
 | `getLanProfileList` | Get the list of LAN profiles configured in a site. | `getLanProfileList` |
+| `getLtePortConfig` | Get LTE/cellular WAN port configuration for the site gateway. | `getLtePortConfig` |
 | `getLldpSetting` | Get LLDP (Link Layer Discovery Protocol) global setting for the site. | `getLldpSetting` |
 | `getMeshStatistics` | Get mesh link statistics for an access point. | `getMeshStatistics` |
 | `getOswStackLagList` | Get Link Aggregation Group (LAG) list for a switch stack. | `getOswStackLagList` |
@@ -479,6 +505,22 @@ In client-credentials mode the server already treats `Mcp-Session-Id` as optiona
 | `getRadiosConfig` | Get per-radio configuration for an access point. | `getRadiosConfig` |
 | `getRateLimitProfiles` | Get the list of available rate limit profiles for a site. | `getRateLimitProfiles` |
 | `getRemoteLoggingSetting` | Get remote logging (syslog) configuration for the site. | `getRemoteLoggingSetting` |
+| `getDnsCacheDataList` | Get the DNS cache data list for the site (paginated). | `getDnsCacheDataList` |
+| `getDisableNatList` | Get the list of wired networks with NAT disabled (paginated). | `getDisableNatList` |
+| `getIptvSetting` | Get IPTV service configuration for the site. | `getIptvSetting` |
+| `getNtpSetting` | Get NTP server configuration and synchronisation status for the site. | `getNtpSetting` |
+| `getOspfInterface` | Get OSPF interface configuration for the site gateway. | `getOspfInterface` |
+| `getOspfNeighbors` | Get OSPF neighbor devices for the site gateway. | `getOspfNeighbors` |
+| `getOspfProcess` | Get OSPF process configuration for the site gateway. | `getOspfProcess` |
+| `getSwitchVlanInterface` | Get VLAN interface configuration for a specific switch. Requires `switchMac`. | `getSwitchVlanInterface` |
+| `getSyslogConfig` | [DEPRECATED] Alias of `getRemoteLogging`; use that tool instead. | `getSyslogConfig` |
+| `getVrrpConfig` | Get VRRP configuration for OSW devices on the site. | `getVrrpConfig` |
+| `getWanHealthDetail` | [DEPRECATED] Deprecated alias. Gets WAN health details for a specific gateway. Requires `gatewayMac`. | `getWanHealthDetail` |
+| `getWanIspProfile` | Get ISP scan profile result for a WAN port. Requires `portUuid`. | `getWanIspProfile` |
+| `getWanNatConfig` | Get one-to-one NAT configuration (WAN NAT rules) for the site gateway (paginated). | `getWanNatConfig` |
+| `getWanPortDetail` | Get detailed WAN port configuration for all gateway WAN ports on the site. | `getWanPortDetail` |
+| `getWanQosConfig` | Get QoS configuration for gateway WAN ports on the site. | `getWanQosConfig` |
+| `getWanUsageStats` | Get WAN traffic usage statistics and activity data for the site. | `getWanUsageStats` |
 | `getRetryAndDroppedRate` | Get wireless retry rate and dropped packet rate over a time range. | `getRetryAndDroppedRate` |
 | `getRogueAps` | Get the list of rogue (unauthorized) access points detected by WIDS.... | `getRogueAps` |
 | `getSessionLimit` | Get the session limit global setting for the site gateway. | `getSessionLimit` |
