@@ -1,0 +1,31 @@
+name: Notify Krennic on Copilot review
+
+on:
+  pull_request_review:
+    types: [submitted]
+
+jobs:
+  notify:
+    if: github.event.review.user.login == 'copilot[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Notify Krennic via OpenClaw
+        run: |
+          PR_NUMBER="${{ github.event.pull_request.number }}"
+          PR_TITLE="${{ github.event.pull_request.title }}"
+          PR_URL="${{ github.event.pull_request.html_url }}"
+          REVIEW_STATE="${{ github.event.review.state }}"
+
+          curl -sf -X POST "${{ secrets.OPENCLAW_GATEWAY_URL }}/tools/invoke" \
+            -H "Authorization: Bearer ${{ secrets.OPENCLAW_GATEWAY_TOKEN }}" \
+            -H "Content-Type: application/json" \
+            -H "x-openclaw-message-channel: discord" \
+            -d "{
+              \"tool\": \"message\",
+              \"args\": {
+                \"action\": \"send\",
+                \"channel\": \"discord\",
+                \"target\": \"1487419813788651562\",
+                \"message\": \"🤖 Copilot review on PR #${PR_NUMBER}: **${PR_TITLE}**\\nState: \`${REVIEW_STATE}\`\\n${PR_URL}\\n\\nKrennic — new review threads to resolve.\"
+              }
+            }"
