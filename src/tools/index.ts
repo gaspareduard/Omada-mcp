@@ -6,12 +6,17 @@ import { logger } from '../utils/logger.js';
 import { registerDisableClientRateLimitTool } from './disableClientRateLimit.js';
 import { registerGetAccessControlTool } from './getAccessControl.js';
 import { registerGetAclConfigTypeSettingTool } from './getAclConfigTypeSetting.js';
+import { registerGetAdvancedVpnSettingTool } from './getAdvancedVpnSetting.js';
 import { registerGetAlgTool } from './getAlg.js';
 import { registerGetAllDeviceBySiteTool } from './getAllDeviceBySite.js';
 import { registerGetApDetailTool } from './getApDetail.js';
 import { registerGetApGeneralConfigTool } from './getApGeneralConfig.js';
 import { registerGetApIpv6ConfigTool } from './getApIpv6Config.js';
 import { registerGetApLldpConfigTool } from './getApLldpConfig.js';
+import { registerGetAppControlCategoriesTool } from './getAppControlCategories.js';
+import { registerGetAppControlRulesTool } from './getAppControlRules.js';
+import { registerGetAppGroupProfileTool } from './getAppGroupProfile.js';
+import { registerGetApplicationAclTool } from './getApplicationAcl.js';
 import { registerGetApplicationControlStatusTool } from './getApplicationControlStatus.js';
 import { registerGetApQosConfigTool } from './getApQosConfig.js';
 import { registerGetApRadiosTool } from './getApRadios.js';
@@ -25,7 +30,9 @@ import { registerGetAuditLogsForGlobalTool } from './getAuditLogsForGlobal.js';
 import { registerGetBandSteeringSettingTool } from './getBandSteeringSetting.js';
 import { registerGetBandwidthControlTool } from './getBandwidthControl.js';
 import { registerGetBandwidthCtrlTool } from './getBandwidthCtrl.js';
+import { registerGetBandwidthCtrlDetailTool } from './getBandwidthCtrlDetail.js';
 import { registerGetBeaconControlSettingTool } from './getBeaconControlSetting.js';
+import { registerGetBuiltinRadiusUsersTool } from './getBuiltinRadiusUsers.js';
 import { registerGetCableTestFullResultsTool } from './getCableTestFullResults.js';
 import { registerGetCableTestLogsTool } from './getCableTestLogs.js';
 import { registerGetChannelLimitSettingTool } from './getChannelLimitSetting.js';
@@ -54,7 +61,9 @@ import { registerGetDisableNatListTool } from './getDisableNatList.js';
 import { registerGetDnsCacheDataListTool } from './getDnsCacheDataList.js';
 import { registerGetDnsCacheSettingTool } from './getDnsCacheSetting.js';
 import { registerGetDnsProxyTool } from './getDnsProxy.js';
+import { registerGetDot1xConfigTool } from './getDot1xConfig.js';
 import { registerGetDownlinkWiredDevicesTool } from './getDownlinkWiredDevices.js';
+import { registerGetDscpConfigTool } from './getDscpConfig.js';
 import { registerGetEapDot1xSettingTool } from './getEapDot1xSetting.js';
 import { registerGetFirewallSettingTool } from './getFirewallSetting.js';
 import { registerGetFirmwareInfoTool } from './getFirmwareInfo.js';
@@ -62,8 +71,11 @@ import { registerGetFirmwareUpgradePlanTool } from './getFirmwareUpgradePlan.js'
 import { registerGetGatewayDetailTool } from './getGatewayDetail.js';
 import { registerGetGatewayLanStatusTool } from './getGatewayLanStatus.js';
 import { registerGetGatewayPortsTool } from './getGatewayPorts.js';
+import { registerGetGatewayQosClassRulesTool } from './getGatewayQosClassRules.js';
 import { registerGetGatewayWanStatusTool } from './getGatewayWanStatus.js';
 import { registerGetGeneralSettingsTool } from './getGeneralSettings.js';
+import { registerGetGlobalSecuritySettingTool } from './getGlobalSecuritySetting.js';
+import { registerGetGoogleLdapProfileTool } from './getGoogleLdapProfile.js';
 import { registerGetGridAllowListTool } from './getGridAllowList.js';
 import { registerGetGridAllowMacFilteringTool } from './getGridAllowMacFiltering.js';
 import { registerGetGridAutoCheckUpgradeTool } from './getGridAutoCheckUpgrade.js';
@@ -85,6 +97,7 @@ import { registerGetGridSessionLimitRuleTool } from './getGridSessionLimitRule.j
 import { registerGetGridSignatureTool } from './getGridSignature.js';
 import { registerGetGridStaticRoutingTool } from './getGridStaticRouting.js';
 import { registerGetGridVirtualWanTool } from './getGridVirtualWan.js';
+import { registerGetGroupPolicyDetailTool } from './getGroupPolicyDetail.js';
 import { registerGetGroupProfilesByTypeTool } from './getGroupProfilesByType.js';
 import { registerGetIgmpTool } from './getIgmp.js';
 import { registerGetInterfaceLanNetworkTool } from './getInterfaceLanNetwork.js';
@@ -94,8 +107,11 @@ import { registerGetInternetTool } from './getInternet.js';
 import { registerGetInternetBasicPortInfoTool } from './getInternetBasicPortInfo.js';
 import { registerGetInternetInfoTool } from './getInternetInfo.js';
 import { registerGetInternetLoadBalanceTool } from './getInternetLoadBalance.js';
+import { registerGetIpGroupProfileTool } from './getIpGroupProfile.js';
 import { registerGetIpMacBindingGeneralSettingTool } from './getIpMacBindingGeneralSetting.js';
 import { registerGetIpsConfigTool } from './getIpsConfig.js';
+import { registerGetIpsecTunnelDetailTool } from './getIpsecTunnelDetail.js';
+import { registerGetIpsecTunnelListTool } from './getIpsecTunnelList.js';
 import { registerGetIpsecVpnStatsTool } from './getIpsecVpnStats.js';
 import { registerGetIptvSettingTool } from './getIptvSetting.js';
 import { registerGetIspBandScanTool } from './getIspBandScan.js';
@@ -116,6 +132,7 @@ import { registerGetLogSettingForSiteV2Tool } from './getLogSettingForSiteV2.js'
 import { registerGetLtePortConfigTool } from './getLtePortConfig.js';
 import { registerGetMacAuthSettingTool } from './getMacAuthSetting.js';
 import { registerGetMacAuthSsidsTool } from './getMacAuthSsids.js';
+import { registerGetMacFilterDetailTool } from './getMacFilterDetail.js';
 import { registerGetMacFilteringGeneralSettingTool } from './getMacFilteringGeneralSetting.js';
 import { registerGetMailServerStatusTool } from './getMailServerStatus.js';
 import { registerGetMeshSettingTool } from './getMeshSetting.js';
@@ -129,13 +146,23 @@ import { registerGetOswAclListTool } from './getOswAclList.js';
 import { registerGetOswStackLagListTool } from './getOswStackLagList.js';
 import { registerGetOuiProfileListTool } from './getOuiProfileList.js';
 import { registerGetPastClientNumTool } from './getPastClientNum.js';
+import { registerGetPortalProfileTool } from './getPortalProfile.js';
 import { registerGetPortForwardingListTool } from './getPortForwardingList.js';
 import { registerGetPortForwardingStatusTool } from './getPortForwardingStatus.js';
 import { registerGetPPSKProfilesTool } from './getPPSKProfiles.js';
+import { registerGetPpskNetworkProfileTool } from './getPpskNetworkProfile.js';
+import { registerGetPpskUserGroupTool } from './getPpskUserGroup.js';
+import { registerGetPpskUserListTool } from './getPpskUserList.js';
+import { registerGetQosMarkingRuleTool } from './getQosMarkingRule.js';
+import { registerGetQosPolicyTool } from './getQosPolicy.js';
+import { registerGetQosPolicyRuleTool } from './getQosPolicyRule.js';
+import { registerGetQosProfileTool } from './getQosProfile.js';
 import { registerGetRadioFrequencyPlanningConfigTool } from './getRadioFrequencyPlanningConfig.js';
 import { registerGetRadioFrequencyPlanningResultTool } from './getRadioFrequencyPlanningResult.js';
 import { registerGetRadiosConfigTool } from './getRadiosConfig.js';
+import { registerGetRadiusProxyConfigTool } from './getRadiusProxyConfig.js';
 import { registerGetRadiusServerTool } from './getRadiusServer.js';
+import { registerGetRadiusUserDetailTool } from './getRadiusUserDetail.js';
 import { registerGetRadiusUserListTool } from './getRadiusUserList.js';
 import { registerGetRateLimitProfilesTool } from './getRateLimitProfiles.js';
 import { registerGetRemoteLoggingTool } from './getRemoteLogging.js';
@@ -146,6 +173,8 @@ import { registerGetRFScanResultTool } from './getRFScanResult.js';
 import { registerGetRoamingSettingTool } from './getRoamingSetting.js';
 import { registerGetRogueApsTool } from './getRogueAps.js';
 import { registerGetRoutingTableTool } from './getRoutingTable.js';
+import { registerGetScheduleProfileTool } from './getScheduleProfile.js';
+import { registerGetServiceProfileTool } from './getServiceProfile.js';
 import { registerGetServiceTypeSummaryTool } from './getServiceTypeSummary.js';
 import { registerGetSessionLimitTool } from './getSessionLimit.js';
 import { registerGetSitesApsAvailableChannelTool } from './getSitesApsAvailableChannel.js';
@@ -185,15 +214,27 @@ import { registerGetThreatDetailTool } from './getThreatDetail.js';
 import { registerGetThreatListTool } from './getThreatList.js';
 import { registerGetTopThreatsTool } from './getTopThreats.js';
 import { registerGetTrafficDistributionTool } from './getTrafficDistribution.js';
+import { registerGetTrafficPriorityTool } from './getTrafficPriority.js';
+import { registerGetTrafficStatsTool } from './getTrafficStats.js';
 import { registerGetUiInterfaceTool } from './getUiInterface.js';
 import { registerGetUpgradeLogsTool } from './getUpgradeLogs.js';
 import { registerGetUpgradeOverviewCriticalTool } from './getUpgradeOverviewCritical.js';
 import { registerGetUpgradeOverviewTryBetaTool } from './getUpgradeOverviewTryBeta.js';
 import { registerGetUplinkWiredDetailTool } from './getUplinkWiredDetail.js';
 import { registerGetUpnpSettingTool } from './getUpnpSetting.js';
+import { registerGetUrlFilterBlacklistTool } from './getUrlFilterBlacklist.js';
 import { registerGetUrlFilterGeneralTool } from './getUrlFilterGeneral.js';
+import { registerGetUrlFilterRulesTool } from './getUrlFilterRules.js';
+import { registerGetUrlFilterWhitelistTool } from './getUrlFilterWhitelist.js';
+import { registerGetUrlGroupProfileTool } from './getUrlGroupProfile.js';
+import { registerGetUserRoleProfileTool } from './getUserRoleProfile.js';
+import { registerGetVlanProfileTool } from './getVlanProfile.js';
+import { registerGetVpnClientStatusTool } from './getVpnClientStatus.js';
+import { registerGetVpnRouteConfigTool } from './getVpnRouteConfig.js';
 import { registerGetVpnSettingsTool } from './getVpnSettings.js';
 import { registerGetVpnTunnelStatsTool } from './getVpnTunnelStats.js';
+import { registerGetVpnUserDetailTool } from './getVpnUserDetail.js';
+import { registerGetVpnUserListTool } from './getVpnUserList.js';
 import { registerGetVrrpConfigTool } from './getVrrpConfig.js';
 import { registerGetWanHealthDetailTool } from './getWanHealthDetail.js';
 import { registerGetWanIspProfileTool } from './getWanIspProfile.js';
@@ -476,15 +517,33 @@ const TOOL_REGISTRY: ToolEntry[] = [
     { fn: registerGetFirewallSettingTool, category: 'firewall-acl', permission: 'read' },
     { fn: registerListOsgAclsTool, category: 'firewall-acl', permission: 'read' },
     { fn: registerListEapAclsTool, category: 'firewall-acl', permission: 'read' },
+    { fn: registerGetDot1xConfigTool, category: 'firewall-acl', permission: 'read' },
+    { fn: registerGetRadiusProxyConfigTool, category: 'firewall-acl', permission: 'read' },
+    { fn: registerGetApplicationAclTool, category: 'firewall-acl', permission: 'read' },
 
     // --- Firewall traffic ---
     { fn: registerGetUrlFilterGeneralTool, category: 'firewall-traffic', permission: 'read' },
     { fn: registerGetApplicationControlStatusTool, category: 'firewall-traffic', permission: 'read' },
     { fn: registerGetAttackDefenseSettingTool, category: 'firewall-traffic', permission: 'read' },
+    { fn: registerGetGatewayQosClassRulesTool, category: 'firewall-traffic', permission: 'read' },
+    { fn: registerGetBandwidthCtrlDetailTool, category: 'firewall-traffic', permission: 'read' },
+    { fn: registerGetAppControlRulesTool, category: 'firewall-traffic', permission: 'read' },
+    { fn: registerGetAppControlCategoriesTool, category: 'firewall-traffic', permission: 'read' },
+    { fn: registerGetUrlFilterRulesTool, category: 'firewall-traffic', permission: 'read' },
+    { fn: registerGetUrlFilterBlacklistTool, category: 'firewall-traffic', permission: 'read' },
+    { fn: registerGetUrlFilterWhitelistTool, category: 'firewall-traffic', permission: 'read' },
+    { fn: registerGetMacFilterDetailTool, category: 'firewall-traffic', permission: 'read' },
+    { fn: registerGetQosPolicyTool, category: 'firewall-traffic', permission: 'read' },
+    { fn: registerGetTrafficPriorityTool, category: 'firewall-traffic', permission: 'read' },
+    { fn: registerGetTrafficStatsTool, category: 'firewall-traffic', permission: 'read' },
+    { fn: registerGetQosPolicyRuleTool, category: 'firewall-traffic', permission: 'read' },
+    { fn: registerGetQosMarkingRuleTool, category: 'firewall-traffic', permission: 'read' },
+    { fn: registerGetDscpConfigTool, category: 'firewall-traffic', permission: 'read' },
 
     // --- Firewall IDS ---
     { fn: registerGetIpsConfigTool, category: 'firewall-ids', permission: 'read' },
     { fn: registerGetGridSignatureTool, category: 'firewall-ids', permission: 'read' },
+    { fn: registerGetGlobalSecuritySettingTool, category: 'firewall-ids', permission: 'read' },
 
     // --- VPN ---
     { fn: registerGetVpnSettingsTool, category: 'vpn', permission: 'read' },
@@ -503,6 +562,13 @@ const TOOL_REGISTRY: ToolEntry[] = [
     { fn: registerGetGridDashboardTunnelStatsTool, category: 'vpn', permission: 'read' },
     { fn: registerGetGridDashboardIpsecTunnelStatsTool, category: 'vpn', permission: 'read' },
     { fn: registerGetGridDashboardOpenVpnTunnelStatsTool, category: 'vpn', permission: 'read' },
+    { fn: registerGetIpsecTunnelListTool, category: 'vpn', permission: 'read' },
+    { fn: registerGetIpsecTunnelDetailTool, category: 'vpn', permission: 'read' },
+    { fn: registerGetAdvancedVpnSettingTool, category: 'vpn', permission: 'read' },
+    { fn: registerGetVpnUserListTool, category: 'vpn', permission: 'read' },
+    { fn: registerGetVpnUserDetailTool, category: 'vpn', permission: 'read' },
+    { fn: registerGetVpnClientStatusTool, category: 'vpn', permission: 'read' },
+    { fn: registerGetVpnRouteConfigTool, category: 'vpn', permission: 'read' },
 
     // --- Profiles ---
     { fn: registerListServiceTypeTool, category: 'profiles', permission: 'read' },
@@ -513,6 +579,22 @@ const TOOL_REGISTRY: ToolEntry[] = [
     { fn: registerListGroupProfilesTool, category: 'profiles', permission: 'read' },
     { fn: registerListTimeRangeProfilesTool, category: 'profiles', permission: 'read' },
     { fn: registerGetRateLimitProfilesTool, category: 'profiles', permission: 'read' },
+    { fn: registerGetGoogleLdapProfileTool, category: 'profiles', permission: 'read' },
+    { fn: registerGetBuiltinRadiusUsersTool, category: 'profiles', permission: 'read' },
+    { fn: registerGetRadiusUserDetailTool, category: 'profiles', permission: 'read' },
+    { fn: registerGetPpskNetworkProfileTool, category: 'profiles', permission: 'read' },
+    { fn: registerGetPpskUserGroupTool, category: 'profiles', permission: 'read' },
+    { fn: registerGetPpskUserListTool, category: 'profiles', permission: 'read' },
+    { fn: registerGetServiceProfileTool, category: 'profiles', permission: 'read' },
+    { fn: registerGetQosProfileTool, category: 'profiles', permission: 'read' },
+    { fn: registerGetScheduleProfileTool, category: 'profiles', permission: 'read' },
+    { fn: registerGetGroupPolicyDetailTool, category: 'profiles', permission: 'read' },
+    { fn: registerGetIpGroupProfileTool, category: 'profiles', permission: 'read' },
+    { fn: registerGetUrlGroupProfileTool, category: 'profiles', permission: 'read' },
+    { fn: registerGetAppGroupProfileTool, category: 'profiles', permission: 'read' },
+    { fn: registerGetVlanProfileTool, category: 'profiles', permission: 'read' },
+    { fn: registerGetUserRoleProfileTool, category: 'profiles', permission: 'read' },
+    { fn: registerGetPortalProfileTool, category: 'profiles', permission: 'read' },
 
     // --- Auth profiles ---
     { fn: registerGetLdapProfileListTool, category: 'auth-profiles', permission: 'read' },

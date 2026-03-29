@@ -1428,4 +1428,149 @@ export class NetworkOperations {
         const response = await this.request.get<OmadaApiResponse<unknown>>(path, undefined, customHeaders);
         return this.request.ensureSuccess(response);
     }
+
+    // -------------------------------------------------------------------------
+    // security-vpn additions (#75)
+    // -------------------------------------------------------------------------
+
+    /**
+     * Get global RADIUS proxy configuration.
+     * OperationId: getRadiusProxy
+     */
+    public async getRadiusProxyConfig(customHeaders?: CustomHeaders): Promise<unknown> {
+        const path = this.buildPath('/global/controller/setting/network/radius-proxy');
+        const response = await this.request.get<OmadaApiResponse<unknown>>(path, undefined, customHeaders);
+        return this.request.ensureSuccess(response);
+    }
+
+    /**
+     * Get gateway QoS class rules (paginated).
+     * OperationId: getGatewayQosClassRules
+     */
+    public async getGatewayQosClassRules(page = 1, pageSize = 10, siteId?: string, customHeaders?: CustomHeaders): Promise<unknown> {
+        const resolvedSiteId = this.site.resolveSiteId(siteId);
+        const path = this.buildPath(`/sites/${encodeURIComponent(resolvedSiteId)}/qos/gateway/class-rules`);
+        const response = await this.request.get<OmadaApiResponse<unknown>>(path, { page, pageSize }, customHeaders);
+        return this.request.ensureSuccess(response);
+    }
+
+    /**
+     * Get gateway bandwidth control detail settings.
+     * OperationId: getBandwidthCtrlDetail
+     */
+    public async getBandwidthCtrlDetail(siteId?: string, customHeaders?: CustomHeaders): Promise<unknown> {
+        const resolvedSiteId = this.site.resolveSiteId(siteId);
+        const path = this.buildPath(`/sites/${encodeURIComponent(resolvedSiteId)}/qos/gateway/bwcs`);
+        const response = await this.request.get<OmadaApiResponse<unknown>>(path, undefined, customHeaders);
+        return this.request.ensureSuccess(response);
+    }
+
+    /**
+     * Get application control rules (paginated).
+     * OperationId: getAppControlRules
+     */
+    public async getAppControlRules(page = 1, pageSize = 10, siteId?: string, customHeaders?: CustomHeaders): Promise<unknown> {
+        const resolvedSiteId = this.site.resolveSiteId(siteId);
+        const path = this.buildPath(`/sites/${encodeURIComponent(resolvedSiteId)}/applicationControl/rules`);
+        const response = await this.request.get<OmadaApiResponse<unknown>>(path, { page, pageSize }, customHeaders);
+        return this.request.ensureSuccess(response);
+    }
+
+    /**
+     * Get application control categories (families).
+     * OperationId: getAppControlCategories
+     */
+    public async getAppControlCategories(siteId?: string, customHeaders?: CustomHeaders): Promise<unknown> {
+        const resolvedSiteId = this.site.resolveSiteId(siteId);
+        const path = this.buildPath(`/sites/${encodeURIComponent(resolvedSiteId)}/applicationControl/families`);
+        const response = await this.request.get<OmadaApiResponse<unknown>>(path, undefined, customHeaders);
+        return this.request.ensureSuccess(response);
+    }
+
+    /**
+     * Get gateway QoS policy (tag outbound traffic settings).
+     * OperationId: getQosPolicy
+     */
+    public async getQosPolicy(siteId?: string, customHeaders?: CustomHeaders): Promise<unknown> {
+        const resolvedSiteId = this.site.resolveSiteId(siteId);
+        const path = this.buildPath(`/sites/${encodeURIComponent(resolvedSiteId)}/qos/gateway/tag-outbound-traffic`);
+        const response = await this.request.get<OmadaApiResponse<unknown>>(path, undefined, customHeaders);
+        return this.request.ensureSuccess(response);
+    }
+
+    /**
+     * Get gateway VoIP/traffic prioritization settings.
+     * OperationId: getTrafficPriority
+     */
+    public async getTrafficPriority(siteId?: string, customHeaders?: CustomHeaders): Promise<unknown> {
+        const resolvedSiteId = this.site.resolveSiteId(siteId);
+        const path = this.buildPath(`/sites/${encodeURIComponent(resolvedSiteId)}/qos/gateway/voip-prioritization`);
+        const response = await this.request.get<OmadaApiResponse<unknown>>(path, undefined, customHeaders);
+        return this.request.ensureSuccess(response);
+    }
+
+    /**
+     * Get VPN user list (paginated).
+     * OperationId: getVpnUserList
+     */
+    public async getVpnUserList(page = 1, pageSize = 10, siteId?: string, customHeaders?: CustomHeaders): Promise<unknown> {
+        const resolvedSiteId = this.site.resolveSiteId(siteId);
+        const path = this.buildPath(`/sites/${encodeURIComponent(resolvedSiteId)}/vpn/users`);
+        const response = await this.request.get<OmadaApiResponse<unknown>>(path, { page, pageSize }, customHeaders);
+        return this.request.ensureSuccess(response);
+    }
+
+    /**
+     * Get VPN users for a specific client-to-site VPN server.
+     * OperationId: getVpnUserDetail
+     */
+    public async getVpnUserDetail(vpnId: string, siteId?: string, customHeaders?: CustomHeaders): Promise<unknown> {
+        const resolvedSiteId = this.site.resolveSiteId(siteId);
+        const path = this.buildPath(`/sites/${encodeURIComponent(resolvedSiteId)}/vpn/client-to-site-vpn-servers/${encodeURIComponent(vpnId)}/users`);
+        const response = await this.request.get<OmadaApiResponse<unknown>>(path, undefined, customHeaders);
+        return this.request.ensureSuccess(response);
+    }
+
+    /**
+     * Get Google LDAP profile for a site.
+     * OperationId: getGoogleLdapProfile
+     */
+    public async getGoogleLdapProfile(siteId?: string, customHeaders?: CustomHeaders): Promise<unknown> {
+        const resolvedSiteId = this.site.resolveSiteId(siteId);
+        const path = this.buildPath(`/sites/${encodeURIComponent(resolvedSiteId)}/profiles/ldap/google`);
+        const response = await this.request.get<OmadaApiResponse<unknown>>(path, undefined, customHeaders);
+        return this.request.ensureSuccess(response);
+    }
+
+    /**
+     * Get PPSK user group/profile detail by profile ID.
+     * OperationId: getPpskUserGroup
+     */
+    public async getPpskUserGroup(profileId: string, siteId?: string, customHeaders?: CustomHeaders): Promise<unknown> {
+        const resolvedSiteId = this.site.resolveSiteId(siteId);
+        const path = this.buildPath(`/sites/${encodeURIComponent(resolvedSiteId)}/ppsk-profile/${encodeURIComponent(profileId)}`);
+        const response = await this.request.get<OmadaApiResponse<unknown>>(path, undefined, customHeaders);
+        return this.request.ensureSuccess(response);
+    }
+
+    /**
+     * Get user role profiles (global).
+     * OperationId: getUserRoleProfile
+     */
+    public async getUserRoleProfile(customHeaders?: CustomHeaders): Promise<unknown> {
+        const path = this.buildPath('/roles');
+        const response = await this.request.get<OmadaApiResponse<unknown>>(path, undefined, customHeaders);
+        return this.request.ensureSuccess(response);
+    }
+
+    /**
+     * Get portal profiles for a site.
+     * OperationId: getPortalProfile
+     */
+    public async getPortalProfile(siteId?: string, customHeaders?: CustomHeaders): Promise<unknown> {
+        const resolvedSiteId = this.site.resolveSiteId(siteId);
+        const path = this.buildPath(`/sites/${encodeURIComponent(resolvedSiteId)}/portals`);
+        const response = await this.request.get<OmadaApiResponse<unknown>>(path, undefined, customHeaders);
+        return this.request.ensureSuccess(response);
+    }
 }

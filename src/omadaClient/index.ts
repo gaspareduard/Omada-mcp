@@ -1189,6 +1189,59 @@ export class OmadaClient {
         return await this.logOps.getAuditLogsForGlobal(page, pageSize, options, customHeaders);
     }
 
+    // security-vpn additions (#75)
+    public async getRadiusProxyConfig(customHeaders?: CustomHeaders): Promise<unknown> {
+        return await this.networkOps.getRadiusProxyConfig(customHeaders);
+    }
+
+    public async getGatewayQosClassRules(page = 1, pageSize = 10, siteId?: string, customHeaders?: CustomHeaders): Promise<unknown> {
+        return await this.networkOps.getGatewayQosClassRules(page, pageSize, siteId, customHeaders);
+    }
+
+    public async getBandwidthCtrlDetail(siteId?: string, customHeaders?: CustomHeaders): Promise<unknown> {
+        return await this.networkOps.getBandwidthCtrlDetail(siteId, customHeaders);
+    }
+
+    public async getAppControlRules(page = 1, pageSize = 10, siteId?: string, customHeaders?: CustomHeaders): Promise<unknown> {
+        return await this.networkOps.getAppControlRules(page, pageSize, siteId, customHeaders);
+    }
+
+    public async getAppControlCategories(siteId?: string, customHeaders?: CustomHeaders): Promise<unknown> {
+        return await this.networkOps.getAppControlCategories(siteId, customHeaders);
+    }
+
+    public async getQosPolicy(siteId?: string, customHeaders?: CustomHeaders): Promise<unknown> {
+        return await this.networkOps.getQosPolicy(siteId, customHeaders);
+    }
+
+    public async getTrafficPriority(siteId?: string, customHeaders?: CustomHeaders): Promise<unknown> {
+        return await this.networkOps.getTrafficPriority(siteId, customHeaders);
+    }
+
+    public async getVpnUserList(page = 1, pageSize = 10, siteId?: string, customHeaders?: CustomHeaders): Promise<unknown> {
+        return await this.networkOps.getVpnUserList(page, pageSize, siteId, customHeaders);
+    }
+
+    public async getVpnUserDetail(vpnId: string, siteId?: string, customHeaders?: CustomHeaders): Promise<unknown> {
+        return await this.networkOps.getVpnUserDetail(vpnId, siteId, customHeaders);
+    }
+
+    public async getGoogleLdapProfile(siteId?: string, customHeaders?: CustomHeaders): Promise<unknown> {
+        return await this.networkOps.getGoogleLdapProfile(siteId, customHeaders);
+    }
+
+    public async getPpskUserGroup(profileId: string, siteId?: string, customHeaders?: CustomHeaders): Promise<unknown> {
+        return await this.networkOps.getPpskUserGroup(profileId, siteId, customHeaders);
+    }
+
+    public async getUserRoleProfile(customHeaders?: CustomHeaders): Promise<unknown> {
+        return await this.networkOps.getUserRoleProfile(customHeaders);
+    }
+
+    public async getPortalProfile(siteId?: string, customHeaders?: CustomHeaders): Promise<unknown> {
+        return await this.networkOps.getPortalProfile(siteId, customHeaders);
+    }
+
     // Generic API call
     public async callApi<T = unknown>(config: AxiosRequestConfig, customHeaders?: CustomHeaders): Promise<T> {
         return await this.request.request<T>(config, true, customHeaders);

@@ -88,22 +88,20 @@ The MCP server reads its configuration from environment variables.
 
 | Variable              | Required | Default | Description                                                                 |
 | --------------------- | -------- | ------- | --------------------------------------------------------------------------- |
-| `OMADA_BASE_URL`      | Yes      | -       | Base URL of the Omada controller (e.g., `https://omada-controller.local`)   |
-| `OMADA_CLIENT_ID`     | Yes      | -       | OAuth client ID generated under Omada Platform Integration                  |
+| `OMADA_BASE_URL` | Yes      | -       | Base URL of the Omada controller (e.g., `https://omada-controller.local`) |
+| `OMADA_CLIENT_ID` | Yes      | -       | OAuth client ID generated under Omada Platform Integration |
 | `OMADA_CLIENT_SECRET` | Yes      | -       | OAuth client secret associated with the client ID                           |
-| `OMADA_OMADAC_ID`     | Yes      | -       | Omada controller ID (omadacId) to target                                    |
-| `OMADA_SITE_ID`       | No       | -       | Optional default site ID; if omitted, each MCP call must pass a siteId      |
-| `OMADA_STRICT_SSL`    | No       | `true`  | Enforce strict SSL certificate validation (set to `false` for self-signed)  |
-| `OMADA_TIMEOUT`       | No       | `30000` | HTTP request timeout in milliseconds                                        |
-
+| `OMADA_OMADAC_ID` | Yes      | -       | Omada controller ID (omadacId) to target |
+| `OMADA_SITE_ID` | No       | -       | Optional default site ID; if omitted, each MCP call must pass a siteId |
+| `OMADA_STRICT_SSL` | No       | `true`  | Enforce strict SSL certificate validation (set to `false` for self-signed) |
+| `OMADA_TIMEOUT` | No       | `30000` | HTTP request timeout in milliseconds |
 ### MCP Generic Server Configuration
 
 | Variable                 | Required | Default | Description                                                                 |
 | ------------------------ | -------- | ------- | --------------------------------------------------------------------------- |
-| `MCP_SERVER_LOG_LEVEL`   | No       | `info`  | Logging verbosity (`debug`, `info`, `warn`, `error`, `silent`)              |
-| `MCP_SERVER_LOG_FORMAT`  | No       | `plain` | Log output format (`plain`, `json`, or `gcp-json`)                          |
-| `MCP_SERVER_USE_HTTP`    | No       | `false` | Start HTTP server instead of stdio                                          |
-
+| `MCP_SERVER_LOG_LEVEL` | No       | `info`  | Logging verbosity (`debug`, `info`, `warn`, `error`, `silent`) |
+| `MCP_SERVER_LOG_FORMAT` | No       | `plain` | Log output format (`plain`, `json`, or `gcp-json`) |
+| `MCP_SERVER_USE_HTTP` | No       | `false` | Start HTTP server instead of stdio |
 > **Session IDs and authentication:** When `OMADA_CLIENT_ID`, `OMADA_CLIENT_SECRET`, and `OMADA_OMADAC_ID` are provided (the default client-credentials mode), the server runs statelessly and treats the `Mcp-Session-Id` header as optional. A future OAuth-based user authentication mode will require this header again.
 
 ### MCP Server HTTP Configuration
@@ -112,16 +110,15 @@ These variables are only used when `MCP_SERVER_USE_HTTP=true`:
 
 | Variable                       | Required | Default                         | Description                                                                 |
 | ------------------------------ | -------- | ------------------------------- | --------------------------------------------------------------------------- |
-| `MCP_HTTP_PORT`                | No       | `3000`                          | Port for the HTTP server                                                    |
-| `MCP_HTTP_BIND_ADDR`           | No       | `127.0.0.1`                     | Bind address (IPv4/IPv6). Use adapter IP address to expose to the network.  |
-| `MCP_HTTP_PATH`                | No       | `/mcp`                          | Base path for MCP endpoints                                                 |
-| `MCP_HTTP_ENABLE_HEALTHCHECK`  | No       | `true`                          | Enable a healthcheck endpoint                                               |
-| `MCP_HTTP_HEALTHCHECK_PATH`    | No       | `/healthz`                      | Path for the healthcheck endpoint                                           |
-| `MCP_HTTP_ALLOW_CORS`          | No       | `true`                          | Enable CORS for the HTTP server                                             |
-| `MCP_HTTP_ALLOWED_ORIGINS`     | No       | `127.0.0.1, localhost`          | Comma-separated list of allowed origins. Use `*` to allow all (dev only)    |
-| `MCP_HTTP_NGROK_ENABLED`       | No       | `false`                         | Use ngrok to expose the HTTP server publicly                                |
-| `MCP_HTTP_NGROK_AUTH_TOKEN`    | No       | -                               | Ngrok auth token (required if `MCP_HTTP_NGROK_ENABLED=true`)                |
-
+| `MCP_HTTP_PORT` | No       | `3000`                          | Port for the HTTP server |
+| `MCP_HTTP_BIND_ADDR` | No       | `127.0.0.1`                     | Bind address (IPv4/IPv6). Use adapter IP address to expose to the network. |
+| `MCP_HTTP_PATH` | No       | `/mcp`                          | Base path for MCP endpoints |
+| `MCP_HTTP_ENABLE_HEALTHCHECK` | No       | `true`                          | Enable a healthcheck endpoint |
+| `MCP_HTTP_HEALTHCHECK_PATH` | No       | `/healthz`                      | Path for the healthcheck endpoint |
+| `MCP_HTTP_ALLOW_CORS` | No       | `true`                          | Enable CORS for the HTTP server |
+| `MCP_HTTP_ALLOWED_ORIGINS` | No       | `127.0.0.1, localhost`          | Comma-separated list of allowed origins. Use `*` to allow all (dev only) |
+| `MCP_HTTP_NGROK_ENABLED` | No       | `false`                         | Use ngrok to expose the HTTP server publicly |
+| `MCP_HTTP_NGROK_AUTH_TOKEN` | No       | -                               | Ngrok auth token (required if `MCP_HTTP_NGROK_ENABLED=true`) |
 Create a `.env` file or export the variables before launching the container.
 
 ## Transport Protocols
@@ -185,52 +182,51 @@ In client-credentials mode the server already treats `Mcp-Session-Id` as optiona
 
 | Tool                         | Description                                                                  |
 | ---------------------------- | ---------------------------------------------------------------------------- |
-| `listSites`                  | Lists all sites configured on the controller.                                |
-| `listClients`                | Lists active client devices for a site.                                      |
-| `getClient`                  | Fetches details for a specific client device.                                |
-| `listMostActiveClients`      | Gets the most active clients sorted by traffic usage.                        |
-| `listClientsActivity`        | Gets client activity statistics over time.                                   |
+| `listSites` | Lists all sites configured on the controller. |
+| `listClients` | Lists active client devices for a site. |
+| `getClient` | Fetches details for a specific client device. |
+| `listMostActiveClients` | Gets the most active clients sorted by traffic usage. |
+| `listClientsActivity` | Gets client activity statistics over time. |
 | `listClientsPastConnections` | Gets past connection history for clients.                                    |
-| `setClientRateLimit`         | Sets custom bandwidth limits for a specific client.                          |
-| `setClientRateLimitProfile`  | Applies a predefined rate limit profile to a specific client.                |
-| `disableClientRateLimit`     | Disables bandwidth rate limiting for a specific client.                      |
-
+| `setClientRateLimit` | Sets custom bandwidth limits for a specific client. |
+| `setClientRateLimitProfile` | Applies a predefined rate limit profile to a specific client. |
+| `disableClientRateLimit` | Disables bandwidth rate limiting for a specific client. |
 ### Device
 
 | Tool                   | Description                                                                       |
 | ---------------------- | --------------------------------------------------------------------------------- |
-| `listDevices`          | Lists provisioned devices for a given site.                                       |
-| `getDevice`            | Fetches details for a specific Omada device.                                      |
-| `searchDevices`        | Searches for devices globally across all sites the user has access to.            |
-| `listDevicesStats`     | Queries statistics for global adopted devices with pagination and filtering.      |
+| `listDevices` | Lists provisioned devices for a given site. |
+| `getDevice` | Fetches details for a specific Omada device. |
+| `searchDevices` | Searches for devices globally across all sites the user has access to. |
+| `listDevicesStats` | Queries statistics for global adopted devices with pagination and filtering. |
 | `getSwitchStackDetail` | Retrieves detailed configuration and status for a switch stack.                   |
-| `getSwitchDetail`      | Fetches detailed configuration and status for a specific switch.                  |
-| `getGatewayDetail`     | Fetches detailed configuration and status for a specific gateway.                 |
-| `getGatewayWanStatus`  | Gets WAN port status for a specific gateway.                                      |
-| `getGatewayLanStatus`  | Gets LAN port status for a specific gateway.                                      |
-| `getGatewayPorts`      | Gets port information for a specific gateway.                                     |
-| `getApDetail`          | Fetches detailed configuration and status for a specific access point.            |
-| `getApRadios`          | Gets radio information for a specific access point.                               |
-| `getStackPorts`        | Gets port information for a switch stack.                                         |
-| `listPendingDevices`   | Lists devices pending adoption in a site.                                         |
-| `getAllDeviceBySite`   | Gets all devices in a site including offline and disconnected devices.             |
-| `getFirmwareInfo`      | Gets the latest available firmware info for a device. Use `listDevices` for MACs. |
+| `getSwitchDetail` | Fetches detailed configuration and status for a specific switch. |
+| `getGatewayDetail` | Fetches detailed configuration and status for a specific gateway. |
+| `getGatewayWanStatus` | Gets WAN port status for a specific gateway. |
+| `getGatewayLanStatus` | Gets LAN port status for a specific gateway. |
+| `getGatewayPorts` | Gets port information for a specific gateway. |
+| `getApDetail` | Fetches detailed configuration and status for a specific access point. |
+| `getApRadios` | Gets radio information for a specific access point. |
+| `getStackPorts` | Gets port information for a switch stack. |
+| `listPendingDevices` | Lists devices pending adoption in a site. |
+| `getAllDeviceBySite` | Gets all devices in a site including offline and disconnected devices. |
+| `getFirmwareInfo` | Gets the latest available firmware info for a device. Use `listDevices` for MACs. |
 | `getGridAutoCheckUpgrade` | Gets the auto-check firmware upgrade plan list (paginated).                    |
-| `listSwitchNetworks`   | Lists VLAN network assignments for a switch (paginated). Requires `switchMac`.    |
+| `listSwitchNetworks` | Lists VLAN network assignments for a switch (paginated). Requires `switchMac`. |
 | `getSwitchGeneralConfig` | Gets general configuration for a switch. Requires `switchMac`.                 |
-| `getCableTestLogs`     | Gets cable test history for a switch. Requires `switchMac`.                       |
+| `getCableTestLogs` | Gets cable test history for a switch. Requires `switchMac`. |
 | `getCableTestFullResults` | Gets full per-port cable diagnostics for a switch. Requires `switchMac`.       |
-| `getOswStackLagList`   | Gets Link Aggregation Group (LAG) list for a switch stack. Requires `stackId`.    |
-| `getStackNetworkList`  | Gets VLAN network list for a switch stack (paginated). Requires `stackId`.        |
-| `getApUplinkConfig`    | Gets uplink configuration for an AP (wired/mesh mode). Requires `apMac`.          |
-| `getRadiosConfig`      | Gets per-radio configuration for an AP (channel, power, width). Requires `apMac`. |
+| `getOswStackLagList` | Gets Link Aggregation Group (LAG) list for a switch stack. Requires `stackId`. |
+| `getStackNetworkList` | Gets VLAN network list for a switch stack (paginated). Requires `stackId`. |
+| `getApUplinkConfig` | Gets uplink configuration for an AP (wired/mesh mode). Requires `apMac`. |
+| `getRadiosConfig` | Gets per-radio configuration for an AP (channel, power, width). Requires `apMac`. |
 | `getApVlanConfig` | Get VLAN configuration for an access point, including management VLAN and per-SSID VLAN tagging settings. |
-| `getMeshStatistics`    | Gets mesh link statistics for an AP. Requires `apMac`.                            |
-| `getRFScanResult`      | Gets last RF scan results for an AP. Requires `apMac`.                            |
-| `getSpeedTestResults`  | Gets last speed test results for an AP. Requires `apMac`.                         |
-| `getApSnmpConfig`      | Gets SNMP configuration for an AP. Requires `apMac`.                              |
-| `getApLldpConfig`      | Gets LLDP configuration for an AP. Requires `apMac`.                              |
-| `getApGeneralConfig`   | Gets general configuration for an AP (name, LED, country). Requires `apMac`.     |
+| `getMeshStatistics` | Gets mesh link statistics for an AP. Requires `apMac`. |
+| `getRFScanResult` | Gets last RF scan results for an AP. Requires `apMac`. |
+| `getSpeedTestResults` | Gets last speed test results for an AP. Requires `apMac`. |
+| `getApSnmpConfig` | Gets SNMP configuration for an AP. Requires `apMac`. |
+| `getApLldpConfig` | Gets LLDP configuration for an AP. Requires `apMac`. |
+| `getApGeneralConfig` | Gets general configuration for an AP (name, LED, country). Requires `apMac`. |
 | `getUplinkWiredDetail` | Get wired uplink detail for an access point: uplink switch, port number, link speed, and PoE status. |
 | `getDownlinkWiredDevices` | Gets wired downlink devices on an AP's LAN ports. Requires `apMac`.           |
 | `getFirmwareUpgradePlan` | Get the firmware upgrade plan list for devices managed by the controller. |
@@ -266,79 +262,108 @@ In client-credentials mode the server already treats `Mcp-Session-Id` as optiona
 
 | Tool                          | Description                                                                 |
 | ----------------------------- | --------------------------------------------------------------------------- |
-| `getInternetInfo`             | Gets internet configuration information for a site.                         |
-| `getInternet`                 | Gets full WAN/Internet configuration for the site gateway.                  |
-| `getInternetBasicPortInfo`    | Gets WAN port summary/basic info for the site gateway.                      |
-| `getInternetLoadBalance`      | Gets WAN load balancing configuration (failover/load balance).              |
-| `getWanPortsConfig`           | Gets per-port WAN configuration including connection type and IP settings.  |
-| `getWanLanStatus`             | Gets WAN-LAN connectivity status for a site.                                |
-| `getGridVirtualWan`           | Gets virtual WAN list (paginated).                                          |
-| `getIspBandScan`              | Gets ISP band scan results for a WAN port. Requires `portUuid`.             |
-| `getDisableNatList`           | Gets the list of wired networks with NAT disabled (paginated).              |
-| `getLtePortConfig`            | Gets LTE/cellular WAN port configuration.                                   |
-| `getWanPortDetail`            | Gets detailed WAN port configuration for all gateway WAN ports.             |
-| `getWanIspProfile`            | Gets ISP scan profile result for a WAN port. Requires `portUuid`.           |
-| `getWanQosConfig`             | Gets QoS configuration for gateway WAN ports.                               |
-| `getWanHealthDetail`          | Deprecated alias. Gets WAN health details for a specific gateway. Requires `gatewayMac`. |
-| `getWanUsageStats`            | Gets WAN traffic usage statistics for the site.                             |
-| `getWanNatConfig`             | Gets one-to-one NAT rules (paginated).                                      |
-| `getPortForwardingStatus`     | Gets port forwarding status and rules (User or UPnP types).                 |
-| `getLanNetworkList`           | Gets the list of LAN networks configured in a site.                         |
+| `getInternetInfo` | Gets internet configuration information for a site. |
+| `getInternet` | Gets full WAN/Internet configuration for the site gateway. |
+| `getInternetBasicPortInfo` | Gets WAN port summary/basic info for the site gateway. |
+| `getInternetLoadBalance` | Gets WAN load balancing configuration (failover/load balance). |
+| `getWanPortsConfig` | Gets per-port WAN configuration including connection type and IP settings. |
+| `getWanLanStatus` | Gets WAN-LAN connectivity status for a site. |
+| `getGridVirtualWan` | Gets virtual WAN list (paginated). |
+| `getIspBandScan` | Gets ISP band scan results for a WAN port. Requires `portUuid`. |
+| `getDisableNatList` | Gets the list of wired networks with NAT disabled (paginated). |
+| `getLtePortConfig` | Gets LTE/cellular WAN port configuration. |
+| `getWanPortDetail` | Gets detailed WAN port configuration for all gateway WAN ports. |
+| `getWanIspProfile` | Gets ISP scan profile result for a WAN port. Requires `portUuid`. |
+| `getWanQosConfig` | Gets QoS configuration for gateway WAN ports. |
+| `getWanHealthDetail` | Deprecated alias. Gets WAN health details for a specific gateway. Requires `gatewayMac`. |
+| `getWanUsageStats` | Gets WAN traffic usage statistics for the site. |
+| `getWanNatConfig` | Gets one-to-one NAT rules (paginated). |
+| `getPortForwardingStatus` | Gets port forwarding status and rules (User or UPnP types). |
+| `getLanNetworkList` | Gets the list of LAN networks configured in a site. |
 | `getLanNetworkListV2` | Get the LAN network list using the v2 API, with richer VLAN and DHCP data (paginated). |
-| `getInterfaceLanNetwork`      | Gets interface-level LAN network bindings. Optional type filter.            |
+| `getInterfaceLanNetwork` | Gets interface-level LAN network bindings. Optional type filter. |
 | `getInterfaceLanNetworkV2` | Get interface-level LAN network bindings (v2 API). Returns richer per-interface VLAN and network data. |
-| `getLanProfileList`           | Gets the list of LAN profiles configured in a site.                         |
-| `getWlanGroupList`            | Gets the list of WLAN groups configured in a site.                          |
-| `getSsidList`                 | Gets the list of SSIDs in a WLAN group.                                     |
-| `getSsidDetail`               | Gets detailed information for a specific SSID.                              |
-| `listAllSsids`                | Lists wireless SSIDs across all WLAN groups.                                |
-| `getFirewallSetting`          | Gets firewall configuration and rules for a site.                           |
-| `getVpnSettings`              | Gets VPN settings for a site.                                               |
-| `listSiteToSiteVpns`          | Lists site-to-site VPN configurations.                                      |
-| `listPortForwardingRules`     | Lists NAT port forwarding rules.                                            |
-| `listOsgAcls`                 | Lists gateway (OSG) ACL rules.                                              |
-| `listEapAcls`                 | Lists access point (EAP) ACL rules.                                         |
-| `listStaticRoutes`            | Lists static routing rules.                                                 |
+| `getLanProfileList` | Gets the list of LAN profiles configured in a site. |
+| `getWlanGroupList` | Gets the list of WLAN groups configured in a site. |
+| `getSsidList` | Gets the list of SSIDs in a WLAN group. |
+| `getSsidDetail` | Gets detailed information for a specific SSID. |
+| `listAllSsids` | Lists wireless SSIDs across all WLAN groups. |
+| `getFirewallSetting` | Gets firewall configuration and rules for a site. |
+| `getVpnSettings` | Gets VPN settings for a site. |
+| `listSiteToSiteVpns` | Lists site-to-site VPN configurations. |
+| `listPortForwardingRules` | Lists NAT port forwarding rules. |
+| `listOsgAcls` | Lists gateway (OSG) ACL rules. |
+| `listEapAcls` | Lists access point (EAP) ACL rules. |
+| `listStaticRoutes` | Lists static routing rules. |
 | `getStaticRoutingInterfaceList` | Gets available interfaces for static routing.                             |
-| `listPolicyRoutes`            | Lists policy routing rules.                                                 |
-| `getGridPolicyRouting`        | Gets policy routing rules (paginated).                                      |
-| `getOspfProcess`              | Gets OSPF process configuration for the site gateway.                       |
-| `getOspfInterface`            | Gets OSPF interface configuration for the site gateway.                     |
-| `getVrrpConfig`               | Gets VRRP configuration for OSW devices.                                    |
-| `getOspfNeighbors`            | Gets OSPF neighbor devices for the site gateway.                            |
-| `getGridOtoNats`              | Gets 1:1 NAT rules (paginated).                                             |
-| `getAlg`                      | Gets ALG (Application Layer Gateway) configuration.                         |
-| `getUpnpSetting`              | Gets UPnP setting for the site gateway.                                     |
-| `getDdnsGrid`                 | Gets DDNS entries (paginated).                                              |
-| `getDhcpReservationGrid`      | Gets DHCP reservations (paginated).                                         |
-| `getGridIpMacBinding`         | Gets IP-MAC binding entries (paginated).                                    |
+| `listPolicyRoutes` | Lists policy routing rules. |
+| `getGridPolicyRouting` | Gets policy routing rules (paginated). |
+| `getOspfProcess` | Gets OSPF process configuration for the site gateway. |
+| `getOspfInterface` | Gets OSPF interface configuration for the site gateway. |
+| `getVrrpConfig` | Gets VRRP configuration for OSW devices. |
+| `getOspfNeighbors` | Gets OSPF neighbor devices for the site gateway. |
+| `getGridOtoNats` | Gets 1:1 NAT rules (paginated). |
+| `getAlg` | Gets ALG (Application Layer Gateway) configuration. |
+| `getUpnpSetting` | Gets UPnP setting for the site gateway. |
+| `getDdnsGrid` | Gets DDNS entries (paginated). |
+| `getDhcpReservationGrid` | Gets DHCP reservations (paginated). |
+| `getGridIpMacBinding` | Gets IP-MAC binding entries (paginated). |
 | `getIpMacBindingGeneralSetting` | Gets IP-MAC binding global toggle setting.                               |
-| `getBandwidthControl`         | Gets global bandwidth control configuration.                                |
-| `getGridBandwidthCtrlRule`    | Gets bandwidth control rules (paginated).                                   |
-| `getSessionLimit`             | Gets session limit global setting.                                          |
-| `getGridSessionLimitRule`     | Gets per-rule session limit rules (paginated).                              |
-| `getSnmpSetting`              | Gets SNMP configuration (version, community string).                        |
-| `getLldpSetting`              | Gets LLDP global setting.                                                   |
-| `getRemoteLoggingSetting`     | Gets remote logging (syslog) configuration.                                 |
-| `getAccessControl`            | Gets controller access control configuration.                               |
-| `getDnsCacheSetting`          | Gets DNS cache setting.                                                     |
-| `getDnsProxy`                 | Gets DNS proxy configuration.                                               |
-| `getIgmp`                     | Gets IGMP snooping and proxy setting.                                       |
-| `getSwitchVlanInterface`      | Gets VLAN interface configuration for a specific switch. Requires `switchMac`. |
-| `getLanDnsRules`              | Gets LAN DNS rules for the site (paginated).                                |
-| `getLanProfileEsUsage`        | Gets EAP/switch device usage for a LAN profile. Requires `profileId`.      |
-| `getLanClientCount`           | Gets client distribution breakdown across LAN segments.                     |
-| `getDnsCacheDataList`         | Gets the DNS cache data list (paginated).                                   |
-| `getIptvSetting`              | Gets IPTV service configuration for the site.                               |
-| `getNtpSetting`               | Gets NTP server configuration and synchronisation status.                   |
-| `getSyslogConfig`             | Deprecated alias of `getRemoteLoggingSetting`; use that tool instead.       |
-| `listRadiusProfiles`          | Lists RADIUS authentication profiles.                                       |
-| `listGroupProfiles`           | Lists group profiles (IP, MAC, or port groups).                             |
+| `getBandwidthControl` | Gets global bandwidth control configuration. |
+| `getGridBandwidthCtrlRule` | Gets bandwidth control rules (paginated). |
+| `getSessionLimit` | Gets session limit global setting. |
+| `getGridSessionLimitRule` | Gets per-rule session limit rules (paginated). |
+| `getSnmpSetting` | Gets SNMP configuration (version, community string). |
+| `getLldpSetting` | Gets LLDP global setting. |
+| `getRemoteLoggingSetting` | Gets remote logging (syslog) configuration. |
+| `getAccessControl` | Gets controller access control configuration. |
+| `getDnsCacheSetting` | Gets DNS cache setting. |
+| `getDnsProxy` | Gets DNS proxy configuration. |
+| `getIgmp` | Gets IGMP snooping and proxy setting. |
+| `getSwitchVlanInterface` | Gets VLAN interface configuration for a specific switch. Requires `switchMac`. |
+| `getLanDnsRules` | Gets LAN DNS rules for the site (paginated). |
+| `getLanProfileEsUsage` | Gets EAP/switch device usage for a LAN profile. Requires `profileId`. |
+| `getLanClientCount` | Gets client distribution breakdown across LAN segments. |
+| `getDnsCacheDataList` | Gets the DNS cache data list (paginated). |
+| `getIptvSetting` | Gets IPTV service configuration for the site. |
+| `getNtpSetting` | Gets NTP server configuration and synchronisation status. |
+| `getSyslogConfig` | Deprecated alias of `getRemoteLoggingSetting`; use that tool instead. |
+| `listRadiusProfiles` | Lists RADIUS authentication profiles. |
+| `listGroupProfiles` | Lists group profiles (IP, MAC, or port groups). |
 | `getApplicationControlStatus` | Gets application control status for a site.                                 |
-| `getSshSetting`               | Gets SSH settings for a site.                                               |
-| `listTimeRangeProfiles`       | Lists time range profiles.                                                  |
-| `getRateLimitProfiles`        | Gets the list of available rate limit profiles for bandwidth control.       |
+| `getSshSetting` | Gets SSH settings for a site. |
+| `listTimeRangeProfiles` | Lists time range profiles. |
+| `getRateLimitProfiles` | Gets the list of available rate limit profiles for bandwidth control. |
+### Firewall & ACL
 
+| Tool                          | Description                                                                              |
+| ----------------------------- | ---------------------------------------------------------------------------------------- |
+| `getDot1xConfig` | Get 802.1X switch port authentication setting. Alias for `getSwitchDot1xSetting`. |
+| `getRadiusProxyConfig` | Get global RADIUS proxy configuration (controller-level, no siteId). |
+| `getApplicationAcl` | [DEPRECATED] Get application control rules. Alias for `getAppControlRules`. |
+### Firewall Traffic & QoS
+
+| Tool                          | Description                                                                              |
+| ----------------------------- | ---------------------------------------------------------------------------------------- |
+| `getGatewayQosClassRules` | Get gateway QoS class rules (paginated). |
+| `getBandwidthCtrlDetail` | Get bandwidth control details for a site. |
+| `getAppControlRules` | Get application control rules (paginated). |
+| `getAppControlCategories` | Get application control category list. |
+| `getUrlFilterRules` | Get URL filter gateway rules. Alias for `getGridGatewayRule`. |
+| `getUrlFilterBlacklist` | Get URL filter MAC deny list. Alias for `getGridDenyMacFiltering`. |
+| `getUrlFilterWhitelist` | Get URL filter MAC allow list. Alias for `getGridAllowMacFiltering`. |
+| `getMacFilterDetail` | Get MAC filter general setting. Alias for `getMacFilteringGeneralSetting`. |
+| `getQosPolicy` | Get QoS policy configuration for a site. |
+| `getTrafficPriority` | Get traffic priority rules for a site. |
+| `getTrafficStats` | Get WAN usage statistics. Alias for `getWanUsageStats`. |
+| `getQosPolicyRule` | [DEPRECATED] Alias for `getQosPolicy`. |
+| `getQosMarkingRule` | [DEPRECATED] Alias for `getQosPolicy`. |
+| `getDscpConfig` | [DEPRECATED] Alias for `getQosPolicy`. |
+### Firewall IDS / IPS
+
+| Tool                          | Description                                                                              |
+| ----------------------------- | ---------------------------------------------------------------------------------------- |
+| `getGlobalSecuritySetting` | Get global security/threat management list. Alias for `getThreatList`. |
 ### Security & Threat Management
 
 | Tool            | Description                                               |
@@ -350,21 +375,21 @@ In client-credentials mode the server already treats `Mcp-Session-Id` as optiona
 
 | Tool                             | Description                                                     |
 | -------------------------------- | --------------------------------------------------------------- |
-| `getDashboardWifiSummary`        | Gets WiFi summary from the site dashboard.                      |
-| `getDashboardSwitchSummary`      | Gets switch summary from the site dashboard.                    |
-| `getDashboardTrafficActivities`  | Gets traffic activity data from the site dashboard.             |
-| `getDashboardPoEUsage`           | Gets PoE usage data from the site dashboard.                    |
-| `getDashboardTopCpuUsage`        | Gets top CPU usage data from the site dashboard.                |
-| `getDashboardTopMemoryUsage`     | Gets top memory usage data from the site dashboard.             |
+| `getDashboardWifiSummary` | Gets WiFi summary from the site dashboard. |
+| `getDashboardSwitchSummary` | Gets switch summary from the site dashboard. |
+| `getDashboardTrafficActivities` | Gets traffic activity data from the site dashboard. |
+| `getDashboardPoEUsage` | Gets PoE usage data from the site dashboard. |
+| `getDashboardTopCpuUsage` | Gets top CPU usage data from the site dashboard. |
+| `getDashboardTopMemoryUsage` | Gets top memory usage data from the site dashboard. |
 | `getDashboardMostActiveSwitches` | Gets most active switches from the site dashboard.              |
-| `getDashboardMostActiveEaps`     | Gets most active access points from the site dashboard.         |
+| `getDashboardMostActiveEaps` | Gets most active access points from the site dashboard. |
 | `getDashboardOverview` | Get the site overview: device counts, client counts, connectivity graph, and overall health status. |
-| `getTrafficDistribution`         | Gets traffic distribution by protocol/app type over a time range. Requires `start` and `end` timestamps (seconds). |
-| `getRetryAndDroppedRate`         | Gets wireless retry rate and dropped packet rate over a time range. Requires `start` and `end` timestamps (seconds). |
-| `getIspLoad`                     | Gets per-WAN ISP link load over a time range. Requires `start` and `end` timestamps (seconds). |
-| `getChannels`                    | Gets channel distribution and utilization across all APs.       |
-| `getInterference`                | Gets top RF interference sources detected by APs.               |
-| `getGridDashboardTunnelStats`    | Gets VPN tunnel statistics by type. Requires `type` parameter.  |
+| `getTrafficDistribution` | Gets traffic distribution by protocol/app type over a time range. Requires `start` and `end` timestamps (seconds). |
+| `getRetryAndDroppedRate` | Gets wireless retry rate and dropped packet rate over a time range. Requires `start` and `end` timestamps (seconds). |
+| `getIspLoad` | Gets per-WAN ISP link load over a time range. Requires `start` and `end` timestamps (seconds). |
+| `getChannels` | Gets channel distribution and utilization across all APs. |
+| `getInterference` | Gets top RF interference sources detected by APs. |
+| `getGridDashboardTunnelStats` | Gets VPN tunnel statistics by type. Requires `type` parameter. |
 | `getGridDashboardIpsecTunnelStats` | Gets IPsec tunnel statistics.                                 |
 | `getGridDashboardOpenVpnTunnelStats` | Gets OpenVPN tunnel statistics by type. Requires `type` parameter. |
 
@@ -373,75 +398,104 @@ In client-credentials mode the server already treats `Mcp-Session-Id` as optiona
 | Tool                       | Description                                                        |
 | -------------------------- | ------------------------------------------------------------------ |
 | `listSiteThreatManagement` | Lists site-level threat management events.                         |
-| `getWids`                  | Gets WIDS (Wireless Intrusion Detection) information for a site.   |
-| `getRogueAps`              | Gets rogue access points detected in a site.                       |
-| `getVpnTunnelStats`        | Gets VPN tunnel statistics for a site.                             |
+| `getWids` | Gets WIDS (Wireless Intrusion Detection) information for a site. |
+| `getRogueAps` | Gets rogue access points detected in a site. |
+| `getVpnTunnelStats` | Gets VPN tunnel statistics for a site. |
+### VPN
 
+| Tool                          | Description                                                                              |
+| ----------------------------- | ---------------------------------------------------------------------------------------- |
+| `getIpsecTunnelList` | List all site-to-site VPN (IPsec) tunnels. Alias for `listSiteToSiteVpns`. |
+| `getIpsecTunnelDetail` | Get detailed config for a specific IPsec tunnel by ID. Alias for `getSiteToSiteVpnInfo`. |
+| `getAdvancedVpnSetting` | Get advanced VPN configuration settings for a site. Alias for `getVpnSettings`. |
+| `getVpnUserList` | Get VPN users for a site (paginated). |
+| `getVpnUserDetail` | Get users for a specific client-to-site VPN server. |
+| `getVpnClientStatus` | Get status of client-to-site VPN clients. Alias for `listClientToSiteVpnClients`. |
+| `getVpnRouteConfig` | Get policy-based routing rules. Alias for `listPolicyRoutes`. |
+### Profiles
+
+| Tool                          | Description                                                                              |
+| ----------------------------- | ---------------------------------------------------------------------------------------- |
+| `getGoogleLdapProfile` | Get Google LDAP profile configuration for a site. |
+| `getBuiltinRadiusUsers` | Get built-in RADIUS server user list (paginated). |
+| `getRadiusUserDetail` | [DEPRECATED] Alias for `getBuiltinRadiusUsers`. |
+| `getPpskNetworkProfile` | List PPSK network profiles for a site by type. |
+| `getPpskUserGroup` | Get PPSK user group details for a specific profile. |
+| `getPpskUserList` | [DEPRECATED] Alias for `getPpskUserGroup`. |
+| `getServiceProfile` | Get service type profiles (paginated). Alias for `listServiceType`. |
+| `getQosProfile` | Get rate limit profiles. Alias for `getRateLimitProfiles`. |
+| `getScheduleProfile` | Get time range profiles. Alias for `listTimeRangeProfiles`. |
+| `getGroupPolicyDetail` | Get group policy profiles filtered by group type. |
+| `getIpGroupProfile` | [DEPRECATED] Get IP group profiles. Alias for `getGroupPolicyDetail` with groupType="0". |
+| `getUrlGroupProfile` | [DEPRECATED] Get URL/port group profiles. Alias for `getGroupPolicyDetail` with groupType="1". |
+| `getAppGroupProfile` | [DEPRECATED] Get MAC group profiles. Alias for `getGroupPolicyDetail` with groupType="2". |
+| `getVlanProfile` | Get LAN/VLAN profiles. Alias for `getLanProfileList`. |
+| `getUserRoleProfile` | Get user role profiles from the controller (global, no siteId). |
+| `getPortalProfile` | Get captive portal profiles for a site. |
 ### Logs
 
 | Tool                | Description                                                  |
 | ------------------- | ------------------------------------------------------------ |
-| `listSiteEvents`    | Lists site event logs.                                       |
-| `listSiteAlerts`    | Lists site alert logs.                                       |
+| `listSiteEvents` | Lists site event logs. |
+| `listSiteAlerts` | Lists site alert logs. |
 | `listSiteAuditLogs` | Lists site audit logs.                                       |
-| `listGlobalEvents`  | Lists global event logs across all sites.                    |
-| `listGlobalAlerts`  | Lists global alert logs across all sites.                    |
-
+| `listGlobalEvents` | Lists global event logs across all sites. |
+| `listGlobalAlerts` | Lists global alert logs across all sites. |
 ## Supported Omada API Operations
 
 | Operation ID                        | Description                                               | Tool                          |
 | ----------------------------------- | --------------------------------------------------------- | ----------------------------- |
-| `getSiteList`                       | List controller sites.                                    | `listSites`                   |
-| `getDeviceList`                     | List devices assigned to a site.                          | `listDevices`, `getDevice`    |
-| `searchGlobalDevice`                | Search for devices across all accessible sites.           | `searchDevices`               |
+| `getSiteList` | List controller sites.                                    | `listSites` |
+| `getDeviceList` | List devices assigned to a site.                          | `listDevices`, `getDevice` |
+| `searchGlobalDevice` | Search for devices across all accessible sites.           | `searchDevices` |
 | `getGridAdoptedDevicesStatByGlobal` | Query statistics for global adopted devices.              | `listDevicesStats`            |
-| `getOswStackDetail`                 | Retrieve details for a switch stack.                      | `getSwitchStackDetail`        |
-| `getSwitch`                         | Get detailed info for a specific switch.                  | `getSwitchDetail`             |
-| `getGateway`                        | Get detailed info for a specific gateway.                 | `getGatewayDetail`            |
-| `getGatewayWanPortStatus`           | Get WAN port status for a specific gateway.               | `getGatewayWanStatus`         |
-| `getGatewayLanPortStatus`           | Get LAN port status for a specific gateway.               | `getGatewayLanStatus`         |
-| `getGatewayPorts`                   | Get port info for a specific gateway.                     | `getGatewayPorts`             |
-| `getAp`                             | Get detailed info for a specific access point.            | `getApDetail`                 |
-| `getApRadios`                       | Get radio info for a specific access point.               | `getApRadios`                 |
-| `getStackPorts`                     | Get port info for a switch stack.                         | `getStackPorts`               |
-| `getGridPendingDevices`             | List devices pending adoption in a site.                  | `listPendingDevices`          |
-| `getGridActiveClients`              | List active clients connected to a site.                  | `listClients`, `getClient`    |
-| `getMostActiveClients`              | Get most active clients sorted by traffic.                | `listMostActiveClients`       |
-| `getClientActivity`                 | Get client activity statistics over time.                 | `listClientsActivity`         |
-| `getGridPastConnections`            | Get client past connection history.                       | `listClientsPastConnections`  |
-| `updateClientRateLimitSetting`      | Set rate limit setting for a client.                      | `setClientRateLimit`, `setClientRateLimitProfile`, `disableClientRateLimit` |
-| `getRateLimitProfileList`           | Get rate limit profile list.                              | `getRateLimitProfiles`        |
-| `getGlobalThreatList`               | Get global view threat management list.                   | `getThreatList`               |
-| `getTopThreatList`                  | Get top threats from global threat management.            | `getTopThreats`               |
-| `getInternet`                       | Get internet configuration info for a site.               | `getInternetInfo`             |
-| `getPortForwardStatus`              | Get port forwarding status by type.                       | `getPortForwardingStatus`     |
-| `getLanProfileList`                 | Get LAN profile list.                                     | `getLanProfileList`           |
-| `getWlanGroupList`                  | Get WLAN group list.                                      | `getWlanGroupList`            |
-| `getSsidList`                       | Get SSID list for a WLAN group.                           | `getSsidList`                 |
-| `getSsidDetail`                     | Get detailed SSID configuration.                          | `getSsidDetail`               |
-| `getSsidListAll`                    | List SSIDs across all WLAN groups.                        | `listAllSsids`                |
-| `getFirewallSetting`                | Get firewall configuration for a site.                    | `getFirewallSetting`          |
-| `getVpn`                            | Get VPN settings for a site.                              | `getVpnSettings`              |
-| `getSiteToSiteVpnList`              | List site-to-site VPN configurations.                     | `listSiteToSiteVpns`          |
-| `getPortForwardingList`             | List NAT port forwarding rules.                           | `listPortForwardingRules`     |
-| `getOsgAclList`                     | List gateway ACL rules.                                   | `listOsgAcls`                 |
-| `getEapAclList`                     | List access point ACL rules.                              | `listEapAcls`                 |
-| `getStaticRoutingList`              | List static routing rules.                                | `listStaticRoutes`            |
-| `getRadiusProfileList`              | List RADIUS authentication profiles.                      | `listRadiusProfiles`          |
-| `getGroupProfileList`               | List group profiles (IP, MAC, port groups).               | `listGroupProfiles`           |
-| `getApplicationControlStatus`       | Get application control status for a site.                | `getApplicationControlStatus` |
-| `getSshSetting`                     | Get SSH settings for a site.                              | `getSshSetting`               |
-| `getTimeRangeProfileList`           | List time range profiles.                                 | `listTimeRangeProfiles`       |
-| `getWanLanStatus`                   | Get WAN-LAN connectivity status for a site.               | `getWanLanStatus`             |
-| `getSiteThreatManagementList`       | List site-level threat management events.                 | `listSiteThreatManagement`    |
-| `getWids`                           | Get WIDS information for a site.                          | `getWids`                     |
-| `getRogueAps`                       | Get rogue access points detected in a site.               | `getRogueAps`                 |
-| `getVpnTunnelStats`                 | Get VPN tunnel statistics for a site.                     | `getVpnTunnelStats`           |
-| `getSiteEvents`                     | List site event logs.                                     | `listSiteEvents`              |
-| `getSiteAlerts`                     | List site alert logs.                                     | `listSiteAlerts`              |
-| `getSiteAuditLogs`                  | List site audit logs.                                     | `listSiteAuditLogs`           |
-| `getEvents`                         | List global event logs across all sites.                  | `listGlobalEvents`            |
-| `getAlerts`                         | List global alert logs across all sites.                  | `listGlobalAlerts`            |
+| `getOswStackDetail` | Retrieve details for a switch stack.                      | `getSwitchStackDetail` |
+| `getSwitch` | Get detailed info for a specific switch.                  | `getSwitchDetail` |
+| `getGateway` | Get detailed info for a specific gateway.                 | `getGatewayDetail` |
+| `getGatewayWanPortStatus` | Get WAN port status for a specific gateway.               | `getGatewayWanStatus` |
+| `getGatewayLanPortStatus` | Get LAN port status for a specific gateway.               | `getGatewayLanStatus` |
+| `getGatewayPorts` | Get port info for a specific gateway.                     | `getGatewayPorts` |
+| `getAp` | Get detailed info for a specific access point.            | `getApDetail` |
+| `getApRadios` | Get radio info for a specific access point.               | `getApRadios` |
+| `getStackPorts` | Get port info for a switch stack.                         | `getStackPorts` |
+| `getGridPendingDevices` | List devices pending adoption in a site.                  | `listPendingDevices` |
+| `getGridActiveClients` | List active clients connected to a site.                  | `listClients`, `getClient` |
+| `getMostActiveClients` | Get most active clients sorted by traffic.                | `listMostActiveClients` |
+| `getClientActivity` | Get client activity statistics over time.                 | `listClientsActivity` |
+| `getGridPastConnections` | Get client past connection history.                       | `listClientsPastConnections` |
+| `updateClientRateLimitSetting` | Set rate limit setting for a client.                      | `setClientRateLimit`, `setClientRateLimitProfile`, `disableClientRateLimit` |
+| `getRateLimitProfileList` | Get rate limit profile list.                              | `getRateLimitProfiles` |
+| `getGlobalThreatList` | Get global view threat management list.                   | `getThreatList` |
+| `getTopThreatList` | Get top threats from global threat management.            | `getTopThreats` |
+| `getInternet` | Get internet configuration info for a site.               | `getInternetInfo` |
+| `getPortForwardStatus` | Get port forwarding status by type.                       | `getPortForwardingStatus` |
+| `getLanProfileList` | Get LAN profile list.                                     | `getLanProfileList` |
+| `getWlanGroupList` | Get WLAN group list.                                      | `getWlanGroupList` |
+| `getSsidList` | Get SSID list for a WLAN group.                           | `getSsidList` |
+| `getSsidDetail` | Get detailed SSID configuration.                          | `getSsidDetail` |
+| `getSsidListAll` | List SSIDs across all WLAN groups.                        | `listAllSsids` |
+| `getFirewallSetting` | Get firewall configuration for a site.                    | `getFirewallSetting` |
+| `getVpn` | Get VPN settings for a site.                              | `getVpnSettings` |
+| `getSiteToSiteVpnList` | List site-to-site VPN configurations.                     | `listSiteToSiteVpns` |
+| `getPortForwardingList` | List NAT port forwarding rules.                           | `listPortForwardingRules` |
+| `getOsgAclList` | List gateway ACL rules.                                   | `listOsgAcls` |
+| `getEapAclList` | List access point ACL rules.                              | `listEapAcls` |
+| `getStaticRoutingList` | List static routing rules.                                | `listStaticRoutes` |
+| `getRadiusProfileList` | List RADIUS authentication profiles.                      | `listRadiusProfiles` |
+| `getGroupProfileList` | List group profiles (IP, MAC, port groups).               | `listGroupProfiles` |
+| `getApplicationControlStatus` | Get application control status for a site.                | `getApplicationControlStatus` |
+| `getSshSetting` | Get SSH settings for a site.                              | `getSshSetting` |
+| `getTimeRangeProfileList` | List time range profiles.                                 | `listTimeRangeProfiles` |
+| `getWanLanStatus` | Get WAN-LAN connectivity status for a site.               | `getWanLanStatus` |
+| `getSiteThreatManagementList` | List site-level threat management events.                 | `listSiteThreatManagement` |
+| `getWids` | Get WIDS information for a site.                          | `getWids` |
+| `getRogueAps` | Get rogue access points detected in a site.               | `getRogueAps` |
+| `getVpnTunnelStats` | Get VPN tunnel statistics for a site.                     | `getVpnTunnelStats` |
+| `getSiteEvents` | List site event logs.                                     | `listSiteEvents` |
+| `getSiteAlerts` | List site alert logs.                                     | `listSiteAlerts` |
+| `getSiteAuditLogs` | List site audit logs.                                     | `listSiteAuditLogs` |
+| `getEvents` | List global event logs across all sites.                  | `listGlobalEvents` |
+| `getAlerts` | List global alert logs across all sites.                  | `listGlobalAlerts` |
 | `disableClientRateLimit` | Disable rate limiting for a specific client, removing any bandwidth.... | `disableClientRateLimit` |
 | `getAccessControl` | Get controller access control configuration. | `getAccessControl` |
 | `getAlg` | Get ALG (Application Layer Gateway) configuration for the site gateway. | `getAlg` |
@@ -646,6 +700,19 @@ In client-credentials mode the server already treats `Mcp-Session-Id` as optiona
 | `listClientsPastConnections` | List past connection history for clients. | `listClientsPastConnections` |
 | `listSiteAuditLogs` | List site audit logs (paginated). | `listSiteAuditLogs` |
 | `listSiteThreatManagement` | List site-level threat management events (paginated). | `listSiteThreatManagement` |
+| `getGatewayQosClassRules` | Get gateway QoS class rules (paginated). | `getGatewayQosClassRules` |
+| `getBandwidthCtrlDetail` | Get bandwidth control details for a site. | `getBandwidthCtrlDetail` |
+| `getAppControlRules` | Get application control rules (paginated). | `getAppControlRules` |
+| `getAppControlCategories` | Get application control category list. | `getAppControlCategories` |
+| `getQosPolicy` | Get QoS policy configuration for a site. | `getQosPolicy` |
+| `getTrafficPriority` | Get traffic priority rules for a site. | `getTrafficPriority` |
+| `getVpnUserList` | Get VPN users for a site (paginated). | `getVpnUserList` |
+| `getVpnUserDetail` | Get users for a specific client-to-site VPN server by ID. | `getVpnUserDetail` |
+| `getGoogleLdapProfile` | Get Google LDAP profile configuration for a site. | `getGoogleLdapProfile` |
+| `getPpskUserGroup` | Get PPSK user group details for a specific profile ID. | `getPpskUserGroup` |
+| `getPortalProfile` | Get captive portal profiles for a site. | `getPortalProfile` |
+| `getUserRoleProfile` | Get user role profiles from the controller (global). | `getUserRoleProfile` |
+| `getRadiusProxyConfig` | Get global RADIUS proxy configuration (controller-level). | `getRadiusProxyConfig` |
 
 ## Contributing
 

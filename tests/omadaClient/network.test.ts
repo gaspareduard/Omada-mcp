@@ -1613,4 +1613,197 @@ describe('NetworkOperations', () => {
             expect(mockRequest.get).toHaveBeenCalledWith('/openapi/v1/test-omadac/sites/site-123/setting/ntp', undefined, undefined);
         });
     });
+
+    // security-vpn additions (#75)
+
+    describe('getRadiusProxyConfig', () => {
+        it('should fetch global RADIUS proxy config', async () => {
+            const mockResponse: OmadaApiResponse<unknown> = { errorCode: 0, result: { enabled: true } };
+            vi.mocked(mockRequest.get).mockResolvedValue(mockResponse);
+            const result = await networkOps.getRadiusProxyConfig();
+            expect(mockRequest.get).toHaveBeenCalledWith(
+                '/openapi/v1/test-omadac/global/controller/setting/network/radius-proxy',
+                undefined,
+                undefined
+            );
+            expect(result).toEqual({ enabled: true });
+        });
+
+        it('should pass custom headers', async () => {
+            const mockResponse: OmadaApiResponse<unknown> = { errorCode: 0, result: {} };
+            vi.mocked(mockRequest.get).mockResolvedValue(mockResponse);
+            const headers = { 'X-Test': 'value' };
+            await networkOps.getRadiusProxyConfig(headers);
+            expect(mockRequest.get).toHaveBeenCalledWith(expect.any(String), undefined, headers);
+        });
+    });
+
+    describe('getGatewayQosClassRules', () => {
+        it('should fetch gateway QoS class rules with pagination', async () => {
+            const mockResponse: OmadaApiResponse<unknown> = { errorCode: 0, result: { data: [] } };
+            vi.mocked(mockRequest.get).mockResolvedValue(mockResponse);
+            await networkOps.getGatewayQosClassRules(1, 10, 'site-123');
+            expect(mockRequest.get).toHaveBeenCalledWith(
+                '/openapi/v1/test-omadac/sites/site-123/qos/gateway/class-rules',
+                { page: 1, pageSize: 10 },
+                undefined
+            );
+        });
+
+        it('should use default site when siteId is not provided', async () => {
+            const mockResponse: OmadaApiResponse<unknown> = { errorCode: 0, result: {} };
+            vi.mocked(mockRequest.get).mockResolvedValue(mockResponse);
+            await networkOps.getGatewayQosClassRules();
+            expect(mockSite.resolveSiteId).toHaveBeenCalledWith(undefined);
+        });
+    });
+
+    describe('getBandwidthCtrlDetail', () => {
+        it('should fetch bandwidth control detail', async () => {
+            const mockResponse: OmadaApiResponse<unknown> = { errorCode: 0, result: { enabled: false } };
+            vi.mocked(mockRequest.get).mockResolvedValue(mockResponse);
+            const result = await networkOps.getBandwidthCtrlDetail('site-123');
+            expect(mockRequest.get).toHaveBeenCalledWith('/openapi/v1/test-omadac/sites/site-123/qos/gateway/bwcs', undefined, undefined);
+            expect(result).toEqual({ enabled: false });
+        });
+    });
+
+    describe('getAppControlRules', () => {
+        it('should fetch application control rules with pagination', async () => {
+            const mockResponse: OmadaApiResponse<unknown> = { errorCode: 0, result: { data: [] } };
+            vi.mocked(mockRequest.get).mockResolvedValue(mockResponse);
+            await networkOps.getAppControlRules(1, 10, 'site-123');
+            expect(mockRequest.get).toHaveBeenCalledWith(
+                '/openapi/v1/test-omadac/sites/site-123/applicationControl/rules',
+                { page: 1, pageSize: 10 },
+                undefined
+            );
+        });
+
+        it('should use default pagination', async () => {
+            const mockResponse: OmadaApiResponse<unknown> = { errorCode: 0, result: {} };
+            vi.mocked(mockRequest.get).mockResolvedValue(mockResponse);
+            await networkOps.getAppControlRules(undefined, undefined, 'site-123');
+            expect(mockRequest.get).toHaveBeenCalledWith(expect.any(String), { page: 1, pageSize: 10 }, undefined);
+        });
+    });
+
+    describe('getAppControlCategories', () => {
+        it('should fetch application control categories', async () => {
+            const mockResponse: OmadaApiResponse<unknown> = { errorCode: 0, result: [] };
+            vi.mocked(mockRequest.get).mockResolvedValue(mockResponse);
+            const result = await networkOps.getAppControlCategories('site-123');
+            expect(mockRequest.get).toHaveBeenCalledWith('/openapi/v1/test-omadac/sites/site-123/applicationControl/families', undefined, undefined);
+            expect(result).toEqual([]);
+        });
+    });
+
+    describe('getQosPolicy', () => {
+        it('should fetch QoS policy', async () => {
+            const mockResponse: OmadaApiResponse<unknown> = { errorCode: 0, result: { enabled: true } };
+            vi.mocked(mockRequest.get).mockResolvedValue(mockResponse);
+            await networkOps.getQosPolicy('site-123');
+            expect(mockRequest.get).toHaveBeenCalledWith(
+                '/openapi/v1/test-omadac/sites/site-123/qos/gateway/tag-outbound-traffic',
+                undefined,
+                undefined
+            );
+        });
+    });
+
+    describe('getTrafficPriority', () => {
+        it('should fetch traffic priority settings', async () => {
+            const mockResponse: OmadaApiResponse<unknown> = { errorCode: 0, result: {} };
+            vi.mocked(mockRequest.get).mockResolvedValue(mockResponse);
+            await networkOps.getTrafficPriority('site-123');
+            expect(mockRequest.get).toHaveBeenCalledWith(
+                '/openapi/v1/test-omadac/sites/site-123/qos/gateway/voip-prioritization',
+                undefined,
+                undefined
+            );
+        });
+    });
+
+    describe('getVpnUserList', () => {
+        it('should fetch VPN user list with pagination', async () => {
+            const mockResponse: OmadaApiResponse<unknown> = { errorCode: 0, result: { data: [] } };
+            vi.mocked(mockRequest.get).mockResolvedValue(mockResponse);
+            await networkOps.getVpnUserList(1, 10, 'site-123');
+            expect(mockRequest.get).toHaveBeenCalledWith('/openapi/v1/test-omadac/sites/site-123/vpn/users', { page: 1, pageSize: 10 }, undefined);
+        });
+    });
+
+    describe('getVpnUserDetail', () => {
+        it('should fetch VPN users for a specific VPN server', async () => {
+            const mockResponse: OmadaApiResponse<unknown> = { errorCode: 0, result: { users: [] } };
+            vi.mocked(mockRequest.get).mockResolvedValue(mockResponse);
+            await networkOps.getVpnUserDetail('vpn-001', 'site-123');
+            expect(mockRequest.get).toHaveBeenCalledWith(
+                '/openapi/v1/test-omadac/sites/site-123/vpn/client-to-site-vpn-servers/vpn-001/users',
+                undefined,
+                undefined
+            );
+        });
+
+        it('should encode vpnId in URL', async () => {
+            const mockResponse: OmadaApiResponse<unknown> = { errorCode: 0, result: {} };
+            vi.mocked(mockRequest.get).mockResolvedValue(mockResponse);
+            await networkOps.getVpnUserDetail('vpn id/special', 'site-123');
+            expect(mockRequest.get).toHaveBeenCalledWith(expect.stringContaining('vpn%20id%2Fspecial'), undefined, undefined);
+        });
+    });
+
+    describe('getGoogleLdapProfile', () => {
+        it('should fetch Google LDAP profile', async () => {
+            const mockResponse: OmadaApiResponse<unknown> = { errorCode: 0, result: { domain: 'example.com' } };
+            vi.mocked(mockRequest.get).mockResolvedValue(mockResponse);
+            const result = await networkOps.getGoogleLdapProfile('site-123');
+            expect(mockRequest.get).toHaveBeenCalledWith('/openapi/v1/test-omadac/sites/site-123/profiles/ldap/google', undefined, undefined);
+            expect(result).toEqual({ domain: 'example.com' });
+        });
+    });
+
+    describe('getPpskUserGroup', () => {
+        it('should fetch PPSK user group by profile ID', async () => {
+            const mockResponse: OmadaApiResponse<unknown> = { errorCode: 0, result: { users: [] } };
+            vi.mocked(mockRequest.get).mockResolvedValue(mockResponse);
+            await networkOps.getPpskUserGroup('profile-001', 'site-123');
+            expect(mockRequest.get).toHaveBeenCalledWith('/openapi/v1/test-omadac/sites/site-123/ppsk-profile/profile-001', undefined, undefined);
+        });
+
+        it('should encode profileId in URL', async () => {
+            const mockResponse: OmadaApiResponse<unknown> = { errorCode: 0, result: {} };
+            vi.mocked(mockRequest.get).mockResolvedValue(mockResponse);
+            await networkOps.getPpskUserGroup('profile/special', 'site-123');
+            expect(mockRequest.get).toHaveBeenCalledWith(expect.stringContaining('profile%2Fspecial'), undefined, undefined);
+        });
+    });
+
+    describe('getUserRoleProfile', () => {
+        it('should fetch user role profiles', async () => {
+            const mockResponse: OmadaApiResponse<unknown> = { errorCode: 0, result: [] };
+            vi.mocked(mockRequest.get).mockResolvedValue(mockResponse);
+            const result = await networkOps.getUserRoleProfile();
+            expect(mockRequest.get).toHaveBeenCalledWith('/openapi/v1/test-omadac/roles', undefined, undefined);
+            expect(result).toEqual([]);
+        });
+
+        it('should pass custom headers', async () => {
+            const mockResponse: OmadaApiResponse<unknown> = { errorCode: 0, result: {} };
+            vi.mocked(mockRequest.get).mockResolvedValue(mockResponse);
+            const headers = { 'X-Test': 'value' };
+            await networkOps.getUserRoleProfile(headers);
+            expect(mockRequest.get).toHaveBeenCalledWith(expect.any(String), undefined, headers);
+        });
+    });
+
+    describe('getPortalProfile', () => {
+        it('should fetch portal profiles for a site', async () => {
+            const mockResponse: OmadaApiResponse<unknown> = { errorCode: 0, result: [] };
+            vi.mocked(mockRequest.get).mockResolvedValue(mockResponse);
+            const result = await networkOps.getPortalProfile('site-123');
+            expect(mockRequest.get).toHaveBeenCalledWith('/openapi/v1/test-omadac/sites/site-123/portals', undefined, undefined);
+            expect(result).toEqual([]);
+        });
+    });
 });
