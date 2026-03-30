@@ -8,21 +8,23 @@ on:
     paths:
       - "src/**"
       - "tests/**"
+      - "scripts/**"
       - "*.json"
       - "*.ts"
+      - "*.md"
       - ".github/workflows/*.yml"
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
-env:
-  MIN_COVERAGE_THRESHOLD: ${{ vars.MIN_COVERAGE_THRESHOLD || '80' }}
-
 jobs:
   build-and-lint:
     name: Build and Check Code Style
     runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
+      contents: read
 
     steps:
       - name: Checkout repository
@@ -41,13 +43,68 @@ jobs:
           npm_config_cache_max: 1296000
 
       - name: Build project
+        id: build
         run: npm run build
 
       - name: Check code style
+        id: lint
         run: npm run check
 
       - name: Run tests with coverage
+        id: tests
         run: npm run test:coverage
+
+      - name: Check global coverage thresholds
+        id: coverage
+        run: |
+          node -e "
+            const s = require('./coverage/coverage-summary.json').total;
+            const min = { lines: 90, statements: 90, functions: 90, branches: 70 };
+            let failed = false;
+            const rows = [];
+            for (const [k, threshold] of Object.entries(min)) {
+              const pct = s[k].pct;
+              const icon = pct >= threshold ? '✅' : '❌';
+              rows.push(k + '=' + pct + '%|' + threshold + '%|' + icon);
+              if (pct < threshold) {
+                console.error('❌ ' + k + ' coverage ' + pct + '% is below ' + threshold + '%');
+                failed = true;
+              } else {
+                console.log('✅ ' + k + ': ' + pct + '%');
+              }
+            }
+            require('fs').appendFileSync(process.env.GITHUB_OUTPUT, 'coverage_rows=' + rows.join(',') + '\n');
+            if (failed) process.exit(1);
+          "
+
+      - name: Check all tools have test coverage
+        id: tool_tests
+        run: node scripts/check-tool-tests.mjs
+
+      - name: Check README sync
+        id: readme_sync
+        run: node scripts/check-readme-sync.mjs
+
+      - name: Check AI instruction symlinks
+        id: symlinks
+        run: |
+          FAIL=0
+          for link in AGENTS.md .github/copilot-instructions.md .github/AGENTS.md; do
+            if [ ! -L "$link" ]; then
+              echo "❌ $link is missing or not a symlink"
+              FAIL=1
+            else
+              target=$(readlink "$link")
+              resolved=$(realpath "$link" 2>/dev/null || true)
+              if [ ! -f "$resolved" ]; then
+                echo "❌ $link -> $target (broken — target does not exist)"
+                FAIL=1
+              else
+                echo "✅ $link -> $target"
+              fi
+            fi
+          done
+          exit $FAIL
 
       - name: Upload coverage reports
         uses: actions/upload-artifact@v4
@@ -57,63 +114,81 @@ jobs:
           path: coverage/
           retention-days: 15
 
-      - name: Check coverage thresholds
-        run: |
-          # Parse coverage summary
-          if [ -f coverage/coverage-summary.json ]; then
-            COVERAGE=$(node -e "
-              const fs = require('fs');
-              const summary = JSON.parse(fs.readFileSync('coverage/coverage-summary.json', 'utf8'));
-              const total = summary.total;
-              console.log(JSON.stringify({
-                lines: total.lines.pct,
-                statements: total.statements.pct,
-                functions: total.functions.pct,
-                branches: total.branches.pct
-              }));
-            ")
-            
-            echo "Coverage Summary:"
-            echo "$COVERAGE" | node -e "
-              const coverage = JSON.parse(require('fs').readFileSync(0, 'utf-8'));
-              console.log('Lines: ' + coverage.lines + '%');
-              console.log('Statements: ' + coverage.statements + '%');
-              console.log('Functions: ' + coverage.functions + '%');
-              console.log('Branches: ' + coverage.branches + '%');
-            "
-            
-            # Check if coverage meets minimum thresholds
-            node -e "
-              const coverage = $COVERAGE;
-              const minCoverage = parseInt(process.env.MIN_COVERAGE_THRESHOLD) || 80;
-              
-              let failed = false;
-              
-              if (coverage.lines < minCoverage) {
-                console.error('❌ Line coverage (' + coverage.lines + '%) is below ' + minCoverage + '%');
-                failed = true;
-              }
-              if (coverage.statements < minCoverage) {
-                console.error('❌ Statement coverage (' + coverage.statements + '%) is below ' + minCoverage + '%');
-                failed = true;
-              }
-              if (coverage.functions < minCoverage) {
-                console.error('❌ Function coverage (' + coverage.functions + '%) is below ' + minCoverage + '%');
-                failed = true;
-              }
-              if (coverage.branches < minCoverage) {
-                console.error('❌ Branch coverage (' + coverage.branches + '%) is below ' + minCoverage + '%');
-                failed = true;
-              }
-              
-              if (failed) {
-                console.error('\\n❌ Coverage check failed! Minimum coverage threshold is ' + minCoverage + '%');
-                process.exit(1);
-              } else {
-                console.log('\\n✅ All coverage thresholds met!');
-              }
-            "
-          else
-            echo "❌ Coverage summary not found!"
-            exit 1
-          fi
+      - name: Post CI summary comment
+        if: always() && github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const steps = {
+              build:      '${{ steps.build.outcome }}',
+              lint:       '${{ steps.lint.outcome }}',
+              tests:      '${{ steps.tests.outcome }}',
+              coverage:   '${{ steps.coverage.outcome }}',
+              tool_tests: '${{ steps.tool_tests.outcome }}',
+              readme_sync:'${{ steps.readme_sync.outcome }}',
+              symlinks:   '${{ steps.symlinks.outcome }}',
+            };
+
+            const icon = (outcome) =>
+              outcome === 'success' ? '✅' : outcome === 'skipped' ? '⏭️' : '❌';
+
+            const coverageRows = '${{ steps.coverage.outputs.coverage_rows }}';
+            let coverageTable = '';
+            if (coverageRows) {
+              const rows = coverageRows.split(',').map(r => {
+                const [label, rest] = r.split('=');
+                const [pct, threshold, ico] = rest.split('|');
+                return `| ${label} | ${pct} | ${threshold} | ${ico} |`;
+              });
+              coverageTable = `
+            ### Coverage
+
+            | Metric | Actual | Threshold | Status |
+            |--------|--------|-----------|--------|
+            ${rows.join('\n')}
+            `;
+            }
+
+            const allPassed = Object.values(steps).every(o => o === 'success' || o === 'skipped');
+            const headline = allPassed ? '## ✅ All checks passed' : '## ❌ Some checks failed';
+
+            const body = `${headline}
+
+            | Check | Result |
+            |-------|--------|
+            | Build | ${icon(steps.build)} ${steps.build} |
+            | Lint & type-check | ${icon(steps.lint)} ${steps.lint} |
+            | Tests | ${icon(steps.tests)} ${steps.tests} |
+            | Coverage thresholds | ${icon(steps.coverage)} ${steps.coverage} |
+            | 1:1 test file mirroring | ${icon(steps.tool_tests)} ${steps.tool_tests} |
+            | README sync | ${icon(steps.readme_sync)} ${steps.readme_sync} |
+            | AI instruction symlinks | ${icon(steps.symlinks)} ${steps.symlinks} |
+            ${coverageTable}
+            <sub>🤖 Posted by CI · ${new Date().toUTCString()}</sub>`;
+
+            // Find existing bot comment and update it, or create a new one
+            const { data: comments } = await github.rest.issues.listComments({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+            });
+
+            const botComment = comments.find(c =>
+              c.user.type === 'Bot' && c.body.includes('🤖 Posted by CI')
+            );
+
+            if (botComment) {
+              await github.rest.issues.updateComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: botComment.id,
+                body,
+              });
+            } else {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+                body,
+              });
+            }

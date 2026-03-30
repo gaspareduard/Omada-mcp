@@ -8,9 +8,21 @@ import { logger } from '../utils/logger.js';
 // Custom headers schema for optional HTTP headers
 export const customHeadersSchema = z.record(z.string(), z.string()).optional();
 
+// Reusable MAC address schema for device identifiers (AP, switch, gateway)
+export const deviceMacSchema = z
+    .string()
+    .trim()
+    .regex(/^[0-9A-Fa-f]{2}([:-][0-9A-Fa-f]{2}){5}$/, 'Invalid MAC address format. Expected "AA-BB-CC-DD-EE-FF" or "AA:BB:CC:DD:EE:FF".');
+
 export const siteInputSchema = z.object({
-    siteId: z.string().min(1).optional(),
-    customHeaders: customHeadersSchema,
+    siteId: z
+        .string()
+        .min(1)
+        .optional()
+        .describe('Site ID to target. If omitted, uses the default site from OMADA_SITE_ID config. Use listSites to discover available site IDs.'),
+    customHeaders: customHeadersSchema.describe(
+        'Optional HTTP headers to include in the Omada API request (e.g. {"X-Custom-Header": "value"}). Rarely needed.'
+    ),
 });
 
 export const clientIdSchema = siteInputSchema.extend({

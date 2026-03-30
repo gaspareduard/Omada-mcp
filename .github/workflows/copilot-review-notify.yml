@@ -1,0 +1,30 @@
+name: Notify Krennic on Copilot review
+
+on:
+  pull_request_review:
+    types: [submitted]
+
+jobs:
+  notify:
+    if: ${{ contains(github.event.review.user.login, 'copilot') }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Notify Krennic via OpenClaw hooks
+        run: |
+          PR_NUMBER="${{ github.event.pull_request.number }}"
+          PR_TITLE="${{ github.event.pull_request.title }}"
+          PR_URL="${{ github.event.pull_request.html_url }}"
+          REVIEW_STATE="${{ github.event.review.state }}"
+
+          PAYLOAD=$(jq -n \
+            --arg agentId "krennic" \
+            --arg message "Copilot just reviewed PR #${PR_NUMBER} (${PR_TITLE}). Review state: ${REVIEW_STATE}. URL: ${PR_URL}. Notify the team in one sentence." \
+            --argjson deliver true \
+            --arg channel "discord" \
+            --arg to "1487419813788651562" \
+            '{agentId: $agentId, message: $message, deliver: $deliver, channel: $channel, to: $to}')
+
+          curl -sf -X POST "${{ secrets.OPENCLAW_GATEWAY_URL }}/hooks/agent" \
+            -H "Authorization: Bearer ${{ secrets.OPENCLAW_HOOKS_TOKEN }}" \
+            -H "Content-Type: application/json" \
+            -d "$PAYLOAD"

@@ -143,7 +143,7 @@ describe('OmadaClient aggregator', () => {
         await expect(client.listClientsPastConnections({} as never)).resolves.toEqual([{ id: 'past' }]);
         await expect(client.getThreatList({} as never)).resolves.toEqual({ data: [] });
         await expect(client.getInternetInfo('s1')).resolves.toEqual({ wan: 'ok' });
-        await expect(client.getPortForwardingStatus('User')).resolves.toEqual({ totalRows: 1 });
+        await expect(client.getPortForwardingStatus('user')).resolves.toEqual({ totalRows: 1 });
         await expect(client.getLanNetworkList('s1')).resolves.toEqual([{ id: 'lan' }]);
         await expect(client.getLanProfileList('s1')).resolves.toEqual([{ id: 'profile' }]);
         await expect(client.getWlanGroupList('s1')).resolves.toEqual([{ id: 'wlan' }]);
@@ -155,7 +155,7 @@ describe('OmadaClient aggregator', () => {
         expect(siteModule.instance.listSites).toHaveBeenCalled();
         expect(deviceModule.instance.listDevices).toHaveBeenCalledWith('s1', undefined);
         expect(clientModule.instance.listClients).toHaveBeenCalledWith('s1', undefined);
-        expect(networkModule.instance.getPortForwardingStatus).toHaveBeenCalledWith('User', undefined, 1, 10, undefined);
+        expect(networkModule.instance.getPortForwardingStatus).toHaveBeenCalledWith('user', undefined, 1, 10, undefined);
         expect(requestModule.instance.request).toHaveBeenCalledWith({ url: '/path' }, true, undefined);
     });
 });

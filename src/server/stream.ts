@@ -82,7 +82,7 @@ function getSessionIdFromHeaders(req: IncomingMessage): string | undefined {
  */
 export function createStreamTransport(client: OmadaClient, config: EnvironmentConfig, hooks?: StreamLifecycleHooks): StreamTransportState {
     const mcpServer = createServer();
-    registerAllTools(mcpServer, client);
+    registerAllTools(mcpServer, client, config.toolCategories);
 
     logger.info('Starting Streamable HTTP transport; Mcp-Session-Id headers are optional in client-credentials mode');
 

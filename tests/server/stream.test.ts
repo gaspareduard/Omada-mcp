@@ -1,11 +1,12 @@
 import type { IncomingMessage, ServerResponse } from 'node:http';
 import { StreamableHTTPServerTransport } from '@modelcontextprotocol/sdk/server/streamableHttp.js';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import type { EnvironmentConfig } from '../../src/config.js';
+import type { EnvironmentConfig, ToolCategory, ToolPermission } from '../../src/config.js';
 import type { OmadaClient } from '../../src/omadaClient/index.js';
 import { createServer } from '../../src/server/common.js';
 import type { StreamTransportState } from '../../src/server/stream.js';
 import { closeAllStreamSessions, createStreamTransport, handleStreamRequest } from '../../src/server/stream.js';
+import { registerAllTools } from '../../src/tools/index.js';
 import { logger } from '../../src/utils/logger.js';
 
 vi.mock('../../src/omadaClient/index.js', () => ({
@@ -105,6 +106,8 @@ describe('Stream Server', () => {
             httpNgrokEnabled: false,
             logLevel: 'info',
             logFormat: 'plain',
+            toolCategories: new Map(),
+            startupWarnings: [],
         } as EnvironmentConfig;
 
         streamSessions = new Map();
@@ -213,6 +216,13 @@ describe('Stream Server', () => {
             expect(sessionId1).toBeDefined();
             expect(sessionId2).toBeDefined();
             expect(sessionId1).not.toBe(sessionId2);
+        });
+
+        it('should pass toolCategories from config to registerAllTools', () => {
+            const toolCategories = new Map<ToolCategory, Set<ToolPermission>>([['dashboard' as ToolCategory, new Set<ToolPermission>(['read'])]]);
+            const configWithCategories = { ...mockConfig, toolCategories };
+            createStreamTransport(mockClient, configWithCategories);
+            expect(vi.mocked(registerAllTools)).toHaveBeenCalledWith(expect.anything(), expect.anything(), toolCategories);
         });
     });
 

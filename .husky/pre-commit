@@ -1,0 +1,30 @@
+#!/usr/bin/env bash
+# Verify AI instruction symlinks are intact before committing.
+# These symlinks point all AI agents (Codex, Copilot, Claude Code) to CLAUDE.md.
+
+FAIL=0
+LINKS=(
+  "AGENTS.md"
+  ".github/copilot-instructions.md"
+  ".github/AGENTS.md"
+)
+
+for link in "${LINKS[@]}"; do
+  if [ ! -L "$link" ]; then
+    echo "❌ pre-commit: $link is missing or not a symlink"
+    FAIL=1
+  else
+    resolved=$(realpath "$link" 2>/dev/null || true)
+    if [ ! -f "$resolved" ]; then
+      target=$(readlink "$link")
+      echo "❌ pre-commit: $link -> $target (broken — target does not exist)"
+      FAIL=1
+    fi
+  fi
+done
+
+if [ $FAIL -ne 0 ]; then
+  echo ""
+  echo "Fix: run 'npm run symlinks:fix' to recreate the symlinks."
+  exit 1
+fi

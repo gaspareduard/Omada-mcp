@@ -67,15 +67,82 @@ Reference `.env.example`. Primary variables:
 
 ## Testing
 
+### Unit Tests
+
 - The project uses **Vitest** as the test framework.
 - All test files should be placed in the `tests/` directory with the `.test.ts` extension.
-- The test folder structure **must mirror** the `src/` folder structure for consistency and maintainability.
+- The test folder structure **must mirror** the `src/` folder structure with strict 1:1 file matching.
+  - Example: `src/tools/getClientDetail.ts` → `tests/tools/getClientDetail.test.ts`
+  - Every `src/tools/<name>.ts` (except `index.ts` and `types.ts`) must have a matching `tests/tools/<name>.test.ts`.
+  - Every `src/omadaClient/<name>.ts` (except `index.ts`) must have a matching `tests/omadaClient/<name>.test.ts`.
+  - CI enforces this via `scripts/check-tool-tests.mjs` on every PR.
 - Run tests with `npm test` or `npm run test:watch` for watch mode.
-- Test coverage can be generated with `npm run test:coverage`. The coverage needs to be above 80% on Lines, Branches, Functions, and Statements for the entire project. Focus on covering edge cases and error handling. Always validate after making changes.
+- Test coverage can be generated with `npm run test:coverage`.
 - All configuration validations must be implemented in `src/utils/config-validations.ts` and tested thoroughly.
 - No validation logic should exist outside of `src/config.ts` and `src/utils/config-validations.ts`.
 - Mock external dependencies (e.g., Omada API calls) in tests to ensure isolation. Use Vitest's mocking capabilities for this purpose.
-- Keep the coverage above 90% for all source files. Focus on covering edge cases and error handling. Always validate after making changes.
+
+### Coverage Thresholds
+
+Coverage is enforced at two levels:
+
+| Level | Metric | Threshold |
+|-------|--------|-----------|
+| Per-file | Lines, Statements, Functions | **90%** |
+| Global | Branches | **70%** |
+
+- Per-file thresholds are enforced by Vitest (`vitest.config.ts` — `thresholds.perFile: true`).
+- Global branch coverage is enforced by a dedicated CI step reading `coverage-summary.json`.
+- The following files are excluded from coverage reporting (infrastructure/bootstrap code):
+  - `src/omadaClient/index.ts`
+  - `src/server/http.ts`
+  - `src/server/stream.ts`
+  - `src/omadaClient/request.ts`
+- Focus on meaningful coverage — edge cases, error handling, optional params — not just line-hitting.
+
+### Integration Tests (Docker)
+
+> **Not implemented yet** — this section documents the planned integration testing strategy tracked in **#58** (v1.0.0 Docker infra).
+
+Integration tests will run against a real Omada Software Controller in a Docker container. They are **not** planned to run on every PR — they serve as a milestone release gate and a harness for Phase 2 (write tools).
+
+Planned components:
+- `tests/integration/`
+- `npm run test:integration`
+- `test/docker/` + `test/docker/README.md`
+- CI workflow `integration-tests.yml` (on demand or nightly; not per-PR)
+
+**Phase 2 write tools MUST be tested against the Docker controller — never against `omada.miguel.ms` or any production controller.**
+
+## AI Instruction Files
+
+This repo exposes a single source of truth for AI agent instructions: **`CLAUDE.md`** (this file).
+
+Three symlinks point to it so every AI agent picks it up automatically:
+
+| Symlink | Used by |
+|---|---|
+| `AGENTS.md` | Codex / OpenAI agents |
+| `.github/copilot-instructions.md` | GitHub Copilot |
+| `.github/AGENTS.md` | Codex (alternate location) |
+
+### Keeping symlinks intact
+
+Symlink integrity is enforced at three levels:
+
+1. **husky pre-commit hook** (`.husky/pre-commit`) — blocks any local commit if a symlink is missing or broken.
+2. **PR CI check** (`.github/workflows/pull-requests.yml`) — fails the PR if symlinks are gone.
+3. **Push CI check** (`.github/workflows/integrity.yml`) — fires on every direct push to `develop`/`main`.
+
+**If symlinks are ever lost**, recreate them with:
+
+```bash
+npm run symlinks:fix
+git add AGENTS.md .github/copilot-instructions.md .github/AGENTS.md
+git commit -m "chore: restore AI instruction symlinks"
+```
+
+> **Never replace these symlinks with copies of the file.** A copy will drift out of sync. Always keep them as symlinks.
 
 ## Development Workflow
 
@@ -93,13 +160,25 @@ Reference `.env.example`. Primary variables:
 - **IMPORTANT** All source files must use LF (Unix-style) line endings, not CRLF (Windows-style). Biome will automatically convert line endings when running `npm run format`.
 - If you encounter formatting errors related to line endings (shown as `␍` in error messages), run `npm run format` to fix them automatically.
 
+## API Validation Before Implementation (MANDATORY)
+
+Before implementing any new tool, the following rules apply:
+
+1. **Verify the endpoint exists** — check `docs/openapi/` to confirm the API route is documented before writing any code.
+2. **Use `OMADA_TOOLS.md` as ground truth** — every tool in that file has a verified route. If a tool is listed there with a route, you can implement it.
+3. **If not in `OMADA_TOOLS.md` and not in `docs/openapi/`** — do NOT implement it. Instead, raise a GitHub issue or add a comment to the existing issue noting the missing endpoint, and skip the tool.
+4. **Never infer or guess API routes** — only implement against verified spec paths.
+5. **When fixing route mismatches** — always check `docs/openapi/` for the correct path. Do not assume the current code is correct.
+
 ## Contribution Guidelines
 
 - Keep environment secrets out of the repo; only commit `.env.example`.
 - **Before every commit**, all of the following must pass:
-  1. `npm run lint` — Biome lint and import ordering
+  0. **API route verification** — every new tool's route must exist in `docs/openapi/` or `OMADA_TOOLS.md`. Run: `grep -c "your-route" docs/openapi/*.json` to confirm.
+  1. `npm run check` — Biome lint + TypeScript type check
   2. `npm run build` — TypeScript compilation
-  3. `npm test` — full test suite
+  3. **`npm run test:coverage`** — full test suite **with coverage enforcement**. This is mandatory — NOT `npm test`. Per-file thresholds (90% lines/statements/functions) are only enforced by `test:coverage`. If any file fails its threshold, add tests before committing.
+  4. `npm run symlinks:check` — AI instruction symlinks intact (auto-enforced by husky pre-commit)
 - If any of the above fail, fix the issues first, then commit.
 - Reference the OpenAPI spec in `docs/` when adding or updating Omada API interactions.
 
@@ -126,7 +205,7 @@ This project follows **GitFlow** strictly. Every change must go through the corr
 3. **One concern per branch.** Each branch addresses a single feature, fix, release, or hotfix.
 4. **All pull requests target `develop`** (or `main` for hotfixes/releases). Direct pushes to `develop` or `main` are not allowed.
 5. **Ensure `npm run lint` and `npm run build` pass** before opening a pull request.
-6. **Ensure test coverage stays above 90%** before merging (run `npm run test:coverage`).
+6. **Ensure test coverage stays above 90%** before merging. Run `npm run test:coverage` — not `npm test` — to verify per-file thresholds pass locally before pushing.
 7. **Keep branch names lowercase and hyphenated** — e.g., `feature/add-site-list`, `fix/ssl-timeout`.
 
 ### Typical Feature Flow
@@ -168,6 +247,38 @@ git push -u origin hotfix/<short-description>
 - The HTTP server uses the **Streamable HTTP** transport (MCP protocol version 2025-03-26) with a single endpoint for all operations.
 - DNS rebinding protection is implemented via origin validation and bind address restrictions for security.
 - Always reuse the pagination schema in `src/utils/pagination-schema.ts` when implementing list operations that support pagination.
+
+## Deprecated Tool Convention
+
+When a tool is marked as deprecated (alias of another tool):
+
+1. **Use the `[DEPRECATED]` prefix** in the tool description string — this is the repo convention. See `src/tools/getRFScanResult.ts` for the canonical format. Do NOT use bare words like "DEPRECATED" or "Deprecated" without the brackets.
+2. **README.md and README.Docker.md must match the code** — if the tool description says `[DEPRECATED]`, the corresponding row in both tool tables must also reflect that (add the deprecated/alias note to the description column). Never leave a deprecated tool listed as a normal tool in the docs.
+3. **Both READMEs must be updated in the same commit** as the tool description change — never defer doc alignment to a follow-up.
+
+## Test Coverage — Mandatory Rules
+
+### When you add methods to an existing file, extend its test file
+
+If you add methods to any existing `src/omadaClient/*.ts` or `src/tools/*.ts` file, you **must** add corresponding tests to its matching test file in `tests/`. This is not optional.
+
+- Extended `src/omadaClient/site.ts`? Update `tests/omadaClient/site.test.ts`.
+- Added `src/tools/getFoo.ts`? Create `tests/tools/getFoo.test.ts`.
+
+Per-file coverage is enforced at **90%** (lines, statements, functions). The CI `test:coverage` step will fail if any file drops below threshold. Do not wait for CI to catch missing tests — run `npm run test:coverage` locally before every commit.
+
+### Never use `npm test` as the pre-commit check
+
+`npm test` runs without coverage enforcement. Use **`npm run test:coverage`** — it's the same tests plus per-file threshold validation. A passing `npm test` does not guarantee CI will pass.
+
+## Avoid Duplicate Endpoint Implementations
+
+Before adding a new method to any `*Operations` class (`NetworkOperations`, `DeviceOperations`, etc.):
+
+1. **Search the entire `src/omadaClient/` directory** for the target API path — the endpoint may already be implemented in a different Operations class.
+2. **If a matching method already exists elsewhere**, delegate to it rather than re-implementing the request. Add a wrapper method that calls the existing one.
+3. **Check `OmadaClient` (`src/omadaClient/index.ts`)** to see what is already publicly exposed — if the public API already covers the endpoint, do not add a duplicate private implementation.
+4. Duplication across Operations classes causes inconsistent validation, diverging behaviour, and dead code — Copilot and reviewers will flag it every time.
 
 ## Documentation Synchronization
 

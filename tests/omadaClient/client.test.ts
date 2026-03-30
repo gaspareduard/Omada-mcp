@@ -657,4 +657,96 @@ describe('omadaClient/client', () => {
             );
         });
     });
+
+    describe('getClientDetail', () => {
+        it('should return client detail by MAC', async () => {
+            const mockData = { mac: 'AA:BB:CC:DD:EE:FF', ip: '10.0.0.5' };
+            const mockResponse: OmadaApiResponse<unknown> = { errorCode: 0, result: mockData };
+            (mockRequest.get as ReturnType<typeof vi.fn>).mockResolvedValue(mockResponse);
+            (mockRequest.ensureSuccess as ReturnType<typeof vi.fn>).mockReturnValue(mockData);
+
+            const result = await clientOps.getClientDetail('AA:BB:CC:DD:EE:FF', 'test-site');
+
+            expect(mockRequest.get).toHaveBeenCalledWith('/api/sites/test-site/clients/AA%3ABB%3ACC%3ADD%3AEE%3AFF', undefined, undefined);
+            expect(result).toEqual(mockData);
+        });
+    });
+
+    describe('getGridKnownClients', () => {
+        it('should return paginated known clients', async () => {
+            const mockData = { data: [], totalRows: 0 };
+            const mockResponse: OmadaApiResponse<unknown> = { errorCode: 0, result: mockData };
+            (mockRequest.get as ReturnType<typeof vi.fn>).mockResolvedValue(mockResponse);
+            (mockRequest.ensureSuccess as ReturnType<typeof vi.fn>).mockReturnValue(mockData);
+
+            const result = await clientOps.getGridKnownClients(1, 10, {}, 'test-site');
+
+            expect(mockRequest.get).toHaveBeenCalledWith('/api/sites/test-site/insight/clients', { page: 1, pageSize: 10 }, undefined);
+            expect(result).toEqual(mockData);
+        });
+
+        it('should include optional filters', async () => {
+            const mockResponse: OmadaApiResponse<unknown> = { errorCode: 0, result: {} };
+            (mockRequest.get as ReturnType<typeof vi.fn>).mockResolvedValue(mockResponse);
+            (mockRequest.ensureSuccess as ReturnType<typeof vi.fn>).mockReturnValue({});
+
+            await clientOps.getGridKnownClients(1, 10, { searchKey: 'phone', guest: 'false' }, 'test-site');
+
+            expect(mockRequest.get).toHaveBeenCalledWith(
+                '/api/sites/test-site/insight/clients',
+                expect.objectContaining({ searchKey: 'phone', 'filters.guest': 'false' }),
+                undefined
+            );
+        });
+    });
+
+    describe('getGridClientHistory', () => {
+        it('should return paginated client history', async () => {
+            const mockData = { data: [], totalRows: 0 };
+            const mockResponse: OmadaApiResponse<unknown> = { errorCode: 0, result: mockData };
+            (mockRequest.get as ReturnType<typeof vi.fn>).mockResolvedValue(mockResponse);
+            (mockRequest.ensureSuccess as ReturnType<typeof vi.fn>).mockReturnValue(mockData);
+
+            const result = await clientOps.getGridClientHistory('BB:CC:DD:EE:FF:00', 1, 10, undefined, 'test-site');
+
+            expect(mockRequest.get).toHaveBeenCalledWith(
+                '/api/sites/test-site/clients/BB%3ACC%3ADD%3AEE%3AFF%3A00/client-history',
+                { page: 1, pageSize: 10 },
+                undefined
+            );
+            expect(result).toEqual(mockData);
+        });
+    });
+
+    describe('getClientsDistribution', () => {
+        it('should return client distribution', async () => {
+            const mockData = { wired: 5, wireless24: 10, wireless5: 8 };
+            const mockResponse: OmadaApiResponse<unknown> = { errorCode: 0, result: mockData };
+            (mockRequest.get as ReturnType<typeof vi.fn>).mockResolvedValue(mockResponse);
+            (mockRequest.ensureSuccess as ReturnType<typeof vi.fn>).mockReturnValue(mockData);
+
+            const result = await clientOps.getClientsDistribution('test-site');
+
+            expect(mockRequest.get).toHaveBeenCalledWith('/api/sites/test-site/dashboard/client-distribution', undefined, undefined);
+            expect(result).toEqual(mockData);
+        });
+    });
+
+    describe('getPastClientNum', () => {
+        it('should return past client count trend', async () => {
+            const mockData = [{ time: 1700000000, count: 15 }];
+            const mockResponse: OmadaApiResponse<unknown> = { errorCode: 0, result: mockData };
+            (mockRequest.get as ReturnType<typeof vi.fn>).mockResolvedValue(mockResponse);
+            (mockRequest.ensureSuccess as ReturnType<typeof vi.fn>).mockReturnValue(mockData);
+
+            const result = await clientOps.getPastClientNum(1700000000, 1700086400, 'test-site');
+
+            expect(mockRequest.get).toHaveBeenCalledWith(
+                '/api/sites/test-site/dashboard/past-client-num',
+                { start: 1700000000, end: 1700086400 },
+                undefined
+            );
+            expect(result).toEqual(mockData);
+        });
+    });
 });

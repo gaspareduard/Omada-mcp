@@ -65,18 +65,12 @@ describe('getPortForwardingStatus Tool', () => {
 
         const toolData = mockServer.getRegisteredTool('getPortForwardingStatus');
         if (!toolData) throw new Error('Tool not registered');
-        const handler = toolData.handler;
 
-        const result = await handler({ type: 'User', siteId: 'test-site', page: 1, pageSize: 10 }, { sessionId: 'test-session' });
+        const result = await toolData.handler({ type: 'User', siteId: 'test-site', page: 1, pageSize: 10 }, { sessionId: 'test-session' });
 
-        expect(mockClient.getPortForwardingStatus).toHaveBeenCalledWith('User', 'test-site', 1, 10, undefined);
+        expect(mockClient.getPortForwardingStatus).toHaveBeenCalledWith('user', 'test-site', 1, 10, undefined);
         expect(result).toEqual({
-            content: [
-                {
-                    type: 'text',
-                    text: JSON.stringify(mockResponse, null, 2),
-                },
-            ],
+            content: [{ type: 'text', text: JSON.stringify(mockResponse, null, 2) }],
         });
     });
 
@@ -100,88 +94,150 @@ describe('getPortForwardingStatus Tool', () => {
 
         const toolData = mockServer.getRegisteredTool('getPortForwardingStatus');
         if (!toolData) throw new Error('Tool not registered');
-        const handler = toolData.handler;
 
-        const result = await handler({ type: 'UPnP', siteId: 'test-site', page: 1, pageSize: 10 }, { sessionId: 'test-session' });
+        const result = await toolData.handler({ type: 'UPnP', siteId: 'test-site', page: 1, pageSize: 10 }, { sessionId: 'test-session' });
 
-        expect(mockClient.getPortForwardingStatus).toHaveBeenCalledWith('UPnP', 'test-site', 1, 10, undefined);
+        expect(mockClient.getPortForwardingStatus).toHaveBeenCalledWith('upnp', 'test-site', 1, 10, undefined);
         expect(result).toEqual({
-            content: [
-                {
-                    type: 'text',
-                    text: JSON.stringify(mockResponse, null, 2),
-                },
-            ],
+            content: [{ type: 'text', text: JSON.stringify(mockResponse, null, 2) }],
         });
+    });
+
+    it('should normalise type "user" (lowercase) to "User"', async () => {
+        const mockClient = createMockClient();
+        const mockServer = createMockServer();
+
+        vi.mocked(mockClient.getPortForwardingStatus).mockResolvedValue({
+            totalRows: 0,
+            currentPage: 1,
+            currentSize: 10,
+            data: [],
+        });
+
+        registerGetPortForwardingStatusTool(mockServer, mockClient);
+
+        const toolData = mockServer.getRegisteredTool('getPortForwardingStatus');
+        if (!toolData) throw new Error('Tool not registered');
+
+        await toolData.handler({ type: 'user', siteId: 'test-site' }, { sessionId: 'test-session' });
+
+        expect(mockClient.getPortForwardingStatus).toHaveBeenCalledWith('user', 'test-site', 1, 10, undefined);
+    });
+
+    it('should normalise type "upnp" (lowercase) to "UPnP"', async () => {
+        const mockClient = createMockClient();
+        const mockServer = createMockServer();
+
+        vi.mocked(mockClient.getPortForwardingStatus).mockResolvedValue({
+            totalRows: 0,
+            currentPage: 1,
+            currentSize: 10,
+            data: [],
+        });
+
+        registerGetPortForwardingStatusTool(mockServer, mockClient);
+
+        const toolData = mockServer.getRegisteredTool('getPortForwardingStatus');
+        if (!toolData) throw new Error('Tool not registered');
+
+        await toolData.handler({ type: 'upnp', siteId: 'test-site' }, { sessionId: 'test-session' });
+
+        expect(mockClient.getPortForwardingStatus).toHaveBeenCalledWith('upnp', 'test-site', 1, 10, undefined);
+    });
+
+    it('should normalise type "UPNP" (uppercase) to "UPnP"', async () => {
+        const mockClient = createMockClient();
+        const mockServer = createMockServer();
+
+        vi.mocked(mockClient.getPortForwardingStatus).mockResolvedValue({
+            totalRows: 0,
+            currentPage: 1,
+            currentSize: 10,
+            data: [],
+        });
+
+        registerGetPortForwardingStatusTool(mockServer, mockClient);
+
+        const toolData = mockServer.getRegisteredTool('getPortForwardingStatus');
+        if (!toolData) throw new Error('Tool not registered');
+
+        await toolData.handler({ type: 'UPNP', siteId: 'test-site' }, { sessionId: 'test-session' });
+
+        expect(mockClient.getPortForwardingStatus).toHaveBeenCalledWith('upnp', 'test-site', 1, 10, undefined);
+    });
+
+    it('should return an error result for invalid type values', async () => {
+        const mockClient = createMockClient();
+        const mockServer = createMockServer();
+
+        registerGetPortForwardingStatusTool(mockServer, mockClient);
+
+        const toolData = mockServer.getRegisteredTool('getPortForwardingStatus');
+        if (!toolData) throw new Error('Tool not registered');
+
+        const result = await toolData.handler({ type: 'invalid', siteId: 'test-site' }, { sessionId: 'test-session' });
+
+        expect(result).toMatchObject({ isError: true });
+        expect(mockClient.getPortForwardingStatus).not.toHaveBeenCalled();
     });
 
     it('should use default pagination values when not provided', async () => {
         const mockClient = createMockClient();
         const mockServer = createMockServer();
 
-        const mockResponse: PaginatedResult<unknown> = {
+        vi.mocked(mockClient.getPortForwardingStatus).mockResolvedValue({
             totalRows: 0,
             currentPage: 1,
             currentSize: 10,
             data: [],
-        };
-
-        vi.mocked(mockClient.getPortForwardingStatus).mockResolvedValue(mockResponse);
+        });
 
         registerGetPortForwardingStatusTool(mockServer, mockClient);
 
         const toolData = mockServer.getRegisteredTool('getPortForwardingStatus');
         if (!toolData) throw new Error('Tool not registered');
-        const handler = toolData.handler;
 
-        const result = await handler({ type: 'User', siteId: 'test-site' }, { sessionId: 'test-session' });
+        await toolData.handler({ type: 'User', siteId: 'test-site' }, { sessionId: 'test-session' });
 
-        expect(mockClient.getPortForwardingStatus).toHaveBeenCalledWith('User', 'test-site', 1, 10, undefined);
-        expect(result).toBeDefined();
+        expect(mockClient.getPortForwardingStatus).toHaveBeenCalledWith('user', 'test-site', 1, 10, undefined);
     });
 
     it('should handle custom pagination parameters', async () => {
         const mockClient = createMockClient();
         const mockServer = createMockServer();
 
-        const mockResponse: PaginatedResult<unknown> = {
+        vi.mocked(mockClient.getPortForwardingStatus).mockResolvedValue({
             totalRows: 100,
             currentPage: 2,
             currentSize: 50,
             data: [],
-        };
-
-        vi.mocked(mockClient.getPortForwardingStatus).mockResolvedValue(mockResponse);
+        });
 
         registerGetPortForwardingStatusTool(mockServer, mockClient);
 
         const toolData = mockServer.getRegisteredTool('getPortForwardingStatus');
         if (!toolData) throw new Error('Tool not registered');
-        const handler = toolData.handler;
 
-        const result = await handler({ type: 'User', siteId: 'test-site', page: 2, pageSize: 50 }, { sessionId: 'test-session' });
+        await toolData.handler({ type: 'User', siteId: 'test-site', page: 2, pageSize: 50 }, { sessionId: 'test-session' });
 
-        expect(mockClient.getPortForwardingStatus).toHaveBeenCalledWith('User', 'test-site', 2, 50, undefined);
-        expect(result).toBeDefined();
+        expect(mockClient.getPortForwardingStatus).toHaveBeenCalledWith('user', 'test-site', 2, 50, undefined);
     });
 
     it('should propagate errors from the client', async () => {
         const mockClient = createMockClient();
         const mockServer = createMockServer();
 
-        const mockError = new Error('API error: Invalid request parameters');
-        vi.mocked(mockClient.getPortForwardingStatus).mockRejectedValue(mockError);
+        vi.mocked(mockClient.getPortForwardingStatus).mockRejectedValue(new Error('API error: Invalid request parameters'));
 
         registerGetPortForwardingStatusTool(mockServer, mockClient);
 
         const toolData = mockServer.getRegisteredTool('getPortForwardingStatus');
         if (!toolData) throw new Error('Tool not registered');
-        const handler = toolData.handler;
 
-        await expect(handler({ type: 'User', siteId: 'test-site', page: 1, pageSize: 10 }, { sessionId: 'test-session' })).rejects.toThrow(
+        await expect(toolData.handler({ type: 'User', siteId: 'test-site', page: 1, pageSize: 10 }, { sessionId: 'test-session' })).rejects.toThrow(
             'API error: Invalid request parameters'
         );
 
-        expect(mockClient.getPortForwardingStatus).toHaveBeenCalledWith('User', 'test-site', 1, 10, undefined);
+        expect(mockClient.getPortForwardingStatus).toHaveBeenCalledWith('user', 'test-site', 1, 10, undefined);
     });
 });

@@ -250,4 +250,80 @@ export class ClientOperations {
         );
         return this.request.ensureSuccess(response);
     }
+
+    /**
+     * Get full detail for a single client by MAC address.
+     * OperationId: getClientDetail
+     */
+    public async getClientDetail(clientMac: string, siteId?: string, customHeaders?: CustomHeaders): Promise<unknown> {
+        const resolvedSiteId = this.site.resolveSiteId(siteId);
+        const path = this.buildPath(`/sites/${encodeURIComponent(resolvedSiteId)}/clients/${encodeURIComponent(clientMac)}`);
+        const response = await this.request.get<OmadaApiResponse<unknown>>(path, undefined, customHeaders);
+        return this.request.ensureSuccess(response);
+    }
+
+    /**
+     * Get historical known clients list (paginated).
+     * OperationId: getGridKnownClients
+     */
+    public async getGridKnownClients(
+        page: number,
+        pageSize: number,
+        options?: { sortLastSeen?: string; timeStart?: string; timeEnd?: string; guest?: string; searchKey?: string },
+        siteId?: string,
+        customHeaders?: CustomHeaders
+    ): Promise<unknown> {
+        const resolvedSiteId = this.site.resolveSiteId(siteId);
+        const path = this.buildPath(`/sites/${encodeURIComponent(resolvedSiteId)}/insight/clients`);
+        const params: Record<string, unknown> = { page, pageSize };
+        if (options?.sortLastSeen !== undefined) params['sorts.lastSeen'] = options.sortLastSeen;
+        if (options?.timeStart !== undefined) params['filters.timeStart'] = options.timeStart;
+        if (options?.timeEnd !== undefined) params['filters.timeEnd'] = options.timeEnd;
+        if (options?.guest !== undefined) params['filters.guest'] = options.guest;
+        if (options?.searchKey !== undefined) params.searchKey = options.searchKey;
+        const response = await this.request.get<OmadaApiResponse<unknown>>(path, params, customHeaders);
+        return this.request.ensureSuccess(response);
+    }
+
+    /**
+     * Get per-client connection history (paginated).
+     * OperationId: getGridClientHistory
+     */
+    public async getGridClientHistory(
+        clientMac: string,
+        page: number,
+        pageSize: number,
+        searchKey?: string,
+        siteId?: string,
+        customHeaders?: CustomHeaders
+    ): Promise<unknown> {
+        const resolvedSiteId = this.site.resolveSiteId(siteId);
+        const path = this.buildPath(`/sites/${encodeURIComponent(resolvedSiteId)}/clients/${encodeURIComponent(clientMac)}/client-history`);
+        const params: Record<string, unknown> = { page, pageSize };
+        if (searchKey !== undefined) params.searchKey = searchKey;
+        const response = await this.request.get<OmadaApiResponse<unknown>>(path, params, customHeaders);
+        return this.request.ensureSuccess(response);
+    }
+
+    /**
+     * Get client count distribution by type/band.
+     * OperationId: getClientsDistribution
+     */
+    public async getClientsDistribution(siteId?: string, customHeaders?: CustomHeaders): Promise<unknown> {
+        const resolvedSiteId = this.site.resolveSiteId(siteId);
+        const path = this.buildPath(`/sites/${encodeURIComponent(resolvedSiteId)}/dashboard/client-distribution`);
+        const response = await this.request.get<OmadaApiResponse<unknown>>(path, undefined, customHeaders);
+        return this.request.ensureSuccess(response);
+    }
+
+    /**
+     * Get historical client count trend over a time range.
+     * OperationId: getPastClientNum
+     */
+    public async getPastClientNum(start: number, end: number, siteId?: string, customHeaders?: CustomHeaders): Promise<unknown> {
+        const resolvedSiteId = this.site.resolveSiteId(siteId);
+        const path = this.buildPath(`/sites/${encodeURIComponent(resolvedSiteId)}/dashboard/past-client-num`);
+        const response = await this.request.get<OmadaApiResponse<unknown>>(path, { start, end }, customHeaders);
+        return this.request.ensureSuccess(response);
+    }
 }
