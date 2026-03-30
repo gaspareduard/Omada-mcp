@@ -21,7 +21,7 @@ jobs:
             -H "Content-Type: application/json" \
             -d "{
               \"agentId\": \"krennic\",
-              \"message\": \"🤖 Copilot review on PR #${PR_NUMBER}: **${PR_TITLE}**\\nState: \`${REVIEW_STATE}\`\\n${PR_URL}\\n\\nNew review threads to resolve.\",
+              \"message\": \"Copilot just reviewed PR #${PR_NUMBER} (${PR_TITLE}). Review state: ${REVIEW_STATE}. URL: ${PR_URL}. Notify the team in one sentence.\",
               \"deliver\": true,
               \"channel\": \"discord\",
               \"to\": \"1487419813788651562\"
