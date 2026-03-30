@@ -8,11 +8,17 @@ import { registerGetAccessControlTool } from './getAccessControl.js';
 import { registerGetAclConfigTypeSettingTool } from './getAclConfigTypeSetting.js';
 import { registerGetAdvancedVpnSettingTool } from './getAdvancedVpnSetting.js';
 import { registerGetAlgTool } from './getAlg.js';
+import { registerGetAllCloudUsersTool } from './getAllCloudUsers.js';
 import { registerGetAllDeviceBySiteTool } from './getAllDeviceBySite.js';
+import { registerGetAllLocalUsersTool } from './getAllLocalUsers.js';
+import { registerGetAllRolesTool } from './getAllRoles.js';
+import { registerGetAllUsersAppTool } from './getAllUsersApp.js';
 import { registerGetApDetailTool } from './getApDetail.js';
 import { registerGetApGeneralConfigTool } from './getApGeneralConfig.js';
 import { registerGetApIpv6ConfigTool } from './getApIpv6Config.js';
 import { registerGetApLldpConfigTool } from './getApLldpConfig.js';
+import { registerGetApLoadBalanceTool } from './getApLoadBalance.js';
+import { registerGetApOfdmaConfigTool } from './getApOfdmaConfig.js';
 import { registerGetAppControlCategoriesTool } from './getAppControlCategories.js';
 import { registerGetAppControlRulesTool } from './getAppControlRules.js';
 import { registerGetAppGroupProfileTool } from './getAppGroupProfile.js';
@@ -27,6 +33,9 @@ import { registerGetAttackDefenseSettingTool } from './getAttackDefenseSetting.j
 import { registerGetAuditLogSettingForGlobalTool } from './getAuditLogSettingForGlobal.js';
 import { registerGetAuditLogSettingForSiteTool } from './getAuditLogSettingForSite.js';
 import { registerGetAuditLogsForGlobalTool } from './getAuditLogsForGlobal.js';
+import { registerGetAvailableRolesTool } from './getAvailableRoles.js';
+import { registerGetBackupFileListTool } from './getBackupFileList.js';
+import { registerGetBackupResultTool } from './getBackupResult.js';
 import { registerGetBandSteeringSettingTool } from './getBandSteeringSetting.js';
 import { registerGetBandwidthControlTool } from './getBandwidthControl.js';
 import { registerGetBandwidthCtrlTool } from './getBandwidthCtrl.js';
@@ -35,13 +44,18 @@ import { registerGetBeaconControlSettingTool } from './getBeaconControlSetting.j
 import { registerGetBuiltinRadiusUsersTool } from './getBuiltinRadiusUsers.js';
 import { registerGetCableTestFullResultsTool } from './getCableTestFullResults.js';
 import { registerGetCableTestLogsTool } from './getCableTestLogs.js';
+import { registerGetCertificateTool } from './getCertificate.js';
 import { registerGetChannelLimitSettingTool } from './getChannelLimitSetting.js';
 import { registerGetChannelsTool } from './getChannels.js';
 import { registerGetClientTool } from './getClient.js';
 import { registerGetClientActiveTimeoutTool } from './getClientActiveTimeout.js';
 import { registerGetClientDetailTool } from './getClientDetail.js';
+import { registerGetClientHistoryDataEnableTool } from './getClientHistoryDataEnable.js';
 import { registerGetClientsDistributionTool } from './getClientsDistribution.js';
 import { registerGetClientToSiteVpnServerInfoTool } from './getClientToSiteVpnServerInfo.js';
+import { registerGetCloudAccessStatusTool } from './getCloudAccessStatus.js';
+import { registerGetCloudUserInfoTool } from './getCloudUserInfo.js';
+import { registerGetControllerPortTool } from './getControllerPort.js';
 import { registerGetControllerStatusTool } from './getControllerStatus.js';
 import { registerGetDashboardMostActiveEapsTool } from './getDashboardMostActiveEaps.js';
 import { registerGetDashboardMostActiveSwitchesTool } from './getDashboardMostActiveSwitches.js';
@@ -52,6 +66,7 @@ import { registerGetDashboardTopCpuUsageTool } from './getDashboardTopCpuUsage.j
 import { registerGetDashboardTopMemoryUsageTool } from './getDashboardTopMemoryUsage.js';
 import { registerGetDashboardTrafficActivitiesTool } from './getDashboardTrafficActivities.js';
 import { registerGetDashboardWifiSummaryTool } from './getDashboardWifiSummary.js';
+import { registerGetDataRetentionTool } from './getDataRetention.js';
 import { registerGetDdnsGridTool } from './getDdnsGrid.js';
 import { registerGetDeviceTool } from './getDevice.js';
 import { registerGetDeviceAccessManagementTool } from './getDeviceAccessManagement.js';
@@ -65,6 +80,7 @@ import { registerGetDot1xConfigTool } from './getDot1xConfig.js';
 import { registerGetDownlinkWiredDevicesTool } from './getDownlinkWiredDevices.js';
 import { registerGetDscpConfigTool } from './getDscpConfig.js';
 import { registerGetEapDot1xSettingTool } from './getEapDot1xSetting.js';
+import { registerGetExperienceImprovementTool } from './getExperienceImprovement.js';
 import { registerGetFirewallSettingTool } from './getFirewallSetting.js';
 import { registerGetFirmwareInfoTool } from './getFirmwareInfo.js';
 import { registerGetFirmwareUpgradePlanTool } from './getFirmwareUpgradePlan.js';
@@ -74,6 +90,7 @@ import { registerGetGatewayPortsTool } from './getGatewayPorts.js';
 import { registerGetGatewayQosClassRulesTool } from './getGatewayQosClassRules.js';
 import { registerGetGatewayWanStatusTool } from './getGatewayWanStatus.js';
 import { registerGetGeneralSettingsTool } from './getGeneralSettings.js';
+import { registerGetGlobalDashboardOverviewTool } from './getGlobalDashboardOverview.js';
 import { registerGetGlobalSecuritySettingTool } from './getGlobalSecuritySetting.js';
 import { registerGetGoogleLdapProfileTool } from './getGoogleLdapProfile.js';
 import { registerGetGridAllowListTool } from './getGridAllowList.js';
@@ -137,6 +154,8 @@ import { registerGetMacFilteringGeneralSettingTool } from './getMacFilteringGene
 import { registerGetMailServerStatusTool } from './getMailServerStatus.js';
 import { registerGetMeshSettingTool } from './getMeshSetting.js';
 import { registerGetMeshStatisticsTool } from './getMeshStatistics.js';
+import { registerGetMfaStatusTool } from './getMfaStatus.js';
+import { registerGetMulticastRateLimitTool } from './getMulticastRateLimit.js';
 import { registerGetNtpSettingTool } from './getNtpSetting.js';
 import { registerGetOsgCustomAclListTool } from './getOsgCustomAclList.js';
 import { registerGetOspfInterfaceTool } from './getOspfInterface.js';
@@ -146,9 +165,13 @@ import { registerGetOswAclListTool } from './getOswAclList.js';
 import { registerGetOswStackLagListTool } from './getOswStackLagList.js';
 import { registerGetOuiProfileListTool } from './getOuiProfileList.js';
 import { registerGetPastClientNumTool } from './getPastClientNum.js';
+import { registerGetPoeScheduleListTool } from './getPoeScheduleList.js';
+import { registerGetPortalPortTool } from './getPortalPort.js';
 import { registerGetPortalProfileTool } from './getPortalProfile.js';
 import { registerGetPortForwardingListTool } from './getPortForwardingList.js';
 import { registerGetPortForwardingStatusTool } from './getPortForwardingStatus.js';
+import { registerGetPortScheduleListTool } from './getPortScheduleList.js';
+import { registerGetPortSchedulePortsTool } from './getPortSchedulePorts.js';
 import { registerGetPPSKProfilesTool } from './getPPSKProfiles.js';
 import { registerGetPpskNetworkProfileTool } from './getPpskNetworkProfile.js';
 import { registerGetPpskUserGroupTool } from './getPpskUserGroup.js';
@@ -165,18 +188,30 @@ import { registerGetRadiusServerTool } from './getRadiusServer.js';
 import { registerGetRadiusUserDetailTool } from './getRadiusUserDetail.js';
 import { registerGetRadiusUserListTool } from './getRadiusUserList.js';
 import { registerGetRateLimitProfilesTool } from './getRateLimitProfiles.js';
+import { registerGetRebootScheduleListTool } from './getRebootScheduleList.js';
+import { registerGetRemoteBindingStatusTool } from './getRemoteBindingStatus.js';
 import { registerGetRemoteLoggingTool } from './getRemoteLogging.js';
 import { registerGetRemoteLoggingSettingTool } from './getRemoteLoggingSetting.js';
+import { registerGetRestoreResultTool } from './getRestoreResult.js';
 import { registerGetRetentionTool } from './getRetention.js';
 import { registerGetRetryAndDroppedRateTool } from './getRetryAndDroppedRate.js';
 import { registerGetRFScanResultTool } from './getRFScanResult.js';
 import { registerGetRoamingSettingTool } from './getRoamingSetting.js';
 import { registerGetRogueApsTool } from './getRogueAps.js';
+import { registerGetRoleDetailTool } from './getRoleDetail.js';
 import { registerGetRoutingTableTool } from './getRoutingTable.js';
 import { registerGetScheduleProfileTool } from './getScheduleProfile.js';
 import { registerGetServiceProfileTool } from './getServiceProfile.js';
 import { registerGetServiceTypeSummaryTool } from './getServiceTypeSummary.js';
 import { registerGetSessionLimitTool } from './getSessionLimit.js';
+import { registerGetSiteBackupFileListTool } from './getSiteBackupFileList.js';
+import { registerGetSiteBackupResultTool } from './getSiteBackupResult.js';
+import { registerGetSiteCapacityTool } from './getSiteCapacity.js';
+import { registerGetSiteDetailTool } from './getSiteDetail.js';
+import { registerGetSiteDeviceAccountTool } from './getSiteDeviceAccount.js';
+import { registerGetSiteNtpStatusTool } from './getSiteNtpStatus.js';
+import { registerGetSiteRememberSettingTool } from './getSiteRememberSetting.js';
+import { registerGetSiteSpecificationTool } from './getSiteSpecification.js';
 import { registerGetSitesApsAvailableChannelTool } from './getSitesApsAvailableChannel.js';
 import { registerGetSitesApsBridgeTool } from './getSitesApsBridge.js';
 import { registerGetSitesApsChannelLimitTool } from './getSitesApsChannelLimit.js';
@@ -192,7 +227,11 @@ import { registerGetSitesGatewaysSimCardUsedTool } from './getSitesGatewaysSimCa
 import { registerGetSitesHealthGatewaysWansDetailsTool } from './getSitesHealthGatewaysWansDetails.js';
 import { registerGetSitesSwitchesEsTool } from './getSitesSwitchesEs.js';
 import { registerGetSitesSwitchesEsGeneralConfigTool } from './getSitesSwitchesEsGeneralConfig.js';
+import { registerGetSiteTemplateConfigTool } from './getSiteTemplateConfig.js';
+import { registerGetSiteTemplateDetailTool } from './getSiteTemplateDetail.js';
+import { registerGetSiteTemplateListTool } from './getSiteTemplateList.js';
 import { registerGetSiteToSiteVpnInfoTool } from './getSiteToSiteVpnInfo.js';
+import { registerGetSiteUrlTool } from './getSiteUrl.js';
 import { registerGetSnmpSettingTool } from './getSnmpSetting.js';
 import { registerGetSpeedTestResultsTool } from './getSpeedTestResults.js';
 import { registerGetSshSettingTool } from './getSshSetting.js';
@@ -220,6 +259,7 @@ import { registerGetUiInterfaceTool } from './getUiInterface.js';
 import { registerGetUpgradeLogsTool } from './getUpgradeLogs.js';
 import { registerGetUpgradeOverviewCriticalTool } from './getUpgradeOverviewCritical.js';
 import { registerGetUpgradeOverviewTryBetaTool } from './getUpgradeOverviewTryBeta.js';
+import { registerGetUpgradeScheduleListTool } from './getUpgradeScheduleList.js';
 import { registerGetUplinkWiredDetailTool } from './getUplinkWiredDetail.js';
 import { registerGetUpnpSettingTool } from './getUpnpSetting.js';
 import { registerGetUrlFilterBlacklistTool } from './getUrlFilterBlacklist.js';
@@ -305,6 +345,13 @@ interface ToolEntry {
 const TOOL_REGISTRY: ToolEntry[] = [
     // --- Sites ---
     { fn: registerListSitesTool, category: 'sites', permission: 'read' },
+    { fn: registerGetSiteDetailTool, category: 'sites', permission: 'read' },
+    { fn: registerGetSiteUrlTool, category: 'sites', permission: 'read' },
+    { fn: registerGetSiteNtpStatusTool, category: 'sites', permission: 'read' },
+    { fn: registerGetSiteSpecificationTool, category: 'sites', permission: 'read' },
+    { fn: registerGetSiteRememberSettingTool, category: 'sites', permission: 'read' },
+    { fn: registerGetSiteDeviceAccountTool, category: 'sites', permission: 'read' },
+    { fn: registerGetSiteCapacityTool, category: 'sites', permission: 'read' },
 
     // --- Devices (general) ---
     { fn: registerListDevicesTool, category: 'devices-general', permission: 'read' },
@@ -479,6 +526,9 @@ const TOOL_REGISTRY: ToolEntry[] = [
     { fn: registerGetSyslogConfigTool, category: 'network-services', permission: 'read' },
 
     // --- Wireless SSID ---
+    { fn: registerGetMulticastRateLimitTool, category: 'wireless-ssid', permission: 'read' },
+    { fn: registerGetApLoadBalanceTool, category: 'wireless-ssid', permission: 'read' },
+    { fn: registerGetApOfdmaConfigTool, category: 'wireless-ssid', permission: 'read' },
     { fn: registerGetWlanGroupListTool, category: 'wireless-ssid', permission: 'read' },
     { fn: registerGetSsidListTool, category: 'wireless-ssid', permission: 'read' },
     { fn: registerGetSsidDetailTool, category: 'wireless-ssid', permission: 'read' },
@@ -617,6 +667,13 @@ const TOOL_REGISTRY: ToolEntry[] = [
     { fn: registerGetAuditLogsForGlobalTool, category: 'logs', permission: 'read' },
 
     // --- Controller ---
+    { fn: registerGetDataRetentionTool, category: 'controller', permission: 'read' },
+    { fn: registerGetControllerPortTool, category: 'controller', permission: 'read' },
+    { fn: registerGetPortalPortTool, category: 'controller', permission: 'read' },
+    { fn: registerGetCertificateTool, category: 'controller', permission: 'read' },
+    { fn: registerGetExperienceImprovementTool, category: 'controller', permission: 'read' },
+    { fn: registerGetGlobalDashboardOverviewTool, category: 'controller', permission: 'read' },
+    { fn: registerGetClientHistoryDataEnableTool, category: 'controller', permission: 'read' },
     { fn: registerGetControllerStatusTool, category: 'controller', permission: 'read' },
     { fn: registerGetGeneralSettingsTool, category: 'controller', permission: 'read' },
     { fn: registerGetRetentionTool, category: 'controller', permission: 'read' },
@@ -628,6 +685,39 @@ const TOOL_REGISTRY: ToolEntry[] = [
     { fn: registerGetWebhookForGlobalTool, category: 'controller', permission: 'read' },
     { fn: registerGetWebhookLogsForGlobalTool, category: 'controller', permission: 'read' },
     { fn: registerGetMailServerStatusTool, category: 'controller', permission: 'read' },
+
+    // --- Maintenance ---
+    { fn: registerGetBackupFileListTool, category: 'maintenance', permission: 'read' },
+    { fn: registerGetBackupResultTool, category: 'maintenance', permission: 'read' },
+    { fn: registerGetRestoreResultTool, category: 'maintenance', permission: 'read' },
+    { fn: registerGetSiteBackupResultTool, category: 'maintenance', permission: 'read' },
+    { fn: registerGetSiteBackupFileListTool, category: 'maintenance', permission: 'read' },
+
+    // --- Account users ---
+    { fn: registerGetAllCloudUsersTool, category: 'account-users', permission: 'read' },
+    { fn: registerGetAllLocalUsersTool, category: 'account-users', permission: 'read' },
+    { fn: registerGetAllRolesTool, category: 'account-users', permission: 'read' },
+    { fn: registerGetRoleDetailTool, category: 'account-users', permission: 'read' },
+    { fn: registerGetAvailableRolesTool, category: 'account-users', permission: 'read' },
+    { fn: registerGetAllUsersAppTool, category: 'account-users', permission: 'read' },
+
+    // --- Account cloud ---
+    { fn: registerGetCloudAccessStatusTool, category: 'account-cloud', permission: 'read' },
+    { fn: registerGetCloudUserInfoTool, category: 'account-cloud', permission: 'read' },
+    { fn: registerGetMfaStatusTool, category: 'account-cloud', permission: 'read' },
+    { fn: registerGetRemoteBindingStatusTool, category: 'account-cloud', permission: 'read' },
+
+    // --- Schedules ---
+    { fn: registerGetUpgradeScheduleListTool, category: 'schedules', permission: 'read' },
+    { fn: registerGetRebootScheduleListTool, category: 'schedules', permission: 'read' },
+    { fn: registerGetPoeScheduleListTool, category: 'schedules', permission: 'read' },
+    { fn: registerGetPortScheduleListTool, category: 'schedules', permission: 'read' },
+    { fn: registerGetPortSchedulePortsTool, category: 'schedules', permission: 'read' },
+
+    // --- Site templates ---
+    { fn: registerGetSiteTemplateListTool, category: 'sites', permission: 'read' },
+    { fn: registerGetSiteTemplateDetailTool, category: 'sites', permission: 'read' },
+    { fn: registerGetSiteTemplateConfigTool, category: 'sites', permission: 'read' },
 
     // --- Dashboard ---
     { fn: registerGetDashboardWifiSummaryTool, category: 'dashboard', permission: 'read' },

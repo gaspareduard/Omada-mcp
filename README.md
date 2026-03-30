@@ -368,6 +368,16 @@ In client-credentials mode the server already treats `Mcp-Session-Id` as optiona
 | Tool                        | Description                                                                  |
 | --------------------------- | ---------------------------------------------------------------------------- |
 | `listSites` | Lists all sites configured on the controller. |
+| `getSiteCapacity` | Get site capacity settings including maximum device and client counts. |
+| `getSiteDetail` | Get detailed information about a site, including name, region, timezone, and configuration. |
+| `getSiteDeviceAccount` | Get device account settings for a site. |
+| `getSiteNtpStatus` | Get NTP server status and configuration for a site. |
+| `getSiteRememberSetting` | Get the remember device setting for a site. |
+| `getSiteSpecification` | Get site specification including device limits and feature capabilities. |
+| `getSiteUrl` | Get the URL associated with a site for OpenAPI access. |
+| `getSiteTemplateConfig` | Get configuration settings for a site template. Requires `siteTemplateId`. |
+| `getSiteTemplateDetail` | Get detailed information about a site template. Requires `siteTemplateId`. |
+| `getSiteTemplateList` | List all site templates configured on the controller. |
 | `listClients` | Lists active client devices for a site. |
 | `getClient` | Fetches details for a specific client device. |
 | `listMostActiveClients` | Gets the most active clients sorted by traffic usage. |
@@ -469,6 +479,9 @@ In client-credentials mode the server already treats `Mcp-Session-Id` as optiona
 | `getInterfaceLanNetwork` | Gets interface-level LAN network bindings. Optional type filter (0=WAN, 1=LAN). |
 | `getInterfaceLanNetworkV2` | Get interface-level LAN network bindings (v2 API). Returns richer per-interface VLAN and network data. |
 | `getLanProfileList` | Gets the list of LAN profiles configured in a site. |
+| `getApLoadBalance` | Get load balance configuration for an AP. Requires `apMac`. |
+| `getApOfdmaConfig` | Get OFDMA configuration for an AP. Requires `apMac`. |
+| `getMulticastRateLimit` | Get multicast rate limit settings for a site. |
 | `getWlanGroupList` | Gets the list of WLAN groups configured in a site. |
 | `getSsidList` | Gets the list of SSIDs in a WLAN group. |
 | `getSsidDetail` | Gets detailed information for a specific SSID. |
@@ -625,6 +638,53 @@ In client-credentials mode the server already treats `Mcp-Session-Id` as optiona
 | `listSiteAuditLogs` | Lists site audit logs. |
 | `listGlobalEvents` | Lists global event logs across all sites. |
 | `listGlobalAlerts` | Lists global alert logs across all sites. |
+### Controller
+
+| Tool                          | Description                                                                              |
+| ----------------------------- | ---------------------------------------------------------------------------------------- |
+| `getCertificate` | Get SSL/TLS certificate configuration for the controller. |
+| `getClientHistoryDataEnable` | Get the client history data collection enable setting. |
+| `getControllerPort` | Get the controller port configuration for device adoption. |
+| `getDataRetention` | Get data retention settings for the controller. |
+| `getExperienceImprovement` | Get the experience improvement program setting (telemetry). |
+| `getGlobalDashboardOverview` | Get global controller dashboard overview without client data. |
+| `getPortalPort` | Get portal port configuration for the controller web interface. |
+### Maintenance
+
+| Tool                          | Description                                                                              |
+| ----------------------------- | ---------------------------------------------------------------------------------------- |
+| `getBackupFileList` | List available controller backup files. |
+| `getBackupResult` | Get the result of the most recent controller backup operation. |
+| `getRestoreResult` | Get the result of the most recent controller restore operation. |
+| `getSiteBackupFileList` | List available backup files for a site. |
+| `getSiteBackupResult` | Get the backup result for a site. |
+### Account Users
+
+| Tool                          | Description                                                                              |
+| ----------------------------- | ---------------------------------------------------------------------------------------- |
+| `getAllCloudUsers` | List all cloud users on the controller, excluding the root account. |
+| `getAllLocalUsers` | List all local users on the controller, excluding the root account. |
+| `getAllRoles` | List all user roles configured on the controller. |
+| `getAllUsersApp` | List all users (cloud and local) in grid view. |
+| `getAvailableRoles` | List roles available for user assignment. |
+| `getRoleDetail` | Get detailed information about a specific role. Requires `roleId`. |
+### Account Cloud
+
+| Tool                          | Description                                                                              |
+| ----------------------------- | ---------------------------------------------------------------------------------------- |
+| `getCloudAccessStatus` | Get cloud access status for the controller. |
+| `getCloudUserInfo` | Get cloud user account information. |
+| `getMfaStatus` | Get global MFA (multi-factor authentication) status. |
+| `getRemoteBindingStatus` | Get remote binding status between controller and cloud. |
+### Schedules
+
+| Tool                          | Description                                                                              |
+| ----------------------------- | ---------------------------------------------------------------------------------------- |
+| `getPoeScheduleList` | List PoE schedules for a site. |
+| `getPortScheduleList` | List port schedules for a site. |
+| `getPortSchedulePorts` | List ports with port schedule assignments for a site. |
+| `getRebootScheduleList` | List device reboot schedules for a site template. Requires `siteTemplateId`. |
+| `getUpgradeScheduleList` | List firmware upgrade schedules for a site. |
 ## Supported Omada API Operations
 
 | Operation ID                        | Description                                               | Tool                          |
@@ -896,6 +956,46 @@ In client-credentials mode the server already treats `Mcp-Session-Id` as optiona
 | `getPortalProfile` | Get captive portal profiles for a site. | `getPortalProfile` |
 | `getUserRoleProfile` | Get user role profiles from the controller (global). | `getUserRoleProfile` |
 | `getRadiusProxyConfig` | Get global RADIUS proxy configuration (controller-level). | `getRadiusProxyConfig` |
+| `getSiteEntity` | Get site detail. | `getSiteDetail` |
+| `getSiteUrlByOpenApi` | Get site URL. | `getSiteUrl` |
+| `getNtpServerStatus` | Get NTP server status for a site. | `getSiteNtpStatus` |
+| `getSiteSpecification` | Get site specification. | `getSiteSpecification` |
+| `getSiteRememberSettingByOpenApi` | Get site remember device setting. | `getSiteRememberSetting` |
+| `getSiteDeviceAccountSetting` | Get site device account setting. | `getSiteDeviceAccount` |
+| `getSiteSettingCap` | Get site capacity setting. | `getSiteCapacity` |
+| `getSiteTemplateList` | List site templates. | `getSiteTemplateList` |
+| `getSiteTemplateEntity` | Get site template detail. | `getSiteTemplateDetail` |
+| `getSiteTemplateConfiguration` | Get site template configuration. | `getSiteTemplateConfig` |
+| `getDataRetention` | Get data retention settings. | `getDataRetention` |
+| `getControllerPort` | Get controller port setting. | `getControllerPort` |
+| `getPortalPort` | Get portal port setting. | `getPortalPort` |
+| `getCertificate` | Get certificate configuration. | `getCertificate` |
+| `getExpImprove` | Get experience improvement setting. | `getExperienceImprovement` |
+| `getGernalSettings_1` | Get global dashboard overview without client data. | `getGlobalDashboardOverview` |
+| `getClientHistoryDataEnable` | Get client history data enable setting. | `getClientHistoryDataEnable` |
+| `getSelfServerFileList` | List controller backup files. | `getBackupFileList` |
+| `getBackupResult` | Get controller backup result. | `getBackupResult` |
+| `getRestoreResult` | Get controller restore result. | `getRestoreResult` |
+| `getSiteBackupResult` | Get site backup result. | `getSiteBackupResult` |
+| `getSelfServerSiteFileList` | List site backup files. | `getSiteBackupFileList` |
+| `getAllCloudUsersExcludeRoot` | List all cloud users excluding root. | `getAllCloudUsers` |
+| `getAllLocalUsersExcludeRoot` | List all local users excluding root. | `getAllLocalUsers` |
+| `getAllRoles` | List all roles. | `getAllRoles` |
+| `getRole` | Get role detail. | `getRoleDetail` |
+| `getAvailableRole` | List available roles. | `getAvailableRoles` |
+| `getAppGridUsers` | List all users in app grid view. | `getAllUsersApp` |
+| `getCloudAccessStatus` | Get cloud access status. | `getCloudAccessStatus` |
+| `getCloudUserInfo` | Get cloud user info. | `getCloudUserInfo` |
+| `getGlobalMFAStatus` | Get global MFA status. | `getMfaStatus` |
+| `getRemoteBindingStatus` | Get remote binding status. | `getRemoteBindingStatus` |
+| `getUpgradeScheduleList` | List upgrade schedules for a site. | `getUpgradeScheduleList` |
+| `getRebootScheduleList_1` | List reboot schedules for a site template. | `getRebootScheduleList` |
+| `getPoeScheduleList` | List PoE schedules for a site. | `getPoeScheduleList` |
+| `getPortScheduleList` | List port schedules for a site. | `getPortScheduleList` |
+| `getPortSchedulePorts` | List ports with port schedules. | `getPortSchedulePorts` |
+| `getMulticastRateLimitByOpenApi` | Get multicast rate limit setting. | `getMulticastRateLimit` |
+| `getApLoadBalanceConfig` | Get AP load balance configuration. | `getApLoadBalance` |
+| `getApOfdmaConfig` | Get AP OFDMA configuration. | `getApOfdmaConfig` |
 
 ## Devcontainer support
 

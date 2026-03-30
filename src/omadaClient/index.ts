@@ -23,14 +23,18 @@ import type {
     ThreatInfo,
 } from '../types/index.js';
 
+import { AccountOperations } from './account.js';
 import { AuthManager } from './auth.js';
 import { ClientOperations } from './client.js';
+import { ControllerOperations } from './controller.js';
 import { DeviceOperations } from './device.js';
 import { InsightOperations, type SiteThreatListOptions } from './insight.js';
 import { LogOperations, type LogQueryOptions } from './log.js';
+import { MaintenanceOperations } from './maintenance.js';
 import { MonitorOperations } from './monitor.js';
 import { NetworkOperations } from './network.js';
 import { RequestHandler } from './request.js';
+import { ScheduleOperations } from './schedules.js';
 import { SecurityOperations } from './security.js';
 import { SiteOperations } from './site.js';
 
@@ -65,6 +69,14 @@ export class OmadaClient {
 
     private readonly logOps: LogOperations;
 
+    private readonly controllerOps: ControllerOperations;
+
+    private readonly maintenanceOps: MaintenanceOperations;
+
+    private readonly accountOps: AccountOperations;
+
+    private readonly scheduleOps: ScheduleOperations;
+
     private readonly omadacId: string;
 
     constructor(options: OmadaClientOptions) {
@@ -96,6 +108,10 @@ export class OmadaClient {
         this.monitorOps = new MonitorOperations(this.request, this.siteOps, this.buildOmadaPath.bind(this));
         this.insightOps = new InsightOperations(this.request, this.siteOps, this.buildOmadaPath.bind(this));
         this.logOps = new LogOperations(this.request, this.siteOps, this.buildOmadaPath.bind(this));
+        this.controllerOps = new ControllerOperations(this.request, this.buildOmadaPath.bind(this));
+        this.maintenanceOps = new MaintenanceOperations(this.request, this.siteOps, this.buildOmadaPath.bind(this));
+        this.accountOps = new AccountOperations(this.request, this.buildOmadaPath.bind(this));
+        this.scheduleOps = new ScheduleOperations(this.request, this.siteOps, this.buildOmadaPath.bind(this));
     }
 
     // Site operations
@@ -1240,6 +1256,173 @@ export class OmadaClient {
 
     public async getPortalProfile(siteId?: string, customHeaders?: CustomHeaders): Promise<unknown> {
         return await this.networkOps.getPortalProfile(siteId, customHeaders);
+    }
+
+    public async getMulticastRateLimit(siteId?: string, customHeaders?: CustomHeaders): Promise<unknown> {
+        return await this.networkOps.getMulticastRateLimit(siteId, customHeaders);
+    }
+
+    // Device — new AP tools (route through DeviceOperations wrappers for naming consistency)
+    public async getApLoadBalance(apMac: string, siteId?: string, customHeaders?: CustomHeaders): Promise<unknown> {
+        return await this.deviceOps.getApLoadBalance(apMac, siteId, customHeaders);
+    }
+
+    public async getApOfdmaConfig(apMac: string, siteId?: string, customHeaders?: CustomHeaders): Promise<unknown> {
+        return await this.deviceOps.getApOfdmaConfig(apMac, siteId, customHeaders);
+    }
+
+    // Site detail and template operations
+    public async getSiteDetail(siteId?: string, customHeaders?: CustomHeaders): Promise<unknown> {
+        return await this.siteOps.getSiteDetail(siteId, customHeaders);
+    }
+
+    public async getSiteUrl(siteId?: string, customHeaders?: CustomHeaders): Promise<unknown> {
+        return await this.siteOps.getSiteUrl(siteId, customHeaders);
+    }
+
+    public async getSiteNtpStatus(siteId?: string, customHeaders?: CustomHeaders): Promise<unknown> {
+        return await this.siteOps.getSiteNtpStatus(siteId, customHeaders);
+    }
+
+    public async getSiteSpecification(siteId?: string, customHeaders?: CustomHeaders): Promise<unknown> {
+        return await this.siteOps.getSiteSpecification(siteId, customHeaders);
+    }
+
+    public async getSiteRememberSetting(siteId?: string, customHeaders?: CustomHeaders): Promise<unknown> {
+        return await this.siteOps.getSiteRememberSetting(siteId, customHeaders);
+    }
+
+    public async getSiteDeviceAccount(siteId?: string, customHeaders?: CustomHeaders): Promise<unknown> {
+        return await this.siteOps.getSiteDeviceAccount(siteId, customHeaders);
+    }
+
+    public async getSiteCapacity(siteId?: string, customHeaders?: CustomHeaders): Promise<unknown> {
+        return await this.siteOps.getSiteCapacity(siteId, customHeaders);
+    }
+
+    public async getSiteTemplateList(customHeaders?: CustomHeaders): Promise<unknown> {
+        return await this.siteOps.getSiteTemplateList(customHeaders);
+    }
+
+    public async getSiteTemplateDetail(siteTemplateId: string, customHeaders?: CustomHeaders): Promise<unknown> {
+        return await this.siteOps.getSiteTemplateDetail(siteTemplateId, customHeaders);
+    }
+
+    public async getSiteTemplateConfig(siteTemplateId: string, customHeaders?: CustomHeaders): Promise<unknown> {
+        return await this.siteOps.getSiteTemplateConfig(siteTemplateId, customHeaders);
+    }
+
+    // Controller operations
+    public async getDataRetention(customHeaders?: CustomHeaders): Promise<unknown> {
+        return await this.controllerOps.getDataRetention(customHeaders);
+    }
+
+    public async getControllerPort(customHeaders?: CustomHeaders): Promise<unknown> {
+        return await this.controllerOps.getControllerPort(customHeaders);
+    }
+
+    public async getPortalPort(customHeaders?: CustomHeaders): Promise<unknown> {
+        return await this.controllerOps.getPortalPort(customHeaders);
+    }
+
+    public async getCertificate(customHeaders?: CustomHeaders): Promise<unknown> {
+        return await this.controllerOps.getCertificate(customHeaders);
+    }
+
+    public async getExperienceImprovement(customHeaders?: CustomHeaders): Promise<unknown> {
+        return await this.controllerOps.getExperienceImprovement(customHeaders);
+    }
+
+    public async getGlobalDashboardOverview(customHeaders?: CustomHeaders): Promise<unknown> {
+        return await this.controllerOps.getGlobalDashboardOverview(customHeaders);
+    }
+
+    public async getClientHistoryDataEnable(customHeaders?: CustomHeaders): Promise<unknown> {
+        return await this.controllerOps.getClientHistoryDataEnable(customHeaders);
+    }
+
+    // Maintenance operations
+    public async getBackupFileList(customHeaders?: CustomHeaders): Promise<unknown> {
+        return await this.maintenanceOps.getBackupFileList(customHeaders);
+    }
+
+    public async getBackupResult(customHeaders?: CustomHeaders): Promise<unknown> {
+        return await this.maintenanceOps.getBackupResult(customHeaders);
+    }
+
+    public async getRestoreResult(customHeaders?: CustomHeaders): Promise<unknown> {
+        return await this.maintenanceOps.getRestoreResult(customHeaders);
+    }
+
+    public async getSiteBackupResult(siteId?: string, customHeaders?: CustomHeaders): Promise<unknown> {
+        return await this.maintenanceOps.getSiteBackupResult(siteId, customHeaders);
+    }
+
+    public async getSiteBackupFileList(siteId?: string, customHeaders?: CustomHeaders): Promise<unknown> {
+        return await this.maintenanceOps.getSiteBackupFileList(siteId, customHeaders);
+    }
+
+    // Account operations
+    public async getAllCloudUsers(customHeaders?: CustomHeaders): Promise<unknown> {
+        return await this.accountOps.getAllCloudUsers(customHeaders);
+    }
+
+    public async getAllLocalUsers(customHeaders?: CustomHeaders): Promise<unknown> {
+        return await this.accountOps.getAllLocalUsers(customHeaders);
+    }
+
+    public async getAllRoles(customHeaders?: CustomHeaders): Promise<unknown> {
+        // Delegate to AccountOperations — single source of truth for /roles endpoint
+        return await this.accountOps.getAllRoles(customHeaders);
+    }
+
+    public async getRoleDetail(roleId: string, customHeaders?: CustomHeaders): Promise<unknown> {
+        return await this.accountOps.getRoleDetail(roleId, customHeaders);
+    }
+
+    public async getAvailableRoles(customHeaders?: CustomHeaders): Promise<unknown> {
+        return await this.accountOps.getAvailableRoles(customHeaders);
+    }
+
+    public async getAllUsersApp(customHeaders?: CustomHeaders): Promise<unknown> {
+        return await this.accountOps.getAllUsersApp(customHeaders);
+    }
+
+    public async getCloudAccessStatus(customHeaders?: CustomHeaders): Promise<unknown> {
+        return await this.accountOps.getCloudAccessStatus(customHeaders);
+    }
+
+    public async getCloudUserInfo(customHeaders?: CustomHeaders): Promise<unknown> {
+        return await this.accountOps.getCloudUserInfo(customHeaders);
+    }
+
+    public async getMfaStatus(customHeaders?: CustomHeaders): Promise<unknown> {
+        return await this.accountOps.getMfaStatus(customHeaders);
+    }
+
+    public async getRemoteBindingStatus(customHeaders?: CustomHeaders): Promise<unknown> {
+        return await this.accountOps.getRemoteBindingStatus(customHeaders);
+    }
+
+    // Schedule operations
+    public async getUpgradeScheduleList(siteId?: string, customHeaders?: CustomHeaders): Promise<unknown> {
+        return await this.scheduleOps.getUpgradeScheduleList(siteId, customHeaders);
+    }
+
+    public async getRebootScheduleList(siteTemplateId: string, customHeaders?: CustomHeaders): Promise<unknown> {
+        return await this.scheduleOps.getRebootScheduleList(siteTemplateId, customHeaders);
+    }
+
+    public async getPoeScheduleList(siteId?: string, customHeaders?: CustomHeaders): Promise<unknown> {
+        return await this.scheduleOps.getPoeScheduleList(siteId, customHeaders);
+    }
+
+    public async getPortScheduleList(siteId?: string, customHeaders?: CustomHeaders): Promise<unknown> {
+        return await this.scheduleOps.getPortScheduleList(siteId, customHeaders);
+    }
+
+    public async getPortSchedulePorts(siteId?: string, customHeaders?: CustomHeaders): Promise<unknown> {
+        return await this.scheduleOps.getPortSchedulePorts(siteId, customHeaders);
     }
 
     // Generic API call

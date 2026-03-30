@@ -58,7 +58,6 @@ export const ALL_CATEGORIES = [
     'hotspot-vouchers',
     'hotspot-users',
     // Niche
-    'site-templates',
     'voip',
     'olt',
     'msp',
@@ -70,15 +69,10 @@ export type ToolCategory = (typeof ALL_CATEGORIES)[number];
 export const FUTURE_CATEGORIES = new Set<ToolCategory>([
     'insights',
     'network-sim-lte',
-    'schedules',
-    'maintenance',
-    'account-users',
     'account-sso',
-    'account-cloud',
     'hotspot-portal',
     'hotspot-vouchers',
     'hotspot-users',
-    'site-templates',
     'voip',
     'olt',
     'msp',

@@ -177,7 +177,7 @@ Before implementing any new tool, the following rules apply:
   0. **API route verification** — every new tool's route must exist in `docs/openapi/` or `OMADA_TOOLS.md`. Run: `grep -c "your-route" docs/openapi/*.json` to confirm.
   1. `npm run check` — Biome lint + TypeScript type check
   2. `npm run build` — TypeScript compilation
-  3. `npm test` — full test suite
+  3. **`npm run test:coverage`** — full test suite **with coverage enforcement**. This is mandatory — NOT `npm test`. Per-file thresholds (90% lines/statements/functions) are only enforced by `test:coverage`. If any file fails its threshold, add tests before committing.
   4. `npm run symlinks:check` — AI instruction symlinks intact (auto-enforced by husky pre-commit)
 - If any of the above fail, fix the issues first, then commit.
 - Reference the OpenAPI spec in `docs/` when adding or updating Omada API interactions.
@@ -205,7 +205,7 @@ This project follows **GitFlow** strictly. Every change must go through the corr
 3. **One concern per branch.** Each branch addresses a single feature, fix, release, or hotfix.
 4. **All pull requests target `develop`** (or `main` for hotfixes/releases). Direct pushes to `develop` or `main` are not allowed.
 5. **Ensure `npm run lint` and `npm run build` pass** before opening a pull request.
-6. **Ensure test coverage stays above 90%** before merging (run `npm run test:coverage`).
+6. **Ensure test coverage stays above 90%** before merging. Run `npm run test:coverage` — not `npm test` — to verify per-file thresholds pass locally before pushing.
 7. **Keep branch names lowercase and hyphenated** — e.g., `feature/add-site-list`, `fix/ssl-timeout`.
 
 ### Typical Feature Flow
@@ -255,6 +255,21 @@ When a tool is marked as deprecated (alias of another tool):
 1. **Use the `[DEPRECATED]` prefix** in the tool description string — this is the repo convention. See `src/tools/getRFScanResult.ts` for the canonical format. Do NOT use bare words like "DEPRECATED" or "Deprecated" without the brackets.
 2. **README.md and README.Docker.md must match the code** — if the tool description says `[DEPRECATED]`, the corresponding row in both tool tables must also reflect that (add the deprecated/alias note to the description column). Never leave a deprecated tool listed as a normal tool in the docs.
 3. **Both READMEs must be updated in the same commit** as the tool description change — never defer doc alignment to a follow-up.
+
+## Test Coverage — Mandatory Rules
+
+### When you add methods to an existing file, extend its test file
+
+If you add methods to any existing `src/omadaClient/*.ts` or `src/tools/*.ts` file, you **must** add corresponding tests to its matching test file in `tests/`. This is not optional.
+
+- Extended `src/omadaClient/site.ts`? Update `tests/omadaClient/site.test.ts`.
+- Added `src/tools/getFoo.ts`? Create `tests/tools/getFoo.test.ts`.
+
+Per-file coverage is enforced at **90%** (lines, statements, functions). The CI `test:coverage` step will fail if any file drops below threshold. Do not wait for CI to catch missing tests — run `npm run test:coverage` locally before every commit.
+
+### Never use `npm test` as the pre-commit check
+
+`npm test` runs without coverage enforcement. Use **`npm run test:coverage`** — it's the same tests plus per-file threshold validation. A passing `npm test` does not guarantee CI will pass.
 
 ## Avoid Duplicate Endpoint Implementations
 

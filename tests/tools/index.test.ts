@@ -148,7 +148,7 @@ describe('tools/index', () => {
             expect(mockServer.registerTool).toHaveBeenCalledWith('getSitesHealthGatewaysWansDetails', expect.any(Object), expect.any(Function));
 
             // Verify total number of tools registered
-            expect(mockServer.registerTool).toHaveBeenCalledTimes(287);
+            expect(mockServer.registerTool).toHaveBeenCalledTimes(327);
         });
     });
 });
