@@ -1,56 +1,60 @@
 {
-    "name": "tplink-omada-mcp",
-    "version": "0.12.0",
-    "description": "Model Context Protocol server that exposes TP-Link Omada controller APIs",
-    "type": "module",
-    "main": "dist/index.js",
-    "bin": {
-        "tplink-omada-mcp": "./dist/index.js"
-    },
-    "scripts": {
-        "build": "tsc -p tsconfig.json",
-        "lint": "biome check --error-on-warnings .",
-        "lint:fix": "biome check --write .",
-        "format": "biome format --write .",
-        "check": "npm run lint && tsc --noEmit",
-        "test": "vitest run",
-        "test:watch": "vitest",
-        "test:coverage": "vitest run --coverage",
-        "dev": "tsx src/index.ts",
-        "start": "node dist/index.js",
-        "inspector": "tsx scripts/run-inspector.ts",
-        "inspector:build": "npm run build && tsx scripts/run-inspector.ts build",
-        "docker:build": "docker build -f Dockerfile -t ghcr.io/migueltvms/tplink-omada-mcp:latest .",
-        "docker:run": "docker run --rm -it --env-file .env --env-file .env.local ghcr.io/migueltvms/tplink-omada-mcp:latest",
-        "docker:push": "docker push ghcr.io/migueltvms/tplink-omada-mcp:latest",
-        "prepare": "husky",
-        "symlinks:fix": "bash scripts/fix-symlinks.sh",
-        "symlinks:check": "bash -e -c \"for l in AGENTS.md .github/copilot-instructions.md .github/AGENTS.md; do [ -L $l ] || { echo ❌ $l missing; exit 1; }; done && echo ✅ symlinks OK\""
-    },
-    "keywords": ["mcp", "tp-link", "omada"],
-    "engines": {
-        "node": ">=24.0.0"
-    },
-    "author": "",
-    "license": "MIT",
-    "dependencies": {
-        "@modelcontextprotocol/sdk": "^1.21.0",
-        "@ngrok/ngrok": "^1.5.2",
-        "axios": "^1.13.2",
-        "dotenv": "^17.2.3",
-        "pino": "^10.1.0",
-        "zod": "^3.25.76"
-    },
-    "devDependencies": {
-        "@biomejs/biome": "^2.4.6",
-        "@modelcontextprotocol/inspector": "^0.21.1",
-        "@types/node": "^24.10.0",
-        "@vitest/coverage-v8": "^4.0.10",
-        "@vitest/ui": "^4.0.8",
-        "concurrently": "^9.1.0",
-        "husky": "^9.1.7",
-        "tsx": "^4.20.6",
-        "typescript": "^5.9.3",
-        "vitest": "^4.0.8"
-    }
+  "name": "tplink-omada-mcp",
+  "version": "0.13.0",
+  "description": "Model Context Protocol server that exposes TP-Link Omada controller APIs",
+  "type": "module",
+  "main": "dist/index.js",
+  "bin": {
+    "tplink-omada-mcp": "./dist/index.js"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "lint": "biome check --error-on-warnings .",
+    "lint:fix": "biome check --write .",
+    "format": "biome format --write .",
+    "check": "npm run lint && tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
+    "dev": "tsx src/index.ts",
+    "start": "node dist/index.js",
+    "inspector": "tsx scripts/run-inspector.ts",
+    "inspector:build": "npm run build && tsx scripts/run-inspector.ts build",
+    "docker:build": "docker build -f Dockerfile -t ghcr.io/migueltvms/tplink-omada-mcp:latest .",
+    "docker:run": "docker run --rm -it --env-file .env --env-file .env.local ghcr.io/migueltvms/tplink-omada-mcp:latest",
+    "docker:push": "docker push ghcr.io/migueltvms/tplink-omada-mcp:latest",
+    "prepare": "husky",
+    "symlinks:fix": "bash scripts/fix-symlinks.sh",
+    "symlinks:check": "bash -e -c \"for l in AGENTS.md .github/copilot-instructions.md .github/AGENTS.md; do [ -L $l ] || { echo \u274c $l missing; exit 1; }; done && echo \u2705 symlinks OK\""
+  },
+  "keywords": [
+    "mcp",
+    "tp-link",
+    "omada"
+  ],
+  "engines": {
+    "node": ">=24.0.0"
+  },
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.21.0",
+    "@ngrok/ngrok": "^1.5.2",
+    "axios": "^1.13.2",
+    "dotenv": "^17.2.3",
+    "pino": "^10.1.0",
+    "zod": "^3.25.76"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "^2.4.6",
+    "@modelcontextprotocol/inspector": "^0.21.1",
+    "@types/node": "^24.10.0",
+    "@vitest/coverage-v8": "^4.0.10",
+    "@vitest/ui": "^4.0.8",
+    "concurrently": "^9.1.0",
+    "husky": "^9.1.7",
+    "tsx": "^4.20.6",
+    "typescript": "^5.9.3",
+    "vitest": "^4.0.8"
+  }
 }
