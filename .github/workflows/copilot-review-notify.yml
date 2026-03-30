@@ -18,10 +18,10 @@ jobs:
 
           PAYLOAD=$(jq -n \
             --arg agentId "krennic" \
-            --arg message "Copilot just reviewed PR #${PR_NUMBER} (${PR_TITLE}). Review state: ${REVIEW_STATE}. URL: ${PR_URL}. Notify the team in one sentence." \
+            --arg message "<@${{ secrets.OPENCLAW_KRENNIC_BOT_ID }}> Copilot just reviewed PR #${PR_NUMBER} (${PR_TITLE}) with state: ${REVIEW_STATE}. PR URL: ${PR_URL}. Repo: MiguelTVMS/tplink-omada-mcp. Fetch all unresolved review threads on this PR, fix every issue in the codebase, run the tests, push the fixes to the same branch, resolve ALL review threads via GraphQL mutation (every single one — no exceptions), then re-request a Copilot review. Repeat this loop until there are zero unresolved threads and CI is green." \
             --argjson deliver true \
             --arg channel "discord" \
-            --arg to "1487419813788651562" \
+            --arg to "${{ secrets.OPENCLAW_DISCORD_CHANNEL_ID }}" \
             '{agentId: $agentId, message: $message, deliver: $deliver, channel: $channel, to: $to}')
 
           curl -sf -X POST "${{ secrets.OPENCLAW_GATEWAY_URL }}/hooks/agent" \

@@ -11,7 +11,8 @@ export function registerGetApOfdmaConfigTool(server: McpServer, client: OmadaCli
     server.registerTool(
         'getApOfdmaConfig',
         {
-            description: 'Get OFDMA (Orthogonal Frequency Division Multiple Access) configuration for a specific access point.',
+            description:
+                '[DEPRECATED] Use getSitesApsOfdma instead. Same endpoint, retained for backward compatibility. getSitesApsOfdma is the canonical tool name and should be preferred for consistency. Get OFDMA (Orthogonal Frequency Division Multiple Access) configuration for a specific access point.',
             inputSchema: inputSchema.shape,
         },
         wrapToolHandler('getApOfdmaConfig', async ({ apMac, siteId, customHeaders }) =>

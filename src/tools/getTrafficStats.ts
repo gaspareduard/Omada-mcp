@@ -8,7 +8,7 @@ export function registerGetTrafficStatsTool(server: McpServer, client: OmadaClie
         'getTrafficStats',
         {
             description:
-                'Get traffic activity statistics for a site, including upload/download throughput data from the dashboard traffic activities endpoint.',
+                '[DEPRECATED] Use getDashboardTrafficActivities instead. Same GET .../dashboard/traffic-activities endpoint. Get traffic activity statistics for a site, including upload/download throughput data from the dashboard traffic activities endpoint.',
             inputSchema: siteInputSchema.shape,
         },
         wrapToolHandler('getTrafficStats', async ({ siteId, customHeaders }) => toToolResult(await client.getWanUsageStats(siteId, customHeaders)))

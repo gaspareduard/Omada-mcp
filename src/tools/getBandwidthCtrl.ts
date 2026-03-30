@@ -12,7 +12,7 @@ export function registerGetBandwidthCtrlTool(server: McpServer, client: OmadaCli
         'getBandwidthCtrl',
         {
             description:
-                'Get the global bandwidth control configuration for the site. Returns whether bandwidth control is enabled and general settings.',
+                '[DEPRECATED] Use getBandwidthControl instead. Same GET .../bandwidth-control endpoint. Get the global bandwidth control configuration for the site. Returns whether bandwidth control is enabled and general settings.',
             inputSchema: inputSchema.shape,
         },
         wrapToolHandler('getBandwidthCtrl', async ({ siteId, customHeaders }) =>

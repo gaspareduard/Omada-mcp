@@ -11,7 +11,8 @@ export function registerGetWanPortDetailTool(server: McpServer, client: OmadaCli
     server.registerTool(
         'getWanPortDetail',
         {
-            description: 'Get detailed WAN port configuration for all gateway WAN ports on the site.',
+            description:
+                '[DEPRECATED] Use getWanPortsConfig instead. Same GET .../internet/ports-config endpoint. Get detailed WAN port configuration for all gateway WAN ports on the site.',
             inputSchema: inputSchema.shape,
         },
         wrapToolHandler('getWanPortDetail', async ({ siteId, customHeaders }) => toToolResult(await client.getWanPortDetail(siteId, customHeaders)))

@@ -7,7 +7,8 @@ export function registerGetDeviceTool(server: McpServer, client: OmadaClient): v
     server.registerTool(
         'getDevice',
         {
-            description: 'Fetch detailed information for a specific Omada device.',
+            description:
+                '[DEPRECATED] Use listDevices instead. Filters the site device list in-process. No dedicated per-device detail endpoint exists in the spec. Fetch detailed information for a specific Omada device.',
             inputSchema: deviceIdSchema.shape,
         },
         wrapToolHandler('getDevice', async ({ deviceId, siteId, customHeaders }) =>
