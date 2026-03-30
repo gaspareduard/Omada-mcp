@@ -6,7 +6,7 @@ on:
 
 jobs:
   notify:
-    if: ${{ contains(github.event.review.user.login, 'copilot') }}
+    if: ${{ github.event.review.user.login == 'copilot[bot]' || github.event.review.user.login == 'copilot-pull-request-reviewer' }}
     runs-on: ubuntu-latest
     steps:
       - name: Notify Krennic via OpenClaw hooks
