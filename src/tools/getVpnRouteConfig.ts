@@ -8,7 +8,7 @@ export function registerGetVpnRouteConfigTool(server: McpServer, client: OmadaCl
         'getVpnRouteConfig',
         {
             description:
-                'Get policy-based routing rules for a site, including source/destination matching criteria and next-hop gateway assignments.',
+                '[DEPRECATED] Use getGridPolicyRouting instead. Same GET .../routing/policy-routings endpoint. Note: this tool returns a full aggregated list, while getGridPolicyRouting is page-based (page/pageSize). When migrating, implement pagination to retrieve all policy-based routing rules. Get policy-based routing rules for a site, including source/destination matching criteria and next-hop gateway assignments.',
             inputSchema: siteInputSchema.shape,
         },
         wrapToolHandler('getVpnRouteConfig', async ({ siteId, customHeaders }) => toToolResult(await client.listPolicyRoutes(siteId, customHeaders)))

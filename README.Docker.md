@@ -194,7 +194,7 @@ In client-credentials mode the server already treats `Mcp-Session-Id` as optiona
 | `getSiteTemplateDetail` | Get detailed information about a site template. Requires `siteTemplateId`. |
 | `getSiteTemplateList` | List all site templates configured on the controller. |
 | `listClients` | Lists active client devices for a site. |
-| `getClient` | Fetches details for a specific client device. |
+| `getClient` | [DEPRECATED] Use `listClients` instead. When you have a client MAC, `getClientDetail` is also available. This tool filters the site client list in-process. |
 | `listMostActiveClients` | Gets the most active clients sorted by traffic usage. |
 | `listClientsActivity` | Gets client activity statistics over time. |
 | `listClientsPastConnections` | Gets past connection history for clients.                                    |
@@ -206,7 +206,7 @@ In client-credentials mode the server already treats `Mcp-Session-Id` as optiona
 | Tool                   | Description                                                                       |
 | ---------------------- | --------------------------------------------------------------------------------- |
 | `listDevices` | Lists provisioned devices for a given site. |
-| `getDevice` | Fetches details for a specific Omada device. |
+| `getDevice` | [DEPRECATED] Use `listDevices` instead and filter results client-side. This tool filters the site device list in-process; there is no dedicated device-detail endpoint. |
 | `searchDevices` | Searches for devices globally across all sites the user has access to. |
 | `listDevicesStats` | Queries statistics for global adopted devices with pagination and filtering. |
 | `getSwitchStackDetail` | Retrieves detailed configuration and status for a switch stack.                   |
@@ -273,7 +273,7 @@ In client-credentials mode the server already treats `Mcp-Session-Id` as optiona
 | Tool                          | Description                                                                 |
 | ----------------------------- | --------------------------------------------------------------------------- |
 | `getInternetInfo` | Gets internet configuration information for a site. |
-| `getInternet` | Gets full WAN/Internet configuration for the site gateway. |
+| `getInternet` | [DEPRECATED] Use `getInternetInfo` instead. Gets full WAN/Internet configuration for the site gateway. |
 | `getInternetBasicPortInfo` | Gets WAN port summary/basic info for the site gateway. |
 | `getInternetLoadBalance` | Gets WAN load balancing configuration (failover/load balance). |
 | `getWanPortsConfig` | Gets per-port WAN configuration including connection type and IP settings. |
@@ -282,20 +282,20 @@ In client-credentials mode the server already treats `Mcp-Session-Id` as optiona
 | `getIspBandScan` | Gets ISP band scan results for a WAN port. Requires `portUuid`. |
 | `getDisableNatList` | Gets the list of wired networks with NAT disabled (paginated). |
 | `getLtePortConfig` | Gets LTE/cellular WAN port configuration. |
-| `getWanPortDetail` | Gets detailed WAN port configuration for all gateway WAN ports. |
+| `getWanPortDetail` | [DEPRECATED] Use `getWanPortsConfig` instead. Gets detailed WAN port configuration for all gateway WAN ports. |
 | `getWanIspProfile` | Gets ISP scan profile result for a WAN port. Requires `portUuid`. |
 | `getWanQosConfig` | Gets QoS configuration for gateway WAN ports. |
 | `getWanHealthDetail` | Deprecated alias. Gets WAN health details for a specific gateway. Requires `gatewayMac`. |
-| `getWanUsageStats` | Gets WAN traffic usage statistics for the site. |
+| `getWanUsageStats` | [DEPRECATED] Use `getDashboardTrafficActivities` instead. Gets WAN traffic usage statistics for the site. |
 | `getWanNatConfig` | Gets one-to-one NAT rules (paginated). |
 | `getPortForwardingStatus` | Gets port forwarding status and rules (User or UPnP types). |
-| `getLanNetworkList` | Gets the list of LAN networks configured in a site. |
+| `getLanNetworkList` | [DEPRECATED] Use `getLanNetworkListV2` instead. This tool aggregates all pages; getLanNetworkListV2 is explicitly paginated. |
 | `getLanNetworkListV2` | Get the LAN network list using the v2 API, with richer VLAN and DHCP data (paginated). |
 | `getInterfaceLanNetwork` | Gets interface-level LAN network bindings. Optional type filter. |
 | `getInterfaceLanNetworkV2` | Get interface-level LAN network bindings (v2 API). Returns richer per-interface VLAN and network data. |
 | `getLanProfileList` | Gets the list of LAN profiles configured in a site. |
-| `getApLoadBalance` | Get load balance configuration for an AP. Requires `apMac`. |
-| `getApOfdmaConfig` | Get OFDMA configuration for an AP. Requires `apMac`. |
+| `getApLoadBalance` | [DEPRECATED] Use `getSitesApsLoadBalance` instead. Same endpoint, retained for backward compatibility. getSitesApsLoadBalance is the canonical tool name. |
+| `getApOfdmaConfig` | [DEPRECATED] Use `getSitesApsOfdma` instead. Same endpoint, retained for backward compatibility. getSitesApsOfdma is the canonical tool name. |
 | `getMulticastRateLimit` | Get multicast rate limit settings for a site. |
 | `getWlanGroupList` | Gets the list of WLAN groups configured in a site. |
 | `getSsidList` | Gets the list of SSIDs in a WLAN group. |
@@ -304,12 +304,12 @@ In client-credentials mode the server already treats `Mcp-Session-Id` as optiona
 | `getFirewallSetting` | Gets firewall configuration and rules for a site. |
 | `getVpnSettings` | Gets VPN settings for a site. |
 | `listSiteToSiteVpns` | Lists site-to-site VPN configurations. |
-| `listPortForwardingRules` | Lists NAT port forwarding rules. |
+| `listPortForwardingRules` | [DEPRECATED] Use `getPortForwardingList` instead. Lists NAT port forwarding rules. |
 | `listOsgAcls` | Lists gateway (OSG) ACL rules. |
 | `listEapAcls` | Lists access point (EAP) ACL rules. |
-| `listStaticRoutes` | Lists static routing rules. |
+| `listStaticRoutes` | [DEPRECATED] Use `getGridStaticRouting` instead. This tool aggregates all pages; getGridStaticRouting returns a single paginated page. |
 | `getStaticRoutingInterfaceList` | Gets available interfaces for static routing.                             |
-| `listPolicyRoutes` | Lists policy routing rules. |
+| `listPolicyRoutes` | [DEPRECATED] Use `getGridPolicyRouting` instead. This tool aggregates all pages; getGridPolicyRouting is paginated. |
 | `getGridPolicyRouting` | Gets policy routing rules (paginated). |
 | `getOspfProcess` | Gets OSPF process configuration for the site gateway. |
 | `getOspfInterface` | Gets OSPF interface configuration for the site gateway. |
@@ -368,7 +368,7 @@ In client-credentials mode the server already treats `Mcp-Session-Id` as optiona
 | `getMacFilterDetail` | Get MAC filter general setting. Alias for `getMacFilteringGeneralSetting`. |
 | `getQosPolicy` | Get QoS policy configuration for a site. |
 | `getTrafficPriority` | Get traffic priority rules for a site. |
-| `getTrafficStats` | Get WAN usage statistics. Alias for `getWanUsageStats`. |
+| `getTrafficStats` | [DEPRECATED] Use `getDashboardTrafficActivities` instead. Get WAN usage statistics. Alias for `getWanUsageStats`. |
 | `getQosPolicyRule` | [DEPRECATED] Alias for `getQosPolicy`. |
 | `getQosMarkingRule` | [DEPRECATED] Alias for `getQosPolicy`. |
 | `getDscpConfig` | [DEPRECATED] Alias for `getQosPolicy`. |
@@ -376,7 +376,7 @@ In client-credentials mode the server already treats `Mcp-Session-Id` as optiona
 
 | Tool                          | Description                                                                              |
 | ----------------------------- | ---------------------------------------------------------------------------------------- |
-| `getGlobalSecuritySetting` | Get global security/threat management list. Alias for `getThreatList`. |
+| `getGlobalSecuritySetting` | [DEPRECATED] Use `getThreatList` instead. Get global security/threat management list. Alias for `getThreatList`. |
 ### Security & Threat Management
 
 | Tool            | Description                                               |
@@ -424,7 +424,7 @@ In client-credentials mode the server already treats `Mcp-Session-Id` as optiona
 | `getVpnUserList` | Get VPN users for a site (paginated). |
 | `getVpnUserDetail` | Get users for a specific client-to-site VPN server. |
 | `getVpnClientStatus` | Get status of client-to-site VPN clients. Alias for `listClientToSiteVpnClients`. |
-| `getVpnRouteConfig` | Get policy-based routing rules. Alias for `listPolicyRoutes`. |
+| `getVpnRouteConfig` | [DEPRECATED] Use `getGridPolicyRouting` instead. This tool aggregates all pages; getGridPolicyRouting is paginated. |
 ### Profiles
 
 | Tool                          | Description                                                                              |
@@ -480,7 +480,7 @@ In client-credentials mode the server already treats `Mcp-Session-Id` as optiona
 | ----------------------------- | ---------------------------------------------------------------------------------------- |
 | `getAllCloudUsers` | List all cloud users on the controller, excluding the root account. |
 | `getAllLocalUsers` | List all local users on the controller, excluding the root account. |
-| `getAllRoles` | List all user roles configured on the controller. |
+| `getAllRoles` | [DEPRECATED] Use `getUserRoleProfile` instead. List all user roles configured on the controller. |
 | `getAllUsersApp` | List all users (cloud and local) in grid view. |
 | `getAvailableRoles` | List roles available for user assignment. |
 | `getRoleDetail` | Get detailed information about a specific role. Requires `roleId`. |
@@ -506,7 +506,7 @@ In client-credentials mode the server already treats `Mcp-Session-Id` as optiona
 | Operation ID                        | Description                                               | Tool                          |
 | ----------------------------------- | --------------------------------------------------------- | ----------------------------- |
 | `getSiteList` | List controller sites.                                    | `listSites` |
-| `getDeviceList` | List devices assigned to a site.                          | `listDevices`, `getDevice` |
+| `getDeviceList` | List devices assigned to a site.                          | `listDevices`, ~~`getDevice`~~ [DEPRECATED] |
 | `searchGlobalDevice` | Search for devices across all accessible sites.           | `searchDevices` |
 | `getGridAdoptedDevicesStatByGlobal` | Query statistics for global adopted devices.              | `listDevicesStats`            |
 | `getOswStackDetail` | Retrieve details for a switch stack.                      | `getSwitchStackDetail` |
@@ -519,7 +519,7 @@ In client-credentials mode the server already treats `Mcp-Session-Id` as optiona
 | `getApRadios` | Get radio info for a specific access point.               | `getApRadios` |
 | `getStackPorts` | Get port info for a switch stack.                         | `getStackPorts` |
 | `getGridPendingDevices` | List devices pending adoption in a site.                  | `listPendingDevices` |
-| `getGridActiveClients` | List active clients connected to a site.                  | `listClients`, `getClient` |
+| `getGridActiveClients` | List active clients connected to a site.                  | `listClients`, ~~`getClient`~~ [DEPRECATED] |
 | `getMostActiveClients` | Get most active clients sorted by traffic.                | `listMostActiveClients` |
 | `getClientActivity` | Get client activity statistics over time.                 | `listClientsActivity` |
 | `getGridPastConnections` | Get client past connection history.                       | `listClientsPastConnections` |
@@ -527,7 +527,7 @@ In client-credentials mode the server already treats `Mcp-Session-Id` as optiona
 | `getRateLimitProfileList` | Get rate limit profile list.                              | `getRateLimitProfiles` |
 | `getGlobalThreatList` | Get global view threat management list.                   | `getThreatList` |
 | `getTopThreatList` | Get top threats from global threat management.            | `getTopThreats` |
-| `getInternet` | Get internet configuration info for a site.               | `getInternetInfo` |
+| `getInternet` | [DEPRECATED] Use `getInternetInfo` instead. Get internet configuration info for a site.               | `getInternetInfo` |
 | `getPortForwardStatus` | Get port forwarding status by type.                       | `getPortForwardingStatus` |
 | `getLanProfileList` | Get LAN profile list.                                     | `getLanProfileList` |
 | `getWlanGroupList` | Get WLAN group list.                                      | `getWlanGroupList` |
@@ -537,10 +537,10 @@ In client-credentials mode the server already treats `Mcp-Session-Id` as optiona
 | `getFirewallSetting` | Get firewall configuration for a site.                    | `getFirewallSetting` |
 | `getVpn` | Get VPN settings for a site.                              | `getVpnSettings` |
 | `getSiteToSiteVpnList` | List site-to-site VPN configurations.                     | `listSiteToSiteVpns` |
-| `getPortForwardingList` | List NAT port forwarding rules.                           | `listPortForwardingRules` |
+| `getPortForwardingList` | List NAT port forwarding rules.                           | `getPortForwardingList` (prefer); ~~`listPortForwardingRules`~~ [DEPRECATED] |
 | `getOsgAclList` | List gateway ACL rules.                                   | `listOsgAcls` |
 | `getEapAclList` | List access point ACL rules.                              | `listEapAcls` |
-| `getStaticRoutingList` | List static routing rules.                                | `listStaticRoutes` |
+| `getStaticRoutingList` | List static routing rules.                                | `getGridStaticRouting` (prefer); ~~`listStaticRoutes`~~ [DEPRECATED] |
 | `getRadiusProfileList` | List RADIUS authentication profiles.                      | `listRadiusProfiles` |
 | `getGroupProfileList` | List group profiles (IP, MAC, port groups).               | `listGroupProfiles` |
 | `getApplicationControlStatus` | Get application control status for a site.                | `getApplicationControlStatus` |
@@ -569,7 +569,7 @@ In client-credentials mode the server already treats `Mcp-Session-Id` as optiona
 | `getBandwidthControl` | Get the global bandwidth control configuration for the site. | `getBandwidthControl` |
 | `getCableTestLogs` | Get cable test logs for a switch. | `getCableTestLogs` |
 | `getChannels` | Get channel distribution and utilization across all APs. | `getChannels` |
-| `getClient` | Fetch details for a specific Omada client. | `getClient` |
+| `getClient` | [DEPRECATED] Use `listClients` instead. When you have a client MAC, `getClientDetail` is also available. This tool filters the site client list in-process. | `getClient` |
 | `getDashboardMostActiveEaps` | Get the most active access points (EAPs) in a site, sorted by traff.... | `getDashboardMostActiveEaps` |
 | `getDashboardPoEUsage` | Get PoE (Power over Ethernet) usage statistics for a site, showing .... | `getDashboardPoEUsage` |
 | `getDashboardSwitchSummary` | Get switch summary for a site dashboard: total switch count, total .... | `getDashboardSwitchSummary` |
@@ -578,7 +578,7 @@ In client-credentials mode the server already treats `Mcp-Session-Id` as optiona
 | `getDashboardTrafficActivities` | Get traffic activity time-series data for a site, showing upload an.... | `getDashboardTrafficActivities` |
 | `getDashboardWifiSummary` | Get WiFi summary for a site dashboard: total APs, connected AP coun.... | `getDashboardWifiSummary` |
 | `getDdnsGrid` | Get DDNS (Dynamic DNS) entries for the site gateway. | `getDdnsGrid` |
-| `getDevice` | Fetch detailed information for a specific Omada device. | `getDevice` |
+| `getDevice` | [DEPRECATED] Convenience alias that filters `listDevices` for a specific Omada device. Prefer using `listDevices` directly. | `getDevice` |
 | `getDhcpReservationGrid` | Get DHCP reservations for the site. | `getDhcpReservationGrid` |
 | `getDnsCacheSetting` | Get DNS cache setting for the site gateway. | `getDnsCacheSetting` |
 | `getDnsProxy` | Get DNS proxy configuration for the site gateway. | `getDnsProxy` |
@@ -598,7 +598,7 @@ In client-credentials mode the server already treats `Mcp-Session-Id` as optiona
 | `getIgmp` | Get IGMP (Internet Group Management Protocol) setting for the site. | `getIgmp` |
 | `getInterfaceLanNetwork` | Get interface-level LAN network bindings. | `getInterfaceLanNetwork` |
 | `getInterference` | Get top RF interference sources detected by APs. | `getInterference` |
-| `getInternet` | Get full WAN/Internet configuration for the site gateway. | `getInternet` |
+| `getInternet` | [DEPRECATED] Use `getInternetInfo` instead. Get full WAN/Internet configuration for the site gateway. | `getInternet` |
 | `getInternetBasicPortInfo` | Get WAN port summary / basic info for the site gateway. | `getInternetBasicPortInfo` |
 | `getInternetInfo` | Get internet configuration information for a site, including WAN se.... | `getInternetInfo` |
 | `getInternetLoadBalance` | Get WAN load balancing configuration for the site gateway. | `getInternetLoadBalance` |
@@ -606,7 +606,7 @@ In client-credentials mode the server already treats `Mcp-Session-Id` as optiona
 | `getIspLoad` | Get per-WAN ISP link load over a time range. | `getIspLoad` |
 | `getLanClientCount` | Get client distribution breakdown across LAN segments. | `getLanClientCount` |
 | `getLanDnsRules` | Get LAN DNS rules configured for the site (paginated). | `getLanDnsRules` |
-| `getLanNetworkList` | Get the list of LAN networks configured in a site, including VLAN s.... | `getLanNetworkList` |
+| `getLanNetworkList` | [DEPRECATED] Use `getLanNetworkListV2` instead. This tool aggregates all pages; getLanNetworkListV2 is explicitly paginated. | `getLanNetworkList` |
 | `getLanProfileEsUsage` | Get EAP/switch device usage for a specific LAN profile. Requires `profileId`. | `getLanProfileEsUsage` |
 | `getLanProfileList` | Get the list of LAN profiles configured in a site. | `getLanProfileList` |
 | `getLtePortConfig` | Get LTE/cellular WAN port configuration for the site gateway. | `getLtePortConfig` |
@@ -632,9 +632,9 @@ In client-credentials mode the server already treats `Mcp-Session-Id` as optiona
 | `getWanHealthDetail` | [DEPRECATED] Deprecated alias. Gets WAN health details for a specific gateway. Requires `gatewayMac`. | `getWanHealthDetail` |
 | `getWanIspProfile` | Get ISP scan profile result for a WAN port. Requires `portUuid`. | `getWanIspProfile` |
 | `getWanNatConfig` | Get one-to-one NAT configuration (WAN NAT rules) for the site gateway (paginated). | `getWanNatConfig` |
-| `getWanPortDetail` | Get detailed WAN port configuration for all gateway WAN ports on the site. | `getWanPortDetail` |
+| `getWanPortDetail` | [DEPRECATED] Use `getWanPortsConfig` instead. Get detailed WAN port configuration for all gateway WAN ports on the site. | `getWanPortDetail` |
 | `getWanQosConfig` | Get QoS configuration for gateway WAN ports on the site. | `getWanQosConfig` |
-| `getWanUsageStats` | Get WAN traffic usage statistics and activity data for the site. | `getWanUsageStats` |
+| `getWanUsageStats` | [DEPRECATED] Use `getDashboardTrafficActivities` instead. Get WAN traffic usage statistics and activity data for the site. | `getWanUsageStats` |
 | `getRetryAndDroppedRate` | Get wireless retry rate and dropped packet rate over a time range. | `getRetryAndDroppedRate` |
 | `getRogueAps` | Get the list of rogue (unauthorized) access points detected by WIDS.... | `getRogueAps` |
 | `getSessionLimit` | Get the session limit global setting for the site gateway. | `getSessionLimit` |
@@ -665,14 +665,14 @@ In client-credentials mode the server already treats `Mcp-Session-Id` as optiona
 | `listMostActiveClients` | Get the most active clients in a site, sorted by total traffic. | `listMostActiveClients` |
 | `listOsgAcls` | List gateway (OSG) ACL rules for a site: firewall rules controlling.... | `listOsgAcls` |
 | `listPendingDevices` | List devices discovered on the network but not yet adopted into thi.... | `listPendingDevices` |
-| `listPolicyRoutes` | List policy routing rules for the site gateway. | `listPolicyRoutes` |
-| `listPortForwardingRules` | List all NAT port forwarding rules for a site: external port, inter.... | `listPortForwardingRules` |
+| `listPolicyRoutes` | [DEPRECATED] Use `getGridPolicyRouting` instead. This tool aggregates all pages; getGridPolicyRouting is paginated. | `listPolicyRoutes` |
+| `listPortForwardingRules` | [DEPRECATED] Use `getPortForwardingList` instead. List all NAT port forwarding rules for a site: external port, inter.... | `listPortForwardingRules` |
 | `listRadiusProfiles` | List RADIUS authentication profiles configured for a site: server I.... | `listRadiusProfiles` |
 | `listSiteAlerts` | List alert logs for a site: threshold breaches, device failures, se.... | `listSiteAlerts` |
 | `listSiteEvents` | List system event logs for a site: device online/offline, client co.... | `listSiteEvents` |
 | `listSiteToSiteVpns` | List site-to-site VPN configurations: tunnel name, remote IP, statu.... | `listSiteToSiteVpns` |
 | `listSites` | List all sites configured on the Omada controller. | `listSites` |
-| `listStaticRoutes` | List static routing rules configured for a site: destination networ.... | `listStaticRoutes` |
+| `listStaticRoutes` | [DEPRECATED] Use `getGridStaticRouting` instead. This tool aggregates all pages; getGridStaticRouting returns a single paginated page. | `listStaticRoutes` |
 | `listSwitchNetworks` | List VLAN network assignments for a switch. | `listSwitchNetworks` |
 | `listTimeRangeProfiles` | List time range profiles configured for a site. | `listTimeRangeProfiles` |
 | `searchDevices` | Search for devices globally across all sites the user has access to. | `searchDevices` |
@@ -684,7 +684,7 @@ In client-credentials mode the server already treats `Mcp-Session-Id` as optiona
 | `getAuditLogSettingForSite` | Get site-level audit log notification settings, including audit eve.... | `getAuditLogSettingForSite` |
 | `getAuditLogsForGlobal` | Get global audit logs (paginated). | `getAuditLogsForGlobal` |
 | `getBandSteeringSetting` | Get the band steering configuration. | `getBandSteeringSetting` |
-| `getBandwidthCtrl` | Get the global bandwidth control configuration for the site. | `getBandwidthControl` |
+| `getBandwidthCtrl` | [DEPRECATED] Use `getBandwidthControl` instead. Get the global bandwidth control configuration for the site. | `getBandwidthControl` |
 | `getBeaconControlSetting` | Get the beacon control setting, which manages 802.11 beacon transmi.... | `getBeaconControlSetting` |
 | `getChannelLimitSetting` | [DEPRECATED] Get the channel limit setting that restricts which cha.... | `getChannelLimitSetting` |
 | `getClientActiveTimeout` | Get the client inactivity timeout setting. | `getClientActiveTimeout` |
@@ -797,7 +797,7 @@ In client-credentials mode the server already treats `Mcp-Session-Id` as optiona
 | `getSelfServerSiteFileList` | List site backup files. | `getSiteBackupFileList` |
 | `getAllCloudUsersExcludeRoot` | List all cloud users excluding root. | `getAllCloudUsers` |
 | `getAllLocalUsersExcludeRoot` | List all local users excluding root. | `getAllLocalUsers` |
-| `getAllRoles` | List all roles. | `getAllRoles` |
+| `getAllRoles` | [DEPRECATED] Use `getUserRoleProfile` instead. List all roles. | `getAllRoles` |
 | `getRole` | Get role detail. | `getRoleDetail` |
 | `getAvailableRole` | List available roles. | `getAvailableRoles` |
 | `getAppGridUsers` | List all users in app grid view. | `getAllUsersApp` |
@@ -812,7 +812,7 @@ In client-credentials mode the server already treats `Mcp-Session-Id` as optiona
 | `getPortSchedulePorts` | List ports with port schedules. | `getPortSchedulePorts` |
 | `getMulticastRateLimitByOpenApi` | Get multicast rate limit setting. | `getMulticastRateLimit` |
 | `getApLoadBalanceConfig` | Get AP load balance configuration. | `getApLoadBalance` |
-| `getApOfdmaConfig` | Get AP OFDMA configuration. | `getApOfdmaConfig` |
+| `getApOfdmaConfig` | [DEPRECATED] Use `getSitesApsOfdma` instead. Same endpoint, retained for backward compatibility. getSitesApsOfdma is the canonical tool name. | `getApOfdmaConfig` |
 
 ## Contributing
 

@@ -20,7 +20,7 @@ export function registerGetGlobalSecuritySettingTool(server: McpServer, client: 
         'getGlobalSecuritySetting',
         {
             description:
-                'Get the global security threat management list from the controller. Returns detected threats across all sites with severity, type, and timing details.',
+                '[DEPRECATED] Use getThreatList instead. Same threat-management endpoint. Name was misleading. Get the global security threat management list from the controller. Returns detected threats across all sites with severity, type, and timing details.',
             inputSchema: inputSchema.shape,
         },
         wrapToolHandler('getGlobalSecuritySetting', async ({ archived, page, pageSize, startTime, endTime, customHeaders }) =>

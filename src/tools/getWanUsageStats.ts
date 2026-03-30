@@ -11,7 +11,8 @@ export function registerGetWanUsageStatsTool(server: McpServer, client: OmadaCli
     server.registerTool(
         'getWanUsageStats',
         {
-            description: 'Get WAN traffic usage statistics and activity data for the site.',
+            description:
+                '[DEPRECATED] Use getDashboardTrafficActivities instead. Same endpoint. Get WAN traffic usage statistics and activity data for the site.',
             inputSchema: inputSchema.shape,
         },
         wrapToolHandler('getWanUsageStats', async ({ siteId, customHeaders }) => toToolResult(await client.getWanUsageStats(siteId, customHeaders)))

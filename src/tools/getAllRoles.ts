@@ -8,7 +8,7 @@ export function registerGetAllRolesTool(server: McpServer, client: OmadaClient):
     server.registerTool(
         'getAllRoles',
         {
-            description: 'Get all user roles configured on the controller.',
+            description: '[DEPRECATED] Use getUserRoleProfile instead. Same GET /roles endpoint. Get all user roles configured on the controller.',
             inputSchema: inputSchema.shape,
         },
         wrapToolHandler('getAllRoles', async ({ customHeaders }) => toToolResult(await client.getAllRoles(customHeaders)))

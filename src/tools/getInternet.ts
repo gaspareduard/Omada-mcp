@@ -12,7 +12,7 @@ export function registerGetInternetTool(server: McpServer, client: OmadaClient):
         'getInternet',
         {
             description:
-                'Get full WAN/Internet configuration for the site gateway. Returns all WAN settings including connection type, IP, DNS, and advanced options.',
+                '[DEPRECATED] Use getInternetInfo instead. Same GET .../internet endpoint. Get full WAN/Internet configuration for the site gateway. Returns all WAN settings including connection type, IP, DNS, and advanced options.',
             inputSchema: inputSchema.shape,
         },
         wrapToolHandler('getInternet', async ({ siteId, customHeaders }) => toToolResult(await client.getInternet(siteId, customHeaders)))
