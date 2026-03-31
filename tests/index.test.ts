@@ -80,6 +80,10 @@ describe('src/index main entry', () => {
         expect(OmadaClient).toHaveBeenCalledWith(expect.objectContaining({ baseUrl: 'https://controller.local' }));
         expect(startStdioServer).toHaveBeenCalledWith(expect.objectContaining({ client: 'instance' }), new Map());
         expect(startHttpServer).not.toHaveBeenCalled();
+        expect(loggerInfo).toHaveBeenCalledWith(
+            'Starting Omada MCP server',
+            expect.objectContaining({ name: 'tplink-omada-mcp', version: expect.any(String), mode: 'stdio' })
+        );
         expect(loggerInfo).toHaveBeenCalledWith('Loaded Omada configuration', expect.objectContaining({ omadacId: 'omada-1' }));
     });
 

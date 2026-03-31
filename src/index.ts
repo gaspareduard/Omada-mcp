@@ -1,4 +1,5 @@
 import './env.js';
+import pkg from '../package.json' with { type: 'json' };
 import type { OmadaConnectionConfig } from './config.js';
 import { loadConfigFromEnv } from './config.js';
 import { OmadaClient } from './omadaClient/index.js';
@@ -14,6 +15,18 @@ async function main(): Promise<void> {
 
     // Initialize logger with configured level, format, and output stream
     initLogger(config.logLevel, config.logFormat, useStderr);
+
+    // Startup banner
+    logger.info('Starting Omada MCP server', {
+        name: pkg.name,
+        version: pkg.version,
+        description: pkg.description,
+        mode: config.useHttp ? 'http' : 'stdio',
+        logLevel: config.logLevel,
+        nodeVersion: process.version,
+        platform: process.platform,
+        arch: process.arch,
+    });
 
     for (const warning of config.startupWarnings) {
         logger.warn(warning);

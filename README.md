@@ -119,7 +119,7 @@ Each token is `<category>[:<suffix>]`. Permission suffixes:
 
 ##### Category Reference
 
-Categories marked with `*` are reserved for upcoming phases and have no tool implementations yet. Specifying them will produce a startup warning and they will be skipped.
+Categories marked with `*` are reserved for upcoming phases and have no tool implementations yet. Specifying them will produce a startup warning and they will be skipped. Write tools are currently limited to the `clients` category.
 
 | Group                   | Categories                                                                    |
 | ----------------------- | ----------------------------------------------------------------------------- |
@@ -130,9 +130,9 @@ Categories marked with `*` are reserved for upcoming phases and have no tool imp
 | Network                 | `network-wan`, `network-sim-lte`*, `network-lan`, `network-routing`, `network-nat`, `network-services` |
 | Firewall & Security     | `firewall-acl`, `firewall-traffic`, `firewall-ids`, `security-threat`, `security-wids` |
 | VPN                     | `vpn`                                                                         |
-| Profiles & Schedules    | `profiles`, `schedules`*, `auth-profiles`                                     |
+| Profiles & Schedules    | `profiles`, `schedules`, `auth-profiles`                                     |
 | Logs                    | `logs`                                                                        |
-| Controller & Org        | `controller`, `sites`, `maintenance`*, `account-users`*, `account-sso`*, `account-cloud`* |
+| Controller & Org        | `controller`, `sites`, `maintenance`, `account-users`, `account-sso`*, `account-cloud` |
 | Hotspot                 | `hotspot-portal`*, `hotspot-vouchers`*, `hotspot-users`*                      |
 | Niche                   | `site-templates`*, `voip`*, `olt`*, `msp`*                                    |
 
@@ -473,7 +473,7 @@ In client-credentials mode the server already treats `Mcp-Session-Id` as optiona
 | `getWanHealthDetail` | [DEPRECATED] Alias for the WAN health tool; kept for backward compatibility. Requires `gatewayMac`. |
 | `getWanUsageStats` | [DEPRECATED] Use `getDashboardTrafficActivities` instead. Gets WAN traffic usage statistics for the site. |
 | `getWanNatConfig` | Gets one-to-one NAT rules (paginated). |
-| `getPortForwardingStatus` | Gets port forwarding status and rules (User or UPnP types). |
+| `getPortForwardingStatus` | Gets port forwarding status and rules. Required: `type` (`user` or `upnp`). Optional pagination: `page` (default 1), `pageSize` (default 10). |
 | `getLanNetworkList` | [DEPRECATED] Use `getLanNetworkListV2` instead. This tool aggregates all pages; getLanNetworkListV2 is explicitly paginated. |
 | `getLanNetworkListV2` | Get the LAN network list using the v2 API, with richer VLAN and DHCP data (paginated). |
 | `getInterfaceLanNetwork` | Gets interface-level LAN network bindings. Optional type filter (0=WAN, 1=LAN). |
@@ -484,7 +484,7 @@ In client-credentials mode the server already treats `Mcp-Session-Id` as optiona
 | `getMulticastRateLimit` | Get multicast rate limit settings for a site. |
 | `getWlanGroupList` | Gets the list of WLAN groups configured in a site. |
 | `getSsidList` | Gets the list of SSIDs in a WLAN group. |
-| `getSsidDetail` | Gets detailed information for a specific SSID. |
+| `getSsidDetail` | Gets detailed information for a specific SSID. Required: `wlanId` and `ssidId`. |
 | `listAllSsids` | Lists wireless SSIDs across all WLAN groups. |
 | `getFirewallSetting` | Gets firewall configuration and rules for a site. |
 | `getVpnSettings` | Gets VPN settings for a site. |
@@ -566,7 +566,7 @@ In client-credentials mode the server already treats `Mcp-Session-Id` as optiona
 
 | Tool              | Description                                               |
 | ----------------- | --------------------------------------------------------- |
-| `getThreatList` | Gets global threat management list with filtering. |
+| `getThreatList` | Gets global threat management list. Required: `archived` (bool). Optional: `startTime`/`endTime` (seconds since epoch), `severity` (0=Critical, 1=Major, 2=Moderate/Concerning, 3=Minor, 4=Low), `page`, `pageSize`. |
 | `getTopThreats` | Gets top threats from the global threat management view. |
 ### Dashboard / Monitor
 
@@ -586,7 +586,7 @@ In client-credentials mode the server already treats `Mcp-Session-Id` as optiona
 | `getIspLoad` | Gets per-WAN ISP link load over a time range. Requires `start` and `end` timestamps (seconds). |
 | `getChannels` | Gets channel distribution and utilization across all APs. |
 | `getInterference` | Gets top RF interference sources detected by APs. |
-| `getGridDashboardTunnelStats` | Gets VPN tunnel statistics by type. Requires `type` parameter. |
+| `getGridDashboardTunnelStats` | Gets VPN tunnel statistics. Required: `type` (0 = Server, 1 = Client). |
 | `getGridDashboardIpsecTunnelStats` | Gets IPsec tunnel statistics.                            |
 | `getGridDashboardOpenVpnTunnelStats` | Gets OpenVPN tunnel statistics by type. Requires `type` parameter. |
 
