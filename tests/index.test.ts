@@ -2,6 +2,8 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 const baseConfig = {
     useHttp: false,
+    unsafeEnableHttp: false,
+    capabilityProfile: 'safe-read',
     logLevel: 'info',
     logFormat: 'plain',
     baseUrl: 'https://controller.local',
@@ -81,8 +83,8 @@ describe('src/index main entry', () => {
         expect(startStdioServer).toHaveBeenCalledWith(expect.objectContaining({ client: 'instance' }), new Map());
         expect(startHttpServer).not.toHaveBeenCalled();
         expect(loggerInfo).toHaveBeenCalledWith(
-            'Starting Omada MCP server',
-            expect.objectContaining({ name: 'tplink-omada-mcp', version: expect.any(String), mode: 'stdio' })
+            'Starting Safe Omada MCP server',
+            expect.objectContaining({ name: 'safe-omada-mcp', version: expect.any(String), mode: 'stdio' })
         );
         expect(loggerInfo).toHaveBeenCalledWith('Loaded Omada configuration', expect.objectContaining({ omadacId: 'omada-1' }));
     });

@@ -15,17 +15,6 @@ vi.mock('../../src/omadaClient/index.js', () => ({
     }),
 }));
 
-vi.mock('../../src/utils/omada-headers.js', () => ({
-    extractAuthFromHeaders: vi.fn(() => ({})),
-    resolveOmadaConfig: vi.fn(() => ({
-        baseUrl: 'https://test.local',
-        clientId: 'test-client-id',
-        clientSecret: 'test-client-secret',
-        omadacId: 'test-omadac-id',
-        strictSsl: true,
-    })),
-}));
-
 // Mock dependencies
 vi.mock('../../src/utils/logger.js', () => ({
     logger: {
@@ -80,6 +69,13 @@ describe('Stream Server', () => {
     let mockRes: ServerResponse;
     let mockReq: IncomingMessage;
     let streamSessions: Map<string, StreamTransportState>;
+    const omadaConfig = {
+        baseUrl: 'https://test.local',
+        clientId: 'test-client-id',
+        clientSecret: 'test-client-secret',
+        omadacId: 'test-omadac-id',
+        strictSsl: true,
+    };
 
     beforeEach(() => {
         vi.clearAllMocks();
@@ -89,6 +85,7 @@ describe('Stream Server', () => {
 
         // Mock EnvironmentConfig
         mockConfig = {
+            capabilityProfile: 'safe-read',
             omadacId: 'test-omadac-id',
             baseUrl: 'https://test.local',
             clientId: 'test-client-id',
@@ -104,6 +101,7 @@ describe('Stream Server', () => {
             httpHealthcheckPath: '/healthz',
             httpAllowCors: true,
             httpNgrokEnabled: false,
+            unsafeEnableHttp: false,
             logLevel: 'info',
             logFormat: 'plain',
             toolCategories: new Map(),
@@ -228,7 +226,7 @@ describe('Stream Server', () => {
 
     describe('handleStreamRequest', () => {
         it('creates a new session when no session header is provided', async () => {
-            await handleStreamRequest(mockConfig, mockReq, mockRes, undefined, streamSessions);
+            await handleStreamRequest(mockConfig, omadaConfig, mockReq, mockRes, undefined, streamSessions);
 
             expect(StreamableHTTPServerTransport).toHaveBeenCalled();
             const transportCall = vi.mocked(StreamableHTTPServerTransport).mock.calls[0][0];
@@ -249,7 +247,7 @@ describe('Stream Server', () => {
                 headers: { ...mockReq.headers, 'mcp-session-id': 'existing-session' },
             } as unknown as IncomingMessage;
 
-            await handleStreamRequest(mockConfig, reqWithSession, mockRes, undefined, streamSessions);
+            await handleStreamRequest(mockConfig, omadaConfig, reqWithSession, mockRes, undefined, streamSessions);
 
             expect(existingState.transport.handleRequest).toHaveBeenCalledWith(reqWithSession, mockRes, undefined);
             expect(existingState.server.connect).not.toHaveBeenCalled();
@@ -261,7 +259,7 @@ describe('Stream Server', () => {
                 headers: { ...mockReq.headers, 'mcp-session-id': 'missing-session' },
             } as unknown as IncomingMessage;
 
-            await handleStreamRequest(mockConfig, reqWithUnknownSession, mockRes, undefined, streamSessions);
+            await handleStreamRequest(mockConfig, omadaConfig, reqWithUnknownSession, mockRes, undefined, streamSessions);
 
             expect(mockRes.writeHead).toHaveBeenCalledWith(404, expect.any(Object));
             expect(mockRes.end).toHaveBeenCalled();
@@ -275,7 +273,7 @@ describe('Stream Server', () => {
                 },
             } as unknown as IncomingMessage;
 
-            await handleStreamRequest(mockConfig, reqWithoutOrigin, mockRes, undefined, streamSessions);
+            await handleStreamRequest(mockConfig, omadaConfig, reqWithoutOrigin, mockRes, undefined, streamSessions);
 
             expect(logger.info).toHaveBeenCalledWith(
                 'Streamable HTTP request received',
@@ -293,7 +291,7 @@ describe('Stream Server', () => {
                 },
             } as unknown as IncomingMessage;
 
-            await handleStreamRequest(mockConfig, reqWithoutHost, mockRes, undefined, streamSessions);
+            await handleStreamRequest(mockConfig, omadaConfig, reqWithoutHost, mockRes, undefined, streamSessions);
 
             expect(logger.info).toHaveBeenCalledWith(
                 'Streamable HTTP request received',
@@ -306,14 +304,14 @@ describe('Stream Server', () => {
         it('should pass parsed body to transport', async () => {
             const parsedBody = { method: 'initialize', params: {} };
 
-            await handleStreamRequest(mockConfig, mockReq, mockRes, parsedBody, streamSessions);
+            await handleStreamRequest(mockConfig, omadaConfig, mockReq, mockRes, parsedBody, streamSessions);
 
             const transport = vi.mocked(StreamableHTTPServerTransport).mock.results[0].value;
             expect(transport.handleRequest).toHaveBeenCalledWith(mockReq, mockRes, parsedBody);
         });
 
         it('should log successful request handling', async () => {
-            await handleStreamRequest(mockConfig, mockReq, mockRes, undefined, streamSessions);
+            await handleStreamRequest(mockConfig, omadaConfig, mockReq, mockRes, undefined, streamSessions);
 
             expect(logger.debug).toHaveBeenCalledWith('Streamable HTTP request handled', {
                 method: 'POST',
@@ -329,7 +327,9 @@ describe('Stream Server', () => {
                 this.onerror = undefined;
             });
 
-            await expect(handleStreamRequest(mockConfig, mockReq, mockRes, undefined, streamSessions)).rejects.toThrow('Request handling failed');
+            await expect(handleStreamRequest(mockConfig, omadaConfig, mockReq, mockRes, undefined, streamSessions)).rejects.toThrow(
+                'Request handling failed'
+            );
 
             expect(logger.error).toHaveBeenCalledWith(
                 'Failed to handle Streamable HTTP request',
@@ -350,7 +350,7 @@ describe('Stream Server', () => {
                 method: 'GET',
             } as unknown as IncomingMessage;
 
-            await handleStreamRequest(mockConfig, getReq, mockRes, undefined, streamSessions);
+            await handleStreamRequest(mockConfig, omadaConfig, getReq, mockRes, undefined, streamSessions);
 
             expect(logger.info).toHaveBeenCalledWith(
                 'Streamable HTTP request received',
@@ -366,7 +366,7 @@ describe('Stream Server', () => {
                 method: 'DELETE',
             } as unknown as IncomingMessage;
 
-            await handleStreamRequest(mockConfig, deleteReq, mockRes, undefined, streamSessions);
+            await handleStreamRequest(mockConfig, omadaConfig, deleteReq, mockRes, undefined, streamSessions);
 
             expect(logger.info).toHaveBeenCalledWith(
                 'Streamable HTTP request received',

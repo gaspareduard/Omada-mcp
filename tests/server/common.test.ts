@@ -110,6 +110,15 @@ describe('server/common', () => {
             expect(safeSerialize(obj)).toBe(JSON.stringify(obj));
         });
 
+        it('should redact sensitive fields recursively', () => {
+            const obj = {
+                token: 'abcd1234abcd1234',
+                nested: { clientSecret: 'super-secret-value', note: 'safe' },
+            };
+
+            expect(safeSerialize(obj)).toBe('{"token":"abcd…1234","nested":{"clientSecret":"supe…alue","note":"safe"}}');
+        });
+
         it('should serialize arrays', () => {
             const arr = [1, 2, 3];
             expect(safeSerialize(arr)).toBe(JSON.stringify(arr));

@@ -3,7 +3,7 @@
 FROM node:24-bookworm-slim AS deps
 WORKDIR /app
 COPY package*.json ./
-RUN npm install
+RUN npm ci
 
 FROM node:24-bookworm-slim AS build
 WORKDIR /app
@@ -14,20 +14,22 @@ RUN npm run build
 FROM node:24-bookworm-slim AS runtime
 
 # OCI metadata labels
-LABEL org.opencontainers.image.title="TP-Link Omada MCP Server"
-LABEL org.opencontainers.image.description="Model Context Protocol server for TP-Link Omada controller APIs"
-LABEL org.opencontainers.image.authors="João Miguel Tabosa Vaz Marques Silva <joao@miguel.ms>"
-LABEL org.opencontainers.image.url="https://github.com/MiguelTVMS/tplink-omada-mcp"
-LABEL org.opencontainers.image.source="https://github.com/MiguelTVMS/tplink-omada-mcp"
-LABEL org.opencontainers.image.documentation="https://github.com/MiguelTVMS/tplink-omada-mcp#readme"
+LABEL org.opencontainers.image.title="Safe Omada MCP"
+LABEL org.opencontainers.image.description="Security-focused MCP server for TP-Link Omada Open API workflows"
+LABEL org.opencontainers.image.authors="Internal platform team"
+LABEL org.opencontainers.image.url="https://github.com/your-org/safe-omada-mcp"
+LABEL org.opencontainers.image.source="https://github.com/your-org/safe-omada-mcp"
+LABEL org.opencontainers.image.documentation="https://github.com/your-org/safe-omada-mcp#readme"
 LABEL org.opencontainers.image.licenses="MIT"
 
 WORKDIR /app
 ENV NODE_ENV=production
+RUN groupadd --system omada && useradd --system --gid omada --create-home omada
 RUN apt-get update \
   && apt-get install -y --no-install-recommends curl \
   && rm -rf /var/lib/apt/lists/*
 COPY package*.json ./
-RUN npm install --omit=dev --ignore-scripts
+RUN npm ci --omit=dev --ignore-scripts
 COPY --from=build /app/dist ./dist
+USER omada
 CMD ["node", "dist/index.js"]

@@ -3,6 +3,7 @@ import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import type { ToolCategory, ToolPermission } from '../config.js';
 import type { OmadaClient } from '../omadaClient/index.js';
 import { logger } from '../utils/logger.js';
+import { registerBlockClientTool } from './blockClient.js';
 import { registerDisableClientRateLimitTool } from './disableClientRateLimit.js';
 import { registerGetAccessControlTool } from './getAccessControl.js';
 import { registerGetAclConfigTypeSettingTool } from './getAclConfigTypeSetting.js';
@@ -327,9 +328,13 @@ import { registerListUpgradeFirmwaresTool } from './listUpgradeFirmwares.js';
 import { registerListUpgradeOverviewFirmwaresTool } from './listUpgradeOverviewFirmwares.js';
 import { registerListWireguardTool } from './listWireguard.js';
 import { registerListWireguardPeersTool } from './listWireguardPeers.js';
+import { registerRebootDeviceTool } from './rebootDevice.js';
+import { registerReconnectClientTool } from './reconnectClient.js';
 import { registerSearchDevicesTool } from './searchDevices.js';
 import { registerSetClientRateLimitTool } from './setClientRateLimit.js';
 import { registerSetClientRateLimitProfileTool } from './setClientRateLimitProfile.js';
+import { registerSetDeviceLedTool } from './setDeviceLed.js';
+import { registerUnblockClientTool } from './unblockClient.js';
 
 // ---------------------------------------------------------------------------
 // Tool registry: each entry maps a register-function to its category and
@@ -423,6 +428,8 @@ const TOOL_REGISTRY: ToolEntry[] = [
     { fn: registerGetSitesGatewaysPinTool, category: 'devices-gateway', permission: 'read' },
     { fn: registerGetSitesGatewaysSimCardUsedTool, category: 'devices-gateway', permission: 'read' },
     { fn: registerGetSitesHealthGatewaysWansDetailsTool, category: 'devices-gateway', permission: 'read' },
+    { fn: registerRebootDeviceTool, category: 'devices-general', permission: 'write' },
+    { fn: registerSetDeviceLedTool, category: 'devices-general', permission: 'write' },
 
     // --- Clients ---
     { fn: registerListClientsTool, category: 'clients', permission: 'read' },
@@ -430,6 +437,9 @@ const TOOL_REGISTRY: ToolEntry[] = [
     { fn: registerGetClientDetailTool, category: 'clients', permission: 'read' },
     { fn: registerGetGridKnownClientsTool, category: 'clients', permission: 'read' },
     { fn: registerGetGridClientHistoryTool, category: 'clients', permission: 'read' },
+    { fn: registerBlockClientTool, category: 'clients', permission: 'write' },
+    { fn: registerUnblockClientTool, category: 'clients', permission: 'write' },
+    { fn: registerReconnectClientTool, category: 'clients', permission: 'write' },
     { fn: registerSetClientRateLimitTool, category: 'clients', permission: 'write' },
     { fn: registerSetClientRateLimitProfileTool, category: 'clients', permission: 'write' },
     { fn: registerDisableClientRateLimitTool, category: 'clients', permission: 'write' },

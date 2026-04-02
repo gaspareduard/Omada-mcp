@@ -1,16 +1,12 @@
-# TP-Link Omada MCP server
+# Safe Omada MCP
 
-> ## 🤖 AI-Developed Repository
->
-> Since **March 2, 2026**, this repository contains no human-written code.
->
-> All planning, development, and code review is performed by AI agents. Humans remain in the loop for direction, decisions, and final approval — but every line of code, every test, every commit, and every PR is the work of AI.
->
-> This is not an experiment. This is how it works now. [Know more](https://miguel.ms)
+A security-focused Model Context Protocol server implemented in TypeScript for TP-Link Omada Open API workflows.
 
----
-
-A Model Context Protocol (MCP) server implemented in TypeScript that exposes the TP-Link Omada controller APIs to AI copilots and automation workflows. The server authenticates against a controller, lists sites, devices, and connected clients, and offers a generic tool to invoke arbitrary Omada API endpoints.
+> Safe baseline:
+> - `stdio` is the supported production transport for milestone 1
+> - Omada credentials are environment-only
+> - no generic raw API tool is exposed in the supported runtime
+> - controller-specific compatibility work belongs in a separate track
 
 > **Compatibility:** Tested with Omada Controller versions 5.x and 6.x
 
@@ -23,7 +19,7 @@ A Model Context Protocol (MCP) server implemented in TypeScript that exposes the
 1. **Pull the Docker image** (or build it locally with `npm run docker:build`):
 
    ```bash
-   docker pull jmtvms/tplink-omada-mcp:latest
+   docker pull ghcr.io/your-org/safe-omada-mcp:latest
    ```
 
 2. **Add the MCP server to Claude Desktop configuration**. Edit your Claude Desktop config file:
@@ -35,7 +31,7 @@ A Model Context Protocol (MCP) server implemented in TypeScript that exposes the
    ```json
    {
      "mcpServers": {
-       "tplink-omada": {
+      "safe-omada": {
          "command": "docker",
          "args": [
            "run",
@@ -46,8 +42,8 @@ A Model Context Protocol (MCP) server implemented in TypeScript that exposes the
            "-e", "OMADA_CLIENT_SECRET=your-client-secret",
            "-e", "OMADA_OMADAC_ID=your-omadac-id",
            "-e", "OMADA_SITE_ID=your-site-id",
-           "-e", "OMADA_STRICT_SSL=false",
-           "jmtvms/tplink-omada-mcp:latest"
+           "-e", "OMADA_STRICT_SSL=true",
+           "ghcr.io/your-org/safe-omada-mcp:latest"
          ]
        }
      }
@@ -67,27 +63,15 @@ A Model Context Protocol (MCP) server implemented in TypeScript that exposes the
 ```bash
 docker run -it --rm \
   --env-file .env \
-  jmtvms/tplink-omada-mcp:latest
+  ghcr.io/your-org/safe-omada-mcp:latest
 ```
-
-#### HTTP Server Container
-
-```bash
-docker run -d \
-  --env-file .env \
-  -e MCP_SERVER_USE_HTTP=true \
-  -e MCP_HTTP_BIND_ADDR=0.0.0.0 \
-  -p 3000:3000 \
-  jmtvms/tplink-omada-mcp:latest
-```
-
-The HTTP server will be available at `http://localhost:3000/mcp`.
 
 ## Features
 
 - OAuth client-credentials authentication with automatic token refresh
 - Tools for retrieving sites, network devices, and connected clients
-- Generic Omada API invoker for advanced automation scenarios
+- Explicit capability profiles and category-based tool gating
+- Structured mutation summaries for operational write tools
 - Environment-driven configuration
 - Per-tag Omada OpenAPI references stored under `docs/openapi`
 - Ready-to-use devcontainer with a companion Omada controller service
@@ -180,12 +164,12 @@ OMADA_TOOL_CATEGORIES=network-all:r,clients:rw
 | ------------------------ | -------- | ------- | --------------------------------------------------------------------------- |
 | `MCP_SERVER_LOG_LEVEL` | No       | `info`  | Logging verbosity (`debug`, `info`, `warn`, `error`, `silent`) |
 | `MCP_SERVER_LOG_FORMAT` | No       | `plain` | Log output format (`plain`, `json`, or `gcp-json`) |
-| `MCP_SERVER_USE_HTTP` | No       | `false` | Start HTTP server instead of stdio |
-> **Session IDs and authentication:** When `OMADA_CLIENT_ID`, `OMADA_CLIENT_SECRET`, and `OMADA_OMADAC_ID` are provided (the default client-credentials mode), the server runs statelessly and treats the `Mcp-Session-Id` header as optional. A future OAuth-based user authentication mode will require this header again.
+| `MCP_SERVER_USE_HTTP` | No       | `false` | Legacy lab-only switch. Unsupported for the safe production baseline. |
+| `MCP_UNSAFE_ENABLE_HTTP` | No       | `false` | Explicit acknowledgement required before HTTP mode can start. |
 
 #### MCP Server HTTP Configuration
 
-These variables are only used when `MCP_SERVER_USE_HTTP=true`:
+These variables are only used when `MCP_SERVER_USE_HTTP=true` and `MCP_UNSAFE_ENABLE_HTTP=true`:
 
 | Variable                       | Required | Default                         | Description                                                                 |
 | ------------------------------ | -------- | ------------------------------- | --------------------------------------------------------------------------- |
@@ -196,8 +180,8 @@ These variables are only used when `MCP_SERVER_USE_HTTP=true`:
 | `MCP_HTTP_HEALTHCHECK_PATH` | No       | `/healthz`                      | Path for the healthcheck endpoint |
 | `MCP_HTTP_ALLOW_CORS` | No       | `true`                          | Enable CORS for the HTTP server |
 | `MCP_HTTP_ALLOWED_ORIGINS` | No       | `127.0.0.1, localhost`          | Comma-separated list of allowed origins. Use `*` to allow all (dev only) |
-| `MCP_HTTP_NGROK_ENABLED` | No       | `false`                         | Use ngrok to expose the HTTP server publicly |
-| `MCP_HTTP_NGROK_AUTH_TOKEN` | No       | -                               | Ngrok auth token (required if `MCP_HTTP_NGROK_ENABLED=true`) |
+| `MCP_HTTP_NGROK_ENABLED` | No       | `false`                         | Legacy placeholder. Public tunnel support is disabled in the safe baseline. |
+| `MCP_HTTP_NGROK_AUTH_TOKEN` | No       | -                               | Legacy placeholder. |
 Create a `.env` file (ignored by git) or export the variables before launching the server.
 
 ### Development
@@ -263,7 +247,7 @@ The MCP server communicates over standard input and output. Integrate it with MC
 A container image is provided for running the MCP server:
 
 ```bash
-npm run docker:build  # Build the Docker image (tag: jmtvms/tplink-omada-mcp:latest)
+npm run docker:build  # Build the Docker image (tag: ghcr.io/your-org/safe-omada-mcp:latest)
 npm run docker:run    # Launch the container with your .env file
 npm run docker:push   # Push the image to Docker Hub
 ```
@@ -271,10 +255,10 @@ npm run docker:push   # Push the image to Docker Hub
 You can also pull the pre-built image directly from Docker Hub:
 
 ```bash
-docker pull jmtvms/tplink-omada-mcp:latest
+docker pull ghcr.io/your-org/safe-omada-mcp:latest
 ```
 
-The same image supports both stdio and HTTP transports - configure the desired mode using environment variables (e.g., set `MCP_SERVER_USE_HTTP=true` for HTTP mode).
+The safe baseline uses stdio. HTTP mode exists only as an explicitly unsafe lab path and is not part of the production quick start.
 
 ### Debugging with MCP Inspector
 
@@ -282,7 +266,7 @@ Use the MCP Inspector to interactively test tools, resources, and prompts withou
 
 - **`npm run inspector`** — Launches the inspector based on your `.env` settings:
   - If `MCP_SERVER_USE_HTTP=false` (or unset): Runs the server in stdio mode with `tsx src/index.ts` for live reload debugging
-  - If `MCP_SERVER_USE_HTTP=true`: Connects to an already-running HTTP server at the configured port/transport (start the server first with `npm run dev`)
+  - If `MCP_SERVER_USE_HTTP=true`: Legacy lab-only path. Keep it disabled for production use.
   
 - **`npm run inspector:build`** — Compiles the project first, then launches the inspector against the production build (`dist/index.js`) to verify release parity. Also adapts to stdio or HTTP mode based on `.env`.
 
@@ -292,74 +276,7 @@ The MCP Inspector tool automatically binds to localhost and generates a session 
 
 ### Transport Protocols
 
-The MCP server uses the **Streamable HTTP** transport, which implements the [MCP protocol version 2025-03-26](https://modelcontextprotocol.io/specification/2025-06-18/basic/transports#http-with-sse).
-
-```bash
-export MCP_SERVER_USE_HTTP=true
-npm run dev
-```
-
-Features:
-
-- Single endpoint for all operations (GET, POST, DELETE)
-- Server-Sent Events for streaming responses
-- Built-in session management with cryptographic session IDs (the server currently operates statelessly when using client credentials)
-
-The endpoint defaults to `/mcp` and handles:
-
-- `GET /mcp` - Establish SSE stream and initialize session
-- `POST /mcp` - Send JSON-RPC messages
-- `DELETE /mcp` - Terminate session
-
-#### Security Considerations
-
-DNS rebinding protection is enabled by default:
-
-- **Origin Validation**: The server validates the `Origin` header on all incoming connections. Configure allowed origins with `MCP_HTTP_ALLOWED_ORIGINS` (default: `127.0.0.1, localhost`). Use `*` to allow all origins (development only, not recommended for production).
-- **Network Binding**: The server binds to `127.0.0.1` by default, restricting access to localhost only. Set `MCP_HTTP_BIND_ADDR=0.0.0.0` to expose the server to your network (not recommended for production without additional security measures).
-
-For more information on the MCP protocol and transports, see the [Model Context Protocol documentation](https://modelcontextprotocol.io/).
-
-### HTTP transport usage
-
-Start the HTTP transport with:
-
-```bash
-# Start with HTTP enabled
-export MCP_SERVER_USE_HTTP=true
-npm run dev    # live reload during development
-npm run start  # run the compiled output
-```
-
-By default, the server listens on `127.0.0.1:3000` and exposes the MCP endpoint at `/mcp` with a health check on `/healthz`. Configure the bind address, port, and path using the optional `MCP_HTTP_*` environment variables documented in `.env.example`. The `npm run docker:run:http` helper wraps the HTTP image and publishes the port automatically.
-
-#### Using ngrok
-
-To share the local server with remote tooling, you can use ngrok to expose the HTTP server publicly.
-
-##### Option 1: Built-in ngrok support (recommended)
-
-Set the following environment variables:
-
-```bash
-export MCP_HTTP_NGROK_ENABLED=true
-export MCP_HTTP_NGROK_AUTH_TOKEN=your-ngrok-auth-token
-npm run dev
-```
-
-The server will automatically establish an ngrok tunnel and log the public URL.
-
-##### Option 2: Manual ngrok setup
-
-Run ngrok in a separate terminal after starting the server:
-
-```bash
-ngrok http 3000
-```
-
-This forwards a public HTTPS URL to `http://localhost:3000` and prints the tunnel address in the console.
-
-In client-credentials mode the server already treats `Mcp-Session-Id` as optional; if the header is removed in transit, requests will still succeed.
+The supported milestone 1 transport is stdio. HTTP mode remains in the codebase only as an explicitly unsafe lab path and should not be used for routine deployment.
 
 ## Tools
 
@@ -386,6 +303,11 @@ In client-credentials mode the server already treats `Mcp-Session-Id` as optiona
 | `setClientRateLimit` | Sets custom bandwidth limits (download/upload) for a specific client. |
 | `setClientRateLimitProfile` | Applies a predefined rate limit profile to a specific client.                |
 | `disableClientRateLimit` | Disables bandwidth rate limiting for a specific client. |
+| `blockClient` | Blocks a client from network access with an auditable mutation summary. |
+| `unblockClient` | Restores a blocked client to network access with an auditable mutation summary. |
+| `reconnectClient` | Forces a client to reconnect with an auditable mutation summary. |
+| `rebootDevice` | Reboots a managed device with an auditable mutation summary. |
+| `setDeviceLed` | Changes a device LED state with an auditable mutation summary. |
 ### Device
 
 | Tool                    | Description                                                                       |
@@ -1004,4 +926,3 @@ The repository includes a ready-to-use [devcontainer](https://containers.dev/) c
 ## License
 
 This project is licensed under the [MIT License](LICENSE).
-

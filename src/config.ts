@@ -7,6 +7,7 @@ import { isValidBindAddress, isValidOrigin } from './utils/config-validations.js
 // ---------------------------------------------------------------------------
 
 export type ToolPermission = 'read' | 'write';
+export type CapabilityProfile = 'safe-read' | 'ops-write' | 'admin' | 'compatibility';
 
 /** All known atomic category names */
 export const ALL_CATEGORIES = [
@@ -197,6 +198,15 @@ function mergePermissions(map: Map<ToolCategory, Set<ToolPermission>>, cat: Tool
 /** Default value for OMADA_TOOL_CATEGORIES */
 export const DEFAULT_TOOL_CATEGORIES = 'dashboard:r,client-insights:r,clients:r,devices-all:r';
 
+export const DEFAULT_CAPABILITY_PROFILE: CapabilityProfile = 'safe-read';
+
+export const CAPABILITY_PROFILE_DEFAULTS: Record<CapabilityProfile, string> = {
+    'safe-read': DEFAULT_TOOL_CATEGORIES,
+    'ops-write': 'dashboard:r,client-insights:r,clients:rw,devices-all:r,maintenance:r',
+    admin: 'all:rw',
+    compatibility: 'all:rw',
+};
+
 const createBooleanStringSchema = (
     defaultValue: boolean
 ): z.ZodEffects<z.ZodOptional<z.ZodUnion<[z.ZodLiteral<'true'>, z.ZodLiteral<'false'>]>>, boolean, 'true' | 'false' | undefined> =>
@@ -228,8 +238,9 @@ const listStringSchema = z
 
 const envSchema = z
     .object({
+        capabilityProfile: z.enum(['safe-read', 'ops-write', 'admin', 'compatibility']).optional().default(DEFAULT_CAPABILITY_PROFILE),
         // Tool category filtering
-        toolCategories: z.string().optional().default(DEFAULT_TOOL_CATEGORIES),
+        toolCategories: z.string().optional(),
 
         // Omada Client Configuration
         baseUrl: z.string().url({ message: 'OMADA_BASE_URL must be a valid URL' }),
@@ -244,6 +255,7 @@ const envSchema = z
         logLevel: z.enum(['debug', 'info', 'warn', 'error']).optional().default('info'),
         logFormat: z.enum(['plain', 'json', 'gcp-json']).optional().default('plain'),
         useHttp: createBooleanStringSchema(false),
+        unsafeEnableHttp: createBooleanStringSchema(false),
 
         // MCP Server HTTP Configuration
         httpPort: numericStringSchema,
@@ -256,12 +268,16 @@ const envSchema = z
         httpNgrokEnabled: createBooleanStringSchema(false),
         httpNgrokAuthToken: z.string().optional(),
     })
-    .refine((data) => data.useHttp || !!data.clientId, { message: 'OMADA_CLIENT_ID is required when not using HTTP mode', path: ['clientId'] })
-    .refine((data) => data.useHttp || !!data.clientSecret, {
-        message: 'OMADA_CLIENT_SECRET is required when not using HTTP mode',
+    .refine((data) => !!data.clientId, { message: 'OMADA_CLIENT_ID is required', path: ['clientId'] })
+    .refine((data) => !!data.clientSecret, {
+        message: 'OMADA_CLIENT_SECRET is required',
         path: ['clientSecret'],
     })
-    .refine((data) => data.useHttp || !!data.omadacId, { message: 'OMADA_OMADAC_ID is required when not using HTTP mode', path: ['omadacId'] })
+    .refine((data) => !!data.omadacId, { message: 'OMADA_OMADAC_ID is required', path: ['omadacId'] })
+    .refine((data) => !data.useHttp || data.unsafeEnableHttp, {
+        message: 'MCP_SERVER_USE_HTTP requires MCP_UNSAFE_ENABLE_HTTP=true. HTTP transport is intentionally unsupported for the safe baseline.',
+        path: ['unsafeEnableHttp'],
+    })
     .refine(
         (data) => {
             // Validate httpBindAddr if provided
@@ -311,6 +327,7 @@ export interface OmadaConnectionConfig {
 }
 
 export interface EnvironmentConfig {
+    capabilityProfile: CapabilityProfile;
     // Tool category filtering
     toolCategories: Map<ToolCategory, Set<ToolPermission>>;
     startupWarnings: string[];
@@ -330,6 +347,7 @@ export interface EnvironmentConfig {
     logLevel: 'debug' | 'info' | 'warn' | 'error';
     logFormat: 'plain' | 'json' | 'gcp-json';
     useHttp: boolean;
+    unsafeEnableHttp: boolean;
 
     // MCP Server HTTP Configuration
     httpPort?: number;
@@ -346,6 +364,7 @@ export interface EnvironmentConfig {
 
 export function loadConfigFromEnv(env: NodeJS.ProcessEnv = process.env): EnvironmentConfig {
     const parsed = envSchema.safeParse({
+        capabilityProfile: env.OMADA_CAPABILITY_PROFILE,
         // Tool category filtering
         toolCategories: env.OMADA_TOOL_CATEGORIES,
 
@@ -362,6 +381,7 @@ export function loadConfigFromEnv(env: NodeJS.ProcessEnv = process.env): Environ
         logLevel: env.MCP_SERVER_LOG_LEVEL,
         logFormat: env.MCP_SERVER_LOG_FORMAT,
         useHttp: env.MCP_SERVER_USE_HTTP,
+        unsafeEnableHttp: env.MCP_UNSAFE_ENABLE_HTTP,
 
         // MCP Server HTTP Configuration
         httpPort: env.MCP_HTTP_PORT,
@@ -396,11 +416,21 @@ export function loadConfigFromEnv(env: NodeJS.ProcessEnv = process.env): Environ
         httpAllowedOrigins = [];
     }
 
-    // Parse tool categories
-    const { categories: toolCategories, warnings: categoryWarnings } = parseToolCategories(parsed.data.toolCategories);
+    const rawToolCategories = parsed.data.toolCategories ?? CAPABILITY_PROFILE_DEFAULTS[parsed.data.capabilityProfile];
+    const { categories: toolCategories, warnings: categoryWarnings } = parseToolCategories(rawToolCategories);
     warnings.push(...categoryWarnings);
+    if (!parsed.data.toolCategories) {
+        warnings.push(`OMADA_CAPABILITY_PROFILE=${parsed.data.capabilityProfile} selected default tool categories: ${rawToolCategories}`);
+    }
+    if (parsed.data.capabilityProfile === 'compatibility') {
+        warnings.push('Compatibility profile is reserved for future controller-specific fallback modules and should stay disabled in production.');
+    }
+    if (parsed.data.useHttp) {
+        warnings.push('HTTP transport is enabled with explicit unsafe acknowledgement. The supported production baseline remains stdio only.');
+    }
 
     return {
+        capabilityProfile: parsed.data.capabilityProfile,
         // Tool category filtering
         toolCategories,
         startupWarnings: warnings,
@@ -418,6 +448,7 @@ export function loadConfigFromEnv(env: NodeJS.ProcessEnv = process.env): Environ
         logLevel: parsed.data.logLevel,
         logFormat: parsed.data.logFormat,
         useHttp: parsed.data.useHttp,
+        unsafeEnableHttp: parsed.data.unsafeEnableHttp,
 
         // MCP Server HTTP Configuration
         httpPort: parsed.data.httpPort,

@@ -112,6 +112,7 @@ class MockResponse {
 const flushTasks = () => new Promise((resolve) => setImmediate(resolve));
 
 const baseConfig: EnvironmentConfig = {
+    capabilityProfile: 'safe-read',
     baseUrl: 'https://controller.local',
     clientId: 'client-id',
     clientSecret: 'secret',
@@ -121,6 +122,7 @@ const baseConfig: EnvironmentConfig = {
     logLevel: 'info',
     logFormat: 'plain',
     useHttp: true,
+    unsafeEnableHttp: true,
     httpTransport: 'stream',
     httpEnableHealthcheck: true,
     httpAllowCors: true,
@@ -164,7 +166,7 @@ describe('startHttpServer', () => {
         await flushTasks();
         expect(streamModule.handleStreamRequest).toHaveBeenCalled();
         const streamCallArgs = streamModule.handleStreamRequest.mock.calls[0] as unknown[];
-        const sessionMapArg = streamCallArgs[4];
+        const sessionMapArg = streamCallArgs[5];
         expect(sessionMapArg).toBeInstanceOf(Map);
     });
 
@@ -188,10 +190,12 @@ describe('startHttpServer', () => {
         expect(notFoundRes.statusCode).toBe(404);
     });
 
-    it('warns when ngrok enabled without token', async () => {
+    it('warns that ngrok is ignored in the safe baseline', async () => {
         const { startHttpServer } = await import('../../src/server/http.js');
         await startHttpServer({ ...baseConfig, httpNgrokEnabled: true });
-        expect(loggerModule.warn).toHaveBeenCalledWith('Ngrok enabled but no auth token provided; skipping tunnel setup');
+        expect(loggerModule.warn).toHaveBeenCalledWith(
+            'MCP_HTTP_NGROK_ENABLED is ignored in the safe baseline. Public tunnel support is intentionally disabled.'
+        );
     });
 
     it('handles handler failures and client errors gracefully', async () => {
@@ -213,7 +217,7 @@ describe('startHttpServer', () => {
         expect(socket.end).toHaveBeenCalledWith('HTTP/1.1 400 Bad Request\r\n\r\n');
     });
 
-    it('establishes ngrok tunnel and normalizes host when auth token provided', async () => {
+    it('does not establish ngrok tunnels even when legacy settings are present', async () => {
         const { startHttpServer } = await import('../../src/server/http.js');
         await startHttpServer({
             ...baseConfig,
@@ -222,8 +226,7 @@ describe('startHttpServer', () => {
             httpBindAddr: '0.0.0.0',
         });
 
-        expect(ngrokModule.forward).toHaveBeenCalledWith(expect.objectContaining({ authtoken: 'token-123' }));
-        expect(loggerModule.info).toHaveBeenCalledWith('Ngrok tunnel established', { url: 'https://example.ngrok.dev' });
+        expect(ngrokModule.forward).not.toHaveBeenCalled();
         const listeningCall = loggerModule.info.mock.calls.find((call) => call[0] === 'HTTP server listening');
         expect(listeningCall?.[1]).toEqual(expect.objectContaining({ endpoint: expect.stringContaining('http://localhost:3000') }));
     });

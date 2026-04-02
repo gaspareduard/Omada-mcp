@@ -24,6 +24,7 @@ import type {
 } from '../types/index.js';
 
 import { AccountOperations } from './account.js';
+import { ActionOperations } from './actions.js';
 import { AuthManager } from './auth.js';
 import { ClientOperations } from './client.js';
 import { ControllerOperations } from './controller.js';
@@ -77,6 +78,8 @@ export class OmadaClient {
 
     private readonly scheduleOps: ScheduleOperations;
 
+    private readonly actionOps: ActionOperations;
+
     private readonly omadacId: string;
 
     constructor(options: OmadaClientOptions) {
@@ -112,6 +115,7 @@ export class OmadaClient {
         this.maintenanceOps = new MaintenanceOperations(this.request, this.siteOps, this.buildOmadaPath.bind(this));
         this.accountOps = new AccountOperations(this.request, this.buildOmadaPath.bind(this));
         this.scheduleOps = new ScheduleOperations(this.request, this.siteOps, this.buildOmadaPath.bind(this));
+        this.actionOps = new ActionOperations(this.request, this.siteOps, this.buildOmadaPath.bind(this));
     }
 
     // Site operations
@@ -311,6 +315,26 @@ export class OmadaClient {
     }
     public async getFirmwareInfo(deviceMac: string, siteId?: string, customHeaders?: CustomHeaders): Promise<unknown> {
         return await this.deviceOps.getFirmwareInfo(deviceMac, siteId, customHeaders);
+    }
+
+    public async rebootDevice(deviceMac: string, siteId?: string, customHeaders?: CustomHeaders): Promise<unknown> {
+        return await this.actionOps.rebootDevice(deviceMac, siteId, customHeaders);
+    }
+
+    public async blockClient(clientMac: string, siteId?: string, customHeaders?: CustomHeaders): Promise<unknown> {
+        return await this.actionOps.blockClient(clientMac, siteId, customHeaders);
+    }
+
+    public async unblockClient(clientMac: string, siteId?: string, customHeaders?: CustomHeaders): Promise<unknown> {
+        return await this.actionOps.unblockClient(clientMac, siteId, customHeaders);
+    }
+
+    public async reconnectClient(clientMac: string, siteId?: string, customHeaders?: CustomHeaders): Promise<unknown> {
+        return await this.actionOps.reconnectClient(clientMac, siteId, customHeaders);
+    }
+
+    public async setDeviceLed(deviceMac: string, ledSetting: number, siteId?: string, customHeaders?: CustomHeaders): Promise<unknown> {
+        return await this.actionOps.setDeviceLed(deviceMac, ledSetting, siteId, customHeaders);
     }
     public async getGridAutoCheckUpgrade(page: number, pageSize: number, customHeaders?: CustomHeaders): Promise<unknown> {
         return await this.deviceOps.getGridAutoCheckUpgrade(page, pageSize, customHeaders);

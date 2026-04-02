@@ -56,10 +56,72 @@ export function toToolResult(value: unknown): CallToolResult {
 
 export function safeSerialize(value: unknown): string {
     try {
-        return JSON.stringify(value);
+        return JSON.stringify(sanitizeForLogs(value));
     } catch {
         return '[unserializable]';
     }
+}
+
+function sanitizeForLogs(value: unknown): unknown {
+    if (value === null || value === undefined) {
+        return value;
+    }
+
+    if (typeof value === 'string') {
+        return isLikelySensitiveString(value) ? maskValue(value) : value;
+    }
+
+    if (Array.isArray(value)) {
+        return value.map((entry) => sanitizeForLogs(entry));
+    }
+
+    if (typeof value === 'object') {
+        const sanitized: Record<string, unknown> = {};
+        for (const [key, entry] of Object.entries(value)) {
+            sanitized[key] = isSensitiveKey(key) ? maskValue(entry) : sanitizeForLogs(entry);
+        }
+        return sanitized;
+    }
+
+    return value;
+}
+
+function isSensitiveKey(key: string): boolean {
+    const normalized = key.toLowerCase();
+    return (
+        normalized.includes('authorization') ||
+        normalized.includes('token') ||
+        normalized.includes('secret') ||
+        normalized.includes('password') ||
+        normalized.includes('cookie') ||
+        normalized.includes('clientid') ||
+        normalized.includes('client-id') ||
+        normalized.includes('client_id') ||
+        normalized.includes('customheaders')
+    );
+}
+
+function isLikelySensitiveString(value: string): boolean {
+    return value.length > 16 && /[A-Za-z0-9+/=._-]{16,}/.test(value);
+}
+
+function maskValue(value: unknown): unknown {
+    if (typeof value === 'string') {
+        if (value.length <= 8) {
+            return '********';
+        }
+        return `${value.slice(0, 4)}…${value.slice(-4)}`;
+    }
+
+    if (Array.isArray(value)) {
+        return value.map(() => '********');
+    }
+
+    if (typeof value === 'object' && value !== null) {
+        return '[masked-object]';
+    }
+
+    return '********';
 }
 
 function summarizeSuccess(method: string, result: unknown): Record<string, unknown> | undefined {
@@ -94,6 +156,16 @@ function summarizeSuccess(method: string, result: unknown): Record<string, unkno
 
 export type ToolExtra = RequestHandlerExtra<ServerRequest, ServerNotification>;
 
+export interface MutationSummary {
+    action: string;
+    target: string;
+    siteId?: string;
+    mode: 'apply' | 'dry-run';
+    status: 'planned' | 'applied';
+    summary: string;
+    result?: unknown;
+}
+
 export function wrapToolHandler<Args extends z.ZodRawShape>(
     name: string,
     handler: (args: z.objectOutputType<Args, z.ZodTypeAny>, extra: ToolExtra) => Promise<CallToolResult>
@@ -115,6 +187,28 @@ export function wrapToolHandler<Args extends z.ZodRawShape>(
             throw error;
         }
     };
+}
+
+export function toMutationResult(summary: MutationSummary): CallToolResult {
+    return toToolResult(summary);
+}
+
+export function wrapMutationToolHandler<Args extends z.ZodRawShape>(
+    name: string,
+    summary: (args: z.objectOutputType<Args, z.ZodTypeAny>, result: unknown, mode: 'apply' | 'dry-run') => MutationSummary,
+    handler: (args: z.objectOutputType<Args, z.ZodTypeAny>, extra: ToolExtra) => Promise<unknown>
+): (args: z.objectOutputType<Args, z.ZodTypeAny>, extra: ToolExtra) => Promise<CallToolResult> {
+    return wrapToolHandler(name, async (args, extra) => {
+        const mode = ((args as Record<string, unknown>).dryRun === true ? 'dry-run' : 'apply') as 'apply' | 'dry-run';
+        const result = await handler(args, extra);
+        const mutationSummary = summary(args, result, mode);
+        logger.info('Mutation audit event', {
+            tool: name,
+            sessionId: extra.sessionId ?? 'unknown-session',
+            mutation: safeSerialize(mutationSummary),
+        });
+        return toMutationResult(mutationSummary);
+    });
 }
 
 function setupServerLogging(server: McpServer): void {
@@ -196,7 +290,7 @@ function setupServerLogging(server: McpServer): void {
 
 export function createServer(): McpServer {
     const server = new McpServer({
-        name: 'tplink-omada-mcp',
+        name: 'safe-omada-mcp',
         version: '0.1.0',
     });
 

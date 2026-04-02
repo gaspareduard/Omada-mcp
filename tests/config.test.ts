@@ -76,38 +76,41 @@ describe('config', () => {
             expect(() => loadConfigFromEnv(mockEnv)).toThrow('Invalid environment configuration');
         });
 
-        it('should NOT throw if OMADA_CLIENT_ID is missing in HTTP mode', () => {
+        it('should still require OMADA_CLIENT_ID in HTTP mode', () => {
             mockEnv.MCP_SERVER_USE_HTTP = 'true';
+            mockEnv.MCP_UNSAFE_ENABLE_HTTP = 'true';
             delete mockEnv.OMADA_CLIENT_ID;
 
-            expect(() => loadConfigFromEnv(mockEnv)).not.toThrow();
+            expect(() => loadConfigFromEnv(mockEnv)).toThrow('Invalid environment configuration');
         });
 
-        it('should NOT throw if OMADA_CLIENT_SECRET is missing in HTTP mode', () => {
+        it('should still require OMADA_CLIENT_SECRET in HTTP mode', () => {
             mockEnv.MCP_SERVER_USE_HTTP = 'true';
+            mockEnv.MCP_UNSAFE_ENABLE_HTTP = 'true';
             delete mockEnv.OMADA_CLIENT_SECRET;
 
-            expect(() => loadConfigFromEnv(mockEnv)).not.toThrow();
+            expect(() => loadConfigFromEnv(mockEnv)).toThrow('Invalid environment configuration');
         });
 
-        it('should NOT throw if OMADA_OMADAC_ID is missing in HTTP mode', () => {
+        it('should still require OMADA_OMADAC_ID in HTTP mode', () => {
             mockEnv.MCP_SERVER_USE_HTTP = 'true';
+            mockEnv.MCP_UNSAFE_ENABLE_HTTP = 'true';
             delete mockEnv.OMADA_OMADAC_ID;
 
-            expect(() => loadConfigFromEnv(mockEnv)).not.toThrow();
+            expect(() => loadConfigFromEnv(mockEnv)).toThrow('Invalid environment configuration');
         });
 
-        it('should load with only OMADA_BASE_URL set in HTTP mode', () => {
+        it('should reject HTTP mode unless explicitly acknowledged as unsafe', () => {
             mockEnv.MCP_SERVER_USE_HTTP = 'true';
-            delete mockEnv.OMADA_CLIENT_ID;
-            delete mockEnv.OMADA_CLIENT_SECRET;
-            delete mockEnv.OMADA_OMADAC_ID;
+            expect(() => loadConfigFromEnv(mockEnv)).toThrow('MCP_SERVER_USE_HTTP requires MCP_UNSAFE_ENABLE_HTTP=true');
+        });
 
+        it('should allow HTTP mode when explicitly acknowledged as unsafe', () => {
+            mockEnv.MCP_SERVER_USE_HTTP = 'true';
+            mockEnv.MCP_UNSAFE_ENABLE_HTTP = 'true';
             const config = loadConfigFromEnv(mockEnv);
-            expect(config.baseUrl).toBe('https://omada.example.com');
-            expect(config.clientId).toBeUndefined();
-            expect(config.clientSecret).toBeUndefined();
-            expect(config.omadacId).toBeUndefined();
+            expect(config.useHttp).toBe(true);
+            expect(config.unsafeEnableHttp).toBe(true);
         });
 
         it('should accept optional OMADA_SITE_ID', () => {
@@ -160,6 +163,7 @@ describe('config', () => {
 
         it('should parse MCP_SERVER_USE_HTTP as true', () => {
             mockEnv.MCP_SERVER_USE_HTTP = 'true';
+            mockEnv.MCP_UNSAFE_ENABLE_HTTP = 'true';
             const config = loadConfigFromEnv(mockEnv);
 
             expect(config.useHttp).toBe(true);
@@ -315,9 +319,11 @@ describe('config', () => {
                 OMADA_SITE_ID: 'site-abc',
                 OMADA_STRICT_SSL: 'false',
                 OMADA_TIMEOUT: '10000',
+                OMADA_CAPABILITY_PROFILE: 'ops-write',
                 MCP_SERVER_LOG_LEVEL: 'debug',
                 MCP_SERVER_LOG_FORMAT: 'json',
                 MCP_SERVER_USE_HTTP: 'true',
+                MCP_UNSAFE_ENABLE_HTTP: 'true',
                 MCP_HTTP_PORT: '9000',
                 MCP_HTTP_BIND_ADDR: '0.0.0.0',
                 MCP_HTTP_PATH: '/api/mcp',
@@ -339,9 +345,11 @@ describe('config', () => {
                 siteId: 'site-abc',
                 strictSsl: false,
                 requestTimeout: 10000,
+                capabilityProfile: 'ops-write',
                 logLevel: 'debug',
                 logFormat: 'json',
                 useHttp: true,
+                unsafeEnableHttp: true,
                 httpPort: 9000,
                 httpTransport: 'stream',
                 httpBindAddr: '0.0.0.0',
@@ -354,6 +362,15 @@ describe('config', () => {
                 httpNgrokAuthToken: 'ngrok-token-xyz',
             });
             expect(config.toolCategories).toBeInstanceOf(Map);
+        });
+
+        it('should derive tool categories from capability profile when OMADA_TOOL_CATEGORIES is unset', () => {
+            mockEnv.OMADA_CAPABILITY_PROFILE = 'ops-write';
+            const config = loadConfigFromEnv(mockEnv);
+
+            expect(config.capabilityProfile).toBe('ops-write');
+            expect(config.toolCategories.get('clients')).toEqual(new Set(['read', 'write']));
+            expect(config.startupWarnings.some((warning) => warning.includes('OMADA_CAPABILITY_PROFILE=ops-write'))).toBe(true);
         });
     });
 });

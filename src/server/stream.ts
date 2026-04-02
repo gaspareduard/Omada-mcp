@@ -1,11 +1,10 @@
 import { randomUUID } from 'node:crypto';
 import type { IncomingMessage, ServerResponse } from 'node:http';
 import { StreamableHTTPServerTransport } from '@modelcontextprotocol/sdk/server/streamableHttp.js';
-import type { EnvironmentConfig } from '../config.js';
+import type { EnvironmentConfig, OmadaConnectionConfig } from '../config.js';
 import { OmadaClient } from '../omadaClient/index.js';
 import { registerAllTools } from '../tools/index.js';
 import { logger } from '../utils/logger.js';
-import { extractAuthFromHeaders, resolveOmadaConfig } from '../utils/omada-headers.js';
 import { createServer } from './common.js';
 
 export interface StreamTransportState {
@@ -85,6 +84,7 @@ export function createStreamTransport(client: OmadaClient, config: EnvironmentCo
     registerAllTools(mcpServer, client, config.toolCategories);
 
     logger.info('Starting Streamable HTTP transport; Mcp-Session-Id headers are optional in client-credentials mode');
+    logger.warn('HTTP transport is running in explicitly unsafe mode. The supported production baseline remains stdio only.');
 
     const transport = new StreamableHTTPServerTransport({
         sessionIdGenerator: () => randomUUID(),
@@ -123,6 +123,7 @@ export function createStreamTransport(client: OmadaClient, config: EnvironmentCo
  */
 export async function handleStreamRequest(
     config: EnvironmentConfig,
+    omadaConfig: OmadaConnectionConfig,
     req: IncomingMessage,
     res: ServerResponse,
     parsedBody: unknown = undefined,
@@ -150,9 +151,6 @@ export async function handleStreamRequest(
 
     const isNewSession = !state;
     if (!state) {
-        // Resolve Omada credentials for the new session from env (wins) and request headers
-        const headerAuth = extractAuthFromHeaders(req.headers);
-        const omadaConfig = resolveOmadaConfig(config, headerAuth);
         const client = new OmadaClient(omadaConfig);
 
         let pendingState: StreamTransportState;

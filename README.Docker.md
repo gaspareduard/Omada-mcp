@@ -1,6 +1,6 @@
-# TP-Link Omada MCP Server
+# Safe Omada MCP
 
-A Model Context Protocol (MCP) server that exposes TP-Link Omada controller APIs to AI copilots and automation workflows. This Docker image provides an easy way to run the MCP server with support for both stdio and HTTP transports.
+A security-focused MCP server for TP-Link Omada Open API workflows. This Docker image is intended for the safe baseline `stdio` deployment path.
 
 > **Compatibility:** Tested with Omada Controller versions 5.x and 6.x
 
@@ -11,7 +11,7 @@ A Model Context Protocol (MCP) server that exposes TP-Link Omada controller APIs
 1. **Pull the Docker image**:
 
    ```bash
-   docker pull jmtvms/tplink-omada-mcp:latest
+   docker pull ghcr.io/your-org/safe-omada-mcp:latest
    ```
 
 2. **Add the MCP server to Claude Desktop configuration**. Edit your Claude Desktop config file:
@@ -23,7 +23,7 @@ A Model Context Protocol (MCP) server that exposes TP-Link Omada controller APIs
    ```json
    {
      "mcpServers": {
-       "tplink-omada": {
+      "safe-omada": {
          "command": "docker",
          "args": [
            "run",
@@ -34,8 +34,8 @@ A Model Context Protocol (MCP) server that exposes TP-Link Omada controller APIs
            "-e", "OMADA_CLIENT_SECRET=your-client-secret",
            "-e", "OMADA_OMADAC_ID=your-omadac-id",
            "-e", "OMADA_SITE_ID=your-site-id",
-           "-e", "OMADA_STRICT_SSL=false",
-           "jmtvms/tplink-omada-mcp:latest"
+           "-e", "OMADA_STRICT_SSL=true",
+           "ghcr.io/your-org/safe-omada-mcp:latest"
          ]
        }
      }
@@ -55,21 +55,8 @@ A Model Context Protocol (MCP) server that exposes TP-Link Omada controller APIs
 ```bash
 docker run -it --rm \
   --env-file .env \
-  jmtvms/tplink-omada-mcp:latest
+  ghcr.io/your-org/safe-omada-mcp:latest
 ```
-
-#### HTTP Server Container
-
-```bash
-docker run -d \
-  --env-file .env \
-  -e MCP_SERVER_USE_HTTP=true \
-  -e MCP_HTTP_BIND_ADDR=0.0.0.0 \
-  -p 3000:3000 \
-  jmtvms/tplink-omada-mcp:latest
-```
-
-The HTTP server will be available at `http://localhost:3000/mcp`.
 
 ## Features
 
@@ -101,12 +88,12 @@ The MCP server reads its configuration from environment variables.
 | ------------------------ | -------- | ------- | --------------------------------------------------------------------------- |
 | `MCP_SERVER_LOG_LEVEL` | No       | `info`  | Logging verbosity (`debug`, `info`, `warn`, `error`, `silent`) |
 | `MCP_SERVER_LOG_FORMAT` | No       | `plain` | Log output format (`plain`, `json`, or `gcp-json`) |
-| `MCP_SERVER_USE_HTTP` | No       | `false` | Start HTTP server instead of stdio |
-> **Session IDs and authentication:** When `OMADA_CLIENT_ID`, `OMADA_CLIENT_SECRET`, and `OMADA_OMADAC_ID` are provided (the default client-credentials mode), the server runs statelessly and treats the `Mcp-Session-Id` header as optional. A future OAuth-based user authentication mode will require this header again.
+| `MCP_SERVER_USE_HTTP` | No       | `false` | Legacy lab-only switch. Unsupported for the safe production baseline. |
+| `MCP_UNSAFE_ENABLE_HTTP` | No       | `false` | Explicit acknowledgement required before HTTP mode can start. |
 
 ### MCP Server HTTP Configuration
 
-These variables are only used when `MCP_SERVER_USE_HTTP=true`:
+These variables are only used when `MCP_SERVER_USE_HTTP=true` and `MCP_UNSAFE_ENABLE_HTTP=true`:
 
 | Variable                       | Required | Default                         | Description                                                                 |
 | ------------------------------ | -------- | ------------------------------- | --------------------------------------------------------------------------- |
@@ -117,64 +104,13 @@ These variables are only used when `MCP_SERVER_USE_HTTP=true`:
 | `MCP_HTTP_HEALTHCHECK_PATH` | No       | `/healthz`                      | Path for the healthcheck endpoint |
 | `MCP_HTTP_ALLOW_CORS` | No       | `true`                          | Enable CORS for the HTTP server |
 | `MCP_HTTP_ALLOWED_ORIGINS` | No       | `127.0.0.1, localhost`          | Comma-separated list of allowed origins. Use `*` to allow all (dev only) |
-| `MCP_HTTP_NGROK_ENABLED` | No       | `false`                         | Use ngrok to expose the HTTP server publicly |
-| `MCP_HTTP_NGROK_AUTH_TOKEN` | No       | -                               | Ngrok auth token (required if `MCP_HTTP_NGROK_ENABLED=true`) |
+| `MCP_HTTP_NGROK_ENABLED` | No       | `false`                         | Legacy placeholder. Public tunnel support is disabled in the safe baseline. |
+| `MCP_HTTP_NGROK_AUTH_TOKEN` | No       | -                               | Legacy placeholder. |
 Create a `.env` file or export the variables before launching the container.
 
 ## Transport Protocols
 
-The MCP server uses the **Streamable HTTP** transport, which implements the [MCP protocol version 2025-03-26](https://modelcontextprotocol.io/specification/2025-06-18/basic/transports#http-with-sse).
-
-```bash
-docker run -d \
-  --env-file .env \
-  -e MCP_SERVER_USE_HTTP=true \
-  -e MCP_HTTP_BIND_ADDR=0.0.0.0 \
-  -p 3000:3000 \
-  jmtvms/tplink-omada-mcp:latest
-```
-
-Features:
-
-- Single endpoint for all operations (GET, POST, DELETE)
-- Server-Sent Events for streaming responses
-- Built-in session management with cryptographic session IDs (the server currently operates statelessly when using client credentials)
-
-The endpoint defaults to `/mcp` and handles:
-
-- `GET /mcp` - Establish SSE stream and initialize session
-- `POST /mcp` - Send JSON-RPC messages
-- `DELETE /mcp` - Terminate session
-
-### Security Considerations
-
-DNS rebinding protection is enabled by default:
-
-- **Origin Validation**: The server validates the `Origin` header on all incoming connections. Configure allowed origins with `MCP_HTTP_ALLOWED_ORIGINS` (default: `127.0.0.1, localhost`). Use `*` to allow all origins (development only, not recommended for production).
-- **Network Binding**: The server binds to `127.0.0.1` by default, restricting access to localhost only. Set `MCP_HTTP_BIND_ADDR=0.0.0.0` to expose the server to your network (not recommended for production without additional security measures).
-
-For more information on the MCP protocol and transports, see the [Model Context Protocol documentation](https://modelcontextprotocol.io/).
-
-### Using ngrok
-
-To share the local server with remote tooling, you can use ngrok to expose the HTTP server publicly.
-
-#### Built-in ngrok support
-
-```bash
-docker run -d \
-  --env-file .env \
-  -e MCP_SERVER_USE_HTTP=true \
-  -e MCP_HTTP_BIND_ADDR=0.0.0.0 \
-  -e MCP_HTTP_NGROK_ENABLED=true \
-  -e MCP_HTTP_NGROK_AUTH_TOKEN=your-ngrok-auth-token \
-  -p 3000:3000 \
-  jmtvms/tplink-omada-mcp:latest
-```
-
-The server will automatically establish an ngrok tunnel and log the public URL.
-
-In client-credentials mode the server already treats `Mcp-Session-Id` as optional; if the header is removed in transit, requests will still succeed.
+The supported milestone 1 container path is stdio. HTTP mode remains a lab-only, explicitly unsafe path and is intentionally excluded from the secure quick start.
 
 ## Tools
 
@@ -201,6 +137,11 @@ In client-credentials mode the server already treats `Mcp-Session-Id` as optiona
 | `setClientRateLimit` | Sets custom bandwidth limits for a specific client. |
 | `setClientRateLimitProfile` | Applies a predefined rate limit profile to a specific client. |
 | `disableClientRateLimit` | Disables bandwidth rate limiting for a specific client. |
+| `blockClient` | Blocks a client from network access with an auditable mutation summary. |
+| `unblockClient` | Restores a blocked client to network access with an auditable mutation summary. |
+| `reconnectClient` | Forces a client to reconnect with an auditable mutation summary. |
+| `rebootDevice` | Reboots a managed device with an auditable mutation summary. |
+| `setDeviceLed` | Changes a device LED state with an auditable mutation summary. |
 ### Device
 
 | Tool                   | Description                                                                       |
@@ -818,8 +759,8 @@ In client-credentials mode the server already treats `Mcp-Session-Id` as optiona
 
 Want to help improve this project? Contributions are welcome! Visit our GitHub repository to report issues, suggest features, or submit pull requests:
 
-**[https://github.com/MiguelTVMS/tplink-omada-mcp](https://github.com/MiguelTVMS/tplink-omada-mcp)**
+**[https://github.com/your-org/safe-omada-mcp](https://github.com/your-org/safe-omada-mcp)**
 
 ## License
 
-This project is licensed under the [MIT License](https://github.com/MiguelTVMS/tplink-omada-mcp?tab=MIT-1-ov-file).
+This project is licensed under the [MIT License](https://github.com/your-org/safe-omada-mcp?tab=MIT-1-ov-file).

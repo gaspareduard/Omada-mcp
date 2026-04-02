@@ -6,11 +6,16 @@ import { logger } from '../utils/logger.js';
 import type { AuthManager } from './auth.js';
 
 const DEFAULT_PAGE_SIZE = 200;
+const MIN_REQUEST_INTERVAL_MS = 125;
+const RETRYABLE_STATUS_CODES = new Set([429, 502, 503, 504]);
+const RETRYABLE_ERROR_CODES = new Set([-1005]);
 
 /**
  * HTTP request handler for Omada API calls with authentication and retry logic.
  */
 export class RequestHandler {
+    private nextAllowedRequestAt = 0;
+
     constructor(
         private readonly http: AxiosInstance,
         private readonly auth: AuthManager
@@ -31,9 +36,17 @@ export class RequestHandler {
     }
 
     /**
+     * Make a POST request to the Omada API.
+     */
+    public async post<T>(path: string, data?: unknown, customHeaders?: CustomHeaders): Promise<T> {
+        return await this.request<T>({ method: 'POST', url: path, data }, true, customHeaders);
+    }
+
+    /**
      * Make an arbitrary HTTP request to the Omada API.
      */
     public async request<T>(config: AxiosRequestConfig, retry = true, customHeaders?: CustomHeaders): Promise<T> {
+        await this.waitForRateWindow();
         const accessToken = await this.auth.getAccessToken();
 
         const requestConfig: AxiosRequestConfig = {
@@ -123,6 +136,14 @@ export class RequestHandler {
                 return this.request<T>(config, false, customHeaders);
             }
 
+            if (
+                retry &&
+                ((status !== undefined && RETRYABLE_STATUS_CODES.has(status)) || (errorCode !== undefined && RETRYABLE_ERROR_CODES.has(errorCode)))
+            ) {
+                await this.sleep(this.getRetryDelayMs(status));
+                return this.request<T>(config, false, customHeaders);
+            }
+
             throw error;
         }
     }
@@ -204,6 +225,25 @@ export class RequestHandler {
             lowerMsg.includes('token expired') ||
             lowerMsg.includes('re-initiate the refreshtoken')
         );
+    }
+
+    private async waitForRateWindow(): Promise<void> {
+        const now = Date.now();
+        if (now < this.nextAllowedRequestAt) {
+            await this.sleep(this.nextAllowedRequestAt - now);
+        }
+        this.nextAllowedRequestAt = Date.now() + MIN_REQUEST_INTERVAL_MS;
+    }
+
+    private getRetryDelayMs(status?: number): number {
+        if (status === 429) {
+            return 1000;
+        }
+        return 500;
+    }
+
+    private async sleep(ms: number): Promise<void> {
+        await new Promise((resolve) => setTimeout(resolve, ms));
     }
 
     /**

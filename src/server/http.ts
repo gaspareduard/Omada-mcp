@@ -1,7 +1,6 @@
 import type { IncomingHttpHeaders, IncomingMessage, ServerResponse } from 'node:http';
 import http from 'node:http';
-import ngrok from '@ngrok/ngrok';
-import type { EnvironmentConfig } from '../config.js';
+import type { EnvironmentConfig, OmadaConnectionConfig } from '../config.js';
 import { normalizePath, resolvePort } from '../utils/config-validations.js';
 import { logger } from '../utils/logger.js';
 import type { StreamTransportState } from './stream.js';
@@ -140,6 +139,17 @@ async function createShutdownHandler(signal: NodeJS.Signals, closeHttp: () => Pr
 export async function startHttpServer(config: EnvironmentConfig): Promise<void> {
     const transport = config.httpTransport;
     logger.info('Starting HTTP server', { transport });
+    logger.warn('HTTP transport is unsupported for the safe baseline and should only be used in isolated lab environments.');
+
+    const omadaConfig: OmadaConnectionConfig = {
+        baseUrl: config.baseUrl,
+        clientId: config.clientId as string,
+        clientSecret: config.clientSecret as string,
+        omadacId: config.omadacId as string,
+        siteId: config.siteId,
+        strictSsl: config.strictSsl,
+        requestTimeout: config.requestTimeout,
+    };
 
     const port = resolvePort(config.httpPort, DEFAULT_PORT);
     const host = config.httpBindAddr ?? '127.0.0.1';
@@ -215,7 +225,7 @@ export async function startHttpServer(config: EnvironmentConfig): Promise<void> 
             try {
                 // Streamable HTTP Transport handling
                 if (url.pathname === endpointPath) {
-                    await handleStreamRequest(config, req, res, parsedBody, streamSessions);
+                    await handleStreamRequest(config, omadaConfig, req, res, parsedBody, streamSessions);
                 } else {
                     sendJson(res, 404, { error: 'Not Found' });
                 }
@@ -225,15 +235,6 @@ export async function startHttpServer(config: EnvironmentConfig): Promise<void> 
                     method: req.method,
                 });
             } catch (error) {
-                if (error instanceof Error && error.message.startsWith('Missing required Omada credentials')) {
-                    logger.warn('Request rejected: missing Omada credentials', { error: error.message });
-                    if (!res.headersSent) {
-                        sendJson(res, 401, { error: error.message });
-                    } else {
-                        res.end();
-                    }
-                    return;
-                }
                 logger.error('Failed to handle MCP HTTP request', { error });
                 if (!res.headersSent) {
                     sendJson(res, 500, {
@@ -270,24 +271,8 @@ export async function startHttpServer(config: EnvironmentConfig): Promise<void> 
         });
     });
 
-    // Start ngrok tunnel if configured
     if (config.httpNgrokEnabled) {
-        if (!config.httpNgrokAuthToken) {
-            logger.warn('Ngrok enabled but no auth token provided; skipping tunnel setup');
-        } else {
-            try {
-                const listener = await ngrok.forward({
-                    addr: port,
-                    authtoken: config.httpNgrokAuthToken,
-                });
-                const url = listener.url();
-                logger.info('Ngrok tunnel established', { url });
-            } catch (error) {
-                logger.error('Failed to start ngrok tunnel', {
-                    error: error instanceof Error ? error.message : String(error),
-                });
-            }
-        }
+        logger.warn('MCP_HTTP_NGROK_ENABLED is ignored in the safe baseline. Public tunnel support is intentionally disabled.');
     }
 
     let shuttingDown: boolean = false;
