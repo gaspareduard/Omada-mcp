@@ -191,6 +191,9 @@ The supported milestone 1 container path is stdio. HTTP mode remains a lab-only,
 | `getSitesApsLoadBalance` | Get load balance configuration for an AP. Requires `apMac`. |
 | `getSitesApsOfdma` | Get OFDMA configuration for an AP. Requires `apMac`. |
 | `getSitesApsPowerSaving` | Get power saving configuration for an AP. Requires `apMac`. |
+| `setApPowerSaving` | Updates AP power saving configuration with support checks and dry-run preview. Requires `apMac`. |
+| `setApChannelLimit` | Updates AP channel-limit configuration with support checks and dry-run preview. Requires `apMac`. |
+| `setApConfig` | Updates documented AP configuration families with dry-run preview. Covers AP general, IP, IPv6, QoS, radio, service, load-balance, OFDMA, trunk, bridge, WLAN group, port, channel, AFC, and antenna settings. Setter-only families return a planned payload plus a warning when controller readback is unavailable. Requires `apMac`. |
 | `getSitesApsTrunkSetting` | Get trunk port setting for an AP. Requires `apMac`. |
 | `getSitesApsBridge` | Get bridge configuration for an AP. Requires `apMac`. |
 | `listSitesApsPorts` | List ports for an AP. Requires `apMac`. |
@@ -208,6 +211,7 @@ The supported milestone 1 container path is stdio. HTTP mode remains a lab-only,
 | `getSitesGatewaysPin` | Get PIN information for a gateway. Requires `gatewayMac`. |
 | `getSitesGatewaysSimCardUsed` | Get SIM card usage info for a gateway. Requires `gatewayMac`. |
 | `getSitesHealthGatewaysWansDetails` | Get gateway WAN health details. Requires `gatewayMac`. |
+| `setGatewayConfig` | Updates documented gateway configuration families with dry-run preview. Covers general, services, advanced, radios, WLAN, and port settings. Requires `gatewayMac`. |
 
 ### Network
 
@@ -243,11 +247,18 @@ The supported milestone 1 container path is stdio. HTTP mode remains a lab-only,
 | `getSsidDetail` | Gets detailed information for a specific SSID. Required: `wlanId` and `ssidId`. |
 | `listAllSsids` | Lists wireless SSIDs across all WLAN groups. |
 | `getFirewallSetting` | Gets firewall configuration and rules for a site. |
+| `setFirewallSetting` | Updates site firewall settings with dry-run preview using the official Omada Open API firewall endpoint. |
+| `setAclConfigTypeSetting` | Updates the gateway ACL mode (`through profiles` or `custom`) with dry-run preview. |
 | `getVpnSettings` | Gets VPN settings for a site. |
 | `listSiteToSiteVpns` | Lists site-to-site VPN configurations. |
 | `listPortForwardingRules` | [DEPRECATED] Use `getPortForwardingList` instead. Lists NAT port forwarding rules. |
 | `listOsgAcls` | Lists gateway (OSG) ACL rules. |
+| `createGatewayAcl` | Creates a gateway ACL rule with dry-run preview using the official Omada Gateway ACL schema. |
+| `updateGatewayAcl` | Updates a gateway ACL rule with dry-run preview after confirming the ACL exists. |
 | `listEapAcls` | Lists access point (EAP) ACL rules. |
+| `createEapAcl` | Creates an EAP ACL rule with dry-run preview using the official Omada EAP ACL schema. |
+| `updateEapAcl` | Updates an EAP ACL rule with dry-run preview after confirming the ACL exists. |
+| `deleteAcl` | Deletes an ACL rule with dry-run preview after confirming the ACL exists. |
 | `listStaticRoutes` | [DEPRECATED] Use `getGridStaticRouting` instead. This tool aggregates all pages; getGridStaticRouting returns a single paginated page. |
 | `getStaticRoutingInterfaceList` | Gets available interfaces for static routing.                             |
 | `listPolicyRoutes` | [DEPRECATED] Use `getGridPolicyRouting` instead. This tool aggregates all pages; getGridPolicyRouting is paginated. |
@@ -261,16 +272,24 @@ The supported milestone 1 container path is stdio. HTTP mode remains a lab-only,
 | `getUpnpSetting` | Gets UPnP setting for the site gateway. |
 | `getDdnsGrid` | Gets DDNS entries (paginated). |
 | `getDhcpReservationGrid` | Gets DHCP reservations (paginated). |
+| `createDhcpReservation` | Creates a DHCP reservation after validating the target LAN and optional IP address. |
+| `updateDhcpReservation` | Updates a DHCP reservation after validating the target LAN and optional IP address. |
+| `deleteDhcpReservation` | Deletes a DHCP reservation by MAC address with a dry-run preview option. |
 | `getGridIpMacBinding` | Gets IP-MAC binding entries (paginated). |
 | `getIpMacBindingGeneralSetting` | Gets IP-MAC binding global toggle setting.                               |
 | `getBandwidthControl` | Gets global bandwidth control configuration. |
 | `getGridBandwidthCtrlRule` | Gets bandwidth control rules (paginated). |
+| `setBandwidthControlRule` | Creates or updates a bandwidth control rule with dry-run preview after validating the target rule id plus referenced LAN and WAN identifiers. |
+| `deleteBandwidthControlRule` | Deletes a bandwidth control rule with dry-run preview after confirming the rule exists. |
 | `getSessionLimit` | Gets session limit global setting. |
 | `getGridSessionLimitRule` | Gets per-rule session limit rules (paginated). |
 | `getSnmpSetting` | Gets SNMP configuration (version, community string). |
 | `getLldpSetting` | Gets LLDP global setting. |
 | `getRemoteLoggingSetting` | Gets remote logging (syslog) configuration. |
 | `getAccessControl` | Gets controller access control configuration. |
+| `setAccessControl` | Updates portal access control settings with dry-run preview and schema validation for pre-auth and free-auth policy entries. |
+| `setAppControlRule` | Creates or updates an application control rule with dry-run preview after validating the create/update payload shape, existing rule id, and referenced application ids. |
+| `deleteAppControlRule` | Deletes an application control rule with dry-run preview after confirming the rule exists. |
 | `getDnsCacheSetting` | Gets DNS cache setting. |
 | `getDnsProxy` | Gets DNS proxy configuration. |
 | `getIgmp` | Gets IGMP snooping and proxy setting. |
@@ -476,15 +495,26 @@ The supported milestone 1 container path is stdio. HTTP mode remains a lab-only,
 | `getSsidDetail` | Get detailed SSID configuration.                          | `getSsidDetail` |
 | `getSsidListAll` | List SSIDs across all WLAN groups.                        | `listAllSsids` |
 | `getFirewallSetting` | Get firewall configuration for a site.                    | `getFirewallSetting` |
+| `modifyFirewallSetting` | Update site firewall settings with dry-run support. | `setFirewallSetting` |
 | `getVpn` | Get VPN settings for a site.                              | `getVpnSettings` |
 | `getSiteToSiteVpnList` | List site-to-site VPN configurations.                     | `listSiteToSiteVpns` |
 | `getPortForwardingList` | List NAT port forwarding rules.                           | `getPortForwardingList` (prefer); ~~`listPortForwardingRules`~~ [DEPRECATED] |
 | `getOsgAclList` | List gateway ACL rules.                                   | `listOsgAcls` |
+| `getAclConfigTypeSetting` | Get gateway ACL config mode for the site gateway. | `getAclConfigTypeSetting` |
+| `modifyAclConfigTypeSetting` | Update gateway ACL config mode with dry-run support. | `setAclConfigTypeSetting` |
+| `createOsgAcl` | Create a gateway ACL with dry-run support. | `createGatewayAcl` |
+| `modifyOsgAcl` | Update a gateway ACL with dry-run support. | `updateGatewayAcl` |
 | `getEapAclList` | List access point ACL rules.                              | `listEapAcls` |
+| `createEapAcl` | Create an EAP ACL with dry-run support. | `createEapAcl` |
+| `modifyEapAcl` | Update an EAP ACL with dry-run support. | `updateEapAcl` |
+| `deleteAcl` | Delete an ACL rule with dry-run support. | `deleteAcl` |
 | `getStaticRoutingList` | List static routing rules.                                | `getGridStaticRouting` (prefer); ~~`listStaticRoutes`~~ [DEPRECATED] |
 | `getRadiusProfileList` | List RADIUS authentication profiles.                      | `listRadiusProfiles` |
 | `getGroupProfileList` | List group profiles (IP, MAC, port groups).               | `listGroupProfiles` |
 | `getApplicationControlStatus` | Get application control status for a site.                | `getApplicationControlStatus` |
+| `addRule` | Create an application control rule with dry-run support. | `setAppControlRule` |
+| `editRule` | Update an application control rule with dry-run support. | `setAppControlRule` |
+| `deleteRules` | Delete an application control rule with dry-run support. | `deleteAppControlRule` |
 | `getSshSetting` | Get SSH settings for a site.                              | `getSshSetting` |
 | `getTimeRangeProfileList` | List time range profiles.                                 | `listTimeRangeProfiles` |
 | `getWanLanStatus` | Get WAN-LAN connectivity status for a site.               | `getWanLanStatus` |
@@ -499,6 +529,7 @@ The supported milestone 1 container path is stdio. HTTP mode remains a lab-only,
 | `getAlerts` | List global alert logs across all sites.                  | `listGlobalAlerts` |
 | `disableClientRateLimit` | Disable rate limiting for a specific client, removing any bandwidth.... | `disableClientRateLimit` |
 | `getAccessControl` | Get controller access control configuration. | `getAccessControl` |
+| `modifyAccessControl` | Update portal access control configuration with dry-run support. | `setAccessControl` |
 | `getAlg` | Get ALG (Application Layer Gateway) configuration for the site gateway. | `getAlg` |
 | `getAllDeviceBySite` | Get all devices in a site including offline and disconnected devices. | `getAllDeviceBySite` |
 | `getApDetail` | Fetch full configuration and status for a specific access point: mo.... | `getApDetail` |
@@ -521,15 +552,22 @@ The supported milestone 1 container path is stdio. HTTP mode remains a lab-only,
 | `getDdnsGrid` | Get DDNS (Dynamic DNS) entries for the site gateway. | `getDdnsGrid` |
 | `getDevice` | [DEPRECATED] Convenience alias that filters `listDevices` for a specific Omada device. Prefer using `listDevices` directly. | `getDevice` |
 | `getDhcpReservationGrid` | Get DHCP reservations for the site. | `getDhcpReservationGrid` |
+| `createDhcpReservation` | Create a DHCP reservation for the site after LAN/IP validation and duplicate-IP preflight. | `createDhcpReservation` |
+| `updateSitesSettingServiceDhcp` | Update an existing DHCP reservation for the site. | `updateDhcpReservation` |
+| `deleteSitesSettingServiceDhcp` | Delete an existing DHCP reservation for the site. | `deleteDhcpReservation` |
 | `getDnsCacheSetting` | Get DNS cache setting for the site gateway. | `getDnsCacheSetting` |
 | `getDnsProxy` | Get DNS proxy configuration for the site gateway. | `getDnsProxy` |
 | `getFirewallSetting` | Get firewall configuration and rules for a site, including ACL rule.... | `getFirewallSetting` |
+| `modifyFirewallSetting` | Update site firewall settings with dry-run support. | `setFirewallSetting` |
 | `getFirmwareInfo` | Get the latest available firmware information for a device. | `getFirmwareInfo` |
 | `getGatewayDetail` | Fetch full configuration and status for a specific gateway: model, .... | `getGatewayDetail` |
 | `getGatewayLanStatus` | Get LAN port status for a specific gateway: port link state, speed,.... | `getGatewayLanStatus` |
 | `getGatewayPorts` | Get all WAN and LAN port details for a specific gateway: link statu.... | `getGatewayPorts` |
 | `getGatewayWanStatus` | Get the WAN port status and connectivity information for a specific.... | `getGatewayWanStatus` |
 | `getGridBandwidthCtrlRule` | Get bandwidth control rules for the site gateway. | `getGridBandwidthCtrlRule` |
+| `createBandwidthCtrlRule` | Create a bandwidth control rule with dry-run support. | `setBandwidthControlRule` |
+| `modifyBandwidthCtrlRule` | Update a bandwidth control rule with dry-run support. | `setBandwidthControlRule` |
+| `deleteBandwidthCtrlRule` | Delete a bandwidth control rule with dry-run support. | `deleteBandwidthControlRule` |
 | `getGridDashboardTunnelStats` | Get VPN tunnel statistics filtered by role. | `getGridDashboardTunnelStats` |
 | `getGridIpMacBinding` | Get IP-MAC binding entries for the site. | `getGridIpMacBinding` |
 | `getGridOtoNats` | Get 1:1 NAT rules for the site gateway. | `getGridOtoNats` |
@@ -581,6 +619,33 @@ The supported milestone 1 container path is stdio. HTTP mode remains a lab-only,
 | `getSessionLimit` | Get the session limit global setting for the site gateway. | `getSessionLimit` |
 | `getSnmpSetting` | Get SNMP configuration for the site. | `getSnmpSetting` |
 | `getSpeedTestResults` | Get the last speed test results for an access point. | `getSpeedTestResults` |
+| `getSitesApsChannelLimit` | Get AP channel-limit configuration. | `getSitesApsChannelLimit` |
+| `updateSitesApsChannelLimit` | Update AP channel-limit configuration with dry-run support. | `setApChannelLimit` |
+| `modifyGeneralConfig_2` | Update AP general configuration with dry-run support. | `setApConfig` |
+| `modifyIpSettingConfig` | Update AP IP settings with dry-run support. | `setApConfig` |
+| `modifyIpv6SettingConfig` | Update AP IPv6 settings with dry-run support. | `setApConfig` |
+| `modifyApQosConfig` | Update AP QoS settings with dry-run support. | `setApConfig` |
+| `modifyRadiosConfig` | Update AP radio settings with dry-run support. | `setApConfig` |
+| `modifyApServicesConfig` | Update AP service settings with dry-run support. | `setApConfig` |
+| `modifyApLoadBalanceConfig` | Update AP load-balance settings with dry-run support. | `setApConfig` |
+| `modifyApOfdmaConfig` | Update AP OFDMA settings with dry-run support. | `setApConfig` |
+| `getSitesApsPowerSaving` | Get AP power saving configuration. | `getSitesApsPowerSaving` |
+| `updateSitesApsPowerSaving` | Update AP power saving configuration with dry-run support. | `setApPowerSaving` |
+| `modifyApTrunkSettingConfig` | Update AP trunk settings with dry-run support. | `setApConfig` |
+| `modifyApBridgeInfo` | Update AP bridge settings with dry-run support. | `setApConfig` |
+| `modifyApPort` | Update AP port settings with dry-run support. | `setApConfig` |
+| `modifyApChannelConfig` | Update AP channel configuration with dry-run support. | `setApConfig` |
+| `modifyAfcConfig` | Update AP AFC configuration with dry-run support. | `setApConfig` |
+| `modifyAntennaGainConfig` | Update AP antenna gain settings with dry-run support. | `setApConfig` |
+| `updateWlanGroupConfig` | Update AP WLAN group assignment with dry-run support. | `setApConfig` |
+| `modifyGeneralConfig_1` | Update gateway general configuration with dry-run support. | `setGatewayConfig` |
+| `modifyConfigGeneral` | Update gateway config/general settings with dry-run support. | `setGatewayConfig` |
+| `modifyConfigServices` | Update gateway services configuration with dry-run support. | `setGatewayConfig` |
+| `modifyConfigAdvanced` | Update gateway advanced settings with dry-run support. | `setGatewayConfig` |
+| `modifyConfigRadios` | Update gateway radio configuration with dry-run support. | `setGatewayConfig` |
+| `modifyConfigWlans` | Update gateway WLAN configuration with dry-run support. | `setGatewayConfig` |
+| `modifyPortConfig` | Update a gateway port configuration with dry-run support. | `setGatewayConfig` |
+| `batchModifyPortConfig` | Update multiple gateway ports with dry-run support. | `setGatewayConfig` |
 | `getSshSetting` | Get SSH access settings for a site. | `getSshSetting` |
 | `getSsidDetail` | Get detailed information for a specific SSID (wireless network), in.... | `getSsidDetail` |
 | `getSsidList` | Get the list of SSIDs (wireless networks) configured in a WLAN group. | `getSsidList` |

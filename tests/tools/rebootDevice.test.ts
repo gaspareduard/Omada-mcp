@@ -54,4 +54,10 @@ describe('tools/rebootDevice', () => {
             ],
         });
     });
+
+    it('calls the controller when not in dry-run mode', async () => {
+        registerRebootDeviceTool(mockServer, mockClient);
+        await toolHandler({ deviceMac: 'AA:BB:CC:DD:EE:FF', siteId: 'site-1' }, { sessionId: 's1' });
+        expect(mockClient.rebootDevice).toHaveBeenCalledWith('AA:BB:CC:DD:EE:FF', 'site-1', undefined);
+    });
 });

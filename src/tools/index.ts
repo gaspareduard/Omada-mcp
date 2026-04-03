@@ -4,6 +4,13 @@ import type { ToolCategory, ToolPermission } from '../config.js';
 import type { OmadaClient } from '../omadaClient/index.js';
 import { logger } from '../utils/logger.js';
 import { registerBlockClientTool } from './blockClient.js';
+import { registerCreateDhcpReservationTool } from './createDhcpReservation.js';
+import { registerCreateEapAclTool } from './createEapAcl.js';
+import { registerCreateGatewayAclTool } from './createGatewayAcl.js';
+import { registerDeleteAclTool } from './deleteAcl.js';
+import { registerDeleteAppControlRuleTool } from './deleteAppControlRule.js';
+import { registerDeleteBandwidthControlRuleTool } from './deleteBandwidthControlRule.js';
+import { registerDeleteDhcpReservationTool } from './deleteDhcpReservation.js';
 import { registerDisableClientRateLimitTool } from './disableClientRateLimit.js';
 import { registerGetAccessControlTool } from './getAccessControl.js';
 import { registerGetAclConfigTypeSettingTool } from './getAclConfigTypeSetting.js';
@@ -331,10 +338,22 @@ import { registerListWireguardPeersTool } from './listWireguardPeers.js';
 import { registerRebootDeviceTool } from './rebootDevice.js';
 import { registerReconnectClientTool } from './reconnectClient.js';
 import { registerSearchDevicesTool } from './searchDevices.js';
+import { registerSetAccessControlTool } from './setAccessControl.js';
+import { registerSetAclConfigTypeSettingTool } from './setAclConfigTypeSetting.js';
+import { registerSetApChannelLimitTool } from './setApChannelLimit.js';
+import { registerSetApConfigTool } from './setApConfig.js';
+import { registerSetApPowerSavingTool } from './setApPowerSaving.js';
+import { registerSetAppControlRuleTool } from './setAppControlRule.js';
+import { registerSetBandwidthControlRuleTool } from './setBandwidthControlRule.js';
 import { registerSetClientRateLimitTool } from './setClientRateLimit.js';
 import { registerSetClientRateLimitProfileTool } from './setClientRateLimitProfile.js';
 import { registerSetDeviceLedTool } from './setDeviceLed.js';
+import { registerSetFirewallSettingTool } from './setFirewallSetting.js';
+import { registerSetGatewayConfigTool } from './setGatewayConfig.js';
 import { registerUnblockClientTool } from './unblockClient.js';
+import { registerUpdateDhcpReservationTool } from './updateDhcpReservation.js';
+import { registerUpdateEapAclTool } from './updateEapAcl.js';
+import { registerUpdateGatewayAclTool } from './updateGatewayAcl.js';
 
 // ---------------------------------------------------------------------------
 // Tool registry: each entry maps a register-function to its category and
@@ -418,6 +437,9 @@ const TOOL_REGISTRY: ToolEntry[] = [
     { fn: registerGetSitesApsTrunkSettingTool, category: 'devices-ap', permission: 'read' },
     { fn: registerGetSitesApsBridgeTool, category: 'devices-ap', permission: 'read' },
     { fn: registerListSitesApsPortsTool, category: 'devices-ap', permission: 'read' },
+    { fn: registerSetApChannelLimitTool, category: 'devices-ap', permission: 'write' },
+    { fn: registerSetApConfigTool, category: 'devices-ap', permission: 'write' },
+    { fn: registerSetApPowerSavingTool, category: 'devices-ap', permission: 'write' },
 
     // --- Devices (gateway) ---
     { fn: registerGetGatewayDetailTool, category: 'devices-gateway', permission: 'read' },
@@ -428,6 +450,7 @@ const TOOL_REGISTRY: ToolEntry[] = [
     { fn: registerGetSitesGatewaysPinTool, category: 'devices-gateway', permission: 'read' },
     { fn: registerGetSitesGatewaysSimCardUsedTool, category: 'devices-gateway', permission: 'read' },
     { fn: registerGetSitesHealthGatewaysWansDetailsTool, category: 'devices-gateway', permission: 'read' },
+    { fn: registerSetGatewayConfigTool, category: 'devices-gateway', permission: 'write' },
     { fn: registerRebootDeviceTool, category: 'devices-general', permission: 'write' },
     { fn: registerSetDeviceLedTool, category: 'devices-general', permission: 'write' },
 
@@ -534,6 +557,9 @@ const TOOL_REGISTRY: ToolEntry[] = [
     { fn: registerGetIptvSettingTool, category: 'network-services', permission: 'read' },
     { fn: registerGetNtpSettingTool, category: 'network-services', permission: 'read' },
     { fn: registerGetSyslogConfigTool, category: 'network-services', permission: 'read' },
+    { fn: registerCreateDhcpReservationTool, category: 'network-services', permission: 'write' },
+    { fn: registerUpdateDhcpReservationTool, category: 'network-services', permission: 'write' },
+    { fn: registerDeleteDhcpReservationTool, category: 'network-services', permission: 'write' },
 
     // --- Wireless SSID ---
     { fn: registerGetMulticastRateLimitTool, category: 'wireless-ssid', permission: 'read' },
@@ -580,6 +606,13 @@ const TOOL_REGISTRY: ToolEntry[] = [
     { fn: registerGetDot1xConfigTool, category: 'firewall-acl', permission: 'read' },
     { fn: registerGetRadiusProxyConfigTool, category: 'firewall-acl', permission: 'read' },
     { fn: registerGetApplicationAclTool, category: 'firewall-acl', permission: 'read' },
+    { fn: registerSetAclConfigTypeSettingTool, category: 'firewall-acl', permission: 'write' },
+    { fn: registerCreateGatewayAclTool, category: 'firewall-acl', permission: 'write' },
+    { fn: registerCreateEapAclTool, category: 'firewall-acl', permission: 'write' },
+    { fn: registerUpdateGatewayAclTool, category: 'firewall-acl', permission: 'write' },
+    { fn: registerUpdateEapAclTool, category: 'firewall-acl', permission: 'write' },
+    { fn: registerDeleteAclTool, category: 'firewall-acl', permission: 'write' },
+    { fn: registerSetFirewallSettingTool, category: 'firewall-acl', permission: 'write' },
 
     // --- Firewall traffic ---
     { fn: registerGetUrlFilterGeneralTool, category: 'firewall-traffic', permission: 'read' },
@@ -599,6 +632,11 @@ const TOOL_REGISTRY: ToolEntry[] = [
     { fn: registerGetQosPolicyRuleTool, category: 'firewall-traffic', permission: 'read' },
     { fn: registerGetQosMarkingRuleTool, category: 'firewall-traffic', permission: 'read' },
     { fn: registerGetDscpConfigTool, category: 'firewall-traffic', permission: 'read' },
+    { fn: registerSetAppControlRuleTool, category: 'firewall-traffic', permission: 'write' },
+    { fn: registerDeleteAppControlRuleTool, category: 'firewall-traffic', permission: 'write' },
+    { fn: registerSetBandwidthControlRuleTool, category: 'firewall-traffic', permission: 'write' },
+    { fn: registerDeleteBandwidthControlRuleTool, category: 'firewall-traffic', permission: 'write' },
+    { fn: registerSetAccessControlTool, category: 'firewall-traffic', permission: 'write' },
 
     // --- Firewall IDS ---
     { fn: registerGetIpsConfigTool, category: 'firewall-ids', permission: 'read' },
