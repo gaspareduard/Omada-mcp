@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-import { isValidBindAddress, isValidOrigin } from './utils/config-validations.js';
+import { isLoopbackBindAddress, isValidBindAddress, isValidOrigin } from './utils/config-validations.js';
 
 // ---------------------------------------------------------------------------
 // Tool category types
@@ -278,6 +278,10 @@ const envSchema = z
         message: 'MCP_SERVER_USE_HTTP requires MCP_UNSAFE_ENABLE_HTTP=true. HTTP transport is intentionally unsupported for the safe baseline.',
         path: ['unsafeEnableHttp'],
     })
+    .refine((data) => !data.useHttp || !data.httpBindAddr || isLoopbackBindAddress(data.httpBindAddr), {
+        message: 'HTTP transport is only allowed on loopback addresses (127.0.0.1 or ::1) in the safe baseline.',
+        path: ['httpBindAddr'],
+    })
     .refine(
         (data) => {
             // Validate httpBindAddr if provided
@@ -334,7 +338,7 @@ export interface EnvironmentConfig {
 
     // Omada Client Configuration
     // baseUrl is always required (from env)
-    // clientId, clientSecret, omadacId are optional in HTTP mode (can come from request headers)
+    // clientId, clientSecret, omadacId remain env-supplied even in legacy HTTP mode
     baseUrl: string;
     clientId?: string;
     clientSecret?: string;

@@ -76,6 +76,14 @@ export function isValidBindAddress(value: string): boolean {
 }
 
 /**
+ * Returns true when the bind address is loopback-only.
+ * Used to keep the legacy HTTP transport confined to local lab/debug use.
+ */
+export function isLoopbackBindAddress(value: string): boolean {
+    return value === '127.0.0.1' || value === '::1';
+}
+
+/**
  * Validates an array of origin values
  * @param origins - Array of origin strings to validate
  * @returns Object with isValid flag and optional error message

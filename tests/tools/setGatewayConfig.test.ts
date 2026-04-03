@@ -61,6 +61,7 @@ describe('tools/setGatewayConfig', () => {
                                 configType: 'general-config',
                                 portName: null,
                                 before: { mtu: 1500 },
+                                beforeAvailable: true,
                                 plannedConfig: { mtu: 1492 },
                             },
                         },

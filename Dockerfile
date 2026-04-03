@@ -17,9 +17,9 @@ FROM node:24-bookworm-slim AS runtime
 LABEL org.opencontainers.image.title="Safe Omada MCP"
 LABEL org.opencontainers.image.description="Security-focused MCP server for TP-Link Omada Open API workflows"
 LABEL org.opencontainers.image.authors="Internal platform team"
-LABEL org.opencontainers.image.url="https://github.com/your-org/safe-omada-mcp"
-LABEL org.opencontainers.image.source="https://github.com/your-org/safe-omada-mcp"
-LABEL org.opencontainers.image.documentation="https://github.com/your-org/safe-omada-mcp#readme"
+LABEL org.opencontainers.image.url="https://github.com/AILivesInTerminal/Omada-mcp"
+LABEL org.opencontainers.image.source="https://github.com/AILivesInTerminal/Omada-mcp"
+LABEL org.opencontainers.image.documentation="https://github.com/AILivesInTerminal/Omada-mcp#readme"
 LABEL org.opencontainers.image.licenses="MIT"
 
 WORKDIR /app

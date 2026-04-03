@@ -49,6 +49,10 @@ async function getCurrentGatewayConfig(
     return null;
 }
 
+function hasReadback(configType: GatewayConfigType): boolean {
+    return configType === 'general-config';
+}
+
 async function applyGatewayConfig(
     client: OmadaClient,
     configType: GatewayConfigType,
@@ -109,7 +113,8 @@ export function registerSetGatewayConfigTool(server: McpServer, client: OmadaCli
             async ({ gatewayMac, configType, portName, payload, siteId, customHeaders, dryRun }) => {
                 const resolvedConfigType = configType as GatewayConfigType;
                 const gateway = await getGatewaySummary(client, gatewayMac, siteId, customHeaders);
-                const before = await getCurrentGatewayConfig(client, resolvedConfigType, gatewayMac, siteId, customHeaders);
+                const beforeAvailable = hasReadback(resolvedConfigType);
+                const before = beforeAvailable ? await getCurrentGatewayConfig(client, resolvedConfigType, gatewayMac, siteId, customHeaders) : null;
 
                 if (dryRun) {
                     return {
@@ -119,6 +124,8 @@ export function registerSetGatewayConfigTool(server: McpServer, client: OmadaCli
                         configType: resolvedConfigType,
                         portName: portName ?? null,
                         before,
+                        beforeAvailable,
+                        ...(beforeAvailable ? {} : { warning: 'Current controller state cannot be previewed for this config family before apply.' }),
                         plannedConfig: payload,
                     };
                 }
@@ -129,6 +136,7 @@ export function registerSetGatewayConfigTool(server: McpServer, client: OmadaCli
                     configType: resolvedConfigType,
                     portName: portName ?? null,
                     before,
+                    beforeAvailable,
                     applied: result,
                 };
             }
