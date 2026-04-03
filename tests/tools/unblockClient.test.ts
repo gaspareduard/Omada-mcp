@@ -26,4 +26,30 @@ describe('tools/unblockClient', () => {
         await toolHandler({ clientMac: 'AA:BB:CC:DD:EE:FF', siteId: 'site-1' }, { sessionId: 's1' });
         expect(mockClient.unblockClient).toHaveBeenCalledWith('AA:BB:CC:DD:EE:FF', 'site-1', undefined);
     });
+
+    it('returns a dry-run summary without calling the controller', async () => {
+        registerUnblockClientTool(mockServer, mockClient);
+        const result = await toolHandler({ clientMac: 'AA:BB:CC:DD:EE:FF', dryRun: true }, { sessionId: 's1' });
+
+        expect(mockClient.unblockClient).not.toHaveBeenCalled();
+        expect(result).toEqual({
+            content: [
+                {
+                    type: 'text',
+                    text: JSON.stringify(
+                        {
+                            action: 'unblock-client',
+                            target: 'AA:BB:CC:DD:EE:FF',
+                            mode: 'dry-run',
+                            status: 'planned',
+                            summary: 'Planned client unblock for AA:BB:CC:DD:EE:FF.',
+                            result: { accepted: true, dryRun: true },
+                        },
+                        null,
+                        2
+                    ),
+                },
+            ],
+        });
+    });
 });

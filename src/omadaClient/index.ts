@@ -273,6 +273,10 @@ export class OmadaClient {
         return await this.networkOps.getFirewallSetting(siteId, customHeaders);
     }
 
+    public async setFirewallSetting(payload: unknown, siteId?: string, customHeaders?: CustomHeaders): Promise<unknown> {
+        return await this.networkOps.setFirewallSetting(payload, siteId, customHeaders);
+    }
+
     public async getSwitchDetail(switchMac: string, siteId?: string, customHeaders?: CustomHeaders): Promise<unknown> {
         return await this.deviceOps.getSwitchDetail(switchMac, siteId, customHeaders);
     }
@@ -396,6 +400,9 @@ export class OmadaClient {
     public async getApGeneralConfig(apMac: string, siteId?: string, customHeaders?: CustomHeaders): Promise<unknown> {
         return await this.deviceOps.getApGeneralConfig(apMac, siteId, customHeaders);
     }
+    public async setApGeneralConfig(apMac: string, payload: unknown, siteId?: string, customHeaders?: CustomHeaders): Promise<unknown> {
+        return await this.deviceOps.setApGeneralConfig(apMac, payload, siteId, customHeaders);
+    }
     public async getUplinkWiredDetail(apMac: string, siteId?: string, customHeaders?: CustomHeaders): Promise<unknown> {
         return await this.deviceOps.getUplinkWiredDetail(apMac, siteId, customHeaders);
     }
@@ -420,14 +427,88 @@ export class OmadaClient {
     public async getApQosConfig(apMac: string, siteId?: string, customHeaders?: CustomHeaders): Promise<unknown> {
         return await this.deviceOps.getApQosConfig(apMac, siteId, customHeaders);
     }
+    public async setApQosConfig(apMac: string, payload: unknown, siteId?: string, customHeaders?: CustomHeaders): Promise<unknown> {
+        return await this.deviceOps.setApQosConfig(apMac, payload, siteId, customHeaders);
+    }
     public async getApIpv6Config(apMac: string, siteId?: string, customHeaders?: CustomHeaders): Promise<unknown> {
         return await this.deviceOps.getApIpv6Config(apMac, siteId, customHeaders);
+    }
+    public async setApIpv6Config(apMac: string, payload: unknown, siteId?: string, customHeaders?: CustomHeaders): Promise<unknown> {
+        return await this.deviceOps.setApIpv6Config(apMac, payload, siteId, customHeaders);
     }
 
     // Device operations — Phase 2 additional
 
     public async getSitesGatewaysGeneralConfig(gatewayMac: string, siteId?: string, customHeaders?: CustomHeaders): Promise<unknown> {
         return await this.deviceOps.getSitesGatewaysGeneralConfig(gatewayMac, siteId, customHeaders);
+    }
+
+    public async setSitesGatewaysGeneralConfig(
+        gatewayMac: string,
+        payload: unknown,
+        siteId?: string,
+        customHeaders?: CustomHeaders
+    ): Promise<unknown> {
+        return await this.deviceOps.setSitesGatewaysGeneralConfig(gatewayMac, payload, siteId, customHeaders);
+    }
+
+    public async setSitesGatewaysConfigGeneral(
+        gatewayMac: string,
+        payload: unknown,
+        siteId?: string,
+        customHeaders?: CustomHeaders
+    ): Promise<unknown> {
+        return await this.deviceOps.setSitesGatewaysConfigGeneral(gatewayMac, payload, siteId, customHeaders);
+    }
+
+    public async setSitesGatewaysConfigServices(
+        gatewayMac: string,
+        payload: unknown,
+        siteId?: string,
+        customHeaders?: CustomHeaders
+    ): Promise<unknown> {
+        return await this.deviceOps.setSitesGatewaysConfigServices(gatewayMac, payload, siteId, customHeaders);
+    }
+
+    public async setSitesGatewaysConfigAdvanced(
+        gatewayMac: string,
+        payload: unknown,
+        siteId?: string,
+        customHeaders?: CustomHeaders
+    ): Promise<unknown> {
+        return await this.deviceOps.setSitesGatewaysConfigAdvanced(gatewayMac, payload, siteId, customHeaders);
+    }
+
+    public async setSitesGatewaysConfigRadios(
+        gatewayMac: string,
+        payload: unknown,
+        siteId?: string,
+        customHeaders?: CustomHeaders
+    ): Promise<unknown> {
+        return await this.deviceOps.setSitesGatewaysConfigRadios(gatewayMac, payload, siteId, customHeaders);
+    }
+
+    public async setSitesGatewaysConfigWlans(gatewayMac: string, payload: unknown, siteId?: string, customHeaders?: CustomHeaders): Promise<unknown> {
+        return await this.deviceOps.setSitesGatewaysConfigWlans(gatewayMac, payload, siteId, customHeaders);
+    }
+
+    public async setSitesGatewaysPortConfig(
+        gatewayMac: string,
+        portName: string,
+        payload: unknown,
+        siteId?: string,
+        customHeaders?: CustomHeaders
+    ): Promise<unknown> {
+        return await this.deviceOps.setSitesGatewaysPortConfig(gatewayMac, portName, payload, siteId, customHeaders);
+    }
+
+    public async setSitesGatewaysMultiPortsConfig(
+        gatewayMac: string,
+        payload: unknown,
+        siteId?: string,
+        customHeaders?: CustomHeaders
+    ): Promise<unknown> {
+        return await this.deviceOps.setSitesGatewaysMultiPortsConfig(gatewayMac, payload, siteId, customHeaders);
     }
 
     public async getSitesGatewaysPin(gatewayMac: string, siteId?: string, customHeaders?: CustomHeaders): Promise<unknown> {
@@ -446,6 +527,10 @@ export class OmadaClient {
         return await this.deviceOps.getSitesApsIpSetting(apMac, siteId, customHeaders);
     }
 
+    public async setSitesApsIpSetting(apMac: string, payload: unknown, siteId?: string, customHeaders?: CustomHeaders): Promise<unknown> {
+        return await this.deviceOps.setSitesApsIpSetting(apMac, payload, siteId, customHeaders);
+    }
+
     public async getSitesApsChannelLimit(apMac: string, siteId?: string, customHeaders?: CustomHeaders): Promise<unknown> {
         return await this.deviceOps.getSitesApsChannelLimit(apMac, siteId, customHeaders);
     }
@@ -454,28 +539,109 @@ export class OmadaClient {
         return await this.deviceOps.getSitesApsAvailableChannel(apMac, siteId, customHeaders);
     }
 
+    public async setApChannelConfig(apMac: string, payload: unknown, siteId?: string, customHeaders?: CustomHeaders): Promise<unknown> {
+        return await this.deviceOps.setApChannelConfig(apMac, payload, siteId, customHeaders);
+    }
+
+    public async getAfcConfig(apMac: string, siteId?: string, customHeaders?: CustomHeaders): Promise<unknown> {
+        return await this.deviceOps.getAfcConfig(apMac, siteId, customHeaders);
+    }
+
+    public async setAfcConfig(apMac: string, payload: unknown, siteId?: string, customHeaders?: CustomHeaders): Promise<unknown> {
+        return await this.deviceOps.setAfcConfig(apMac, payload, siteId, customHeaders);
+    }
+
     public async getSitesApsLoadBalance(apMac: string, siteId?: string, customHeaders?: CustomHeaders): Promise<unknown> {
         return await this.deviceOps.getSitesApsLoadBalance(apMac, siteId, customHeaders);
+    }
+
+    public async setSitesApsLoadBalance(apMac: string, payload: unknown, siteId?: string, customHeaders?: CustomHeaders): Promise<unknown> {
+        return await this.deviceOps.setSitesApsLoadBalance(apMac, payload, siteId, customHeaders);
     }
 
     public async getSitesApsOfdma(apMac: string, siteId?: string, customHeaders?: CustomHeaders): Promise<unknown> {
         return await this.deviceOps.getSitesApsOfdma(apMac, siteId, customHeaders);
     }
 
+    public async setSitesApsOfdma(apMac: string, payload: unknown, siteId?: string, customHeaders?: CustomHeaders): Promise<unknown> {
+        return await this.deviceOps.setSitesApsOfdma(apMac, payload, siteId, customHeaders);
+    }
+
     public async getSitesApsPowerSaving(apMac: string, siteId?: string, customHeaders?: CustomHeaders): Promise<unknown> {
         return await this.deviceOps.getSitesApsPowerSaving(apMac, siteId, customHeaders);
+    }
+
+    public async setSitesApsPowerSaving(
+        apMac: string,
+        payload: {
+            timeEnable: boolean;
+            bandEnable: boolean;
+            startTimeH?: number;
+            startTimeM?: number;
+            endTimeH?: number;
+            endTimeM?: number;
+            bands?: number[];
+            idleDuration?: number;
+        },
+        siteId?: string,
+        customHeaders?: CustomHeaders
+    ): Promise<unknown> {
+        return await this.deviceOps.setSitesApsPowerSaving(apMac, payload, siteId, customHeaders);
     }
 
     public async getSitesApsTrunkSetting(apMac: string, siteId?: string, customHeaders?: CustomHeaders): Promise<unknown> {
         return await this.deviceOps.getSitesApsTrunkSetting(apMac, siteId, customHeaders);
     }
 
+    public async setSitesApsTrunkSetting(apMac: string, payload: unknown, siteId?: string, customHeaders?: CustomHeaders): Promise<unknown> {
+        return await this.deviceOps.setSitesApsTrunkSetting(apMac, payload, siteId, customHeaders);
+    }
+
+    public async setSitesApsChannelLimit(
+        apMac: string,
+        payload: {
+            channelLimitType: number;
+        },
+        siteId?: string,
+        customHeaders?: CustomHeaders
+    ): Promise<unknown> {
+        return await this.deviceOps.setSitesApsChannelLimit(apMac, payload, siteId, customHeaders);
+    }
+
     public async getSitesApsBridge(apMac: string, siteId?: string, customHeaders?: CustomHeaders): Promise<unknown> {
         return await this.deviceOps.getSitesApsBridge(apMac, siteId, customHeaders);
     }
 
+    public async setSitesApsBridge(apMac: string, payload: unknown, siteId?: string, customHeaders?: CustomHeaders): Promise<unknown> {
+        return await this.deviceOps.setSitesApsBridge(apMac, payload, siteId, customHeaders);
+    }
+
+    public async setRadiosConfig(apMac: string, payload: unknown, siteId?: string, customHeaders?: CustomHeaders): Promise<unknown> {
+        return await this.deviceOps.setRadiosConfig(apMac, payload, siteId, customHeaders);
+    }
+
     public async listSitesApsPorts(apMac: string, siteId?: string, customHeaders?: CustomHeaders): Promise<unknown[]> {
         return await this.deviceOps.listSitesApsPorts(apMac, siteId, customHeaders);
+    }
+
+    public async setSitesApsPortConfig(apMac: string, payload: unknown, siteId?: string, customHeaders?: CustomHeaders): Promise<unknown> {
+        return await this.deviceOps.setSitesApsPortConfig(apMac, payload, siteId, customHeaders);
+    }
+
+    public async setApServiceConfig(apMac: string, payload: unknown, siteId?: string, customHeaders?: CustomHeaders): Promise<unknown> {
+        return await this.deviceOps.setApServiceConfig(apMac, payload, siteId, customHeaders);
+    }
+
+    public async setApWlanGroup(apMac: string, payload: unknown, siteId?: string, customHeaders?: CustomHeaders): Promise<unknown> {
+        return await this.deviceOps.setApWlanGroup(apMac, payload, siteId, customHeaders);
+    }
+
+    public async getAntennaGainConfig(apMac: string, siteId?: string, customHeaders?: CustomHeaders): Promise<unknown> {
+        return await this.deviceOps.getAntennaGainConfig(apMac, siteId, customHeaders);
+    }
+
+    public async setAntennaGainConfig(apMac: string, payload: unknown, siteId?: string, customHeaders?: CustomHeaders): Promise<unknown> {
+        return await this.deviceOps.setAntennaGainConfig(apMac, payload, siteId, customHeaders);
     }
 
     public async getSitesSwitchesEs(switchMac: string, siteId?: string, customHeaders?: CustomHeaders): Promise<unknown> {
@@ -874,6 +1040,51 @@ export class OmadaClient {
     public async getDhcpReservationGrid(page: number, pageSize: number, siteId?: string, customHeaders?: CustomHeaders): Promise<unknown> {
         return await this.networkOps.getDhcpReservationGrid(page, pageSize, siteId, customHeaders);
     }
+    public async createDhcpReservation(
+        payload: {
+            netId: string;
+            mac: string;
+            status: boolean;
+            ip?: string;
+            description?: string;
+            confirmConflict?: boolean;
+            options?: unknown[];
+        },
+        siteId?: string,
+        customHeaders?: CustomHeaders
+    ): Promise<unknown> {
+        return await this.networkOps.createDhcpReservation(payload, siteId, customHeaders);
+    }
+    public async updateDhcpReservation(
+        mac: string,
+        payload: {
+            netId: string;
+            status: boolean;
+            ip?: string;
+            description?: string;
+            confirmConflict?: boolean;
+            options?: unknown[];
+        },
+        siteId?: string,
+        customHeaders?: CustomHeaders
+    ): Promise<unknown> {
+        return await this.networkOps.updateDhcpReservation(mac, payload, siteId, customHeaders);
+    }
+    public async deleteDhcpReservation(mac: string, siteId?: string, customHeaders?: CustomHeaders): Promise<unknown> {
+        return await this.networkOps.deleteDhcpReservation(mac, siteId, customHeaders);
+    }
+    public async createBandwidthCtrlRule(payload: unknown, siteId?: string, customHeaders?: CustomHeaders): Promise<unknown> {
+        return await this.networkOps.createBandwidthCtrlRule(payload, siteId, customHeaders);
+    }
+    public async updateBandwidthCtrlRule(ruleId: string, payload: unknown, siteId?: string, customHeaders?: CustomHeaders): Promise<unknown> {
+        return await this.networkOps.updateBandwidthCtrlRule(ruleId, payload, siteId, customHeaders);
+    }
+    public async deleteBandwidthCtrlRule(ruleId: string, siteId?: string, customHeaders?: CustomHeaders): Promise<unknown> {
+        return await this.networkOps.deleteBandwidthCtrlRule(ruleId, siteId, customHeaders);
+    }
+    public async setAccessControl(payload: unknown, siteId?: string, customHeaders?: CustomHeaders): Promise<unknown> {
+        return await this.networkOps.setAccessControl(payload, siteId, customHeaders);
+    }
     public async getGridIpMacBinding(page: number, pageSize: number, siteId?: string, customHeaders?: CustomHeaders): Promise<unknown> {
         return await this.networkOps.getGridIpMacBinding(page, pageSize, siteId, customHeaders);
     }
@@ -994,6 +1205,30 @@ export class OmadaClient {
     // Firewall / ACL / IPS / URL-filter tools (issue #37)
     public async getAclConfigTypeSetting(siteId?: string, customHeaders?: CustomHeaders): Promise<unknown> {
         return await this.networkOps.getAclConfigTypeSetting(siteId, customHeaders);
+    }
+
+    public async setAclConfigTypeSetting(payload: unknown, siteId?: string, customHeaders?: CustomHeaders): Promise<unknown> {
+        return await this.networkOps.setAclConfigTypeSetting(payload, siteId, customHeaders);
+    }
+
+    public async createOsgAcl(payload: unknown, siteId?: string, customHeaders?: CustomHeaders): Promise<unknown> {
+        return await this.networkOps.createOsgAcl(payload, siteId, customHeaders);
+    }
+
+    public async updateOsgAcl(aclId: string, payload: unknown, siteId?: string, customHeaders?: CustomHeaders): Promise<unknown> {
+        return await this.networkOps.updateOsgAcl(aclId, payload, siteId, customHeaders);
+    }
+
+    public async createEapAcl(payload: unknown, siteId?: string, customHeaders?: CustomHeaders): Promise<unknown> {
+        return await this.networkOps.createEapAcl(payload, siteId, customHeaders);
+    }
+
+    public async updateEapAcl(aclId: string, payload: unknown, siteId?: string, customHeaders?: CustomHeaders): Promise<unknown> {
+        return await this.networkOps.updateEapAcl(aclId, payload, siteId, customHeaders);
+    }
+
+    public async deleteAcl(aclId: string, siteId?: string, customHeaders?: CustomHeaders): Promise<unknown> {
+        return await this.networkOps.deleteAcl(aclId, siteId, customHeaders);
     }
 
     public async getOsgCustomAclList(page: number, pageSize: number, siteId?: string, customHeaders?: CustomHeaders): Promise<unknown> {
@@ -1245,9 +1480,29 @@ export class OmadaClient {
     public async getAppControlRules(page = 1, pageSize = 10, siteId?: string, customHeaders?: CustomHeaders): Promise<unknown> {
         return await this.networkOps.getAppControlRules(page, pageSize, siteId, customHeaders);
     }
+    public async createAppControlRule(payload: unknown, siteId?: string, customHeaders?: CustomHeaders): Promise<unknown> {
+        return await this.networkOps.createAppControlRule(payload, siteId, customHeaders);
+    }
+    public async updateAppControlRule(ruleId: string, payload: unknown, siteId?: string, customHeaders?: CustomHeaders): Promise<unknown> {
+        return await this.networkOps.updateAppControlRule(ruleId, payload, siteId, customHeaders);
+    }
+    public async deleteAppControlRule(ruleId: string, siteId?: string, customHeaders?: CustomHeaders): Promise<unknown> {
+        return await this.networkOps.deleteAppControlRule(ruleId, siteId, customHeaders);
+    }
 
     public async getAppControlCategories(siteId?: string, customHeaders?: CustomHeaders): Promise<unknown> {
         return await this.networkOps.getAppControlCategories(siteId, customHeaders);
+    }
+
+    public async getApplications(
+        page = 1,
+        pageSize = 10,
+        searchKey?: string,
+        filtersFamilyId?: number,
+        siteId?: string,
+        customHeaders?: CustomHeaders
+    ): Promise<unknown> {
+        return await this.networkOps.getApplications(page, pageSize, searchKey, filtersFamilyId, siteId, customHeaders);
     }
 
     public async getQosPolicy(siteId?: string, customHeaders?: CustomHeaders): Promise<unknown> {

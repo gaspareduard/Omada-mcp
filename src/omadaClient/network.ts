@@ -138,6 +138,17 @@ export class NetworkOperations {
     }
 
     /**
+     * Update firewall settings for a site.
+     * OperationId: modifyFirewallSetting
+     */
+    public async setFirewallSetting(payload: unknown, siteId?: string, customHeaders?: CustomHeaders): Promise<unknown> {
+        const resolvedSiteId = this.site.resolveSiteId(siteId);
+        const path = this.buildPath(`/sites/${encodeURIComponent(resolvedSiteId)}/firewall`);
+        const response = await this.request.patch<OmadaApiResponse<unknown>>(path, payload, customHeaders);
+        return this.request.ensureSuccess(response);
+    }
+
+    /**
      * Get VPN settings for a site.
      * OperationId: getVpn
      */
@@ -219,6 +230,70 @@ export class NetworkOperations {
         const resolvedSiteId = this.site.resolveSiteId(siteId);
         const path = this.buildPath(`/sites/${encodeURIComponent(resolvedSiteId)}/acls/eap-acls`);
         return await this.request.fetchPaginated<unknown>(path, {}, customHeaders);
+    }
+
+    /**
+     * Create a gateway ACL rule.
+     * OperationId: createOsgAcl
+     */
+    public async createOsgAcl(payload: unknown, siteId?: string, customHeaders?: CustomHeaders): Promise<unknown> {
+        const resolvedSiteId = this.site.resolveSiteId(siteId);
+        const path = this.buildPath(`/sites/${encodeURIComponent(resolvedSiteId)}/acls/osg-acls`);
+        const response = await this.request.post<OmadaApiResponse<unknown>>(path, payload, customHeaders);
+        return this.request.ensureSuccess(response);
+    }
+
+    /**
+     * Update a gateway ACL rule.
+     * OperationId: modifyOsgAcl
+     */
+    public async updateOsgAcl(aclId: string, payload: unknown, siteId?: string, customHeaders?: CustomHeaders): Promise<unknown> {
+        if (!aclId.trim()) {
+            throw new Error('aclId is required.');
+        }
+        const resolvedSiteId = this.site.resolveSiteId(siteId);
+        const path = this.buildPath(`/sites/${encodeURIComponent(resolvedSiteId)}/acls/osg-acls/${encodeURIComponent(aclId)}`);
+        const response = await this.request.put<OmadaApiResponse<unknown>>(path, payload, customHeaders);
+        return this.request.ensureSuccess(response);
+    }
+
+    /**
+     * Create an EAP ACL rule.
+     * OperationId: createEapAcl
+     */
+    public async createEapAcl(payload: unknown, siteId?: string, customHeaders?: CustomHeaders): Promise<unknown> {
+        const resolvedSiteId = this.site.resolveSiteId(siteId);
+        const path = this.buildPath(`/sites/${encodeURIComponent(resolvedSiteId)}/acls/eap-acls`);
+        const response = await this.request.post<OmadaApiResponse<unknown>>(path, payload, customHeaders);
+        return this.request.ensureSuccess(response);
+    }
+
+    /**
+     * Update an EAP ACL rule.
+     * OperationId: modifyEapAcl
+     */
+    public async updateEapAcl(aclId: string, payload: unknown, siteId?: string, customHeaders?: CustomHeaders): Promise<unknown> {
+        if (!aclId.trim()) {
+            throw new Error('aclId is required.');
+        }
+        const resolvedSiteId = this.site.resolveSiteId(siteId);
+        const path = this.buildPath(`/sites/${encodeURIComponent(resolvedSiteId)}/acls/eap-acls/${encodeURIComponent(aclId)}`);
+        const response = await this.request.put<OmadaApiResponse<unknown>>(path, payload, customHeaders);
+        return this.request.ensureSuccess(response);
+    }
+
+    /**
+     * Delete an ACL rule by id.
+     * OperationId: deleteAcl
+     */
+    public async deleteAcl(aclId: string, siteId?: string, customHeaders?: CustomHeaders): Promise<unknown> {
+        if (!aclId.trim()) {
+            throw new Error('aclId is required.');
+        }
+        const resolvedSiteId = this.site.resolveSiteId(siteId);
+        const path = this.buildPath(`/sites/${encodeURIComponent(resolvedSiteId)}/acls/${encodeURIComponent(aclId)}`);
+        const response = await this.request.delete<OmadaApiResponse<unknown>>(path, customHeaders);
+        return this.request.ensureSuccess(response);
     }
 
     /**
@@ -527,6 +602,71 @@ export class NetworkOperations {
     }
 
     /**
+     * Create a DHCP reservation entry.
+     * OperationId: createDhcpReservation
+     */
+    public async createDhcpReservation(
+        payload: {
+            netId: string;
+            mac: string;
+            status: boolean;
+            ip?: string;
+            description?: string;
+            confirmConflict?: boolean;
+            options?: unknown[];
+        },
+        siteId?: string,
+        customHeaders?: CustomHeaders
+    ): Promise<unknown> {
+        const resolvedSiteId = this.site.resolveSiteId(siteId);
+        const path = this.buildPath(`/sites/${encodeURIComponent(resolvedSiteId)}/setting/service/dhcp`);
+        const response = await this.request.post<OmadaApiResponse<unknown>>(path, payload, customHeaders);
+        return this.request.ensureSuccess(response);
+    }
+
+    /**
+     * Modify a DHCP reservation entry.
+     * OperationId: modifyDhcpReservation
+     */
+    public async updateDhcpReservation(
+        mac: string,
+        payload: {
+            netId: string;
+            status: boolean;
+            ip?: string;
+            description?: string;
+            confirmConflict?: boolean;
+            options?: unknown[];
+        },
+        siteId?: string,
+        customHeaders?: CustomHeaders
+    ): Promise<unknown> {
+        if (!mac) {
+            throw new Error('A reservation MAC address must be provided.');
+        }
+
+        const resolvedSiteId = this.site.resolveSiteId(siteId);
+        const path = this.buildPath(`/sites/${encodeURIComponent(resolvedSiteId)}/setting/service/dhcp/${encodeURIComponent(mac)}`);
+        const response = await this.request.patch<OmadaApiResponse<unknown>>(path, { ...payload, mac }, customHeaders);
+        return this.request.ensureSuccess(response);
+    }
+
+    /**
+     * Delete a DHCP reservation entry.
+     * OperationId: deleteDhcpReservation
+     */
+    public async deleteDhcpReservation(mac: string, siteId?: string, customHeaders?: CustomHeaders): Promise<unknown> {
+        if (!mac) {
+            throw new Error('A reservation MAC address must be provided.');
+        }
+
+        const resolvedSiteId = this.site.resolveSiteId(siteId);
+        const path = this.buildPath(`/sites/${encodeURIComponent(resolvedSiteId)}/setting/service/dhcp/${encodeURIComponent(mac)}`);
+        const response = await this.request.delete<OmadaApiResponse<unknown>>(path, customHeaders);
+        return this.request.ensureSuccess(response);
+    }
+
+    /**
      * Get IP-MAC binding entries.
      * OperationId: getGridIpMacBinding
      */
@@ -615,6 +755,45 @@ export class NetworkOperations {
     }
 
     /**
+     * Create a bandwidth control rule.
+     * OperationId: createBandwidthCtrlRule
+     */
+    public async createBandwidthCtrlRule(payload: unknown, siteId?: string, customHeaders?: CustomHeaders): Promise<unknown> {
+        const resolvedSiteId = this.site.resolveSiteId(siteId);
+        const path = this.buildPath(`/sites/${encodeURIComponent(resolvedSiteId)}/bandwidth-control/rules`);
+        const response = await this.request.post<OmadaApiResponse<unknown>>(path, payload, customHeaders);
+        return this.request.ensureSuccess(response);
+    }
+
+    /**
+     * Update a bandwidth control rule.
+     * OperationId: modifyBandwidthCtrlRule
+     */
+    public async updateBandwidthCtrlRule(ruleId: string, payload: unknown, siteId?: string, customHeaders?: CustomHeaders): Promise<unknown> {
+        if (!ruleId.trim()) {
+            throw new Error('ruleId is required.');
+        }
+        const resolvedSiteId = this.site.resolveSiteId(siteId);
+        const path = this.buildPath(`/sites/${encodeURIComponent(resolvedSiteId)}/bandwidth-control/rules/${encodeURIComponent(ruleId)}`);
+        const response = await this.request.patch<OmadaApiResponse<unknown>>(path, payload, customHeaders);
+        return this.request.ensureSuccess(response);
+    }
+
+    /**
+     * Delete a bandwidth control rule.
+     * OperationId: deleteBandwidthCtrlRule
+     */
+    public async deleteBandwidthCtrlRule(ruleId: string, siteId?: string, customHeaders?: CustomHeaders): Promise<unknown> {
+        if (!ruleId.trim()) {
+            throw new Error('ruleId is required.');
+        }
+        const resolvedSiteId = this.site.resolveSiteId(siteId);
+        const path = this.buildPath(`/sites/${encodeURIComponent(resolvedSiteId)}/bandwidth-control/rules/${encodeURIComponent(ruleId)}`);
+        const response = await this.request.delete<OmadaApiResponse<unknown>>(path, customHeaders);
+        return this.request.ensureSuccess(response);
+    }
+
+    /**
      * Get controller access control configuration.
      * OperationId: getAccessControl
      */
@@ -622,6 +801,17 @@ export class NetworkOperations {
         const resolvedSiteId = this.site.resolveSiteId(siteId);
         const path = this.buildPath(`/sites/${encodeURIComponent(resolvedSiteId)}/setting/access-control`);
         const response = await this.request.get<OmadaApiResponse<unknown>>(path, undefined, customHeaders);
+        return this.request.ensureSuccess(response);
+    }
+
+    /**
+     * Update the site access control setting.
+     * OperationId: modifyAccessControl
+     */
+    public async setAccessControl(payload: unknown, siteId?: string, customHeaders?: CustomHeaders): Promise<unknown> {
+        const resolvedSiteId = this.site.resolveSiteId(siteId);
+        const path = this.buildPath(`/sites/${encodeURIComponent(resolvedSiteId)}/setting/access-control`);
+        const response = await this.request.patch<OmadaApiResponse<unknown>>(path, payload, customHeaders);
         return this.request.ensureSuccess(response);
     }
 
@@ -899,6 +1089,17 @@ export class NetworkOperations {
         const resolvedSiteId = this.site.resolveSiteId(siteId);
         const path = this.buildPath(`/sites/${encodeURIComponent(resolvedSiteId)}/acls/osg-config-mode`);
         const response = await this.request.get<OmadaApiResponse<unknown>>(path, undefined, customHeaders);
+        return this.request.ensureSuccess(response);
+    }
+
+    /**
+     * Update ACL config type setting (L2/L3 mode).
+     * OperationId: modifyOsgConfigMode
+     */
+    public async setAclConfigTypeSetting(payload: unknown, siteId?: string, customHeaders?: CustomHeaders): Promise<unknown> {
+        const resolvedSiteId = this.site.resolveSiteId(siteId);
+        const path = this.buildPath(`/sites/${encodeURIComponent(resolvedSiteId)}/acls/osg-config-mode`);
+        const response = await this.request.put<OmadaApiResponse<unknown>>(path, payload, customHeaders);
         return this.request.ensureSuccess(response);
     }
 
@@ -1477,6 +1678,45 @@ export class NetworkOperations {
     }
 
     /**
+     * Create an application control rule.
+     * OperationId: addRule
+     */
+    public async createAppControlRule(payload: unknown, siteId?: string, customHeaders?: CustomHeaders): Promise<unknown> {
+        const resolvedSiteId = this.site.resolveSiteId(siteId);
+        const path = this.buildPath(`/sites/${encodeURIComponent(resolvedSiteId)}/applicationControl/rules`);
+        const response = await this.request.post<OmadaApiResponse<unknown>>(path, payload, customHeaders);
+        return this.request.ensureSuccess(response);
+    }
+
+    /**
+     * Update an application control rule.
+     * OperationId: editRule
+     */
+    public async updateAppControlRule(ruleId: string, payload: unknown, siteId?: string, customHeaders?: CustomHeaders): Promise<unknown> {
+        if (!ruleId.trim()) {
+            throw new Error('ruleId is required.');
+        }
+        const resolvedSiteId = this.site.resolveSiteId(siteId);
+        const path = this.buildPath(`/sites/${encodeURIComponent(resolvedSiteId)}/applicationControl/rules/${encodeURIComponent(ruleId)}`);
+        const response = await this.request.put<OmadaApiResponse<unknown>>(path, payload, customHeaders);
+        return this.request.ensureSuccess(response);
+    }
+
+    /**
+     * Delete an application control rule.
+     * OperationId: deleteRules
+     */
+    public async deleteAppControlRule(ruleId: string, siteId?: string, customHeaders?: CustomHeaders): Promise<unknown> {
+        if (!ruleId.trim()) {
+            throw new Error('ruleId is required.');
+        }
+        const resolvedSiteId = this.site.resolveSiteId(siteId);
+        const path = this.buildPath(`/sites/${encodeURIComponent(resolvedSiteId)}/applicationControl/rules/${encodeURIComponent(ruleId)}`);
+        const response = await this.request.delete<OmadaApiResponse<unknown>>(path, customHeaders);
+        return this.request.ensureSuccess(response);
+    }
+
+    /**
      * Get application control categories (families).
      * OperationId: getAppControlCategories
      */
@@ -1484,6 +1724,30 @@ export class NetworkOperations {
         const resolvedSiteId = this.site.resolveSiteId(siteId);
         const path = this.buildPath(`/sites/${encodeURIComponent(resolvedSiteId)}/applicationControl/families`);
         const response = await this.request.get<OmadaApiResponse<unknown>>(path, undefined, customHeaders);
+        return this.request.ensureSuccess(response);
+    }
+
+    /**
+     * Get application control applications (paginated).
+     * OperationId: getApplications
+     */
+    public async getApplications(
+        page = 1,
+        pageSize = 10,
+        searchKey?: string,
+        filtersFamilyId?: number,
+        siteId?: string,
+        customHeaders?: CustomHeaders
+    ): Promise<unknown> {
+        const resolvedSiteId = this.site.resolveSiteId(siteId);
+        const path = this.buildPath(`/sites/${encodeURIComponent(resolvedSiteId)}/applicationControl/applications`);
+        const params = {
+            page,
+            pageSize,
+            ...(searchKey ? { searchKey } : {}),
+            ...(filtersFamilyId !== undefined ? { filtersFamilyId } : {}),
+        };
+        const response = await this.request.get<OmadaApiResponse<unknown>>(path, params, customHeaders);
         return this.request.ensureSuccess(response);
     }
 

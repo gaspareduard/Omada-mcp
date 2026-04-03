@@ -11,8 +11,7 @@ export function registerGetAccessControlTool(server: McpServer, client: OmadaCli
     server.registerTool(
         'getAccessControl',
         {
-            description:
-                'Get controller access control configuration. Shows which IP ranges are permitted to access the Omada controller management interface.',
+            description: 'Get portal access control configuration, including pre-auth access policies and free-auth client policies.',
             inputSchema: inputSchema.shape,
         },
         wrapToolHandler('getAccessControl', async ({ siteId, customHeaders }) => toToolResult(await client.getAccessControl(siteId, customHeaders)))

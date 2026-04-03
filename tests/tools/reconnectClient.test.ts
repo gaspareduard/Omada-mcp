@@ -26,4 +26,30 @@ describe('tools/reconnectClient', () => {
         await toolHandler({ clientMac: 'AA:BB:CC:DD:EE:FF', siteId: 'site-1' }, { sessionId: 's1' });
         expect(mockClient.reconnectClient).toHaveBeenCalledWith('AA:BB:CC:DD:EE:FF', 'site-1', undefined);
     });
+
+    it('returns a dry-run summary without calling the controller', async () => {
+        registerReconnectClientTool(mockServer, mockClient);
+        const result = await toolHandler({ clientMac: 'AA:BB:CC:DD:EE:FF', dryRun: true }, { sessionId: 's1' });
+
+        expect(mockClient.reconnectClient).not.toHaveBeenCalled();
+        expect(result).toEqual({
+            content: [
+                {
+                    type: 'text',
+                    text: JSON.stringify(
+                        {
+                            action: 'reconnect-client',
+                            target: 'AA:BB:CC:DD:EE:FF',
+                            mode: 'dry-run',
+                            status: 'planned',
+                            summary: 'Planned client reconnect for AA:BB:CC:DD:EE:FF.',
+                            result: { accepted: true, dryRun: true },
+                        },
+                        null,
+                        2
+                    ),
+                },
+            ],
+        });
+    });
 });

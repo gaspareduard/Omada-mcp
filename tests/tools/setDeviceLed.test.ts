@@ -26,4 +26,30 @@ describe('tools/setDeviceLed', () => {
         await toolHandler({ deviceMac: 'AA:BB:CC:DD:EE:FF', ledSetting: 1, siteId: 'site-1' }, { sessionId: 's1' });
         expect(mockClient.setDeviceLed).toHaveBeenCalledWith('AA:BB:CC:DD:EE:FF', 1, 'site-1', undefined);
     });
+
+    it('returns a dry-run summary without calling the controller', async () => {
+        registerSetDeviceLedTool(mockServer, mockClient);
+        const result = await toolHandler({ deviceMac: 'AA:BB:CC:DD:EE:FF', ledSetting: 2, dryRun: true }, { sessionId: 's1' });
+
+        expect(mockClient.setDeviceLed).not.toHaveBeenCalled();
+        expect(result).toEqual({
+            content: [
+                {
+                    type: 'text',
+                    text: JSON.stringify(
+                        {
+                            action: 'set-device-led',
+                            target: 'AA:BB:CC:DD:EE:FF',
+                            mode: 'dry-run',
+                            status: 'planned',
+                            summary: 'Planned LED setting 2 for device AA:BB:CC:DD:EE:FF.',
+                            result: { accepted: true, dryRun: true, ledSetting: 2 },
+                        },
+                        null,
+                        2
+                    ),
+                },
+            ],
+        });
+    });
 });
