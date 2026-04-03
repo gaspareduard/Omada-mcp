@@ -2,6 +2,7 @@ import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import type { RequestHandlerExtra } from '@modelcontextprotocol/sdk/shared/protocol.js';
 import { type CallToolResult, ListResourcesRequestSchema, type ServerNotification, type ServerRequest } from '@modelcontextprotocol/sdk/types.js';
 import { z } from 'zod';
+import packageMetadata from '../../package.json' with { type: 'json' };
 
 import { logger } from '../utils/logger.js';
 
@@ -291,7 +292,7 @@ function setupServerLogging(server: McpServer): void {
 export function createServer(): McpServer {
     const server = new McpServer({
         name: 'safe-omada-mcp',
-        version: '0.1.0',
+        version: packageMetadata.version,
     });
 
     setupServerLogging(server);

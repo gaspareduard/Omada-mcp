@@ -8,7 +8,7 @@ Security-focused MCP server for TP-Link Omada Open API workflows.
 - Omada credentials are environment-only
 - Capability profiles and category gating control what tools are exposed
 - HTTP remains in the codebase only as an explicitly unsafe, lab-only path
-- Tested against Omada Controller 5.x and 6.x
+- Validated against live Omada Controller 6.x environments and designed around the documented 5.x/6.x Open API surface
 
 ## Quick Start
 
@@ -17,7 +17,7 @@ Security-focused MCP server for TP-Link Omada Open API workflows.
 1. Pull or build an image:
 
    ```bash
-   docker pull ghcr.io/your-org/safe-omada-mcp:latest
+   docker pull ghcr.io/ailivesinterminal/omada-mcp:latest
    ```
 
    If you do not publish an image yet, build locally instead:
@@ -47,7 +47,7 @@ Security-focused MCP server for TP-Link Omada Open API workflows.
            "-e", "OMADA_OMADAC_ID=your-omadac-id",
            "-e", "OMADA_SITE_ID=your-site-id",
            "-e", "OMADA_STRICT_SSL=true",
-           "ghcr.io/your-org/safe-omada-mcp:latest"
+           "ghcr.io/ailivesinterminal/omada-mcp:latest"
          ]
        }
      }
@@ -61,7 +61,7 @@ Security-focused MCP server for TP-Link Omada Open API workflows.
 ```bash
 docker run --rm -it \
   --env-file .env \
-  ghcr.io/your-org/safe-omada-mcp:latest
+  ghcr.io/ailivesinterminal/omada-mcp:latest
 ```
 
 ### Option 3: Run locally for development
@@ -121,7 +121,7 @@ Use it only for local lab/debug scenarios.
 | `MCP_SERVER_USE_HTTP` | No | `false` | Legacy lab-only switch |
 | `MCP_UNSAFE_ENABLE_HTTP` | No | `false` | Explicit acknowledgement required |
 | `MCP_HTTP_PORT` | No | `3000` | HTTP port |
-| `MCP_HTTP_BIND_ADDR` | No | `127.0.0.1` | Bind address |
+| `MCP_HTTP_BIND_ADDR` | No | `127.0.0.1` | Loopback bind address only (`127.0.0.1` or `::1`) |
 | `MCP_HTTP_PATH` | No | `/mcp` | MCP endpoint path |
 | `MCP_HTTP_ENABLE_HEALTHCHECK` | No | `true` | Enable health check |
 | `MCP_HTTP_HEALTHCHECK_PATH` | No | `/healthz` | Health check path |
@@ -242,7 +242,7 @@ npm run inspector:build
 | `getSitesApsPowerSaving` | Get power saving configuration for an AP. Requires `apMac`. |
 | `setApPowerSaving` | Updates AP power saving configuration with support checks and dry-run preview. Requires `apMac`. |
 | `setApChannelLimit` | Updates AP channel-limit configuration with support checks and dry-run preview. Requires `apMac`. |
-| `setApConfig` | Updates documented AP configuration families with dry-run preview. Covers AP general, IP, IPv6, QoS, radio, service, load-balance, OFDMA, trunk, bridge, WLAN group, port, channel, AFC, and antenna settings. Setter-only families return a planned payload plus a warning when controller readback is unavailable. Requires `apMac`. |
+| `setApConfig` | Updates documented AP configuration families with dry-run preview. Covers AP general, IP, IPv6, QoS, radio, service, load-balance, OFDMA, trunk, bridge, WLAN group, port, channel, AFC, and antenna settings. Setter-only families return planned payloads and an explicit warning when controller readback is unavailable. Requires `apMac`. |
 | `getSitesApsTrunkSetting` | Get trunk port setting for an AP. Requires `apMac`. |
 | `getSitesApsBridge` | Get bridge configuration for an AP. Requires `apMac`. |
 | `listSitesApsPorts` | List ports for an AP. Requires `apMac`. |
@@ -260,7 +260,7 @@ npm run inspector:build
 | `getSitesGatewaysPin` | Get PIN information for a gateway. Requires `gatewayMac`. |
 | `getSitesGatewaysSimCardUsed` | Get SIM card usage info for a gateway. Requires `gatewayMac`. |
 | `getSitesHealthGatewaysWansDetails` | Get gateway WAN health details. Requires `gatewayMac`. |
-| `setGatewayConfig` | Updates documented gateway configuration families with dry-run preview. Covers general, services, advanced, radios, WLAN, and port settings. Requires `gatewayMac`. |
+| `setGatewayConfig` | Updates documented gateway configuration families with dry-run preview. Covers general, services, advanced, radios, WLAN, and port settings. Setter-only families return planned payloads and an explicit warning when controller readback is unavailable. Requires `gatewayMac`. |
 
 ### Network
 
@@ -295,7 +295,7 @@ npm run inspector:build
 | `getSsidList` | Gets the list of SSIDs in a WLAN group. |
 | `getSsidDetail` | Gets detailed information for a specific SSID. Required: `wlanId` and `ssidId`. |
 | `listAllSsids` | Lists wireless SSIDs across all WLAN groups. |
-| `getFirewallSetting` | Gets firewall configuration and rules for a site. |
+| `getFirewallSetting` | Gets the site-global firewall settings returned by the official Omada firewall endpoint. |
 | `setFirewallSetting` | Updates site firewall settings with dry-run preview using the official Omada Open API firewall endpoint. |
 | `setAclConfigTypeSetting` | Updates the gateway ACL mode (`through profiles` or `custom`) with dry-run preview. |
 | `getVpnSettings` | Gets VPN settings for a site. |
@@ -542,7 +542,7 @@ npm run inspector:build
 | `getSsidList` | Get SSID list for a WLAN group.                           | `getSsidList` |
 | `getSsidDetail` | Get detailed SSID configuration.                          | `getSsidDetail` |
 | `getSsidListAll` | List SSIDs across all WLAN groups.                        | `listAllSsids` |
-| `getFirewallSetting` | Get firewall configuration for a site.                    | `getFirewallSetting` |
+| `getFirewallSetting` | Get the site-global firewall settings returned by the official Omada firewall endpoint. | `getFirewallSetting` |
 | `modifyFirewallSetting` | Update site firewall settings with dry-run support. | `setFirewallSetting` |
 | `getVpn` | Get VPN settings for a site.                              | `getVpnSettings` |
 | `getSiteToSiteVpnList` | List site-to-site VPN configurations.                     | `listSiteToSiteVpns` |
@@ -602,7 +602,7 @@ npm run inspector:build
 | `deleteSitesSettingServiceDhcp` | Delete an existing DHCP reservation for the site. | `deleteDhcpReservation` |
 | `getDnsCacheSetting` | Get DNS cache setting for the site gateway. | `getDnsCacheSetting` |
 | `getDnsProxy` | Get DNS proxy configuration for the site gateway. | `getDnsProxy` |
-| `getFirewallSetting` | Get firewall configuration and rules for a site, including ACL rule.... | `getFirewallSetting` |
+| `getFirewallSetting` | Get the site-global firewall settings returned by the official Omada firewall endpoint. | `getFirewallSetting` |
 | `modifyFirewallSetting` | Update site firewall settings with dry-run support. | `setFirewallSetting` |
 | `getFirmwareInfo` | Get the latest available firmware information for a device. | `getFirmwareInfo` |
 | `getGatewayDetail` | Fetch full configuration and status for a specific gateway: model, .... | `getGatewayDetail` |

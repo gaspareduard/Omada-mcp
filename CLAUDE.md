@@ -40,7 +40,7 @@ Reference `.env.example`. Primary variables:
 ### MCP Server HTTP Configuration, if `MCP_SERVER_USE_HTTP=true` and `MCP_UNSAFE_ENABLE_HTTP=true`:
 
 - `MCP_HTTP_PORT` (default: `3000`) - port for the HTTP server.
-- `MCP_HTTP_BIND_ADDR` (default: `127.0.0.1`) - bind address for the HTTP server (IPv4 or IPv6). For security, defaults to localhost.
+- `MCP_HTTP_BIND_ADDR` (default: `127.0.0.1`) - loopback bind address for the HTTP server. The safe baseline only allows `127.0.0.1` or `::1`.
 - `MCP_HTTP_PATH` (default: `/mcp`) - base path for MCP HTTP endpoints.
 - `MCP_HTTP_ENABLE_HEALTHCHECK` (default: `true`) - enable a healthcheck endpoint at the path indicated on `MCP_HTTP_HEALTHCHECK_PATH`.
 - `MCP_HTTP_HEALTHCHECK_PATH` (default: `/healthz`) - path for the healthcheck endpoint.

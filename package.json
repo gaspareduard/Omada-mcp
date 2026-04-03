@@ -1,6 +1,6 @@
 {
     "name": "safe-omada-mcp",
-    "version": "0.15.0",
+    "version": "0.16.0",
     "description": "Security-focused Model Context Protocol server for TP-Link Omada Open API workflows",
     "type": "module",
     "main": "dist/index.js",
@@ -20,9 +20,9 @@
         "start": "node dist/index.js",
         "inspector": "tsx scripts/run-inspector.ts",
         "inspector:build": "npm run build && tsx scripts/run-inspector.ts build",
-        "docker:build": "docker build -f Dockerfile -t ghcr.io/your-org/safe-omada-mcp:latest .",
-        "docker:run": "docker run --rm -it --env-file .env --env-file .env.local ghcr.io/your-org/safe-omada-mcp:latest",
-        "docker:push": "docker push ghcr.io/your-org/safe-omada-mcp:latest",
+        "docker:build": "docker build -f Dockerfile -t ghcr.io/ailivesinterminal/omada-mcp:latest .",
+        "docker:run": "docker run --rm -it --env-file .env --env-file .env.local ghcr.io/ailivesinterminal/omada-mcp:latest",
+        "docker:push": "docker push ghcr.io/ailivesinterminal/omada-mcp:latest",
         "prepare": "husky",
         "symlinks:fix": "bash scripts/fix-symlinks.sh",
         "symlinks:check": "bash -e -c \"for l in AGENTS.md .github/copilot-instructions.md .github/AGENTS.md; do [ -L $l ] || { echo \u274c $l missing; exit 1; }; done && echo \u2705 symlinks OK\""
@@ -31,8 +31,16 @@
     "engines": {
         "node": ">=24.0.0"
     },
-    "author": "",
+    "author": "AILivesInTerminal",
     "license": "MIT",
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/AILivesInTerminal/Omada-mcp.git"
+    },
+    "homepage": "https://github.com/AILivesInTerminal/Omada-mcp#readme",
+    "bugs": {
+        "url": "https://github.com/AILivesInTerminal/Omada-mcp/issues"
+    },
     "dependencies": {
         "@modelcontextprotocol/sdk": "^1.21.0",
         "axios": "^1.13.2",
