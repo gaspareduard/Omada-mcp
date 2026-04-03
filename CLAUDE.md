@@ -2,11 +2,11 @@
 
 ## Repository Purpose
 
-This project implements a Model Context Protocol (MCP) server that exposes TP-Link Omada controller APIs. The server is written in TypeScript/Node.js and communicates with MCP clients over stdio and HTTP (Streamable HTTP transport).
+This project implements a Model Context Protocol (MCP) server that exposes TP-Link Omada controller APIs. The server is written in TypeScript/Node.js. The supported production baseline is `stdio`; the legacy HTTP/Streamable HTTP transport remains in the codebase only as an explicitly unsafe, lab-only path.
 
 ## Tooling and Runtime
 
-- Node.js 22 LTS (devcontainer base image `mcr.microsoft.com/devcontainers/typescript-node:1-22-bookworm`).
+- Node.js 24.x is the active runtime and CI target.
 - TypeScript 5.9 with `module`/`moduleResolution` set to `NodeNext`.
 - Zod 3.x for configuration validation (the MCP SDK currently expects Zod 3 APIs).
 - Biome 2.x for linting and formatting.
@@ -32,23 +32,26 @@ Reference `.env.example`. Primary variables:
   - `plain` - human-readable text format.
   - `json` - structured JSON format.
   - `gcp-json` - structured JSON format compatible with Google Cloud Logging.
-- `MCP_SERVER_USE_HTTP` (default: `false`) - whether to start the HTTP server instead of stdio.
+- `OMADA_CAPABILITY_PROFILE` (default: `safe-read`) - built-in capability profile (`safe-read`, `ops-write`, `admin`, `compatibility`).
+- `OMADA_TOOL_CATEGORIES` (optional) - explicit category override for tool exposure. If omitted, the selected capability profile provides the defaults.
+- `MCP_SERVER_USE_HTTP` (default: `false`) - legacy lab-only switch to start the HTTP server instead of stdio.
+- `MCP_UNSAFE_ENABLE_HTTP` (default: `false`) - explicit acknowledgement required before `MCP_SERVER_USE_HTTP=true` is allowed.
 
-### MCP Server HTTP Configuration, if `MCP_SERVER_USE_HTTP` is `true`:
+### MCP Server HTTP Configuration, if `MCP_SERVER_USE_HTTP=true` and `MCP_UNSAFE_ENABLE_HTTP=true`:
 
 - `MCP_HTTP_PORT` (default: `3000`) - port for the HTTP server.
-- `MCP_HTTP_BIND_ADDR` (default: `127.0.0.1`) - bind address for the HTTP server (IPv4 or IPv6). For security, defaults to localhost.
+- `MCP_HTTP_BIND_ADDR` (default: `127.0.0.1`) - loopback bind address for the HTTP server. The safe baseline only allows `127.0.0.1` or `::1`.
 - `MCP_HTTP_PATH` (default: `/mcp`) - base path for MCP HTTP endpoints.
 - `MCP_HTTP_ENABLE_HEALTHCHECK` (default: `true`) - enable a healthcheck endpoint at the path indicated on `MCP_HTTP_HEALTHCHECK_PATH`.
 - `MCP_HTTP_HEALTHCHECK_PATH` (default: `/healthz`) - path for the healthcheck endpoint.
 - `MCP_HTTP_ALLOW_CORS` (default: `true`) - enable CORS for the HTTP server.
 - `MCP_HTTP_ALLOWED_ORIGINS` (default: `127.0.0.1, localhost`) - comma-separated list of allowed origins for DNS rebinding protection. Must contain valid hostnames, IPv4, IPv6 addresses, or `*` to allow all origins (development only).
-- `MCP_HTTP_NGROK_ENABLED` (default: `false`) - whether to use ngrok to expose the HTTP server publicly.
-- `MCP_HTTP_NGROK_AUTH_TOKEN` (optional) - ngrok auth token, required if `MCP_HTTP_NGROK_ENABLED` is `true`.
+- `MCP_HTTP_NGROK_ENABLED` (default: `false`) - legacy placeholder. Public tunnel support is intentionally disabled in the safe baseline.
+- `MCP_HTTP_NGROK_AUTH_TOKEN` (optional) - legacy placeholder.
 
 ## Code Structure
 
-- `src/index.ts` — MCP Server startup, including both stdio and HTTP server initialization. The type of server is selected based on environment variables.
+- `src/index.ts` — MCP Server startup. The supported path is stdio; HTTP startup remains gated behind explicit unsafe configuration.
 - `src/config.ts` — Environment variable loading and validation via Zod.
 - `src/utils/` — Utility functions (e.g., logger, error handling).
 - `src/omadaClient/` — Omada API interaction layer, organized by API tag (e.g., `src/omadaClient/user.ts`, `src/omadaClient/device.ts`). The main client class is in `src/omadaClient/index.ts`.
@@ -131,8 +134,8 @@ Three symlinks point to it so every AI agent picks it up automatically:
 Symlink integrity is enforced at three levels:
 
 1. **husky pre-commit hook** (`.husky/pre-commit`) — blocks any local commit if a symlink is missing or broken.
-2. **PR CI check** (`.github/workflows/pull-requests.yml`) — fails the PR if symlinks are gone.
-3. **Push CI check** (`.github/workflows/integrity.yml`) — fires on every direct push to `develop`/`main`.
+2. **CI workflow** (`.github/workflows/ci.yml`) — validates builds, tests, README sync, and release-readiness checks on pull requests and pushes to `main`/`develop`.
+3. **Manual validation before merge** — always run `npm run symlinks:check` locally before committing or merging substantial work.
 
 **If symlinks are ever lost**, recreate them with:
 
@@ -233,7 +236,6 @@ git push -u origin hotfix/<short-description>
 ## Additional Guidelines
 
 - Write unit tests for new functionality and ensure existing tests pass.
-- Write unit tests for new functionality and ensure existing tests pass.
 - When adding new features or fixing bugs, follow the GitFlow branching strategy described above.
 - Keep the reference `.env.example` and this documentation up to date with any new environment variables added to the project.
 - **DON'T** change the JSON files under `docs/openapi/`; they should only be used as reference for the API endpoints.
@@ -244,7 +246,7 @@ git push -u origin hotfix/<short-description>
 - IMPORTANT: Encapsulate the log implementation in `src/utils/logger.ts` to allow easy modification of the logging behavior in the future. Use this logger throughout the codebase instead of direct console.log statements.
 - Avoid using the TypeScript `any` type; prefer precise typings or `unknown` when necessary.
 - **DON'T** use `process.env.` to access environment variables directly. Access should be done outside of `src/config.ts`. All environment variables must be loaded and validated there using Zod, and then imported where needed.
-- The HTTP server uses the **Streamable HTTP** transport (MCP protocol version 2025-03-26) with a single endpoint for all operations.
+- The HTTP server code uses the **Streamable HTTP** transport (MCP protocol version 2025-03-26) with a single endpoint for all operations, but this remains an explicitly unsafe, unsupported production path.
 - DNS rebinding protection is implemented via origin validation and bind address restrictions for security.
 - Always reuse the pagination schema in `src/utils/pagination-schema.ts` when implementing list operations that support pagination.
 

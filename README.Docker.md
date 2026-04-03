@@ -1,29 +1,35 @@
 # Safe Omada MCP
 
-A security-focused MCP server for TP-Link Omada Open API workflows. This Docker image is intended for the safe baseline `stdio` deployment path.
+Security-focused MCP server for TP-Link Omada Open API workflows. This Docker-oriented README focuses on the supported `stdio` container path.
 
-> **Compatibility:** Tested with Omada Controller versions 5.x and 6.x
+## At a Glance
+
+- Production-safe baseline uses `stdio`
+- Omada credentials are passed by environment variables only
+- Capability profiles control which tools are exposed
+- HTTP remains a legacy, explicitly unsafe lab-only path
+- Validated against live Omada Controller 6.x environments and designed around the documented 5.x/6.x Open API surface
 
 ## Quick Start
 
-### Using with Claude Desktop (stdio)
+### Use with Claude Desktop via Docker
 
-1. **Pull the Docker image**:
+1. Pull an image:
 
    ```bash
-   docker pull ghcr.io/your-org/safe-omada-mcp:latest
+   docker pull ghcr.io/ailivesinterminal/omada-mcp:latest
    ```
 
-2. **Add the MCP server to Claude Desktop configuration**. Edit your Claude Desktop config file:
-   - **macOS**: `~/Library/Application Support/Claude/claude_desktop_config.json`
-   - **Windows**: `%APPDATA%\Claude\claude_desktop_config.json`
+2. Edit your Claude Desktop MCP config:
+   - macOS: `~/Library/Application Support/Claude/claude_desktop_config.json`
+   - Windows: `%APPDATA%\Claude\claude_desktop_config.json`
 
-3. **Add the following configuration**:
+3. Add the server entry:
 
    ```json
    {
      "mcpServers": {
-      "safe-omada": {
+       "safe-omada": {
          "command": "docker",
          "args": [
            "run",
@@ -35,82 +41,71 @@ A security-focused MCP server for TP-Link Omada Open API workflows. This Docker 
            "-e", "OMADA_OMADAC_ID=your-omadac-id",
            "-e", "OMADA_SITE_ID=your-site-id",
            "-e", "OMADA_STRICT_SSL=true",
-           "ghcr.io/your-org/safe-omada-mcp:latest"
+           "ghcr.io/ailivesinterminal/omada-mcp:latest"
          ]
        }
      }
    }
    ```
 
-   Replace the environment variable values with your actual Omada controller credentials.
+4. Restart Claude Desktop and verify the connection.
 
-4. **Restart Claude Desktop** to load the new MCP server configuration.
-
-5. **Verify the connection** by asking Claude to list your Omada sites or devices.
-
-### Using Docker Containers
-
-#### CLI/stdio Container
+### Run the container directly
 
 ```bash
-docker run -it --rm \
+docker run --rm -it \
   --env-file .env \
-  ghcr.io/your-org/safe-omada-mcp:latest
+  ghcr.io/ailivesinterminal/omada-mcp:latest
 ```
-
-## Features
-
-- OAuth client-credentials authentication with automatic token refresh
-- Tools for retrieving sites, network devices, and connected clients
-- Generic Omada API invoker for advanced automation scenarios
-- Environment-driven configuration
-- Support for both stdio and HTTP transports
-- Multi-platform support (linux/amd64, linux/arm64)
 
 ## Configuration
 
-The MCP server reads its configuration from environment variables.
+### Required Omada Variables
 
-### Omada Client Configuration
+| Variable | Required | Default | Description |
+| --- | --- | --- | --- |
+| `OMADA_BASE_URL` | Yes | - | Base URL of the Omada controller |
+| `OMADA_CLIENT_ID` | Yes | - | OAuth client ID from Omada Platform Integration |
+| `OMADA_CLIENT_SECRET` | Yes | - | OAuth client secret |
+| `OMADA_OMADAC_ID` | Yes | - | Omada controller ID (`omadacId`) |
+| `OMADA_SITE_ID` | No | - | Optional default site ID |
+| `OMADA_STRICT_SSL` | No | `true` | Enforce TLS certificate validation |
+| `OMADA_TIMEOUT` | No | `30000` | HTTP timeout in milliseconds |
 
-| Variable              | Required | Default | Description                                                                 |
-| --------------------- | -------- | ------- | --------------------------------------------------------------------------- |
-| `OMADA_BASE_URL` | Yes      | -       | Base URL of the Omada controller (e.g., `https://omada-controller.local`) |
-| `OMADA_CLIENT_ID` | Yes      | -       | OAuth client ID generated under Omada Platform Integration |
-| `OMADA_CLIENT_SECRET` | Yes      | -       | OAuth client secret associated with the client ID                           |
-| `OMADA_OMADAC_ID` | Yes      | -       | Omada controller ID (omadacId) to target |
-| `OMADA_SITE_ID` | No       | -       | Optional default site ID; if omitted, each MCP call must pass a siteId |
-| `OMADA_STRICT_SSL` | No       | `true`  | Enforce strict SSL certificate validation (set to `false` for self-signed) |
-| `OMADA_TIMEOUT` | No       | `30000` | HTTP request timeout in milliseconds |
-### MCP Generic Server Configuration
+### Capability and Logging
 
-| Variable                 | Required | Default | Description                                                                 |
-| ------------------------ | -------- | ------- | --------------------------------------------------------------------------- |
-| `MCP_SERVER_LOG_LEVEL` | No       | `info`  | Logging verbosity (`debug`, `info`, `warn`, `error`, `silent`) |
-| `MCP_SERVER_LOG_FORMAT` | No       | `plain` | Log output format (`plain`, `json`, or `gcp-json`) |
-| `MCP_SERVER_USE_HTTP` | No       | `false` | Legacy lab-only switch. Unsupported for the safe production baseline. |
-| `MCP_UNSAFE_ENABLE_HTTP` | No       | `false` | Explicit acknowledgement required before HTTP mode can start. |
+| Variable | Required | Default | Description |
+| --- | --- | --- | --- |
+| `OMADA_CAPABILITY_PROFILE` | No | `safe-read` | Built-in profile: `safe-read`, `ops-write`, `admin`, `compatibility` |
+| `OMADA_TOOL_CATEGORIES` | No | profile default | Explicit category override |
+| `MCP_SERVER_LOG_LEVEL` | No | `info` | `debug`, `info`, `warn`, `error`, `silent` |
+| `MCP_SERVER_LOG_FORMAT` | No | `plain` | `plain`, `json`, or `gcp-json` |
 
-### MCP Server HTTP Configuration
+### Optional HTTP Lab Mode
 
-These variables are only used when `MCP_SERVER_USE_HTTP=true` and `MCP_UNSAFE_ENABLE_HTTP=true`:
+HTTP is not part of the supported container baseline. It only starts when both of these are set:
+- `MCP_SERVER_USE_HTTP=true`
+- `MCP_UNSAFE_ENABLE_HTTP=true`
 
-| Variable                       | Required | Default                         | Description                                                                 |
-| ------------------------------ | -------- | ------------------------------- | --------------------------------------------------------------------------- |
-| `MCP_HTTP_PORT` | No       | `3000`                          | Port for the HTTP server |
-| `MCP_HTTP_BIND_ADDR` | No       | `127.0.0.1`                     | Bind address (IPv4/IPv6). Use adapter IP address to expose to the network. |
-| `MCP_HTTP_PATH` | No       | `/mcp`                          | Base path for MCP endpoints |
-| `MCP_HTTP_ENABLE_HEALTHCHECK` | No       | `true`                          | Enable a healthcheck endpoint |
-| `MCP_HTTP_HEALTHCHECK_PATH` | No       | `/healthz`                      | Path for the healthcheck endpoint |
-| `MCP_HTTP_ALLOW_CORS` | No       | `true`                          | Enable CORS for the HTTP server |
-| `MCP_HTTP_ALLOWED_ORIGINS` | No       | `127.0.0.1, localhost`          | Comma-separated list of allowed origins. Use `*` to allow all (dev only) |
-| `MCP_HTTP_NGROK_ENABLED` | No       | `false`                         | Legacy placeholder. Public tunnel support is disabled in the safe baseline. |
-| `MCP_HTTP_NGROK_AUTH_TOKEN` | No       | -                               | Legacy placeholder. |
-Create a `.env` file or export the variables before launching the container.
+| Variable | Required | Default | Description |
+| --- | --- | --- | --- |
+| `MCP_SERVER_USE_HTTP` | No | `false` | Legacy lab-only switch |
+| `MCP_UNSAFE_ENABLE_HTTP` | No | `false` | Explicit acknowledgement required |
+| `MCP_HTTP_PORT` | No | `3000` | HTTP port |
+| `MCP_HTTP_BIND_ADDR` | No | `127.0.0.1` | Loopback bind address only (`127.0.0.1` or `::1`) |
+| `MCP_HTTP_PATH` | No | `/mcp` | MCP endpoint path |
+| `MCP_HTTP_ENABLE_HEALTHCHECK` | No | `true` | Enable health check |
+| `MCP_HTTP_HEALTHCHECK_PATH` | No | `/healthz` | Health check path |
+| `MCP_HTTP_ALLOW_CORS` | No | `true` | Enable CORS |
+| `MCP_HTTP_ALLOWED_ORIGINS` | No | `127.0.0.1, localhost` | Allowed origins |
+| `MCP_HTTP_NGROK_ENABLED` | No | `false` | Legacy placeholder; disabled in safe baseline |
+| `MCP_HTTP_NGROK_AUTH_TOKEN` | No | - | Legacy placeholder |
 
-## Transport Protocols
+## Notes
 
-The supported milestone 1 container path is stdio. HTTP mode remains a lab-only, explicitly unsafe path and is intentionally excluded from the secure quick start.
+- The safe baseline is `stdio` first.
+- HTTP remains a legacy, explicitly unsafe lab path.
+- The tool tables below are kept in sync with the registered MCP tools.
 
 ## Tools
 
@@ -191,6 +186,9 @@ The supported milestone 1 container path is stdio. HTTP mode remains a lab-only,
 | `getSitesApsLoadBalance` | Get load balance configuration for an AP. Requires `apMac`. |
 | `getSitesApsOfdma` | Get OFDMA configuration for an AP. Requires `apMac`. |
 | `getSitesApsPowerSaving` | Get power saving configuration for an AP. Requires `apMac`. |
+| `setApPowerSaving` | Updates AP power saving configuration with support checks and dry-run preview. Requires `apMac`. |
+| `setApChannelLimit` | Updates AP channel-limit configuration with support checks and dry-run preview. Requires `apMac`. |
+| `setApConfig` | Updates documented AP configuration families with dry-run preview. Covers AP general, IP, IPv6, QoS, radio, service, load-balance, OFDMA, trunk, bridge, WLAN group, port, channel, AFC, and antenna settings. Setter-only families return planned payloads and an explicit warning when controller readback is unavailable. Requires `apMac`. |
 | `getSitesApsTrunkSetting` | Get trunk port setting for an AP. Requires `apMac`. |
 | `getSitesApsBridge` | Get bridge configuration for an AP. Requires `apMac`. |
 | `listSitesApsPorts` | List ports for an AP. Requires `apMac`. |
@@ -208,6 +206,7 @@ The supported milestone 1 container path is stdio. HTTP mode remains a lab-only,
 | `getSitesGatewaysPin` | Get PIN information for a gateway. Requires `gatewayMac`. |
 | `getSitesGatewaysSimCardUsed` | Get SIM card usage info for a gateway. Requires `gatewayMac`. |
 | `getSitesHealthGatewaysWansDetails` | Get gateway WAN health details. Requires `gatewayMac`. |
+| `setGatewayConfig` | Updates documented gateway configuration families with dry-run preview. Covers general, services, advanced, radios, WLAN, and port settings. Setter-only families return planned payloads and an explicit warning when controller readback is unavailable. Requires `gatewayMac`. |
 
 ### Network
 
@@ -242,12 +241,19 @@ The supported milestone 1 container path is stdio. HTTP mode remains a lab-only,
 | `getSsidList` | Gets the list of SSIDs in a WLAN group. |
 | `getSsidDetail` | Gets detailed information for a specific SSID. Required: `wlanId` and `ssidId`. |
 | `listAllSsids` | Lists wireless SSIDs across all WLAN groups. |
-| `getFirewallSetting` | Gets firewall configuration and rules for a site. |
+| `getFirewallSetting` | Gets the site-global firewall settings returned by the official Omada firewall endpoint. |
+| `setFirewallSetting` | Updates site firewall settings with dry-run preview using the official Omada Open API firewall endpoint. |
+| `setAclConfigTypeSetting` | Updates the gateway ACL mode (`through profiles` or `custom`) with dry-run preview. |
 | `getVpnSettings` | Gets VPN settings for a site. |
 | `listSiteToSiteVpns` | Lists site-to-site VPN configurations. |
 | `listPortForwardingRules` | [DEPRECATED] Use `getPortForwardingList` instead. Lists NAT port forwarding rules. |
 | `listOsgAcls` | Lists gateway (OSG) ACL rules. |
+| `createGatewayAcl` | Creates a gateway ACL rule with dry-run preview using the official Omada Gateway ACL schema. |
+| `updateGatewayAcl` | Updates a gateway ACL rule with dry-run preview after confirming the ACL exists. |
 | `listEapAcls` | Lists access point (EAP) ACL rules. |
+| `createEapAcl` | Creates an EAP ACL rule with dry-run preview using the official Omada EAP ACL schema. |
+| `updateEapAcl` | Updates an EAP ACL rule with dry-run preview after confirming the ACL exists. |
+| `deleteAcl` | Deletes an ACL rule with dry-run preview after confirming the ACL exists. |
 | `listStaticRoutes` | [DEPRECATED] Use `getGridStaticRouting` instead. This tool aggregates all pages; getGridStaticRouting returns a single paginated page. |
 | `getStaticRoutingInterfaceList` | Gets available interfaces for static routing.                             |
 | `listPolicyRoutes` | [DEPRECATED] Use `getGridPolicyRouting` instead. This tool aggregates all pages; getGridPolicyRouting is paginated. |
@@ -261,16 +267,24 @@ The supported milestone 1 container path is stdio. HTTP mode remains a lab-only,
 | `getUpnpSetting` | Gets UPnP setting for the site gateway. |
 | `getDdnsGrid` | Gets DDNS entries (paginated). |
 | `getDhcpReservationGrid` | Gets DHCP reservations (paginated). |
+| `createDhcpReservation` | Creates a DHCP reservation after validating the target LAN and optional IP address. |
+| `updateDhcpReservation` | Updates a DHCP reservation after validating the target LAN and optional IP address. |
+| `deleteDhcpReservation` | Deletes a DHCP reservation by MAC address with a dry-run preview option. |
 | `getGridIpMacBinding` | Gets IP-MAC binding entries (paginated). |
 | `getIpMacBindingGeneralSetting` | Gets IP-MAC binding global toggle setting.                               |
 | `getBandwidthControl` | Gets global bandwidth control configuration. |
 | `getGridBandwidthCtrlRule` | Gets bandwidth control rules (paginated). |
+| `setBandwidthControlRule` | Creates or updates a bandwidth control rule with dry-run preview after validating the target rule id plus referenced LAN and WAN identifiers. |
+| `deleteBandwidthControlRule` | Deletes a bandwidth control rule with dry-run preview after confirming the rule exists. |
 | `getSessionLimit` | Gets session limit global setting. |
 | `getGridSessionLimitRule` | Gets per-rule session limit rules (paginated). |
 | `getSnmpSetting` | Gets SNMP configuration (version, community string). |
 | `getLldpSetting` | Gets LLDP global setting. |
 | `getRemoteLoggingSetting` | Gets remote logging (syslog) configuration. |
 | `getAccessControl` | Gets controller access control configuration. |
+| `setAccessControl` | Updates portal access control settings with dry-run preview and schema validation for pre-auth and free-auth policy entries. |
+| `setAppControlRule` | Creates or updates an application control rule with dry-run preview after validating the create/update payload shape, existing rule id, and referenced application ids. |
+| `deleteAppControlRule` | Deletes an application control rule with dry-run preview after confirming the rule exists. |
 | `getDnsCacheSetting` | Gets DNS cache setting. |
 | `getDnsProxy` | Gets DNS proxy configuration. |
 | `getIgmp` | Gets IGMP snooping and proxy setting. |
@@ -475,16 +489,27 @@ The supported milestone 1 container path is stdio. HTTP mode remains a lab-only,
 | `getSsidList` | Get SSID list for a WLAN group.                           | `getSsidList` |
 | `getSsidDetail` | Get detailed SSID configuration.                          | `getSsidDetail` |
 | `getSsidListAll` | List SSIDs across all WLAN groups.                        | `listAllSsids` |
-| `getFirewallSetting` | Get firewall configuration for a site.                    | `getFirewallSetting` |
+| `getFirewallSetting` | Get the site-global firewall settings returned by the official Omada firewall endpoint. | `getFirewallSetting` |
+| `modifyFirewallSetting` | Update site firewall settings with dry-run support. | `setFirewallSetting` |
 | `getVpn` | Get VPN settings for a site.                              | `getVpnSettings` |
 | `getSiteToSiteVpnList` | List site-to-site VPN configurations.                     | `listSiteToSiteVpns` |
 | `getPortForwardingList` | List NAT port forwarding rules.                           | `getPortForwardingList` (prefer); ~~`listPortForwardingRules`~~ [DEPRECATED] |
 | `getOsgAclList` | List gateway ACL rules.                                   | `listOsgAcls` |
+| `getAclConfigTypeSetting` | Get gateway ACL config mode for the site gateway. | `getAclConfigTypeSetting` |
+| `modifyAclConfigTypeSetting` | Update gateway ACL config mode with dry-run support. | `setAclConfigTypeSetting` |
+| `createOsgAcl` | Create a gateway ACL with dry-run support. | `createGatewayAcl` |
+| `modifyOsgAcl` | Update a gateway ACL with dry-run support. | `updateGatewayAcl` |
 | `getEapAclList` | List access point ACL rules.                              | `listEapAcls` |
+| `createEapAcl` | Create an EAP ACL with dry-run support. | `createEapAcl` |
+| `modifyEapAcl` | Update an EAP ACL with dry-run support. | `updateEapAcl` |
+| `deleteAcl` | Delete an ACL rule with dry-run support. | `deleteAcl` |
 | `getStaticRoutingList` | List static routing rules.                                | `getGridStaticRouting` (prefer); ~~`listStaticRoutes`~~ [DEPRECATED] |
 | `getRadiusProfileList` | List RADIUS authentication profiles.                      | `listRadiusProfiles` |
 | `getGroupProfileList` | List group profiles (IP, MAC, port groups).               | `listGroupProfiles` |
 | `getApplicationControlStatus` | Get application control status for a site.                | `getApplicationControlStatus` |
+| `addRule` | Create an application control rule with dry-run support. | `setAppControlRule` |
+| `editRule` | Update an application control rule with dry-run support. | `setAppControlRule` |
+| `deleteRules` | Delete an application control rule with dry-run support. | `deleteAppControlRule` |
 | `getSshSetting` | Get SSH settings for a site.                              | `getSshSetting` |
 | `getTimeRangeProfileList` | List time range profiles.                                 | `listTimeRangeProfiles` |
 | `getWanLanStatus` | Get WAN-LAN connectivity status for a site.               | `getWanLanStatus` |
@@ -499,6 +524,7 @@ The supported milestone 1 container path is stdio. HTTP mode remains a lab-only,
 | `getAlerts` | List global alert logs across all sites.                  | `listGlobalAlerts` |
 | `disableClientRateLimit` | Disable rate limiting for a specific client, removing any bandwidth.... | `disableClientRateLimit` |
 | `getAccessControl` | Get controller access control configuration. | `getAccessControl` |
+| `modifyAccessControl` | Update portal access control configuration with dry-run support. | `setAccessControl` |
 | `getAlg` | Get ALG (Application Layer Gateway) configuration for the site gateway. | `getAlg` |
 | `getAllDeviceBySite` | Get all devices in a site including offline and disconnected devices. | `getAllDeviceBySite` |
 | `getApDetail` | Fetch full configuration and status for a specific access point: mo.... | `getApDetail` |
@@ -521,15 +547,22 @@ The supported milestone 1 container path is stdio. HTTP mode remains a lab-only,
 | `getDdnsGrid` | Get DDNS (Dynamic DNS) entries for the site gateway. | `getDdnsGrid` |
 | `getDevice` | [DEPRECATED] Convenience alias that filters `listDevices` for a specific Omada device. Prefer using `listDevices` directly. | `getDevice` |
 | `getDhcpReservationGrid` | Get DHCP reservations for the site. | `getDhcpReservationGrid` |
+| `createDhcpReservation` | Create a DHCP reservation for the site after LAN/IP validation and duplicate-IP preflight. | `createDhcpReservation` |
+| `updateSitesSettingServiceDhcp` | Update an existing DHCP reservation for the site. | `updateDhcpReservation` |
+| `deleteSitesSettingServiceDhcp` | Delete an existing DHCP reservation for the site. | `deleteDhcpReservation` |
 | `getDnsCacheSetting` | Get DNS cache setting for the site gateway. | `getDnsCacheSetting` |
 | `getDnsProxy` | Get DNS proxy configuration for the site gateway. | `getDnsProxy` |
-| `getFirewallSetting` | Get firewall configuration and rules for a site, including ACL rule.... | `getFirewallSetting` |
+| `getFirewallSetting` | Get the site-global firewall settings returned by the official Omada firewall endpoint. | `getFirewallSetting` |
+| `modifyFirewallSetting` | Update site firewall settings with dry-run support. | `setFirewallSetting` |
 | `getFirmwareInfo` | Get the latest available firmware information for a device. | `getFirmwareInfo` |
 | `getGatewayDetail` | Fetch full configuration and status for a specific gateway: model, .... | `getGatewayDetail` |
 | `getGatewayLanStatus` | Get LAN port status for a specific gateway: port link state, speed,.... | `getGatewayLanStatus` |
 | `getGatewayPorts` | Get all WAN and LAN port details for a specific gateway: link statu.... | `getGatewayPorts` |
 | `getGatewayWanStatus` | Get the WAN port status and connectivity information for a specific.... | `getGatewayWanStatus` |
 | `getGridBandwidthCtrlRule` | Get bandwidth control rules for the site gateway. | `getGridBandwidthCtrlRule` |
+| `createBandwidthCtrlRule` | Create a bandwidth control rule with dry-run support. | `setBandwidthControlRule` |
+| `modifyBandwidthCtrlRule` | Update a bandwidth control rule with dry-run support. | `setBandwidthControlRule` |
+| `deleteBandwidthCtrlRule` | Delete a bandwidth control rule with dry-run support. | `deleteBandwidthControlRule` |
 | `getGridDashboardTunnelStats` | Get VPN tunnel statistics filtered by role. | `getGridDashboardTunnelStats` |
 | `getGridIpMacBinding` | Get IP-MAC binding entries for the site. | `getGridIpMacBinding` |
 | `getGridOtoNats` | Get 1:1 NAT rules for the site gateway. | `getGridOtoNats` |
@@ -581,6 +614,33 @@ The supported milestone 1 container path is stdio. HTTP mode remains a lab-only,
 | `getSessionLimit` | Get the session limit global setting for the site gateway. | `getSessionLimit` |
 | `getSnmpSetting` | Get SNMP configuration for the site. | `getSnmpSetting` |
 | `getSpeedTestResults` | Get the last speed test results for an access point. | `getSpeedTestResults` |
+| `getSitesApsChannelLimit` | Get AP channel-limit configuration. | `getSitesApsChannelLimit` |
+| `updateSitesApsChannelLimit` | Update AP channel-limit configuration with dry-run support. | `setApChannelLimit` |
+| `modifyGeneralConfig_2` | Update AP general configuration with dry-run support. | `setApConfig` |
+| `modifyIpSettingConfig` | Update AP IP settings with dry-run support. | `setApConfig` |
+| `modifyIpv6SettingConfig` | Update AP IPv6 settings with dry-run support. | `setApConfig` |
+| `modifyApQosConfig` | Update AP QoS settings with dry-run support. | `setApConfig` |
+| `modifyRadiosConfig` | Update AP radio settings with dry-run support. | `setApConfig` |
+| `modifyApServicesConfig` | Update AP service settings with dry-run support. | `setApConfig` |
+| `modifyApLoadBalanceConfig` | Update AP load-balance settings with dry-run support. | `setApConfig` |
+| `modifyApOfdmaConfig` | Update AP OFDMA settings with dry-run support. | `setApConfig` |
+| `getSitesApsPowerSaving` | Get AP power saving configuration. | `getSitesApsPowerSaving` |
+| `updateSitesApsPowerSaving` | Update AP power saving configuration with dry-run support. | `setApPowerSaving` |
+| `modifyApTrunkSettingConfig` | Update AP trunk settings with dry-run support. | `setApConfig` |
+| `modifyApBridgeInfo` | Update AP bridge settings with dry-run support. | `setApConfig` |
+| `modifyApPort` | Update AP port settings with dry-run support. | `setApConfig` |
+| `modifyApChannelConfig` | Update AP channel configuration with dry-run support. | `setApConfig` |
+| `modifyAfcConfig` | Update AP AFC configuration with dry-run support. | `setApConfig` |
+| `modifyAntennaGainConfig` | Update AP antenna gain settings with dry-run support. | `setApConfig` |
+| `updateWlanGroupConfig` | Update AP WLAN group assignment with dry-run support. | `setApConfig` |
+| `modifyGeneralConfig_1` | Update gateway general configuration with dry-run support. | `setGatewayConfig` |
+| `modifyConfigGeneral` | Update gateway config/general settings with dry-run support. | `setGatewayConfig` |
+| `modifyConfigServices` | Update gateway services configuration with dry-run support. | `setGatewayConfig` |
+| `modifyConfigAdvanced` | Update gateway advanced settings with dry-run support. | `setGatewayConfig` |
+| `modifyConfigRadios` | Update gateway radio configuration with dry-run support. | `setGatewayConfig` |
+| `modifyConfigWlans` | Update gateway WLAN configuration with dry-run support. | `setGatewayConfig` |
+| `modifyPortConfig` | Update a gateway port configuration with dry-run support. | `setGatewayConfig` |
+| `batchModifyPortConfig` | Update multiple gateway ports with dry-run support. | `setGatewayConfig` |
 | `getSshSetting` | Get SSH access settings for a site. | `getSshSetting` |
 | `getSsidDetail` | Get detailed information for a specific SSID (wireless network), in.... | `getSsidDetail` |
 | `getSsidList` | Get the list of SSIDs (wireless networks) configured in a WLAN group. | `getSsidList` |
@@ -759,8 +819,8 @@ The supported milestone 1 container path is stdio. HTTP mode remains a lab-only,
 
 Want to help improve this project? Contributions are welcome! Visit our GitHub repository to report issues, suggest features, or submit pull requests:
 
-**[https://github.com/your-org/safe-omada-mcp](https://github.com/your-org/safe-omada-mcp)**
+**[https://github.com/AILivesInTerminal/Omada-mcp](https://github.com/AILivesInTerminal/Omada-mcp)**
 
 ## License
 
-This project is licensed under the [MIT License](https://github.com/your-org/safe-omada-mcp?tab=MIT-1-ov-file).
+This project is licensed under the [MIT License](https://github.com/AILivesInTerminal/Omada-mcp?tab=MIT-1-ov-file).

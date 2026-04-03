@@ -36,10 +36,24 @@ export class RequestHandler {
     }
 
     /**
+     * Make a PUT request to the Omada API.
+     */
+    public async put<T>(path: string, data?: unknown, customHeaders?: CustomHeaders): Promise<T> {
+        return await this.request<T>({ method: 'PUT', url: path, data }, true, customHeaders);
+    }
+
+    /**
      * Make a POST request to the Omada API.
      */
     public async post<T>(path: string, data?: unknown, customHeaders?: CustomHeaders): Promise<T> {
         return await this.request<T>({ method: 'POST', url: path, data }, true, customHeaders);
+    }
+
+    /**
+     * Make a DELETE request to the Omada API.
+     */
+    public async delete<T>(path: string, customHeaders?: CustomHeaders): Promise<T> {
+        return await this.request<T>({ method: 'DELETE', url: path }, true, customHeaders);
     }
 
     /**

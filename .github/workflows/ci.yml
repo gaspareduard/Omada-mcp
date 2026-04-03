@@ -39,6 +39,9 @@ jobs:
       - name: Unit tests with coverage
         run: npm run test:coverage
 
+      - name: Verify AI instruction symlinks
+        run: npm run symlinks:check
+
       - name: Verify tool test coverage mapping
         run: node scripts/check-tool-tests.mjs
 

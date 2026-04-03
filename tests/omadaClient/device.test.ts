@@ -14,6 +14,8 @@ describe('omadaClient/device', () => {
         mockRequest = {
             fetchPaginated: vi.fn(),
             get: vi.fn(),
+            patch: vi.fn(),
+            put: vi.fn(),
             ensureSuccess: vi.fn((response) => response.result),
         } as unknown as RequestHandler;
 
@@ -222,6 +224,51 @@ describe('omadaClient/device', () => {
                 undefined,
                 undefined
             );
+        });
+    });
+
+    describe('AP configuration mutations', () => {
+        it('should update AP power saving config', async () => {
+            const mockResponse: OmadaApiResponse<unknown> = {
+                errorCode: 0,
+                msg: 'Success',
+                result: { success: true },
+            };
+
+            (mockRequest.put as ReturnType<typeof vi.fn>).mockResolvedValue(mockResponse);
+            (mockRequest.ensureSuccess as ReturnType<typeof vi.fn>).mockReturnValue({ success: true });
+
+            const payload = {
+                timeEnable: false,
+                bandEnable: true,
+                bands: [1],
+                idleDuration: 120,
+            };
+
+            const result = await deviceOps.setSitesApsPowerSaving('AA:BB:CC:DD:EE:FF', payload, 'site-1');
+
+            expect(mockRequest.put).toHaveBeenCalledWith('/api/sites/site-1/aps/AA%3ABB%3ACC%3ADD%3AEE%3AFF/power-saving', payload, undefined);
+            expect(result).toEqual({ success: true });
+        });
+
+        it('should update AP channel limit config', async () => {
+            const mockResponse: OmadaApiResponse<unknown> = {
+                errorCode: 0,
+                msg: 'Success',
+                result: { success: true },
+            };
+
+            (mockRequest.put as ReturnType<typeof vi.fn>).mockResolvedValue(mockResponse);
+            (mockRequest.ensureSuccess as ReturnType<typeof vi.fn>).mockReturnValue({ success: true });
+
+            const payload = {
+                channelLimitType: 2,
+            };
+
+            const result = await deviceOps.setSitesApsChannelLimit('AA:BB:CC:DD:EE:FF', payload, 'site-1');
+
+            expect(mockRequest.put).toHaveBeenCalledWith('/api/sites/site-1/aps/AA%3ABB%3ACC%3ADD%3AEE%3AFF/channel-limit', payload, undefined);
+            expect(result).toEqual({ success: true });
         });
     });
 
@@ -1029,6 +1076,114 @@ describe('omadaClient/device', () => {
             (mockRequest.get as ReturnType<typeof vi.fn>).mockResolvedValue(resp);
             await deviceOps.getSitesDeviceWhiteList('site-1', 3, 15);
             expect(mockRequest.get).toHaveBeenCalledWith('/api/sites/site-1/device-white-list', { page: 3, pageSize: 15 }, undefined);
+        });
+    });
+
+    describe('Phase 3 AP and gateway configuration methods', () => {
+        it.each([
+            ['setApGeneralConfig', '/api/sites/site-1/aps/AA%3ABB%3ACC%3ADD%3AEE%3AFF/general-config'],
+            ['setApQosConfig', '/api/sites/site-1/aps/AA%3ABB%3ACC%3ADD%3AEE%3AFF/qos'],
+            ['setApIpv6Config', '/api/sites/site-1/aps/AA%3ABB%3ACC%3ADD%3AEE%3AFF/ipv6-setting'],
+            ['setSitesApsIpSetting', '/api/sites/site-1/aps/AA%3ABB%3ACC%3ADD%3AEE%3AFF/ip-setting'],
+            ['setSitesApsLoadBalance', '/api/sites/site-1/aps/AA%3ABB%3ACC%3ADD%3AEE%3AFF/load-balance'],
+            ['setSitesApsOfdma', '/api/sites/site-1/aps/AA%3ABB%3ACC%3ADD%3AEE%3AFF/ofdma'],
+            ['setSitesApsTrunkSetting', '/api/sites/site-1/aps/AA%3ABB%3ACC%3ADD%3AEE%3AFF/trunk-setting'],
+            ['setSitesApsBridge', '/api/sites/site-1/aps/AA%3ABB%3ACC%3ADD%3AEE%3AFF/bridge'],
+            ['setRadiosConfig', '/api/sites/site-1/aps/AA%3ABB%3ACC%3ADD%3AEE%3AFF/radio-config'],
+            ['setApServiceConfig', '/api/sites/site-1/aps/AA%3ABB%3ACC%3ADD%3AEE%3AFF/service-config'],
+            ['setSitesApsPortConfig', '/api/sites/site-1/aps/AA%3ABB%3ACC%3ADD%3AEE%3AFF/ports'],
+            ['setAntennaGainConfig', '/api/sites/site-1/aps/AA%3ABB%3ACC%3ADD%3AEE%3AFF/antenna-gain'],
+            ['setSitesGatewaysGeneralConfig', '/api/sites/site-1/gateways/AA%3ABB%3ACC%3ADD%3AEE%3AFF/general-config'],
+        ])('should patch config via %s', async (methodName, expectedPath) => {
+            const payload = { enabled: true };
+            const response = mockSimpleResponse({ success: true });
+            (mockRequest.patch as ReturnType<typeof vi.fn>).mockResolvedValue(response);
+            (mockRequest.ensureSuccess as ReturnType<typeof vi.fn>).mockReturnValue({ success: true });
+
+            const method = deviceOps[methodName as keyof DeviceOperations] as (
+                identifier: string,
+                payload: Record<string, unknown>,
+                siteId?: string
+            ) => Promise<unknown>;
+
+            const result = await method.call(deviceOps, 'AA:BB:CC:DD:EE:FF', payload, 'site-1');
+
+            expect(mockRequest.patch).toHaveBeenCalledWith(expectedPath, payload, undefined);
+            expect(result).toEqual({ success: true });
+        });
+
+        it.each([
+            ['setApChannelConfig', '/api/sites/site-1/aps/AA%3ABB%3ACC%3ADD%3AEE%3AFF/channel-config'],
+            ['setAfcConfig', '/api/sites/site-1/aps/AA%3ABB%3ACC%3ADD%3AEE%3AFF/afc-config'],
+            ['setApWlanGroup', '/api/sites/site-1/aps/AA%3ABB%3ACC%3ADD%3AEE%3AFF/wlan-group'],
+            ['setSitesGatewaysConfigGeneral', '/api/sites/site-1/gateways/AA%3ABB%3ACC%3ADD%3AEE%3AFF/config/general'],
+            ['setSitesGatewaysConfigServices', '/api/sites/site-1/gateways/AA%3ABB%3ACC%3ADD%3AEE%3AFF/config/services'],
+            ['setSitesGatewaysConfigAdvanced', '/api/sites/site-1/gateways/AA%3ABB%3ACC%3ADD%3AEE%3AFF/config/advanced'],
+            ['setSitesGatewaysConfigRadios', '/api/sites/site-1/gateways/AA%3ABB%3ACC%3ADD%3AEE%3AFF/config/radios'],
+            ['setSitesGatewaysConfigWlans', '/api/sites/site-1/gateways/AA%3ABB%3ACC%3ADD%3AEE%3AFF/config/wlans'],
+        ])('should put config via %s', async (methodName, expectedPath) => {
+            const payload = { enabled: true };
+            const response = mockSimpleResponse({ success: true });
+            (mockRequest.put as ReturnType<typeof vi.fn>).mockResolvedValue(response);
+            (mockRequest.ensureSuccess as ReturnType<typeof vi.fn>).mockReturnValue({ success: true });
+
+            const method = deviceOps[methodName as keyof DeviceOperations] as (
+                identifier: string,
+                payload: Record<string, unknown>,
+                siteId?: string
+            ) => Promise<unknown>;
+
+            const result = await method.call(deviceOps, 'AA:BB:CC:DD:EE:FF', payload, 'site-1');
+
+            expect(mockRequest.put).toHaveBeenCalledWith(expectedPath, payload, undefined);
+            expect(result).toEqual({ success: true });
+        });
+
+        it.each([
+            ['getAfcConfig', '/api/sites/site-1/aps/AA%3ABB%3ACC%3ADD%3AEE%3AFF/afc-config'],
+            ['getAntennaGainConfig', '/api/sites/site-1/aps/AA%3ABB%3ACC%3ADD%3AEE%3AFF/antenna-gain'],
+        ])('should get config via %s', async (methodName, expectedPath) => {
+            const response = mockSimpleResponse({ enabled: true });
+            (mockRequest.get as ReturnType<typeof vi.fn>).mockResolvedValue(response);
+            (mockRequest.ensureSuccess as ReturnType<typeof vi.fn>).mockReturnValue({ enabled: true });
+
+            const method = deviceOps[methodName as keyof DeviceOperations] as (identifier: string, siteId?: string) => Promise<unknown>;
+            const result = await method.call(deviceOps, 'AA:BB:CC:DD:EE:FF', 'site-1');
+
+            expect(mockRequest.get).toHaveBeenCalledWith(expectedPath, undefined, undefined);
+            expect(result).toEqual({ enabled: true });
+        });
+
+        it('should patch a single gateway port config', async () => {
+            const payload = { profileId: 'wan-main' };
+            const response = mockSimpleResponse({ success: true });
+            (mockRequest.patch as ReturnType<typeof vi.fn>).mockResolvedValue(response);
+            (mockRequest.ensureSuccess as ReturnType<typeof vi.fn>).mockReturnValue({ success: true });
+
+            const result = await deviceOps.setSitesGatewaysPortConfig('AA:BB:CC:DD:EE:FF', 'wan1', payload, 'site-1');
+
+            expect(mockRequest.patch).toHaveBeenCalledWith(
+                '/api/sites/site-1/gateways/AA%3ABB%3ACC%3ADD%3AEE%3AFF/ports/wan1/config',
+                payload,
+                undefined
+            );
+            expect(result).toEqual({ success: true });
+        });
+
+        it('should patch multiple gateway ports config', async () => {
+            const payload = { ports: ['wan1', 'wan2'] };
+            const response = mockSimpleResponse({ success: true });
+            (mockRequest.patch as ReturnType<typeof vi.fn>).mockResolvedValue(response);
+            (mockRequest.ensureSuccess as ReturnType<typeof vi.fn>).mockReturnValue({ success: true });
+
+            const result = await deviceOps.setSitesGatewaysMultiPortsConfig('AA:BB:CC:DD:EE:FF', payload, 'site-1');
+
+            expect(mockRequest.patch).toHaveBeenCalledWith(
+                '/api/sites/site-1/gateways/AA%3ABB%3ACC%3ADD%3AEE%3AFF/multi-ports/config',
+                payload,
+                undefined
+            );
+            expect(result).toEqual({ success: true });
         });
     });
 });

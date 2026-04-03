@@ -7,7 +7,7 @@ export function registerGetFirewallSettingTool(server: McpServer, client: OmadaC
     server.registerTool(
         'getFirewallSetting',
         {
-            description: 'Get firewall configuration and rules for a site, including ACL rules, IP groups, and security policies.',
+            description: 'Get the site-global firewall settings returned by the official Omada firewall endpoint.',
             inputSchema: siteInputSchema.shape,
         },
         wrapToolHandler('getFirewallSetting', async ({ siteId, customHeaders }) =>

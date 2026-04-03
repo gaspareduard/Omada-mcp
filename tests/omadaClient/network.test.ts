@@ -14,6 +14,10 @@ describe('NetworkOperations', () => {
     beforeEach(() => {
         mockRequest = {
             get: vi.fn(),
+            post: vi.fn(),
+            put: vi.fn(),
+            patch: vi.fn(),
+            delete: vi.fn(),
             fetchPaginated: vi.fn(),
             ensureSuccess: vi.fn((response: OmadaApiResponse<unknown>) => {
                 if (response.errorCode === 0) {
@@ -150,6 +154,448 @@ describe('NetworkOperations', () => {
         });
     });
 
+    describe('DHCP reservation mutations', () => {
+        it('should create a DHCP reservation', async () => {
+            const mockResponse: OmadaApiResponse<unknown> = {
+                errorCode: 0,
+                result: { success: true },
+            };
+
+            vi.mocked(mockRequest.post).mockResolvedValue(mockResponse);
+
+            const payload = {
+                mac: 'AA:BB:CC:DD:EE:FF',
+                netId: 'net-1',
+                status: true,
+                ip: '192.168.10.20',
+            };
+
+            const result = await networkOps.createDhcpReservation(payload, 'site-123');
+
+            expect(mockRequest.post).toHaveBeenCalledWith('/openapi/v1/test-omadac/sites/site-123/setting/service/dhcp', payload, undefined);
+            expect(result).toEqual({ success: true });
+        });
+
+        it('should update a DHCP reservation', async () => {
+            const mockResponse: OmadaApiResponse<unknown> = {
+                errorCode: 0,
+                result: { success: true },
+            };
+
+            vi.mocked(mockRequest.patch).mockResolvedValue(mockResponse);
+
+            const payload = {
+                mac: 'AA:BB:CC:DD:EE:FF',
+                netId: 'net-1',
+                status: false,
+            };
+
+            const result = await networkOps.updateDhcpReservation('AA:BB:CC:DD:EE:FF', payload, 'site-123');
+
+            expect(mockRequest.patch).toHaveBeenCalledWith(
+                '/openapi/v1/test-omadac/sites/site-123/setting/service/dhcp/AA%3ABB%3ACC%3ADD%3AEE%3AFF',
+                payload,
+                undefined
+            );
+            expect(result).toEqual({ success: true });
+        });
+
+        it('should add the reservation MAC to the PATCH payload when omitted', async () => {
+            const mockResponse: OmadaApiResponse<unknown> = {
+                errorCode: 0,
+                result: { success: true },
+            };
+
+            vi.mocked(mockRequest.patch).mockResolvedValue(mockResponse);
+
+            const payload = {
+                netId: 'net-1',
+                status: false,
+            };
+
+            await networkOps.updateDhcpReservation('AA:BB:CC:DD:EE:FF', payload, 'site-123');
+
+            expect(mockRequest.patch).toHaveBeenCalledWith(
+                '/openapi/v1/test-omadac/sites/site-123/setting/service/dhcp/AA%3ABB%3ACC%3ADD%3AEE%3AFF',
+                { ...payload, mac: 'AA:BB:CC:DD:EE:FF' },
+                undefined
+            );
+        });
+
+        it('should require a reservation MAC for update', async () => {
+            await expect(networkOps.updateDhcpReservation('', { netId: 'net-1', status: true }, 'site-123')).rejects.toThrow(
+                'A reservation MAC address must be provided.'
+            );
+        });
+
+        it('should delete a DHCP reservation', async () => {
+            const mockResponse: OmadaApiResponse<unknown> = {
+                errorCode: 0,
+                result: { success: true },
+            };
+
+            vi.mocked(mockRequest.delete).mockResolvedValue(mockResponse);
+
+            const result = await networkOps.deleteDhcpReservation('AA:BB:CC:DD:EE:FF', 'site-123');
+
+            expect(mockRequest.delete).toHaveBeenCalledWith(
+                '/openapi/v1/test-omadac/sites/site-123/setting/service/dhcp/AA%3ABB%3ACC%3ADD%3AEE%3AFF',
+                undefined
+            );
+            expect(result).toEqual({ success: true });
+        });
+
+        it('should require a reservation MAC for delete', async () => {
+            await expect(networkOps.deleteDhcpReservation('', 'site-123')).rejects.toThrow('A reservation MAC address must be provided.');
+        });
+    });
+
+    describe('ACL mutations', () => {
+        it('should create a gateway ACL rule', async () => {
+            const mockResponse: OmadaApiResponse<unknown> = { errorCode: 0, result: { success: true } };
+            vi.mocked(mockRequest.post).mockResolvedValue(mockResponse);
+
+            const payload = { description: 'Allow IoT' };
+            const result = await networkOps.createOsgAcl(payload, 'site-123');
+
+            expect(mockRequest.post).toHaveBeenCalledWith('/openapi/v1/test-omadac/sites/site-123/acls/osg-acls', payload, undefined);
+            expect(result).toEqual({ success: true });
+        });
+
+        it('should update a gateway ACL rule', async () => {
+            const mockResponse: OmadaApiResponse<unknown> = { errorCode: 0, result: { success: true } };
+            vi.mocked(mockRequest.put).mockResolvedValue(mockResponse);
+
+            const payload = { description: 'Updated ACL' };
+            const result = await networkOps.updateOsgAcl('acl-1', payload, 'site-123');
+
+            expect(mockRequest.put).toHaveBeenCalledWith('/openapi/v1/test-omadac/sites/site-123/acls/osg-acls/acl-1', payload, undefined);
+            expect(result).toEqual({ success: true });
+        });
+
+        it('should throw when updating a gateway ACL without aclId', async () => {
+            await expect(networkOps.updateOsgAcl('', { description: 'bad' }, 'site-123')).rejects.toThrow('aclId is required.');
+        });
+
+        it('should create an EAP ACL rule', async () => {
+            const mockResponse: OmadaApiResponse<unknown> = { errorCode: 0, result: { success: true } };
+            vi.mocked(mockRequest.post).mockResolvedValue(mockResponse);
+
+            const payload = { name: 'Guest WLAN ACL' };
+            const result = await networkOps.createEapAcl(payload, 'site-123');
+
+            expect(mockRequest.post).toHaveBeenCalledWith('/openapi/v1/test-omadac/sites/site-123/acls/eap-acls', payload, undefined);
+            expect(result).toEqual({ success: true });
+        });
+
+        it('should update an EAP ACL rule', async () => {
+            const mockResponse: OmadaApiResponse<unknown> = { errorCode: 0, result: { success: true } };
+            vi.mocked(mockRequest.put).mockResolvedValue(mockResponse);
+
+            const payload = { name: 'Updated WLAN ACL' };
+            const result = await networkOps.updateEapAcl('acl-2', payload, 'site-123');
+
+            expect(mockRequest.put).toHaveBeenCalledWith('/openapi/v1/test-omadac/sites/site-123/acls/eap-acls/acl-2', payload, undefined);
+            expect(result).toEqual({ success: true });
+        });
+
+        it('should delete an ACL rule', async () => {
+            const mockResponse: OmadaApiResponse<unknown> = { errorCode: 0, result: { success: true } };
+            vi.mocked(mockRequest.delete).mockResolvedValue(mockResponse);
+
+            const result = await networkOps.deleteAcl('acl-1', 'site-123');
+
+            expect(mockRequest.delete).toHaveBeenCalledWith('/openapi/v1/test-omadac/sites/site-123/acls/acl-1', undefined);
+            expect(result).toEqual({ success: true });
+        });
+    });
+
+    describe('policy and traffic mutations', () => {
+        it('should create a bandwidth control rule', async () => {
+            const mockResponse: OmadaApiResponse<unknown> = { errorCode: 0, result: { success: true } };
+            vi.mocked(mockRequest.post).mockResolvedValue(mockResponse);
+
+            const payload = { name: 'Guests limit' };
+            const result = await networkOps.createBandwidthCtrlRule(payload, 'site-123');
+
+            expect(mockRequest.post).toHaveBeenCalledWith('/openapi/v1/test-omadac/sites/site-123/bandwidth-control/rules', payload, undefined);
+            expect(result).toEqual({ success: true });
+        });
+
+        it('should update a bandwidth control rule', async () => {
+            const mockResponse: OmadaApiResponse<unknown> = { errorCode: 0, result: { success: true } };
+            vi.mocked(mockRequest.patch).mockResolvedValue(mockResponse);
+
+            const payload = { rateLimit: 100 };
+            const result = await networkOps.updateBandwidthCtrlRule('rule-1', payload, 'site-123');
+
+            expect(mockRequest.patch).toHaveBeenCalledWith(
+                '/openapi/v1/test-omadac/sites/site-123/bandwidth-control/rules/rule-1',
+                payload,
+                undefined
+            );
+            expect(result).toEqual({ success: true });
+        });
+
+        it('should delete a bandwidth control rule', async () => {
+            const mockResponse: OmadaApiResponse<unknown> = { errorCode: 0, result: { success: true } };
+            vi.mocked(mockRequest.delete).mockResolvedValue(mockResponse);
+
+            const result = await networkOps.deleteBandwidthCtrlRule('rule-1', 'site-123');
+
+            expect(mockRequest.delete).toHaveBeenCalledWith('/openapi/v1/test-omadac/sites/site-123/bandwidth-control/rules/rule-1', undefined);
+            expect(result).toEqual({ success: true });
+        });
+
+        it('should update access control settings', async () => {
+            const mockResponse: OmadaApiResponse<unknown> = { errorCode: 0, result: { success: true } };
+            vi.mocked(mockRequest.patch).mockResolvedValue(mockResponse);
+
+            const payload = { mode: 'allow-list' };
+            const result = await networkOps.setAccessControl(payload, 'site-123');
+
+            expect(mockRequest.patch).toHaveBeenCalledWith('/openapi/v1/test-omadac/sites/site-123/setting/access-control', payload, undefined);
+            expect(result).toEqual({ success: true });
+        });
+
+        it('should update ACL config mode settings', async () => {
+            const mockResponse: OmadaApiResponse<unknown> = { errorCode: 0, result: { success: true } };
+            vi.mocked(mockRequest.put).mockResolvedValue(mockResponse);
+
+            const payload = { mode: 1 };
+            const result = await networkOps.setAclConfigTypeSetting(payload, 'site-123');
+
+            expect(mockRequest.put).toHaveBeenCalledWith('/openapi/v1/test-omadac/sites/site-123/acls/osg-config-mode', payload, undefined);
+            expect(result).toEqual({ success: true });
+        });
+
+        it('should create an application control rule', async () => {
+            const mockResponse: OmadaApiResponse<unknown> = { errorCode: 0, result: { success: true } };
+            vi.mocked(mockRequest.post).mockResolvedValue(mockResponse);
+
+            const payload = { name: 'Block social media' };
+            const result = await networkOps.createAppControlRule(payload, 'site-123');
+
+            expect(mockRequest.post).toHaveBeenCalledWith('/openapi/v1/test-omadac/sites/site-123/applicationControl/rules', payload, undefined);
+            expect(result).toEqual({ success: true });
+        });
+
+        it('should update an application control rule', async () => {
+            const mockResponse: OmadaApiResponse<unknown> = { errorCode: 0, result: { success: true } };
+            vi.mocked(mockRequest.put).mockResolvedValue(mockResponse);
+
+            const payload = { enable: false };
+            const result = await networkOps.updateAppControlRule('rule-2', payload, 'site-123');
+
+            expect(mockRequest.put).toHaveBeenCalledWith(
+                '/openapi/v1/test-omadac/sites/site-123/applicationControl/rules/rule-2',
+                payload,
+                undefined
+            );
+            expect(result).toEqual({ success: true });
+        });
+
+        it('should delete an application control rule', async () => {
+            const mockResponse: OmadaApiResponse<unknown> = { errorCode: 0, result: { success: true } };
+            vi.mocked(mockRequest.delete).mockResolvedValue(mockResponse);
+
+            const result = await networkOps.deleteAppControlRule('rule-2', 'site-123');
+
+            expect(mockRequest.delete).toHaveBeenCalledWith('/openapi/v1/test-omadac/sites/site-123/applicationControl/rules/rule-2', undefined);
+            expect(result).toEqual({ success: true });
+        });
+    });
+
+    describe('ACL and policy mutations', () => {
+        it('should create a gateway ACL rule', async () => {
+            const mockResponse: OmadaApiResponse<unknown> = {
+                errorCode: 0,
+                result: { id: 'acl-1' },
+            };
+
+            vi.mocked(mockRequest.post).mockResolvedValue(mockResponse);
+
+            const payload = { description: 'Guests block', status: true };
+            const result = await networkOps.createOsgAcl(payload, 'site-123');
+
+            expect(mockRequest.post).toHaveBeenCalledWith('/openapi/v1/test-omadac/sites/site-123/acls/osg-acls', payload, undefined);
+            expect(result).toEqual({ id: 'acl-1' });
+        });
+
+        it('should update a gateway ACL rule', async () => {
+            const mockResponse: OmadaApiResponse<unknown> = {
+                errorCode: 0,
+                result: { ok: true },
+            };
+
+            vi.mocked(mockRequest.put).mockResolvedValue(mockResponse);
+
+            const payload = { description: 'Updated guests block', status: false };
+            const result = await networkOps.updateOsgAcl('acl-1', payload, 'site-123');
+
+            expect(mockRequest.put).toHaveBeenCalledWith('/openapi/v1/test-omadac/sites/site-123/acls/osg-acls/acl-1', payload, undefined);
+            expect(result).toEqual({ ok: true });
+        });
+
+        it('should create an EAP ACL rule', async () => {
+            const mockResponse: OmadaApiResponse<unknown> = {
+                errorCode: 0,
+                result: { id: 'eap-acl-1' },
+            };
+
+            vi.mocked(mockRequest.post).mockResolvedValue(mockResponse);
+
+            const payload = { description: 'Wireless guest rule', status: true };
+            const result = await networkOps.createEapAcl(payload, 'site-123');
+
+            expect(mockRequest.post).toHaveBeenCalledWith('/openapi/v1/test-omadac/sites/site-123/acls/eap-acls', payload, undefined);
+            expect(result).toEqual({ id: 'eap-acl-1' });
+        });
+
+        it('should update an EAP ACL rule', async () => {
+            const mockResponse: OmadaApiResponse<unknown> = {
+                errorCode: 0,
+                result: { ok: true },
+            };
+
+            vi.mocked(mockRequest.put).mockResolvedValue(mockResponse);
+
+            const payload = { description: 'Updated wireless guest rule', status: false };
+            const result = await networkOps.updateEapAcl('acl-2', payload, 'site-123');
+
+            expect(mockRequest.put).toHaveBeenCalledWith('/openapi/v1/test-omadac/sites/site-123/acls/eap-acls/acl-2', payload, undefined);
+            expect(result).toEqual({ ok: true });
+        });
+
+        it('should delete an ACL rule', async () => {
+            const mockResponse: OmadaApiResponse<unknown> = {
+                errorCode: 0,
+                result: { ok: true },
+            };
+
+            vi.mocked(mockRequest.delete).mockResolvedValue(mockResponse);
+
+            const result = await networkOps.deleteAcl('acl-3', 'site-123');
+
+            expect(mockRequest.delete).toHaveBeenCalledWith('/openapi/v1/test-omadac/sites/site-123/acls/acl-3', undefined);
+            expect(result).toEqual({ ok: true });
+        });
+
+        it('should create a bandwidth control rule', async () => {
+            const mockResponse: OmadaApiResponse<unknown> = {
+                errorCode: 0,
+                result: { id: 'bw-1' },
+            };
+
+            vi.mocked(mockRequest.post).mockResolvedValue(mockResponse);
+
+            const payload = { name: 'Guests limit', status: true };
+            const result = await networkOps.createBandwidthCtrlRule(payload, 'site-123');
+
+            expect(mockRequest.post).toHaveBeenCalledWith('/openapi/v1/test-omadac/sites/site-123/bandwidth-control/rules', payload, undefined);
+            expect(result).toEqual({ id: 'bw-1' });
+        });
+
+        it('should update a bandwidth control rule', async () => {
+            const mockResponse: OmadaApiResponse<unknown> = {
+                errorCode: 0,
+                result: { ok: true },
+            };
+
+            vi.mocked(mockRequest.patch).mockResolvedValue(mockResponse);
+
+            const payload = { name: 'Guests limit updated', status: false };
+            const result = await networkOps.updateBandwidthCtrlRule('bw-1', payload, 'site-123');
+
+            expect(mockRequest.patch).toHaveBeenCalledWith('/openapi/v1/test-omadac/sites/site-123/bandwidth-control/rules/bw-1', payload, undefined);
+            expect(result).toEqual({ ok: true });
+        });
+
+        it('should delete a bandwidth control rule', async () => {
+            const mockResponse: OmadaApiResponse<unknown> = {
+                errorCode: 0,
+                result: { ok: true },
+            };
+
+            vi.mocked(mockRequest.delete).mockResolvedValue(mockResponse);
+
+            const result = await networkOps.deleteBandwidthCtrlRule('bw-2', 'site-123');
+
+            expect(mockRequest.delete).toHaveBeenCalledWith('/openapi/v1/test-omadac/sites/site-123/bandwidth-control/rules/bw-2', undefined);
+            expect(result).toEqual({ ok: true });
+        });
+
+        it('should update site access control settings', async () => {
+            const mockResponse: OmadaApiResponse<unknown> = {
+                errorCode: 0,
+                result: { preAuthAccessEnable: true },
+            };
+
+            vi.mocked(mockRequest.patch).mockResolvedValue(mockResponse);
+
+            const payload = {
+                preAuthAccessEnable: true,
+                preAuthAccessPolicies: [{ type: 2, url: 'example.com' }],
+                freeAuthClientEnable: false,
+            };
+            const result = await networkOps.setAccessControl(payload, 'site-123');
+
+            expect(mockRequest.patch).toHaveBeenCalledWith('/openapi/v1/test-omadac/sites/site-123/setting/access-control', payload, undefined);
+            expect(result).toEqual({ preAuthAccessEnable: true });
+        });
+
+        it('should create an application control rule', async () => {
+            const mockResponse: OmadaApiResponse<unknown> = {
+                errorCode: 0,
+                result: { ruleId: 9 },
+            };
+
+            vi.mocked(mockRequest.post).mockResolvedValue(mockResponse);
+
+            const payload = { ruleName: 'Block apps', schedule: 'always', qos: false, applications: [101], selectType: 'include' };
+            const result = await networkOps.createAppControlRule(payload, 'site-123');
+
+            expect(mockRequest.post).toHaveBeenCalledWith('/openapi/v1/test-omadac/sites/site-123/applicationControl/rules', payload, undefined);
+            expect(result).toEqual({ ruleId: 9 });
+        });
+
+        it('should update an application control rule', async () => {
+            const mockResponse: OmadaApiResponse<unknown> = {
+                errorCode: 0,
+                result: { ruleId: 9 },
+            };
+
+            vi.mocked(mockRequest.put).mockResolvedValue(mockResponse);
+
+            const payload = {
+                ruleName: 'Block apps updated',
+                schedule: 'always',
+                qos: true,
+                qosClass: 1,
+                applications: [101],
+                selectType: 'exclude',
+            };
+            const result = await networkOps.updateAppControlRule('9', payload, 'site-123');
+
+            expect(mockRequest.put).toHaveBeenCalledWith('/openapi/v1/test-omadac/sites/site-123/applicationControl/rules/9', payload, undefined);
+            expect(result).toEqual({ ruleId: 9 });
+        });
+
+        it('should delete an application control rule', async () => {
+            const mockResponse: OmadaApiResponse<unknown> = {
+                errorCode: 0,
+                result: { ok: true },
+            };
+
+            vi.mocked(mockRequest.delete).mockResolvedValue(mockResponse);
+
+            const result = await networkOps.deleteAppControlRule('9', 'site-123');
+
+            expect(mockRequest.delete).toHaveBeenCalledWith('/openapi/v1/test-omadac/sites/site-123/applicationControl/rules/9', undefined);
+            expect(result).toEqual({ ok: true });
+        });
+    });
+
     describe('getWlanGroupList', () => {
         it('should fetch WLAN group list', async () => {
             const mockData = [
@@ -250,6 +696,21 @@ describe('NetworkOperations', () => {
             const result = await networkOps.getFirewallSetting('site-123');
 
             expect(mockRequest.get).toHaveBeenCalledWith('/openapi/v1/test-omadac/sites/site-123/firewall', undefined, undefined);
+            expect(result).toEqual(mockData);
+        });
+
+        it('should patch firewall settings for a site', async () => {
+            const mockData = { aclEnabled: false };
+            const mockResponse: OmadaApiResponse<unknown> = {
+                errorCode: 0,
+                result: mockData,
+            };
+
+            vi.mocked(mockRequest.patch).mockResolvedValue(mockResponse);
+
+            const result = await networkOps.setFirewallSetting({ aclEnabled: false }, 'site-123');
+
+            expect(mockRequest.patch).toHaveBeenCalledWith('/openapi/v1/test-omadac/sites/site-123/firewall', { aclEnabled: false }, undefined);
             expect(result).toEqual(mockData);
         });
     });
@@ -835,6 +1296,21 @@ describe('NetworkOperations', () => {
             expect(mockRequest.get).toHaveBeenCalledWith(
                 '/openapi/v1/test-omadac/sites/site-123/setting/service/dhcp',
                 { page: 1, pageSize: 10 },
+                undefined
+            );
+            expect(result).toEqual(mockData);
+        });
+    });
+
+    describe('getApplications', () => {
+        it('should get application control applications with optional filters', async () => {
+            const mockData = { data: [{ applicationId: 1001 }] };
+            const mockResponse: OmadaApiResponse<unknown> = { errorCode: 0, result: mockData };
+            vi.mocked(mockRequest.get).mockResolvedValue(mockResponse);
+            const result = await networkOps.getApplications(2, 50, 'zoom', 2048, 'site-123');
+            expect(mockRequest.get).toHaveBeenCalledWith(
+                '/openapi/v1/test-omadac/sites/site-123/applicationControl/applications',
+                { page: 2, pageSize: 50, searchKey: 'zoom', filtersFamilyId: 2048 },
                 undefined
             );
             expect(result).toEqual(mockData);
