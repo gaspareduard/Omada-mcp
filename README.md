@@ -1,37 +1,41 @@
 # Safe Omada MCP
 
-A security-focused Model Context Protocol server implemented in TypeScript for TP-Link Omada Open API workflows.
+Security-focused MCP server for TP-Link Omada Open API workflows.
 
-> Safe baseline:
-> - `stdio` is the supported production transport for milestone 1
-> - Omada credentials are environment-only
-> - no generic raw API tool is exposed in the supported runtime
-> - controller-specific compatibility work belongs in a separate track
+## At a Glance
 
-> **Compatibility:** Tested with Omada Controller versions 5.x and 6.x
-
-
+- Production-safe baseline uses `stdio`
+- Omada credentials are environment-only
+- Capability profiles and category gating control what tools are exposed
+- HTTP remains in the codebase only as an explicitly unsafe, lab-only path
+- Tested against Omada Controller 5.x and 6.x
 
 ## Quick Start
 
-### Using with Claude Desktop (stdio)
+### Option 1: Use with Claude Desktop via Docker
 
-1. **Pull the Docker image** (or build it locally with `npm run docker:build`):
+1. Pull or build an image:
 
    ```bash
    docker pull ghcr.io/your-org/safe-omada-mcp:latest
    ```
 
-2. **Add the MCP server to Claude Desktop configuration**. Edit your Claude Desktop config file:
-   - **macOS**: `~/Library/Application Support/Claude/claude_desktop_config.json`
-   - **Windows**: `%APPDATA%\Claude\claude_desktop_config.json`
+   If you do not publish an image yet, build locally instead:
 
-3. **Add the following configuration**:
+   ```bash
+   npm run docker:build
+   ```
+
+2. Edit your Claude Desktop MCP config:
+   - macOS: `~/Library/Application Support/Claude/claude_desktop_config.json`
+   - Windows: `%APPDATA%\Claude\claude_desktop_config.json`
+
+3. Add the server entry:
 
    ```json
    {
      "mcpServers": {
-      "safe-omada": {
+       "safe-omada": {
          "command": "docker",
          "args": [
            "run",
@@ -50,233 +54,112 @@ A security-focused Model Context Protocol server implemented in TypeScript for T
    }
    ```
 
-   Replace the environment variable values with your actual Omada controller credentials.
+4. Restart Claude Desktop and verify the server by listing sites or devices.
 
-4. **Restart Claude Desktop** to load the new MCP server configuration.
-
-5. **Verify the connection** by asking Claude to list your Omada sites or devices.
-
-### Using Docker Containers
-
-#### CLI/stdio Container
+### Option 2: Run the container directly
 
 ```bash
-docker run -it --rm \
+docker run --rm -it \
   --env-file .env \
   ghcr.io/your-org/safe-omada-mcp:latest
 ```
 
-## Features
-
-- OAuth client-credentials authentication with automatic token refresh
-- Tools for retrieving sites, network devices, and connected clients
-- Explicit capability profiles and category-based tool gating
-- Structured mutation summaries for operational write tools
-- Environment-driven configuration
-- Per-tag Omada OpenAPI references stored under `docs/openapi`
-- Ready-to-use devcontainer with a companion Omada controller service
-
-## Getting started
-
-### Prerequisites
-
-- Docker (for running pre-built containers) or Node.js 24+ (for local development)
-- Access to a TP-Link Omada controller (for example using the `mbentley/omada-controller` Docker image)
-
-### Configuration
-
-The MCP server reads its configuration from environment variables. See `.env.example` for a complete reference.
-
-#### Tool Category Filtering
-
-| Variable                  | Required | Default                                                      | Description                                          |
-| ------------------------- | -------- | ------------------------------------------------------------ | ---------------------------------------------------- |
-| `OMADA_TOOL_CATEGORIES` | No       | `dashboard:r,client-insights:r,clients:r,devices-all:r` | Comma-separated categories to enable at startup |
-Each token is `<category>[:<suffix>]`. Permission suffixes:
-
-| Suffix | Effect               |
-| ------ | -------------------- |
-| `:r` | Read tools only |
-| `:w` | Write tools only |
-| `:rw` | Read and write tools |
-| _(none)_ | Same as `:rw`      |
-
-##### Category Reference
-
-Categories marked with `*` are reserved for upcoming phases and have no tool implementations yet. Specifying them will produce a startup warning and they will be skipped. Write tools are currently limited to the `clients` category.
-
-| Group                   | Categories                                                                    |
-| ----------------------- | ----------------------------------------------------------------------------- |
-| Dashboard & Insights    | `dashboard`, `client-insights`, `insights`*                                   |
-| Clients                 | `clients`                                                                     |
-| Devices                 | `devices-general`, `devices-ap`, `devices-switch`, `devices-gateway`          |
-| Wireless                | `wireless-ssid`, `wireless-radio`, `wireless-auth`                            |
-| Network                 | `network-wan`, `network-sim-lte`*, `network-lan`, `network-routing`, `network-nat`, `network-services` |
-| Firewall & Security     | `firewall-acl`, `firewall-traffic`, `firewall-ids`, `security-threat`, `security-wids` |
-| VPN                     | `vpn`                                                                         |
-| Profiles & Schedules    | `profiles`, `schedules`, `auth-profiles`                                     |
-| Logs                    | `logs`                                                                        |
-| Controller & Org        | `controller`, `sites`, `maintenance`, `account-users`, `account-sso`*, `account-cloud` |
-| Hotspot                 | `hotspot-portal`*, `hotspot-vouchers`*, `hotspot-users`*                      |
-| Niche                   | `site-templates`*, `voip`*, `olt`*, `msp`*                                    |
-
-Group aliases expand to all categories in their group:
-
-| Alias          | Expands to                                                                                    |
-| -------------- | --------------------------------------------------------------------------------------------- |
-| `all` | Every category |
-| `devices-all` | `devices-general`, `devices-ap`, `devices-switch`, `devices-gateway` |
-| `wireless-all` | `wireless-ssid`, `wireless-radio`, `wireless-auth`                                            |
-| `network-all` | `network-wan`, `network-lan`, `network-routing`, `network-nat`, `network-services` |
-| `firewall-all` | `firewall-acl`, `firewall-traffic`, `firewall-ids`                                            |
-| `security-all` | `security-threat`, `security-wids`                                                            |
-
-Examples:
+### Option 3: Run locally for development
 
 ```bash
-# Read-only access to everything
-OMADA_TOOL_CATEGORIES=all:r
-
-# Default safe subset (read only)
-OMADA_TOOL_CATEGORIES=dashboard:r,client-insights:r,clients:r,devices-all:r
-
-# Full access including write operations
-OMADA_TOOL_CATEGORIES=all:rw
-
-# Network read + client write operations
-OMADA_TOOL_CATEGORIES=network-all:r,clients:rw
-```
-
-#### Omada Client Configuration
-
-| Variable              | Required | Default | Description                                                                 |
-| --------------------- | -------- | ------- | --------------------------------------------------------------------------- |
-| `OMADA_BASE_URL` | Yes      | -       | Base URL of the Omada controller (e.g., `https://omada-controller.local`) |
-| `OMADA_CLIENT_ID` | Yes      | -       | OAuth client ID generated under Omada Platform Integration |
-| `OMADA_CLIENT_SECRET` | Yes      | -       | OAuth client secret associated with the client ID                           |
-| `OMADA_OMADAC_ID` | Yes      | -       | Omada controller ID (omadacId) to target |
-| `OMADA_SITE_ID` | No       | -       | Optional default site ID; if omitted, each MCP call must pass a siteId |
-| `OMADA_STRICT_SSL` | No       | `true`  | Enforce strict SSL certificate validation (set to `false` for self-signed) |
-| `OMADA_TIMEOUT` | No       | `30000` | HTTP request timeout in milliseconds |
-#### MCP Generic Server Configuration
-
-| Variable                 | Required | Default | Description                                                                 |
-| ------------------------ | -------- | ------- | --------------------------------------------------------------------------- |
-| `MCP_SERVER_LOG_LEVEL` | No       | `info`  | Logging verbosity (`debug`, `info`, `warn`, `error`, `silent`) |
-| `MCP_SERVER_LOG_FORMAT` | No       | `plain` | Log output format (`plain`, `json`, or `gcp-json`) |
-| `MCP_SERVER_USE_HTTP` | No       | `false` | Legacy lab-only switch. Unsupported for the safe production baseline. |
-| `MCP_UNSAFE_ENABLE_HTTP` | No       | `false` | Explicit acknowledgement required before HTTP mode can start. |
-
-#### MCP Server HTTP Configuration
-
-These variables are only used when `MCP_SERVER_USE_HTTP=true` and `MCP_UNSAFE_ENABLE_HTTP=true`:
-
-| Variable                       | Required | Default                         | Description                                                                 |
-| ------------------------------ | -------- | ------------------------------- | --------------------------------------------------------------------------- |
-| `MCP_HTTP_PORT` | No       | `3000`                          | Port for the HTTP server |
-| `MCP_HTTP_BIND_ADDR` | No       | `127.0.0.1`                     | Bind address (IPv4/IPv6). Use atapter IP address to expose to the network. |
-| `MCP_HTTP_PATH` | No       | `/mcp`                          | Base path for MCP endpoints |
-| `MCP_HTTP_ENABLE_HEALTHCHECK` | No       | `true`                          | Enable a healthcheck endpoint |
-| `MCP_HTTP_HEALTHCHECK_PATH` | No       | `/healthz`                      | Path for the healthcheck endpoint |
-| `MCP_HTTP_ALLOW_CORS` | No       | `true`                          | Enable CORS for the HTTP server |
-| `MCP_HTTP_ALLOWED_ORIGINS` | No       | `127.0.0.1, localhost`          | Comma-separated list of allowed origins. Use `*` to allow all (dev only) |
-| `MCP_HTTP_NGROK_ENABLED` | No       | `false`                         | Legacy placeholder. Public tunnel support is disabled in the safe baseline. |
-| `MCP_HTTP_NGROK_AUTH_TOKEN` | No       | -                               | Legacy placeholder. |
-Create a `.env` file (ignored by git) or export the variables before launching the server.
-
-### Development
-
-```bash
-npm run dev
-```
-
-The dev mode keeps the TypeScript server running with live reload support via `tsx`.
-
-### Building
-
-```bash
+npm install
 npm run build
-```
-
-### Linting
-
-```bash
-npm run check
-```
-
-### Testing
-
-#### Unit tests
-
-```bash
-npm test               # run all unit tests
-npm run test:watch     # watch mode
-npm run test:coverage  # with coverage report
-```
-
-Coverage thresholds:
-
-| Level | Metric | Threshold |
-|-------|--------|-----------|
-| Per-file | Lines, Statements, Functions | 90% |
-| Global | Branches | 70% |
-
-#### Integration tests (Docker)
-
-> Not implemented yet — this section documents the **planned** integration test strategy tracked in **#57** and **#58**.
-
-Integration tests will run against a real Omada Software Controller in a Docker container. They are **not** planned to run on every PR — they serve as a milestone release gate and a test harness for write tools.
-
-Planned layout:
-- `test/docker/` (compose + snapshot/seed tooling)
-- `tests/integration/`
-- `npm run test:integration`
-
-> ⚠️ **Phase 2 write tools must only be tested against the Docker controller — never against a production controller.**
-
-### Running the MCP server
-
-```bash
 npm start
 ```
 
-The MCP server communicates over standard input and output. Integrate it with MCP-compatible clients by referencing the `npm start` command and providing the required environment variables.
+## Configuration
 
-### Docker image
+The server reads configuration from environment variables. See `.env.example` for the complete reference.
 
-A container image is provided for running the MCP server:
+### Required Omada Variables
+
+| Variable | Required | Default | Description |
+| --- | --- | --- | --- |
+| `OMADA_BASE_URL` | Yes | - | Base URL of the Omada controller |
+| `OMADA_CLIENT_ID` | Yes | - | OAuth client ID from Omada Platform Integration |
+| `OMADA_CLIENT_SECRET` | Yes | - | OAuth client secret |
+| `OMADA_OMADAC_ID` | Yes | - | Omada controller ID (`omadacId`) |
+| `OMADA_SITE_ID` | No | - | Optional default site ID |
+| `OMADA_STRICT_SSL` | No | `true` | Enforce TLS certificate validation |
+| `OMADA_TIMEOUT` | No | `30000` | HTTP timeout in milliseconds |
+
+### Capability and Logging
+
+| Variable | Required | Default | Description |
+| --- | --- | --- | --- |
+| `OMADA_CAPABILITY_PROFILE` | No | `safe-read` | Built-in profile: `safe-read`, `ops-write`, `admin`, `compatibility` |
+| `OMADA_TOOL_CATEGORIES` | No | profile default | Explicit category override |
+| `MCP_SERVER_LOG_LEVEL` | No | `info` | `debug`, `info`, `warn`, `error`, `silent` |
+| `MCP_SERVER_LOG_FORMAT` | No | `plain` | `plain`, `json`, or `gcp-json` |
+
+### Capability Profiles
+
+| Profile | Intended use |
+| --- | --- |
+| `safe-read` | Default read-only operational visibility |
+| `ops-write` | Limited operational write actions |
+| `admin` | Full documented tool surface, including admin mutations |
+| `compatibility` | Reserved for future controller-specific fallback modules |
+
+### Optional HTTP Lab Mode
+
+HTTP is **not** part of the supported production baseline.
+
+It only starts when both of these are set:
+- `MCP_SERVER_USE_HTTP=true`
+- `MCP_UNSAFE_ENABLE_HTTP=true`
+
+Use it only for local lab/debug scenarios.
+
+| Variable | Required | Default | Description |
+| --- | --- | --- | --- |
+| `MCP_SERVER_USE_HTTP` | No | `false` | Legacy lab-only switch |
+| `MCP_UNSAFE_ENABLE_HTTP` | No | `false` | Explicit acknowledgement required |
+| `MCP_HTTP_PORT` | No | `3000` | HTTP port |
+| `MCP_HTTP_BIND_ADDR` | No | `127.0.0.1` | Bind address |
+| `MCP_HTTP_PATH` | No | `/mcp` | MCP endpoint path |
+| `MCP_HTTP_ENABLE_HEALTHCHECK` | No | `true` | Enable health check |
+| `MCP_HTTP_HEALTHCHECK_PATH` | No | `/healthz` | Health check path |
+| `MCP_HTTP_ALLOW_CORS` | No | `true` | Enable CORS |
+| `MCP_HTTP_ALLOWED_ORIGINS` | No | `127.0.0.1, localhost` | Allowed origins |
+| `MCP_HTTP_NGROK_ENABLED` | No | `false` | Legacy placeholder; disabled in safe baseline |
+| `MCP_HTTP_NGROK_AUTH_TOKEN` | No | - | Legacy placeholder |
+
+## Development and Validation
+
+### Common Commands
+
+| Task | Command |
+| --- | --- |
+| Run dev server | `npm run dev` |
+| Build | `npm run build` |
+| Lint + type-check | `npm run check` |
+| Unit tests | `npm test` |
+| Coverage gates | `npm run test:coverage` |
+| Symlink integrity | `npm run symlinks:check` |
+| README/tool sync | `node scripts/check-readme-sync.mjs` |
+| Tool/test mapping | `node scripts/check-tool-tests.mjs` |
+
+### Inspector
+
+Use the MCP Inspector when you want to test the built server interactively:
 
 ```bash
-npm run docker:build  # Build the Docker image (tag: ghcr.io/your-org/safe-omada-mcp:latest)
-npm run docker:run    # Launch the container with your .env file
-npm run docker:push   # Push the image to Docker Hub
+npm run inspector
+npm run inspector:build
 ```
 
-You can also pull the pre-built image directly from Docker Hub:
+## Project Notes
 
-```bash
-docker pull ghcr.io/your-org/safe-omada-mcp:latest
-```
-
-The safe baseline uses stdio. HTTP mode exists only as an explicitly unsafe lab path and is not part of the production quick start.
-
-### Debugging with MCP Inspector
-
-Use the MCP Inspector to interactively test tools, resources, and prompts without leaving your browser. The inspector automatically adapts to your `.env` configuration:
-
-- **`npm run inspector`** — Launches the inspector based on your `.env` settings:
-  - If `MCP_SERVER_USE_HTTP=false` (or unset): Runs the server in stdio mode with `tsx src/index.ts` for live reload debugging
-  - If `MCP_SERVER_USE_HTTP=true`: Legacy lab-only path. Keep it disabled for production use.
-  
-- **`npm run inspector:build`** — Compiles the project first, then launches the inspector against the production build (`dist/index.js`) to verify release parity. Also adapts to stdio or HTTP mode based on `.env`.
-
-**Requirements:** The inspector requires a `.env` file at the repository root. It will load both `.env` and `.env.local` (if present) to determine the server mode, port, transport, and path.
-
-The MCP Inspector tool automatically binds to localhost and generates a session token for authentication (printed to the console and auto-filled in the browser URL).
-
-### Transport Protocols
-
-The supported milestone 1 transport is stdio. HTTP mode remains in the codebase only as an explicitly unsafe lab path and should not be used for routine deployment.
+- The safe baseline is `stdio` first.
+- HTTP remains a legacy, explicitly unsafe lab path.
+- The repo includes `docs/openapi/` as the implementation reference for Omada endpoints.
+- README tool tables below are kept in sync with the registered MCP tools.
 
 ## Tools
 

@@ -1,29 +1,35 @@
 # Safe Omada MCP
 
-A security-focused MCP server for TP-Link Omada Open API workflows. This Docker image is intended for the safe baseline `stdio` deployment path.
+Security-focused MCP server for TP-Link Omada Open API workflows. This Docker-oriented README focuses on the supported `stdio` container path.
 
-> **Compatibility:** Tested with Omada Controller versions 5.x and 6.x
+## At a Glance
+
+- Production-safe baseline uses `stdio`
+- Omada credentials are passed by environment variables only
+- Capability profiles control which tools are exposed
+- HTTP remains a legacy, explicitly unsafe lab-only path
+- Tested against Omada Controller 5.x and 6.x
 
 ## Quick Start
 
-### Using with Claude Desktop (stdio)
+### Use with Claude Desktop via Docker
 
-1. **Pull the Docker image**:
+1. Pull an image:
 
    ```bash
    docker pull ghcr.io/your-org/safe-omada-mcp:latest
    ```
 
-2. **Add the MCP server to Claude Desktop configuration**. Edit your Claude Desktop config file:
-   - **macOS**: `~/Library/Application Support/Claude/claude_desktop_config.json`
-   - **Windows**: `%APPDATA%\Claude\claude_desktop_config.json`
+2. Edit your Claude Desktop MCP config:
+   - macOS: `~/Library/Application Support/Claude/claude_desktop_config.json`
+   - Windows: `%APPDATA%\Claude\claude_desktop_config.json`
 
-3. **Add the following configuration**:
+3. Add the server entry:
 
    ```json
    {
      "mcpServers": {
-      "safe-omada": {
+       "safe-omada": {
          "command": "docker",
          "args": [
            "run",
@@ -42,75 +48,64 @@ A security-focused MCP server for TP-Link Omada Open API workflows. This Docker 
    }
    ```
 
-   Replace the environment variable values with your actual Omada controller credentials.
+4. Restart Claude Desktop and verify the connection.
 
-4. **Restart Claude Desktop** to load the new MCP server configuration.
-
-5. **Verify the connection** by asking Claude to list your Omada sites or devices.
-
-### Using Docker Containers
-
-#### CLI/stdio Container
+### Run the container directly
 
 ```bash
-docker run -it --rm \
+docker run --rm -it \
   --env-file .env \
   ghcr.io/your-org/safe-omada-mcp:latest
 ```
 
-## Features
-
-- OAuth client-credentials authentication with automatic token refresh
-- Tools for retrieving sites, network devices, and connected clients
-- Generic Omada API invoker for advanced automation scenarios
-- Environment-driven configuration
-- Support for both stdio and HTTP transports
-- Multi-platform support (linux/amd64, linux/arm64)
-
 ## Configuration
 
-The MCP server reads its configuration from environment variables.
+### Required Omada Variables
 
-### Omada Client Configuration
+| Variable | Required | Default | Description |
+| --- | --- | --- | --- |
+| `OMADA_BASE_URL` | Yes | - | Base URL of the Omada controller |
+| `OMADA_CLIENT_ID` | Yes | - | OAuth client ID from Omada Platform Integration |
+| `OMADA_CLIENT_SECRET` | Yes | - | OAuth client secret |
+| `OMADA_OMADAC_ID` | Yes | - | Omada controller ID (`omadacId`) |
+| `OMADA_SITE_ID` | No | - | Optional default site ID |
+| `OMADA_STRICT_SSL` | No | `true` | Enforce TLS certificate validation |
+| `OMADA_TIMEOUT` | No | `30000` | HTTP timeout in milliseconds |
 
-| Variable              | Required | Default | Description                                                                 |
-| --------------------- | -------- | ------- | --------------------------------------------------------------------------- |
-| `OMADA_BASE_URL` | Yes      | -       | Base URL of the Omada controller (e.g., `https://omada-controller.local`) |
-| `OMADA_CLIENT_ID` | Yes      | -       | OAuth client ID generated under Omada Platform Integration |
-| `OMADA_CLIENT_SECRET` | Yes      | -       | OAuth client secret associated with the client ID                           |
-| `OMADA_OMADAC_ID` | Yes      | -       | Omada controller ID (omadacId) to target |
-| `OMADA_SITE_ID` | No       | -       | Optional default site ID; if omitted, each MCP call must pass a siteId |
-| `OMADA_STRICT_SSL` | No       | `true`  | Enforce strict SSL certificate validation (set to `false` for self-signed) |
-| `OMADA_TIMEOUT` | No       | `30000` | HTTP request timeout in milliseconds |
-### MCP Generic Server Configuration
+### Capability and Logging
 
-| Variable                 | Required | Default | Description                                                                 |
-| ------------------------ | -------- | ------- | --------------------------------------------------------------------------- |
-| `MCP_SERVER_LOG_LEVEL` | No       | `info`  | Logging verbosity (`debug`, `info`, `warn`, `error`, `silent`) |
-| `MCP_SERVER_LOG_FORMAT` | No       | `plain` | Log output format (`plain`, `json`, or `gcp-json`) |
-| `MCP_SERVER_USE_HTTP` | No       | `false` | Legacy lab-only switch. Unsupported for the safe production baseline. |
-| `MCP_UNSAFE_ENABLE_HTTP` | No       | `false` | Explicit acknowledgement required before HTTP mode can start. |
+| Variable | Required | Default | Description |
+| --- | --- | --- | --- |
+| `OMADA_CAPABILITY_PROFILE` | No | `safe-read` | Built-in profile: `safe-read`, `ops-write`, `admin`, `compatibility` |
+| `OMADA_TOOL_CATEGORIES` | No | profile default | Explicit category override |
+| `MCP_SERVER_LOG_LEVEL` | No | `info` | `debug`, `info`, `warn`, `error`, `silent` |
+| `MCP_SERVER_LOG_FORMAT` | No | `plain` | `plain`, `json`, or `gcp-json` |
 
-### MCP Server HTTP Configuration
+### Optional HTTP Lab Mode
 
-These variables are only used when `MCP_SERVER_USE_HTTP=true` and `MCP_UNSAFE_ENABLE_HTTP=true`:
+HTTP is not part of the supported container baseline. It only starts when both of these are set:
+- `MCP_SERVER_USE_HTTP=true`
+- `MCP_UNSAFE_ENABLE_HTTP=true`
 
-| Variable                       | Required | Default                         | Description                                                                 |
-| ------------------------------ | -------- | ------------------------------- | --------------------------------------------------------------------------- |
-| `MCP_HTTP_PORT` | No       | `3000`                          | Port for the HTTP server |
-| `MCP_HTTP_BIND_ADDR` | No       | `127.0.0.1`                     | Bind address (IPv4/IPv6). Use adapter IP address to expose to the network. |
-| `MCP_HTTP_PATH` | No       | `/mcp`                          | Base path for MCP endpoints |
-| `MCP_HTTP_ENABLE_HEALTHCHECK` | No       | `true`                          | Enable a healthcheck endpoint |
-| `MCP_HTTP_HEALTHCHECK_PATH` | No       | `/healthz`                      | Path for the healthcheck endpoint |
-| `MCP_HTTP_ALLOW_CORS` | No       | `true`                          | Enable CORS for the HTTP server |
-| `MCP_HTTP_ALLOWED_ORIGINS` | No       | `127.0.0.1, localhost`          | Comma-separated list of allowed origins. Use `*` to allow all (dev only) |
-| `MCP_HTTP_NGROK_ENABLED` | No       | `false`                         | Legacy placeholder. Public tunnel support is disabled in the safe baseline. |
-| `MCP_HTTP_NGROK_AUTH_TOKEN` | No       | -                               | Legacy placeholder. |
-Create a `.env` file or export the variables before launching the container.
+| Variable | Required | Default | Description |
+| --- | --- | --- | --- |
+| `MCP_SERVER_USE_HTTP` | No | `false` | Legacy lab-only switch |
+| `MCP_UNSAFE_ENABLE_HTTP` | No | `false` | Explicit acknowledgement required |
+| `MCP_HTTP_PORT` | No | `3000` | HTTP port |
+| `MCP_HTTP_BIND_ADDR` | No | `127.0.0.1` | Bind address |
+| `MCP_HTTP_PATH` | No | `/mcp` | MCP endpoint path |
+| `MCP_HTTP_ENABLE_HEALTHCHECK` | No | `true` | Enable health check |
+| `MCP_HTTP_HEALTHCHECK_PATH` | No | `/healthz` | Health check path |
+| `MCP_HTTP_ALLOW_CORS` | No | `true` | Enable CORS |
+| `MCP_HTTP_ALLOWED_ORIGINS` | No | `127.0.0.1, localhost` | Allowed origins |
+| `MCP_HTTP_NGROK_ENABLED` | No | `false` | Legacy placeholder; disabled in safe baseline |
+| `MCP_HTTP_NGROK_AUTH_TOKEN` | No | - | Legacy placeholder |
 
-## Transport Protocols
+## Notes
 
-The supported milestone 1 container path is stdio. HTTP mode remains a lab-only, explicitly unsafe path and is intentionally excluded from the secure quick start.
+- The safe baseline is `stdio` first.
+- HTTP remains a legacy, explicitly unsafe lab path.
+- The tool tables below are kept in sync with the registered MCP tools.
 
 ## Tools
 
@@ -824,8 +819,8 @@ The supported milestone 1 container path is stdio. HTTP mode remains a lab-only,
 
 Want to help improve this project? Contributions are welcome! Visit our GitHub repository to report issues, suggest features, or submit pull requests:
 
-**[https://github.com/your-org/safe-omada-mcp](https://github.com/your-org/safe-omada-mcp)**
+**[https://github.com/AILivesInTerminal/Omada-mcp](https://github.com/AILivesInTerminal/Omada-mcp)**
 
 ## License
 
-This project is licensed under the [MIT License](https://github.com/your-org/safe-omada-mcp?tab=MIT-1-ov-file).
+This project is licensed under the [MIT License](https://github.com/AILivesInTerminal/Omada-mcp?tab=MIT-1-ov-file).
