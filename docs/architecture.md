@@ -6,7 +6,7 @@
 
 - Transport: `stdio` is the supported production path for milestone 1.
 - Auth: Omada credentials come from environment variables only.
-- API strategy: prefer the official TP-Link Omada Open API and local spec snapshots in [`docs/openapi`](/Users/eduardgaspar/Documents/New%20project/docs/openapi).
+- API strategy: prefer the official TP-Link Omada Open API and local spec snapshots in `docs/openapi/`.
 - Controller strategy: hosted/software controller first; controller-specific fallbacks belong in a separate compatibility track.
 
 ## Runtime boundaries
@@ -30,4 +30,4 @@ Explicit `OMADA_TOOL_CATEGORIES` values can refine the profile, but the profile 
 
 - Official Omada Open API docs: [omada-northbound-docs.tplinkcloud.com](https://omada-northbound-docs.tplinkcloud.com/#/home)
 - TP-Link KB OpenAPI setup guide: [How to Configure OpenAPI via Omada Controller](https://community.tp-link.com/en/business/kb/detail/412930)
-- Local spec snapshots: [`docs/openapi/00-all.json`](/Users/eduardgaspar/Documents/New%20project/docs/openapi/00-all.json)
+- Local spec snapshots: `docs/openapi/00-all.json`

@@ -24,8 +24,8 @@ These must come from environment variables or a secret manager. They must never 
 
 ## Logging
 
-- MCP-layer request and tool logs are redacted in [`src/server/common.ts`](/Users/eduardgaspar/Documents/New%20project/src/server/common.ts).
-- Omada HTTP logs are redacted in [`src/omadaClient/request.ts`](/Users/eduardgaspar/Documents/New%20project/src/omadaClient/request.ts).
+- MCP-layer request and tool logs are redacted in `src/server/common.ts`.
+- Omada HTTP logs are redacted in `src/omadaClient/request.ts`.
 - Mutation tools emit an explicit audit event with target, site, mode, and summary.
 
 ## Unsafe/compatibility features
