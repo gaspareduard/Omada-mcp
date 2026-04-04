@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import type { FileServerConfig } from '../../src/omadaClient/maintenance.js';
 import { MaintenanceOperations } from '../../src/omadaClient/maintenance.js';
 import type { RequestHandler } from '../../src/omadaClient/request.js';
 import type { SiteOperations } from '../../src/omadaClient/site.js';
@@ -10,9 +11,17 @@ describe('MaintenanceOperations', () => {
     let mockSite: SiteOperations;
     let mockBuildPath: (path: string) => string;
 
+    const fileServerConfig: FileServerConfig = {
+        protocol: 'sftp',
+        hostname: 'backup.example.com',
+        port: 22,
+        username: 'user',
+    };
+
     beforeEach(() => {
         mockRequest = {
             get: vi.fn(),
+            post: vi.fn(),
             ensureSuccess: vi.fn((response: OmadaApiResponse<unknown>) => {
                 if (response.errorCode === 0) return response.result;
                 throw new Error(response.msg ?? 'API Error');
@@ -134,6 +143,131 @@ describe('MaintenanceOperations', () => {
             vi.mocked(mockRequest.get).mockResolvedValue(mockResponse);
             await maintenanceOps.getSiteBackupFileList(undefined, { 'X-Custom': 'value' });
             expect(mockRequest.get).toHaveBeenCalledWith(expect.any(String), undefined, { 'X-Custom': 'value' });
+        });
+    });
+
+    describe('getRogueApExport', () => {
+        it('should call correct endpoint with default format', async () => {
+            const mockResponse = { errorCode: 0, result: { data: [] } };
+            vi.mocked(mockRequest.get).mockResolvedValue(mockResponse);
+            await maintenanceOps.getRogueApExport();
+            expect(mockRequest.get).toHaveBeenCalledWith('/openapi/v1/test-omadac/sites/default-site/rogue-ap/export/csv', undefined, undefined);
+        });
+
+        it('should use provided format', async () => {
+            const mockResponse = { errorCode: 0, result: null };
+            vi.mocked(mockRequest.get).mockResolvedValue(mockResponse);
+            await maintenanceOps.getRogueApExport('site-1', 'excel');
+            expect(mockRequest.get).toHaveBeenCalledWith('/openapi/v1/test-omadac/sites/site-1/rogue-ap/export/excel', undefined, undefined);
+        });
+    });
+
+    describe('backupController', () => {
+        it('should POST to correct endpoint', async () => {
+            const mockResponse = { errorCode: 0, result: null };
+            vi.mocked(mockRequest.post).mockResolvedValue(mockResponse);
+            await maintenanceOps.backupController(true);
+            expect(mockRequest.post).toHaveBeenCalledWith('/openapi/v1/test-omadac/maintenance/backup/self-server', { retainUser: true }, undefined);
+        });
+
+        it('should pass customHeaders', async () => {
+            const mockResponse = { errorCode: 0, result: null };
+            vi.mocked(mockRequest.post).mockResolvedValue(mockResponse);
+            await maintenanceOps.backupController(false, { 'X-Custom': 'val' });
+            expect(mockRequest.post).toHaveBeenCalledWith(expect.any(String), expect.any(Object), { 'X-Custom': 'val' });
+        });
+    });
+
+    describe('backupControllerToFileServer', () => {
+        it('should POST to correct endpoint with body', async () => {
+            const mockResponse = { errorCode: 0, result: null };
+            vi.mocked(mockRequest.post).mockResolvedValue(mockResponse);
+            await maintenanceOps.backupControllerToFileServer(fileServerConfig, '/backups/ctrl.bak', true);
+            expect(mockRequest.post).toHaveBeenCalledWith(
+                '/openapi/v1/test-omadac/maintenance/backup/file-server',
+                { serverConfig: fileServerConfig, filePath: '/backups/ctrl.bak', retainUser: true },
+                undefined
+            );
+        });
+    });
+
+    describe('restoreController', () => {
+        it('should POST to correct endpoint', async () => {
+            const mockResponse = { errorCode: 0, result: null };
+            vi.mocked(mockRequest.post).mockResolvedValue(mockResponse);
+            await maintenanceOps.restoreController('backup-2024.cfg');
+            expect(mockRequest.post).toHaveBeenCalledWith(
+                '/openapi/v1/test-omadac/maintenance/restore/self-server',
+                { fileName: 'backup-2024.cfg' },
+                undefined
+            );
+        });
+    });
+
+    describe('restoreControllerFromFileServer', () => {
+        it('should POST to correct endpoint with skipDevice', async () => {
+            const mockResponse = { errorCode: 0, result: null };
+            vi.mocked(mockRequest.post).mockResolvedValue(mockResponse);
+            await maintenanceOps.restoreControllerFromFileServer(fileServerConfig, '/backups/ctrl.bak', false);
+            expect(mockRequest.post).toHaveBeenCalledWith(
+                '/openapi/v1/test-omadac/maintenance/restore/file-server',
+                { serverConfig: fileServerConfig, filePath: '/backups/ctrl.bak', skipDevice: false },
+                undefined
+            );
+        });
+    });
+
+    describe('backupSites', () => {
+        it('should POST to correct endpoint with siteIds', async () => {
+            const mockResponse = { errorCode: 0, result: null };
+            vi.mocked(mockRequest.post).mockResolvedValue(mockResponse);
+            await maintenanceOps.backupSites(['site-1', 'site-2']);
+            expect(mockRequest.post).toHaveBeenCalledWith(
+                '/openapi/v1/test-omadac/sites/maintenance/multi-backup/self-server',
+                { siteIds: ['site-1', 'site-2'] },
+                undefined
+            );
+        });
+    });
+
+    describe('backupSitesToFileServer', () => {
+        it('should POST to correct endpoint', async () => {
+            const mockResponse = { errorCode: 0, result: null };
+            vi.mocked(mockRequest.post).mockResolvedValue(mockResponse);
+            await maintenanceOps.backupSitesToFileServer(fileServerConfig, '/backups/', ['site-1']);
+            expect(mockRequest.post).toHaveBeenCalledWith(
+                '/openapi/v1/test-omadac/sites/maintenance/multi-backup/file-server',
+                { serverConfig: fileServerConfig, filePath: '/backups/', siteIds: ['site-1'] },
+                undefined
+            );
+        });
+    });
+
+    describe('restoreSites', () => {
+        it('should POST to correct endpoint', async () => {
+            const mockResponse = { errorCode: 0, result: null };
+            vi.mocked(mockRequest.post).mockResolvedValue(mockResponse);
+            const infos = [{ fileName: 'site1.bak', siteId: 'site-1' }];
+            await maintenanceOps.restoreSites(infos);
+            expect(mockRequest.post).toHaveBeenCalledWith(
+                '/openapi/v1/test-omadac/sites/maintenance/multi-restore/self-server',
+                { siteRestoreInfos: infos },
+                undefined
+            );
+        });
+    });
+
+    describe('restoreSitesFromFileServer', () => {
+        it('should POST to correct endpoint', async () => {
+            const mockResponse = { errorCode: 0, result: null };
+            vi.mocked(mockRequest.post).mockResolvedValue(mockResponse);
+            const infos = [{ filePath: '/backups/site1.bak', siteId: 'site-1' }];
+            await maintenanceOps.restoreSitesFromFileServer(fileServerConfig, infos);
+            expect(mockRequest.post).toHaveBeenCalledWith(
+                '/openapi/v1/test-omadac/sites/maintenance/multi-restore/file-server',
+                { serverConfig: fileServerConfig, siteInfos: infos },
+                undefined
+            );
         });
     });
 });
