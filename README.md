@@ -1,5 +1,10 @@
 # Safe Omada MCP
 
+[![CI](https://github.com/gaspareduard/Omada-mcp/actions/workflows/ci.yml/badge.svg)](https://github.com/gaspareduard/Omada-mcp/actions/workflows/ci.yml)
+[![npm version](https://img.shields.io/npm/v/safe-omada-mcp)](https://www.npmjs.com/package/safe-omada-mcp)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](./LICENSE)
+[![Node.js 24+](https://img.shields.io/badge/node-24%2B-green)](https://nodejs.org)
+
 Security-focused MCP server for TP-Link Omada Open API workflows.
 
 ## At a Glance
