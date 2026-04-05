@@ -11,7 +11,7 @@ Thanks for your interest in contributing. This guide covers everything you need 
 ## Getting Started
 
 ```bash
-git clone https://github.com/AILivesInTerminal/Omada-mcp.git
+git clone https://github.com/gaspareduard/Omada-mcp.git
 cd Omada-mcp
 npm ci
 cp .env.example .env.local   # fill in your controller credentials

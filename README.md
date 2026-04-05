@@ -22,7 +22,7 @@ Security-focused MCP server for TP-Link Omada Open API workflows.
 1. Pull or build an image:
 
    ```bash
-   docker pull ghcr.io/ailivesinterminal/omada-mcp:latest
+   docker pull ghcr.io/gaspareduard/omada-mcp:latest
    ```
 
    If you do not publish an image yet, build locally instead:
@@ -52,7 +52,7 @@ Security-focused MCP server for TP-Link Omada Open API workflows.
            "-e", "OMADA_OMADAC_ID=your-omadac-id",
            "-e", "OMADA_SITE_ID=your-site-id",
            "-e", "OMADA_STRICT_SSL=true",
-           "ghcr.io/ailivesinterminal/omada-mcp:latest"
+           "ghcr.io/gaspareduard/omada-mcp:latest"
          ]
        }
      }
@@ -66,7 +66,7 @@ Security-focused MCP server for TP-Link Omada Open API workflows.
 ```bash
 docker run --rm -it \
   --env-file .env \
-  ghcr.io/ailivesinterminal/omada-mcp:latest
+  ghcr.io/gaspareduard/omada-mcp:latest
 ```
 
 ### Option 3: Run locally for development

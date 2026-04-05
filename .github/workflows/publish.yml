@@ -5,6 +5,9 @@ on:
     tags:
       - "v*"
 
+env:
+  IMAGE_NAME: ghcr.io/${{ github.repository_owner }}/omada-mcp
+
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: false
@@ -64,6 +67,15 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Verify tag matches package version
+        run: |
+          TAG_VERSION="${GITHUB_REF_NAME#v}"
+          PKG_VERSION=$(node -p "require('./package.json').version")
+          if [ "$TAG_VERSION" != "$PKG_VERSION" ]; then
+            echo "Tag version ($TAG_VERSION) does not match package.json version ($PKG_VERSION)."
+            exit 1
+          fi
+
       - name: Build
         run: npm run build
 
@@ -110,8 +122,8 @@ jobs:
           platforms: linux/amd64,linux/arm64
           push: true
           tags: |
-            ghcr.io/ailivesinterminal/omada-mcp:latest
-            ghcr.io/ailivesinterminal/omada-mcp:${{ steps.tag.outputs.version }}
+            ${{ env.IMAGE_NAME }}:latest
+            ${{ env.IMAGE_NAME }}:${{ steps.tag.outputs.version }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
@@ -130,6 +142,10 @@ jobs:
         run: |
           VERSION="${GITHUB_REF_NAME#v}"
           NOTES=$(awk "/^## ${VERSION}/{found=1; next} found && /^## /{exit} found{print}" CHANGELOG.md)
+          if [ -z "$NOTES" ]; then
+            echo "No changelog entry found for version ${VERSION}."
+            exit 1
+          fi
           {
             echo "notes<<EOF"
             printf '%s\n' "$NOTES"
