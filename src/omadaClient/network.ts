@@ -307,6 +307,31 @@ export class NetworkOperations {
     }
 
     /**
+     * Create an OSW (Switch) ACL rule.
+     * OperationId: createOswAcl
+     */
+    public async createOswAcl(payload: unknown, siteId?: string, customHeaders?: CustomHeaders): Promise<unknown> {
+        const resolvedSiteId = this.site.resolveSiteId(siteId);
+        const path = this.buildPath(`/sites/${encodeURIComponent(resolvedSiteId)}/acls/osw-acls`);
+        const response = await this.request.post<OmadaApiResponse<unknown>>(path, payload, customHeaders);
+        return this.request.ensureSuccess(response);
+    }
+
+    /**
+     * Update an OSW (Switch) ACL rule.
+     * OperationId: modifyOswAcl
+     */
+    public async updateOswAcl(aclId: string, payload: unknown, siteId?: string, customHeaders?: CustomHeaders): Promise<unknown> {
+        if (!aclId.trim()) {
+            throw new Error('aclId is required.');
+        }
+        const resolvedSiteId = this.site.resolveSiteId(siteId);
+        const path = this.buildPath(`/sites/${encodeURIComponent(resolvedSiteId)}/acls/osw-acls/${encodeURIComponent(aclId)}`);
+        const response = await this.request.put<OmadaApiResponse<unknown>>(path, payload, customHeaders);
+        return this.request.ensureSuccess(response);
+    }
+
+    /**
      * List static routing rules.
      * OperationId: getStaticRoutingList
      */

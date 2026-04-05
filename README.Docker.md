@@ -253,6 +253,8 @@ HTTP is not part of the supported container baseline. It only starts when both o
 | `listEapAcls` | Lists access point (EAP) ACL rules. |
 | `createEapAcl` | Creates an EAP ACL rule with dry-run preview using the official Omada EAP ACL schema. |
 | `updateEapAcl` | Updates an EAP ACL rule with dry-run preview after confirming the ACL exists. |
+| `createSwitchAcl` | Creates a switch (OSW) ACL rule with dry-run preview using the official Omada SwitchACLConfig schema. |
+| `updateSwitchAcl` | Updates a switch (OSW) ACL rule with dry-run preview after confirming the ACL exists. |
 | `deleteAcl` | Deletes an ACL rule with dry-run preview after confirming the ACL exists. |
 | `listStaticRoutes` | [DEPRECATED] Use `getGridStaticRouting` instead. This tool aggregates all pages; getGridStaticRouting returns a single paginated page. |
 | `getStaticRoutingInterfaceList` | Gets available interfaces for static routing.                             |
@@ -522,6 +524,9 @@ Single-call tools that internally aggregate multiple Omada API calls in parallel
 | `getEapAclList` | List access point ACL rules.                              | `listEapAcls` |
 | `createEapAcl` | Create an EAP ACL with dry-run support. | `createEapAcl` |
 | `modifyEapAcl` | Update an EAP ACL with dry-run support. | `updateEapAcl` |
+| `getOswAclList` | List switch ACL rules. | `getOswAclList` |
+| `createOswAcl` | Create a switch ACL with dry-run support. | `createSwitchAcl` |
+| `modifyOswAcl` | Update a switch ACL with dry-run support. | `updateSwitchAcl` |
 | `deleteAcl` | Delete an ACL rule with dry-run support. | `deleteAcl` |
 | `getStaticRoutingList` | List static routing rules.                                | `getGridStaticRouting` (prefer); ~~`listStaticRoutes`~~ [DEPRECATED] |
 | `getRadiusProfileList` | List RADIUS authentication profiles.                      | `listRadiusProfiles` |

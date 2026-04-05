@@ -11,6 +11,7 @@ import { registerBlockClientTool } from './blockClient.js';
 import { registerCreateDhcpReservationTool } from './createDhcpReservation.js';
 import { registerCreateEapAclTool } from './createEapAcl.js';
 import { registerCreateGatewayAclTool } from './createGatewayAcl.js';
+import { registerCreateSwitchAclTool } from './createSwitchAcl.js';
 import { registerDeleteAclTool } from './deleteAcl.js';
 import { registerDeleteAppControlRuleTool } from './deleteAppControlRule.js';
 import { registerDeleteBandwidthControlRuleTool } from './deleteBandwidthControlRule.js';
@@ -367,6 +368,7 @@ import { registerUnblockClientTool } from './unblockClient.js';
 import { registerUpdateDhcpReservationTool } from './updateDhcpReservation.js';
 import { registerUpdateEapAclTool } from './updateEapAcl.js';
 import { registerUpdateGatewayAclTool } from './updateGatewayAcl.js';
+import { registerUpdateSwitchAclTool } from './updateSwitchAcl.js';
 
 // ---------------------------------------------------------------------------
 // Tool registry: each entry maps a register-function to its category and
@@ -622,8 +624,10 @@ const TOOL_REGISTRY: ToolEntry[] = [
     { fn: registerSetAclConfigTypeSettingTool, category: 'firewall-acl', permission: 'write' },
     { fn: registerCreateGatewayAclTool, category: 'firewall-acl', permission: 'write' },
     { fn: registerCreateEapAclTool, category: 'firewall-acl', permission: 'write' },
+    { fn: registerCreateSwitchAclTool, category: 'firewall-acl', permission: 'write' },
     { fn: registerUpdateGatewayAclTool, category: 'firewall-acl', permission: 'write' },
     { fn: registerUpdateEapAclTool, category: 'firewall-acl', permission: 'write' },
+    { fn: registerUpdateSwitchAclTool, category: 'firewall-acl', permission: 'write' },
     { fn: registerDeleteAclTool, category: 'firewall-acl', permission: 'write' },
     { fn: registerSetFirewallSettingTool, category: 'firewall-acl', permission: 'write' },
 

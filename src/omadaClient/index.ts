@@ -1228,6 +1228,14 @@ export class OmadaClient {
         return await this.networkOps.updateEapAcl(aclId, payload, siteId, customHeaders);
     }
 
+    public async createOswAcl(payload: unknown, siteId?: string, customHeaders?: CustomHeaders): Promise<unknown> {
+        return await this.networkOps.createOswAcl(payload, siteId, customHeaders);
+    }
+
+    public async updateOswAcl(aclId: string, payload: unknown, siteId?: string, customHeaders?: CustomHeaders): Promise<unknown> {
+        return await this.networkOps.updateOswAcl(aclId, payload, siteId, customHeaders);
+    }
+
     public async deleteAcl(aclId: string, siteId?: string, customHeaders?: CustomHeaders): Promise<unknown> {
         return await this.networkOps.deleteAcl(aclId, siteId, customHeaders);
     }
