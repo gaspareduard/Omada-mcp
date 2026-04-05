@@ -21,8 +21,9 @@ export function registerGetNetworkHealthSummaryTool(server: McpServer, client: O
                         page: 1,
                         pageSize: 5,
                         archived: false,
-                        startTime: Date.now() - 7 * 24 * 60 * 60 * 1000,
-                        endTime: Date.now(),
+                        siteList: siteId,
+                        startTime: Math.floor(Date.now() / 1000) - 7 * 24 * 60 * 60,
+                        endTime: Math.floor(Date.now() / 1000),
                     },
                     customHeaders
                 ),

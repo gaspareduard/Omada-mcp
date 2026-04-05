@@ -33,25 +33,27 @@ describe('tools/getRogueApExport', () => {
         expect(mockServer.registerTool).toHaveBeenCalledWith('getRogueApExport', expect.any(Object), expect.any(Function));
     });
 
-    it('should call getRogueApExport with default format', async () => {
+    it('should call getRogueApExport with default format and pagination', async () => {
         const mockData = { data: [] };
         vi.mocked(mockClient.getRogueApExport).mockResolvedValue(mockData);
         registerGetRogueApExportTool(mockServer, mockClient);
-        const result = (await toolHandler({ format: 'csv' }, { sessionId: 'test' })) as { content: { text: string }[] };
-        expect(mockClient.getRogueApExport).toHaveBeenCalledWith(undefined, 'csv', undefined);
+        const result = (await toolHandler({ format: '0', page: 1, pageSize: 10 }, { sessionId: 'test' })) as {
+            content: { text: string }[];
+        };
+        expect(mockClient.getRogueApExport).toHaveBeenCalledWith(undefined, '0', 1, 10, undefined);
         expect(JSON.parse(result.content[0].text)).toEqual(mockData);
     });
 
-    it('should pass siteId and format', async () => {
+    it('should pass siteId, excel format and custom pagination', async () => {
         vi.mocked(mockClient.getRogueApExport).mockResolvedValue({});
         registerGetRogueApExportTool(mockServer, mockClient);
-        await toolHandler({ siteId: 'site-1', format: 'excel' }, { sessionId: 'test' });
-        expect(mockClient.getRogueApExport).toHaveBeenCalledWith('site-1', 'excel', undefined);
+        await toolHandler({ siteId: 'site-1', format: '1', page: 2, pageSize: 50 }, { sessionId: 'test' });
+        expect(mockClient.getRogueApExport).toHaveBeenCalledWith('site-1', '1', 2, 50, undefined);
     });
 
     it('should handle errors', async () => {
         vi.mocked(mockClient.getRogueApExport).mockRejectedValue(new Error('fail'));
         registerGetRogueApExportTool(mockServer, mockClient);
-        await expect(toolHandler({}, { sessionId: 'test' })).rejects.toThrow('fail');
+        await expect(toolHandler({ format: '0', page: 1, pageSize: 10 }, { sessionId: 'test' })).rejects.toThrow('fail');
     });
 });

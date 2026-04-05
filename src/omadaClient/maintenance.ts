@@ -88,10 +88,16 @@ export class MaintenanceOperations {
      * Export site Rogue AP scan results.
      * OperationId: getSitesRogueAp
      */
-    public async getRogueApExport(siteId?: string, format = 'csv', customHeaders?: CustomHeaders): Promise<unknown> {
+    public async getRogueApExport(
+        siteId?: string,
+        format: '0' | '1' = '0',
+        page = 1,
+        pageSize = 10,
+        customHeaders?: CustomHeaders
+    ): Promise<unknown> {
         const resolvedSiteId = this.site.resolveSiteId(siteId);
         const path = this.buildPath(`/sites/${encodeURIComponent(resolvedSiteId)}/rogue-ap/export/${encodeURIComponent(format)}`);
-        const response = await this.request.get<OmadaApiResponse<unknown>>(path, undefined, customHeaders);
+        const response = await this.request.get<OmadaApiResponse<unknown>>(path, { page, pageSize }, customHeaders);
         return this.request.ensureSuccess(response);
     }
 

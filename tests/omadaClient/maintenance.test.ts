@@ -147,18 +147,26 @@ describe('MaintenanceOperations', () => {
     });
 
     describe('getRogueApExport', () => {
-        it('should call correct endpoint with default format', async () => {
+        it('should call correct endpoint with default format and pagination', async () => {
             const mockResponse = { errorCode: 0, result: { data: [] } };
             vi.mocked(mockRequest.get).mockResolvedValue(mockResponse);
             await maintenanceOps.getRogueApExport();
-            expect(mockRequest.get).toHaveBeenCalledWith('/openapi/v1/test-omadac/sites/default-site/rogue-ap/export/csv', undefined, undefined);
+            expect(mockRequest.get).toHaveBeenCalledWith(
+                '/openapi/v1/test-omadac/sites/default-site/rogue-ap/export/0',
+                { page: 1, pageSize: 10 },
+                undefined
+            );
         });
 
-        it('should use provided format', async () => {
+        it('should use provided format and pagination', async () => {
             const mockResponse = { errorCode: 0, result: null };
             vi.mocked(mockRequest.get).mockResolvedValue(mockResponse);
-            await maintenanceOps.getRogueApExport('site-1', 'excel');
-            expect(mockRequest.get).toHaveBeenCalledWith('/openapi/v1/test-omadac/sites/site-1/rogue-ap/export/excel', undefined, undefined);
+            await maintenanceOps.getRogueApExport('site-1', '1', 2, 50);
+            expect(mockRequest.get).toHaveBeenCalledWith(
+                '/openapi/v1/test-omadac/sites/site-1/rogue-ap/export/1',
+                { page: 2, pageSize: 50 },
+                undefined
+            );
         });
     });
 

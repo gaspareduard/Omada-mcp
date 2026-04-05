@@ -1642,8 +1642,14 @@ export class OmadaClient {
         return await this.maintenanceOps.getSiteBackupFileList(siteId, customHeaders);
     }
 
-    public async getRogueApExport(siteId?: string, format?: string, customHeaders?: CustomHeaders): Promise<unknown> {
-        return await this.maintenanceOps.getRogueApExport(siteId, format, customHeaders);
+    public async getRogueApExport(
+        siteId?: string,
+        format?: '0' | '1',
+        page?: number,
+        pageSize?: number,
+        customHeaders?: CustomHeaders
+    ): Promise<unknown> {
+        return await this.maintenanceOps.getRogueApExport(siteId, format, page, pageSize, customHeaders);
     }
 
     public async backupController(retainUser: boolean, customHeaders?: CustomHeaders): Promise<unknown> {

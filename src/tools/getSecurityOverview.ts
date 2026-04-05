@@ -19,8 +19,9 @@ export function registerGetSecurityOverviewTool(server: McpServer, client: Omada
                         pageSize: 20,
                         archived: false,
                         sortTime: 'desc',
-                        startTime: Date.now() - 30 * 24 * 60 * 60 * 1000,
-                        endTime: Date.now(),
+                        siteList: siteId,
+                        startTime: Math.floor(Date.now() / 1000) - 30 * 24 * 60 * 60,
+                        endTime: Math.floor(Date.now() / 1000),
                     },
                     customHeaders
                 ),
