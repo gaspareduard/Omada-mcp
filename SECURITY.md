@@ -12,7 +12,7 @@
 
 Use GitHub's private vulnerability reporting:
 
-1. Go to the [Security tab](https://github.com/AILivesInTerminal/Omada-mcp/security) of this repository.
+1. Go to the [Security tab](https://github.com/gaspareduard/Omada-mcp/security) of this repository.
 2. Click **"Report a vulnerability"**.
 3. Describe the issue, steps to reproduce, and potential impact.
 
