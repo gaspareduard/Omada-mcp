@@ -111,6 +111,16 @@ The server reads configuration from environment variables. See `.env.example` fo
 | `admin` | Full documented tool surface, including admin mutations |
 | `compatibility` | Reserved for future controller-specific fallback modules |
 
+### Destructive Tool Confirmation Gate
+
+The four restore tools (`restoreController`, `restoreControllerFromFileServer`, `restoreSites`, `restoreSitesFromFileServer`) enforce a two-step confirmation: without `confirmDangerous: true` the tool returns a warning explaining the action is irreversible and that a force recovery or factory reset may be required if something goes wrong.
+
+**Scope of this protection:** this gate is effective in conversational AI sessions where the warning is surfaced to a human who then decides whether to confirm. It does not prevent a fully autonomous agent from passing `confirmDangerous: true` programmatically without human review.
+
+**True human-in-the-loop enforcement requires one or both of:**
+- **MCP client approval mode** — Claude Desktop and compatible MCP hosts can be configured to require explicit human approval before any tool call executes. This is the only reliable technical gate against autonomous execution.
+- **Capability profile restriction** — the restore tools require `maintenance:rw`, which is only granted under `ops-write` or `admin`. Keeping the deployment on the default `safe-read` profile blocks all restore tools entirely.
+
 ### Optional HTTP Lab Mode
 
 HTTP is **not** part of the supported production baseline.

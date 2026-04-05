@@ -215,6 +215,16 @@ The husky pre-commit hook runs `test:coverage` automatically.
 - No secrets in logs — values are masked before logging.
 - HTTP transport requires two explicit opt-in flags and binds to loopback only.
 
+### `confirmDangerous` — scope and limitations
+
+The four restore tools (`restoreController`, `restoreControllerFromFileServer`, `restoreSites`, `restoreSitesFromFileServer`) require `confirmDangerous: true` as a second call. This gate is **conversational-context protection only**: it forces the AI to surface an irreversibility warning to a human user before proceeding in a normal back-and-forth session.
+
+It does **not** prevent a fully autonomous agent from passing `confirmDangerous: true` programmatically without human review.
+
+True human-in-the-loop enforcement for destructive operations requires:
+1. **MCP client approval mode** — Claude Desktop and some other MCP hosts support requiring explicit human approval before any tool call executes. This is the only reliable technical gate.
+2. **Capability profile restriction** — keeping the deployment on `safe-read` (default) or `ops-write` without `maintenance:rw` blocks restore tools entirely, regardless of what the agent attempts.
+
 ## Integration Tests (Planned)
 
 Not yet implemented — tracked for v1.0.0. Will run against a real Omada Software Controller in Docker. Write tools **must** be tested against the Docker controller before release — never against a production controller.
