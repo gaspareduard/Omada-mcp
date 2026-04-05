@@ -31,7 +31,7 @@ export class InsightOperations {
         siteId?: string,
         customHeaders?: CustomHeaders
     ): Promise<PaginatedResult<unknown>> {
-        const resolvedSiteId = this.site.resolveSiteId(siteId);
+        const resolvedSiteId = await this.site.resolveSiteId(siteId);
         const path = this.buildPath(`/sites/${encodeURIComponent(resolvedSiteId)}/ips/grid/threat-management`);
 
         const params: Record<string, unknown> = {
@@ -58,7 +58,7 @@ export class InsightOperations {
      * OperationId: getWids
      */
     public async getWids(siteId?: string, customHeaders?: CustomHeaders): Promise<unknown> {
-        const resolvedSiteId = this.site.resolveSiteId(siteId);
+        const resolvedSiteId = await this.site.resolveSiteId(siteId);
         const path = this.buildPath(`/sites/${encodeURIComponent(resolvedSiteId)}/insight/wids`);
         const response = await this.request.get<OmadaApiResponse<unknown>>(path, undefined, customHeaders);
         return this.request.ensureSuccess(response);
@@ -69,7 +69,7 @@ export class InsightOperations {
      * OperationId: getWidsBlacklist
      */
     public async getWidsBlacklist(siteId?: string, customHeaders?: CustomHeaders): Promise<unknown[]> {
-        const resolvedSiteId = this.site.resolveSiteId(siteId);
+        const resolvedSiteId = await this.site.resolveSiteId(siteId);
         const path = this.buildPath(`/sites/${encodeURIComponent(resolvedSiteId)}/insight/wids/blacklist`);
         return await this.request.fetchPaginated<unknown>(path, {}, customHeaders);
     }
@@ -79,7 +79,7 @@ export class InsightOperations {
      * OperationId: getRogueAps
      */
     public async getRogueAps(siteId?: string, customHeaders?: CustomHeaders): Promise<unknown[]> {
-        const resolvedSiteId = this.site.resolveSiteId(siteId);
+        const resolvedSiteId = await this.site.resolveSiteId(siteId);
         const path = this.buildPath(`/sites/${encodeURIComponent(resolvedSiteId)}/insight/rogueaps`);
         return await this.request.fetchPaginated<unknown>(path, {}, customHeaders);
     }
@@ -89,7 +89,7 @@ export class InsightOperations {
      * OperationId: getVpnTunnelStats
      */
     public async getVpnTunnelStats(page: number, pageSize: number, siteId?: string, customHeaders?: CustomHeaders): Promise<unknown> {
-        const resolvedSiteId = this.site.resolveSiteId(siteId);
+        const resolvedSiteId = await this.site.resolveSiteId(siteId);
         const path = this.buildPath(`/sites/${encodeURIComponent(resolvedSiteId)}/setting/vpn/stats/tunnel`);
         const response = await this.request.get<OmadaApiResponse<unknown>>(path, { page, pageSize }, customHeaders);
         return this.request.ensureSuccess(response);
@@ -100,7 +100,7 @@ export class InsightOperations {
      * OperationId: getIpsecVpnStats
      */
     public async getIpsecVpnStats(page: number, pageSize: number, siteId?: string, customHeaders?: CustomHeaders): Promise<unknown> {
-        const resolvedSiteId = this.site.resolveSiteId(siteId);
+        const resolvedSiteId = await this.site.resolveSiteId(siteId);
         const path = this.buildPath(`/sites/${encodeURIComponent(resolvedSiteId)}/setting/vpn/stats/ipsec`);
         const response = await this.request.get<OmadaApiResponse<unknown>>(path, { page, pageSize }, customHeaders);
         return this.request.ensureSuccess(response);
@@ -116,7 +116,7 @@ export class InsightOperations {
         siteId?: string,
         customHeaders?: CustomHeaders
     ): Promise<PaginatedResult<unknown>> {
-        const resolvedSiteId = this.site.resolveSiteId(siteId);
+        const resolvedSiteId = await this.site.resolveSiteId(siteId);
         const path = this.buildPath(`/sites/${encodeURIComponent(resolvedSiteId)}/insight/clients`);
         const response = await this.request.get<OmadaApiResponse<PaginatedResult<unknown>>>(path, { page, pageSize }, customHeaders);
         return this.request.ensureSuccess(response);
@@ -127,7 +127,7 @@ export class InsightOperations {
      * OperationId: getGridRouting
      */
     public async getRoutingTable(type: string, siteId?: string, customHeaders?: CustomHeaders): Promise<unknown[]> {
-        const resolvedSiteId = this.site.resolveSiteId(siteId);
+        const resolvedSiteId = await this.site.resolveSiteId(siteId);
         const path = this.buildPath(`/sites/${encodeURIComponent(resolvedSiteId)}/insight/routing/${encodeURIComponent(type)}`);
         return await this.request.fetchPaginated<unknown>(path, {}, customHeaders);
     }
@@ -141,7 +141,7 @@ export class InsightOperations {
      * @param siteId - Optional site ID (uses default if not provided)
      */
     public async getThreatDetail(threatId: string, time?: number, siteId?: string, customHeaders?: CustomHeaders): Promise<unknown> {
-        const resolvedSiteId = this.site.resolveSiteId(siteId);
+        const resolvedSiteId = await this.site.resolveSiteId(siteId);
         const path = this.buildPath(`/sites/${encodeURIComponent(resolvedSiteId)}/ips/threat/${encodeURIComponent(threatId)}`);
         const effectiveTime = time ?? Math.floor(Date.now() / 1000);
         const params: Record<string, unknown> = { time: effectiveTime };

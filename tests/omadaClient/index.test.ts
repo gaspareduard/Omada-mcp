@@ -8,7 +8,7 @@ const siteModule = vi.hoisted(() => {
     const instance: FnMap & { resolveSiteId?: ReturnType<typeof vi.fn> } = {
         listSites: vi.fn().mockResolvedValue([{ id: 'site-1' }]),
     };
-    instance.resolveSiteId = vi.fn().mockReturnValue('resolved-site');
+    instance.resolveSiteId = vi.fn().mockResolvedValue('resolved-site');
     const SiteOperations = vi.fn(function () {
         return instance;
     });

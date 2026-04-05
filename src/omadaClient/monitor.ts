@@ -19,7 +19,7 @@ export class MonitorOperations {
      * OperationId: getWifiSummary
      */
     public async getDashboardWifiSummary(siteId?: string, customHeaders?: CustomHeaders): Promise<unknown> {
-        const resolvedSiteId = this.site.resolveSiteId(siteId);
+        const resolvedSiteId = await this.site.resolveSiteId(siteId);
         const path = this.buildPath(`/sites/${encodeURIComponent(resolvedSiteId)}/dashboard/wifi-summary`);
         const response = await this.request.get<OmadaApiResponse<unknown>>(path, undefined, customHeaders);
         return this.request.ensureSuccess(response);
@@ -30,7 +30,7 @@ export class MonitorOperations {
      * OperationId: getSwitchSummary
      */
     public async getDashboardSwitchSummary(siteId?: string, customHeaders?: CustomHeaders): Promise<unknown> {
-        const resolvedSiteId = this.site.resolveSiteId(siteId);
+        const resolvedSiteId = await this.site.resolveSiteId(siteId);
         const path = this.buildPath(`/sites/${encodeURIComponent(resolvedSiteId)}/dashboard/switch-summary`);
         const response = await this.request.get<OmadaApiResponse<unknown>>(path, undefined, customHeaders);
         return this.request.ensureSuccess(response);
@@ -41,7 +41,7 @@ export class MonitorOperations {
      * OperationId: getTrafficDistribution
      */
     public async getTrafficDistribution(siteId?: string, start?: number, end?: number, customHeaders?: CustomHeaders): Promise<unknown> {
-        const resolvedSiteId = this.site.resolveSiteId(siteId);
+        const resolvedSiteId = await this.site.resolveSiteId(siteId);
         const path = this.buildPath(`/sites/${encodeURIComponent(resolvedSiteId)}/dashboard/traffic-distribution`);
         const response = await this.request.get<OmadaApiResponse<unknown>>(path, { start, end }, customHeaders);
         return this.request.ensureSuccess(response);
@@ -52,7 +52,7 @@ export class MonitorOperations {
      * OperationId: getRetryAndDroppedRate
      */
     public async getRetryAndDroppedRate(siteId?: string, start?: number, end?: number, customHeaders?: CustomHeaders): Promise<unknown> {
-        const resolvedSiteId = this.site.resolveSiteId(siteId);
+        const resolvedSiteId = await this.site.resolveSiteId(siteId);
         const path = this.buildPath(`/sites/${encodeURIComponent(resolvedSiteId)}/dashboard/retry-dropped-rate`);
         const response = await this.request.get<OmadaApiResponse<unknown>>(path, { start, end }, customHeaders);
         return this.request.ensureSuccess(response);
@@ -63,7 +63,7 @@ export class MonitorOperations {
      * OperationId: getTrafficActivities
      */
     public async getDashboardTrafficActivities(siteId?: string, customHeaders?: CustomHeaders): Promise<unknown> {
-        const resolvedSiteId = this.site.resolveSiteId(siteId);
+        const resolvedSiteId = await this.site.resolveSiteId(siteId);
         const path = this.buildPath(`/sites/${encodeURIComponent(resolvedSiteId)}/dashboard/traffic-activities`);
         const response = await this.request.get<OmadaApiResponse<unknown>>(path, undefined, customHeaders);
         return this.request.ensureSuccess(response);
@@ -74,7 +74,7 @@ export class MonitorOperations {
      * OperationId: getPoeUsage
      */
     public async getDashboardPoEUsage(siteId?: string, customHeaders?: CustomHeaders): Promise<unknown> {
-        const resolvedSiteId = this.site.resolveSiteId(siteId);
+        const resolvedSiteId = await this.site.resolveSiteId(siteId);
         const path = this.buildPath(`/sites/${encodeURIComponent(resolvedSiteId)}/dashboard/poe-usage`);
         const response = await this.request.get<OmadaApiResponse<unknown>>(path, undefined, customHeaders);
         return this.request.ensureSuccess(response);
@@ -85,7 +85,7 @@ export class MonitorOperations {
      * OperationId: getTopDeviceCpuUsage
      */
     public async getDashboardTopCpuUsage(siteId?: string, customHeaders?: CustomHeaders): Promise<unknown[]> {
-        const resolvedSiteId = this.site.resolveSiteId(siteId);
+        const resolvedSiteId = await this.site.resolveSiteId(siteId);
         const path = this.buildPath(`/sites/${encodeURIComponent(resolvedSiteId)}/dashboard/top-device-cpu-usage`);
         const response = await this.request.get<OmadaApiResponse<unknown[]>>(path, undefined, customHeaders);
         return this.request.ensureSuccess(response) ?? [];
@@ -96,7 +96,7 @@ export class MonitorOperations {
      * OperationId: getTopDeviceMemoryUsage
      */
     public async getDashboardTopMemoryUsage(siteId?: string, customHeaders?: CustomHeaders): Promise<unknown[]> {
-        const resolvedSiteId = this.site.resolveSiteId(siteId);
+        const resolvedSiteId = await this.site.resolveSiteId(siteId);
         const path = this.buildPath(`/sites/${encodeURIComponent(resolvedSiteId)}/dashboard/top-device-memory-usage`);
         const response = await this.request.get<OmadaApiResponse<unknown[]>>(path, undefined, customHeaders);
         return this.request.ensureSuccess(response) ?? [];
@@ -107,7 +107,7 @@ export class MonitorOperations {
      * OperationId: getMostActiveSwitches
      */
     public async getDashboardMostActiveSwitches(siteId?: string, customHeaders?: CustomHeaders): Promise<unknown[]> {
-        const resolvedSiteId = this.site.resolveSiteId(siteId);
+        const resolvedSiteId = await this.site.resolveSiteId(siteId);
         const path = this.buildPath(`/sites/${encodeURIComponent(resolvedSiteId)}/dashboard/most-active-switches`);
         const response = await this.request.get<OmadaApiResponse<unknown[]>>(path, undefined, customHeaders);
         return this.request.ensureSuccess(response) ?? [];
@@ -118,7 +118,7 @@ export class MonitorOperations {
      * OperationId: getMostActiveEaps
      */
     public async getDashboardMostActiveEaps(siteId?: string, customHeaders?: CustomHeaders): Promise<unknown[]> {
-        const resolvedSiteId = this.site.resolveSiteId(siteId);
+        const resolvedSiteId = await this.site.resolveSiteId(siteId);
         const path = this.buildPath(`/sites/${encodeURIComponent(resolvedSiteId)}/dashboard/most-active-eaps`);
         const response = await this.request.get<OmadaApiResponse<unknown[]>>(path, undefined, customHeaders);
         return this.request.ensureSuccess(response) ?? [];
@@ -129,7 +129,7 @@ export class MonitorOperations {
      * OperationId: getOverviewDiagram
      */
     public async getDashboardOverview(siteId?: string, customHeaders?: CustomHeaders): Promise<unknown> {
-        const resolvedSiteId = this.site.resolveSiteId(siteId);
+        const resolvedSiteId = await this.site.resolveSiteId(siteId);
         const path = this.buildPath(`/sites/${encodeURIComponent(resolvedSiteId)}/dashboard/overview-diagram`);
         const response = await this.request.get<OmadaApiResponse<unknown>>(path, undefined, customHeaders);
         return this.request.ensureSuccess(response);
@@ -140,7 +140,7 @@ export class MonitorOperations {
      * OperationId: getChannels
      */
     public async getChannels(siteId?: string, customHeaders?: CustomHeaders): Promise<unknown> {
-        const resolvedSiteId = this.site.resolveSiteId(siteId);
+        const resolvedSiteId = await this.site.resolveSiteId(siteId);
         const path = this.buildPath(`/sites/${encodeURIComponent(resolvedSiteId)}/dashboard/channels`);
         const response = await this.request.get<OmadaApiResponse<unknown>>(path, undefined, customHeaders);
         return this.request.ensureSuccess(response);
@@ -151,7 +151,7 @@ export class MonitorOperations {
      * OperationId: getIspLoad
      */
     public async getIspLoad(siteId?: string, start?: number, end?: number, customHeaders?: CustomHeaders): Promise<unknown> {
-        const resolvedSiteId = this.site.resolveSiteId(siteId);
+        const resolvedSiteId = await this.site.resolveSiteId(siteId);
         const path = this.buildPath(`/sites/${encodeURIComponent(resolvedSiteId)}/dashboard/isp-load`);
         const response = await this.request.get<OmadaApiResponse<unknown>>(path, { start, end }, customHeaders);
         return this.request.ensureSuccess(response);
@@ -162,7 +162,7 @@ export class MonitorOperations {
      * OperationId: getInterference
      */
     public async getInterference(siteId?: string, customHeaders?: CustomHeaders): Promise<unknown> {
-        const resolvedSiteId = this.site.resolveSiteId(siteId);
+        const resolvedSiteId = await this.site.resolveSiteId(siteId);
         const path = this.buildPath(`/sites/${encodeURIComponent(resolvedSiteId)}/dashboard/top-interference`);
         const response = await this.request.get<OmadaApiResponse<unknown>>(path, undefined, customHeaders);
         return this.request.ensureSuccess(response);
@@ -173,7 +173,7 @@ export class MonitorOperations {
      * OperationId: getGridDashboardTunnelStats
      */
     public async getGridDashboardTunnelStats(siteId?: string, type?: number, customHeaders?: CustomHeaders): Promise<unknown> {
-        const resolvedSiteId = this.site.resolveSiteId(siteId);
+        const resolvedSiteId = await this.site.resolveSiteId(siteId);
         const path = this.buildPath(`/sites/${encodeURIComponent(resolvedSiteId)}/dashboard/vpn-tunnel-stats`);
         const response = await this.request.get<OmadaApiResponse<unknown>>(path, { type }, customHeaders);
         return this.request.ensureSuccess(response);
@@ -184,7 +184,7 @@ export class MonitorOperations {
      * OperationId: getGridDashboardIpsecTunnelStats
      */
     public async getGridDashboardIpsecTunnelStats(siteId?: string, customHeaders?: CustomHeaders): Promise<unknown> {
-        const resolvedSiteId = this.site.resolveSiteId(siteId);
+        const resolvedSiteId = await this.site.resolveSiteId(siteId);
         const path = this.buildPath(`/sites/${encodeURIComponent(resolvedSiteId)}/dashboard/lpset-tunnel-stats`);
         const response = await this.request.get<OmadaApiResponse<unknown>>(path, undefined, customHeaders);
         return this.request.ensureSuccess(response);
@@ -195,7 +195,7 @@ export class MonitorOperations {
      * OperationId: getGridDashboardOpenVpnTunnelStats
      */
     public async getGridDashboardOpenVpnTunnelStats(siteId?: string, type?: number, customHeaders?: CustomHeaders): Promise<unknown> {
-        const resolvedSiteId = this.site.resolveSiteId(siteId);
+        const resolvedSiteId = await this.site.resolveSiteId(siteId);
         const path = this.buildPath(`/sites/${encodeURIComponent(resolvedSiteId)}/dashboard/open-vpn-tunnel-stats`);
         const response = await this.request.get<OmadaApiResponse<unknown>>(path, { type }, customHeaders);
         return this.request.ensureSuccess(response);
