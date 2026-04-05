@@ -178,10 +178,19 @@ npm run inspector:build
 
 ## Tools
 
+Each category below is collapsed by default. Click to expand and see the full tool list, split into read and write tools.
+
+---
+
 ### Site & Client
 
-| Tool                        | Description                                                                  |
-| --------------------------- | ---------------------------------------------------------------------------- |
+Site listing, client monitoring, and client-level operational controls (rate limits, block/unblock, reconnect).
+
+<details>
+<summary>Read tools (14)</summary>
+
+| Tool | Description |
+|---|---|
 | `listSites` | Lists all sites configured on the controller. |
 | `getSiteCapacity` | Get site capacity settings including maximum device and client counts. |
 | `getSiteDetail` | Get detailed information about a site, including name, region, timezone, and configuration. |
@@ -197,19 +206,45 @@ npm run inspector:build
 | `getClient` | [DEPRECATED] Use `listClients` instead. When you have a client MAC, `getClientDetail` is also available. This tool filters the site client list in-process. |
 | `listMostActiveClients` | Gets the most active clients sorted by traffic usage. |
 | `listClientsActivity` | Gets client activity statistics over time. |
-| `listClientsPastConnections`| Gets past connection history for clients.                                    |
+| `listClientsPastConnections` | Gets past connection history for clients. |
+
+</details>
+
+<details>
+<summary>Write tools (5)</summary>
+
+| Tool | Description |
+|---|---|
 | `setClientRateLimit` | Sets custom bandwidth limits (download/upload) for a specific client. |
-| `setClientRateLimitProfile` | Applies a predefined rate limit profile to a specific client.                |
+| `setClientRateLimitProfile` | Applies a predefined rate limit profile to a specific client. |
 | `disableClientRateLimit` | Disables bandwidth rate limiting for a specific client. |
 | `blockClient` | Blocks a client from network access with an auditable mutation summary. |
 | `unblockClient` | Restores a blocked client to network access with an auditable mutation summary. |
 | `reconnectClient` | Forces a client to reconnect with an auditable mutation summary. |
+
+</details>
+
+<details>
+<summary>Write tools (device-level, 2)</summary>
+
+| Tool | Description |
+|---|---|
 | `rebootDevice` | Reboots a managed device with an auditable mutation summary. |
 | `setDeviceLed` | Changes a device LED state with an auditable mutation summary. |
+
+</details>
+
+---
+
 ### Device
 
-| Tool                    | Description                                                                       |
-| ----------------------- | --------------------------------------------------------------------------------- |
+Device inventory, per-device detail (switches, gateways, APs), firmware, cable tests, and device configuration.
+
+<details>
+<summary>Read tools (62)</summary>
+
+| Tool | Description |
+|---|---|
 | `listDevices` | Lists provisioned devices for a given site. |
 | `getDevice` | [DEPRECATED] Use `listDevices` instead and filter results client-side. This tool filters the site device list in-process; there is no dedicated device-detail endpoint. |
 | `searchDevices` | Searches for devices globally across all sites the user has access to. |
@@ -226,11 +261,11 @@ npm run inspector:build
 | `listPendingDevices` | Lists devices pending adoption in a site. |
 | `getAllDeviceBySite` | Gets all devices in a site including offline and disconnected devices. |
 | `getFirmwareInfo` | Gets the latest available firmware info for a device. Use `listDevices` for MACs. |
-| `getGridAutoCheckUpgrade` | Gets the auto-check firmware upgrade plan list (paginated).                     |
+| `getGridAutoCheckUpgrade` | Gets the auto-check firmware upgrade plan list (paginated). |
 | `listSwitchNetworks` | Lists VLAN network assignments for a switch (paginated). Requires `switchMac`. |
-| `getSwitchGeneralConfig` | Gets general configuration for a switch. Requires `switchMac`.                  |
+| `getSwitchGeneralConfig` | Gets general configuration for a switch. Requires `switchMac`. |
 | `getCableTestLogs` | Gets cable test history for a switch. Requires `switchMac`. |
-| `getCableTestFullResults` | Gets full per-port cable diagnostics for a switch. Requires `switchMac`.        |
+| `getCableTestFullResults` | Gets full per-port cable diagnostics for a switch. Requires `switchMac`. |
 | `getOswStackLagList` | Gets Link Aggregation Group (LAG) list for a switch stack. Requires `stackId`. |
 | `getStackNetworkList` | Gets VLAN network list for a switch stack (paginated). Requires `stackId`. |
 | `getApUplinkConfig` | Gets uplink configuration for an AP (wired/mesh mode). Requires `apMac`. |
@@ -243,7 +278,7 @@ npm run inspector:build
 | `getApLldpConfig` | Gets LLDP configuration for an AP. Requires `apMac`. |
 | `getApGeneralConfig` | Gets general configuration for an AP (name, LED, country). Requires `apMac`. |
 | `getUplinkWiredDetail` | Get wired uplink detail for an access point: uplink switch, port number, link speed, and PoE status. |
-| `getDownlinkWiredDevices` | Gets wired downlink devices on an AP's LAN ports. Requires `apMac`.            |
+| `getDownlinkWiredDevices` | Gets wired downlink devices on an AP's LAN ports. Requires `apMac`. |
 | `getFirmwareUpgradePlan` | Get the firmware upgrade plan list for devices managed by the controller. |
 | `getUpgradeLogs` | Get firmware upgrade logs showing the history of upgrade operations performed on devices. |
 | `getDeviceTagList` | Get the list of device tags defined in a site. |
@@ -255,9 +290,6 @@ npm run inspector:build
 | `getSitesApsLoadBalance` | Get load balance configuration for an AP. Requires `apMac`. |
 | `getSitesApsOfdma` | Get OFDMA configuration for an AP. Requires `apMac`. |
 | `getSitesApsPowerSaving` | Get power saving configuration for an AP. Requires `apMac`. |
-| `setApPowerSaving` | Updates AP power saving configuration with support checks and dry-run preview. Requires `apMac`. |
-| `setApChannelLimit` | Updates AP channel-limit configuration with support checks and dry-run preview. Requires `apMac`. |
-| `setApConfig` | Updates documented AP configuration families with dry-run preview. Covers AP general, IP, IPv6, QoS, radio, service, load-balance, OFDMA, trunk, bridge, WLAN group, port, channel, AFC, and antenna settings. Setter-only families return planned payloads and an explicit warning when controller readback is unavailable. Requires `apMac`. |
 | `getSitesApsTrunkSetting` | Get trunk port setting for an AP. Requires `apMac`. |
 | `getSitesApsBridge` | Get bridge configuration for an AP. Requires `apMac`. |
 | `listSitesApsPorts` | List ports for an AP. Requires `apMac`. |
@@ -275,12 +307,32 @@ npm run inspector:build
 | `getSitesGatewaysPin` | Get PIN information for a gateway. Requires `gatewayMac`. |
 | `getSitesGatewaysSimCardUsed` | Get SIM card usage info for a gateway. Requires `gatewayMac`. |
 | `getSitesHealthGatewaysWansDetails` | Get gateway WAN health details. Requires `gatewayMac`. |
+
+</details>
+
+<details>
+<summary>Write tools (4)</summary>
+
+| Tool | Description |
+|---|---|
+| `setApPowerSaving` | Updates AP power saving configuration with support checks and dry-run preview. Requires `apMac`. |
+| `setApChannelLimit` | Updates AP channel-limit configuration with support checks and dry-run preview. Requires `apMac`. |
+| `setApConfig` | Updates documented AP configuration families with dry-run preview. Covers AP general, IP, IPv6, QoS, radio, service, load-balance, OFDMA, trunk, bridge, WLAN group, port, channel, AFC, and antenna settings. Setter-only families return planned payloads and an explicit warning when controller readback is unavailable. Requires `apMac`. |
 | `setGatewayConfig` | Updates documented gateway configuration families with dry-run preview. Covers general, services, advanced, radios, WLAN, and port settings. Setter-only families return planned payloads and an explicit warning when controller readback is unavailable. Requires `gatewayMac`. |
+
+</details>
+
+---
 
 ### Network
 
-| Tool                          | Description                                                                 |
-| ----------------------------- | --------------------------------------------------------------------------- |
+WAN/LAN configuration, SSIDs, WLAN groups, routing, NAT, DHCP, DNS, firewall settings, bandwidth control, and related network services.
+
+<details>
+<summary>Read tools (55)</summary>
+
+| Tool | Description |
+|---|---|
 | `getInternetInfo` | Gets internet configuration information for a site. |
 | `getInternet` | [DEPRECATED] Use `getInternetInfo` instead. Gets full WAN/Internet configuration for the site gateway. |
 | `getInternetBasicPortInfo` | Gets WAN port summary/basic info for the site gateway. |
@@ -311,20 +363,13 @@ npm run inspector:build
 | `getSsidDetail` | Gets detailed information for a specific SSID. Required: `wlanId` and `ssidId`. |
 | `listAllSsids` | Lists wireless SSIDs across all WLAN groups. |
 | `getFirewallSetting` | Gets the site-global firewall settings returned by the official Omada firewall endpoint. |
-| `setFirewallSetting` | Updates site firewall settings with dry-run preview using the official Omada Open API firewall endpoint. |
-| `setAclConfigTypeSetting` | Updates the gateway ACL mode (`through profiles` or `custom`) with dry-run preview. |
 | `getVpnSettings` | Gets VPN settings for a site. |
 | `listSiteToSiteVpns` | Lists site-to-site VPN configurations. |
 | `listPortForwardingRules` | [DEPRECATED] Use `getPortForwardingList` instead. Lists NAT port forwarding rules. |
 | `listOsgAcls` | Lists gateway (OSG) ACL rules. |
-| `createGatewayAcl` | Creates a gateway ACL rule with dry-run preview using the official Omada Gateway ACL schema. |
-| `updateGatewayAcl` | Updates a gateway ACL rule with dry-run preview after confirming the ACL exists. |
 | `listEapAcls` | Lists access point (EAP) ACL rules. |
-| `createEapAcl` | Creates an EAP ACL rule with dry-run preview using the official Omada EAP ACL schema. |
-| `updateEapAcl` | Updates an EAP ACL rule with dry-run preview after confirming the ACL exists. |
-| `deleteAcl` | Deletes an ACL rule with dry-run preview after confirming the ACL exists. |
 | `listStaticRoutes` | [DEPRECATED] Use `getGridStaticRouting` instead. This tool aggregates all pages; getGridStaticRouting returns a single paginated page. |
-| `getStaticRoutingInterfaceList` | Gets available interfaces for static routing.                             |
+| `getStaticRoutingInterfaceList` | Gets available interfaces for static routing. |
 | `listPolicyRoutes` | [DEPRECATED] Use `getGridPolicyRouting` instead. This tool aggregates all pages; getGridPolicyRouting is paginated. |
 | `getGridPolicyRouting` | Gets policy routing rules (paginated). |
 | `getOspfProcess` | Gets OSPF process configuration for the site gateway. |
@@ -336,15 +381,10 @@ npm run inspector:build
 | `getUpnpSetting` | Gets UPnP setting for the site gateway. |
 | `getDdnsGrid` | Gets DDNS entries (paginated). |
 | `getDhcpReservationGrid` | Gets DHCP reservations (paginated). |
-| `createDhcpReservation` | Creates a DHCP reservation after validating the target LAN and optional IP address. |
-| `updateDhcpReservation` | Updates a DHCP reservation after validating the target LAN and optional IP address. |
-| `deleteDhcpReservation` | Deletes a DHCP reservation by MAC address with a dry-run preview option. |
 | `getGridIpMacBinding` | Gets IP-MAC binding entries (paginated). |
-| `getIpMacBindingGeneralSetting` | Gets IP-MAC binding global toggle setting.                               |
+| `getIpMacBindingGeneralSetting` | Gets IP-MAC binding global toggle setting. |
 | `getBandwidthControl` | Gets global bandwidth control configuration. |
 | `getGridBandwidthCtrlRule` | Gets bandwidth control rules (paginated). |
-| `setBandwidthControlRule` | Creates or updates a bandwidth control rule with dry-run preview after validating the target rule id plus referenced LAN and WAN identifiers. |
-| `deleteBandwidthControlRule` | Deletes a bandwidth control rule with dry-run preview after confirming the rule exists. |
 | `getSessionLimit` | Gets session limit global setting. |
 | `getGridSessionLimitRule` | Gets per-rule session limit rules (paginated). |
 | `getSnmpSetting` | Gets SNMP configuration (version, community string). |
@@ -355,9 +395,6 @@ npm run inspector:build
 | `getNtpSetting` | Gets NTP server configuration and synchronisation status. |
 | `getSyslogConfig` | Deprecated; alias of `getRemoteLoggingSetting` for controller syslog configuration. |
 | `getAccessControl` | Gets controller access control configuration. |
-| `setAccessControl` | Updates portal access control settings with dry-run preview and schema validation for pre-auth and free-auth policy entries. |
-| `setAppControlRule` | Creates or updates an application control rule with dry-run preview after validating the create/update payload shape, existing rule id, and referenced application ids. |
-| `deleteAppControlRule` | Deletes an application control rule with dry-run preview after confirming the rule exists. |
 | `getDnsCacheSetting` | Gets DNS cache setting. |
 | `getDnsProxy` | Gets DNS proxy configuration. |
 | `getIgmp` | Gets IGMP snooping and proxy setting. |
@@ -367,21 +404,66 @@ npm run inspector:build
 | `getLanClientCount` | Gets client distribution breakdown across LAN segments. |
 | `listRadiusProfiles` | Lists RADIUS authentication profiles. |
 | `listGroupProfiles` | Lists group profiles (IP, MAC, or port groups). |
-| `getApplicationControlStatus` | Gets application control status for a site.                                 |
+| `getApplicationControlStatus` | Gets application control status for a site. |
 | `getSshSetting` | Gets SSH settings for a site. |
 | `listTimeRangeProfiles` | Lists time range profiles. |
 | `getRateLimitProfiles` | Gets the list of available rate limit profiles for bandwidth control. |
+
+</details>
+
+<details>
+<summary>Write tools (13)</summary>
+
+| Tool | Description |
+|---|---|
+| `setFirewallSetting` | Updates site firewall settings with dry-run preview using the official Omada Open API firewall endpoint. |
+| `setAclConfigTypeSetting` | Updates the gateway ACL mode (`through profiles` or `custom`) with dry-run preview. |
+| `createGatewayAcl` | Creates a gateway ACL rule with dry-run preview using the official Omada Gateway ACL schema. |
+| `updateGatewayAcl` | Updates a gateway ACL rule with dry-run preview after confirming the ACL exists. |
+| `createEapAcl` | Creates an EAP ACL rule with dry-run preview using the official Omada EAP ACL schema. |
+| `updateEapAcl` | Updates an EAP ACL rule with dry-run preview after confirming the ACL exists. |
+| `createSwitchAcl` | Creates a switch (OSW) ACL rule with dry-run preview using the official Omada SwitchACLConfig schema. |
+| `updateSwitchAcl` | Updates a switch (OSW) ACL rule with dry-run preview after confirming the ACL exists. |
+| `deleteAcl` | Deletes an ACL rule with dry-run preview after confirming the ACL exists. |
+| `createDhcpReservation` | Creates a DHCP reservation after validating the target LAN and optional IP address. |
+| `updateDhcpReservation` | Updates a DHCP reservation after validating the target LAN and optional IP address. |
+| `deleteDhcpReservation` | Deletes a DHCP reservation by MAC address with a dry-run preview option. |
+| `setBandwidthControlRule` | Creates or updates a bandwidth control rule with dry-run preview after validating the target rule id plus referenced LAN and WAN identifiers. |
+| `deleteBandwidthControlRule` | Deletes a bandwidth control rule with dry-run preview after confirming the rule exists. |
+| `setAccessControl` | Updates portal access control settings with dry-run preview and schema validation for pre-auth and free-auth policy entries. |
+| `setAppControlRule` | Creates or updates an application control rule with dry-run preview after validating the create/update payload shape, existing rule id, and referenced application ids. |
+| `deleteAppControlRule` | Deletes an application control rule with dry-run preview after confirming the rule exists. |
+
+</details>
+
+---
+
 ### Firewall & ACL
 
-| Tool                          | Description                                                                              |
-| ----------------------------- | ---------------------------------------------------------------------------------------- |
+802.1X authentication and RADIUS proxy settings.
+
+<details>
+<summary>Read tools (3)</summary>
+
+| Tool | Description |
+|---|---|
 | `getDot1xConfig` | Get 802.1X switch port authentication setting. Alias for `getSwitchDot1xSetting`. |
 | `getRadiusProxyConfig` | Get global RADIUS proxy configuration (controller-level, no siteId). |
 | `getApplicationAcl` | [DEPRECATED] Get application control rules. Alias for `getAppControlRules`. |
+
+</details>
+
+---
+
 ### Firewall Traffic & QoS
 
-| Tool                          | Description                                                                              |
-| ----------------------------- | ---------------------------------------------------------------------------------------- |
+Traffic shaping, QoS policies, application control, URL filtering, and MAC filtering.
+
+<details>
+<summary>Read tools (11)</summary>
+
+| Tool | Description |
+|---|---|
 | `getGatewayQosClassRules` | Get gateway QoS class rules (paginated). |
 | `getBandwidthCtrlDetail` | Get bandwidth control details for a site. |
 | `getAppControlRules` | Get application control rules (paginated). |
@@ -396,40 +478,77 @@ npm run inspector:build
 | `getQosPolicyRule` | [DEPRECATED] Alias for `getQosPolicy`. |
 | `getQosMarkingRule` | [DEPRECATED] Alias for `getQosPolicy`. |
 | `getDscpConfig` | [DEPRECATED] Alias for `getQosPolicy`. |
+
+</details>
+
+---
+
 ### Firewall IDS / IPS
 
-| Tool                          | Description                                                                              |
-| ----------------------------- | ---------------------------------------------------------------------------------------- |
+Intrusion detection and prevention system configuration.
+
+<details>
+<summary>Read tools (1)</summary>
+
+| Tool | Description |
+|---|---|
 | `getGlobalSecuritySetting` | [DEPRECATED] Use `getThreatList` instead. Get global security/threat management list. Alias for `getThreatList`. |
+
+</details>
+
+---
+
 ### Security & Threat Management
 
-| Tool              | Description                                               |
-| ----------------- | --------------------------------------------------------- |
+Global threat intelligence, IPS alerts, and top-threat summaries.
+
+<details>
+<summary>Read tools (2)</summary>
+
+| Tool | Description |
+|---|---|
 | `getThreatList` | Gets global threat management list. Required: `archived` (bool). Optional: `startTime`/`endTime` (seconds since epoch), `severity` (0=Critical, 1=Major, 2=Moderate/Concerning, 3=Minor, 4=Low), `page`, `pageSize`. |
 | `getTopThreats` | Gets top threats from the global threat management view. |
+
+</details>
+
+---
+
 ### Composite Troubleshooting Tools
 
 Single-call tools that internally aggregate multiple Omada API calls in parallel. Use these instead of chaining individual tools when you need a quick overview or are starting a troubleshooting session.
 
+<details>
+<summary>Read tools (4)</summary>
+
 | Tool | Description |
-| ---- | ----------- |
+|---|---|
 | `getNetworkHealthSummary` | Composite: combines dashboard overview (device/client counts), internet/WAN status, client distribution, and recent active threats into a single response. First call for any troubleshooting session. |
 | `getGatewayHealth` | Composite: auto-discovers the gateway then fetches its detail (CPU, memory, firmware), WAN port statuses, LAN interface statuses, and port list in one call. Use for internet/WAN diagnostics. |
 | `diagnoseClient` | Composite: given a client MAC, IP, or hostname — fetches current connection status, detailed client info (VLAN, signal, policy), and recent connection history in one call. |
 | `getSecurityOverview` | Composite: combines active threat list (up to 20, newest first) and firewall settings into one response. Use for security posture checks or investigating alerts. |
 
+</details>
+
+---
+
 ### Dashboard / Monitor
 
-| Tool                         | Description                                                     |
-| ---------------------------- | --------------------------------------------------------------- |
+Site dashboard widgets: WiFi and switch summaries, PoE usage, CPU/memory top-N, traffic activities, VPN tunnel stats, and RF analytics.
+
+<details>
+<summary>Read tools (16)</summary>
+
+| Tool | Description |
+|---|---|
 | `getDashboardWifiSummary` | Gets WiFi summary from the site dashboard. |
 | `getDashboardSwitchSummary` | Gets switch summary from the site dashboard. |
-| `getDashboardTrafficActivities` | Gets traffic activity data from the site dashboard.          |
+| `getDashboardTrafficActivities` | Gets traffic activity data from the site dashboard. |
 | `getDashboardPoEUsage` | Gets PoE usage data from the site dashboard. |
 | `getDashboardTopCpuUsage` | Gets top CPU usage data from the site dashboard. |
-| `getDashboardTopMemoryUsage` | Gets top memory usage data from the site dashboard.             |
-| `getDashboardMostActiveSwitches` | Gets most active switches from the site dashboard.          |
-| `getDashboardMostActiveEaps` | Gets most active access points from the site dashboard.         |
+| `getDashboardTopMemoryUsage` | Gets top memory usage data from the site dashboard. |
+| `getDashboardMostActiveSwitches` | Gets most active switches from the site dashboard. |
+| `getDashboardMostActiveEaps` | Gets most active access points from the site dashboard. |
 | `getDashboardOverview` | Get the site overview: device counts, client counts, connectivity graph, and overall health status. |
 | `getTrafficDistribution` | Gets traffic distribution by protocol/app type over a time range. Requires `start` and `end` timestamps (seconds). |
 | `getRetryAndDroppedRate` | Gets wireless retry rate and dropped packet rate over a time range. Requires `start` and `end` timestamps (seconds). |
@@ -437,21 +556,40 @@ Single-call tools that internally aggregate multiple Omada API calls in parallel
 | `getChannels` | Gets channel distribution and utilization across all APs. |
 | `getInterference` | Gets top RF interference sources detected by APs. |
 | `getGridDashboardTunnelStats` | Gets VPN tunnel statistics. Required: `type` (0 = Server, 1 = Client). |
-| `getGridDashboardIpsecTunnelStats` | Gets IPsec tunnel statistics.                            |
+| `getGridDashboardIpsecTunnelStats` | Gets IPsec tunnel statistics. |
 | `getGridDashboardOpenVpnTunnelStats` | Gets OpenVPN tunnel statistics by type. Requires `type` parameter. |
+
+</details>
+
+---
 
 ### Insight
 
-| Tool                      | Description                                                        |
-| ------------------------- | ------------------------------------------------------------------ |
-| `listSiteThreatManagement`| Lists site-level threat management events.                         |
+Site-level security insights: threat events, WIDS, rogue AP detection, and VPN tunnel stats.
+
+<details>
+<summary>Read tools (4)</summary>
+
+| Tool | Description |
+|---|---|
+| `listSiteThreatManagement` | Lists site-level threat management events. |
 | `getWids` | Gets WIDS (Wireless Intrusion Detection) information for a site. |
 | `getRogueAps` | Gets rogue access points detected in a site. |
 | `getVpnTunnelStats` | Gets VPN tunnel statistics for a site. |
+
+</details>
+
+---
+
 ### VPN
 
-| Tool                          | Description                                                                              |
-| ----------------------------- | ---------------------------------------------------------------------------------------- |
+Site-to-site and client-to-site VPN configuration, tunnel details, and user management.
+
+<details>
+<summary>Read tools (6)</summary>
+
+| Tool | Description |
+|---|---|
 | `getIpsecTunnelList` | List all site-to-site VPN (IPsec) tunnels. Alias for `listSiteToSiteVpns`. |
 | `getIpsecTunnelDetail` | Get detailed config for a specific IPsec tunnel by ID. Alias for `getSiteToSiteVpnInfo`. |
 | `getAdvancedVpnSetting` | Get advanced VPN configuration settings for a site. Alias for `getVpnSettings`. |
@@ -459,10 +597,20 @@ Single-call tools that internally aggregate multiple Omada API calls in parallel
 | `getVpnUserDetail` | Get users for a specific client-to-site VPN server. |
 | `getVpnClientStatus` | Get status of client-to-site VPN clients. Alias for `listClientToSiteVpnClients`. |
 | `getVpnRouteConfig` | [DEPRECATED] Use `getGridPolicyRouting` instead. This tool aggregates all pages; getGridPolicyRouting is paginated. |
+
+</details>
+
+---
+
 ### Profiles
 
-| Tool                          | Description                                                                              |
-| ----------------------------- | ---------------------------------------------------------------------------------------- |
+RADIUS, PPSK, service, QoS, schedule, group policy, VLAN, user role, and portal profiles.
+
+<details>
+<summary>Read tools (14)</summary>
+
+| Tool | Description |
+|---|---|
 | `getGoogleLdapProfile` | Get Google LDAP profile configuration for a site. |
 | `getBuiltinRadiusUsers` | Get built-in RADIUS server user list (paginated). |
 | `getRadiusUserDetail` | [DEPRECATED] Alias for `getBuiltinRadiusUsers`. |
@@ -479,19 +627,39 @@ Single-call tools that internally aggregate multiple Omada API calls in parallel
 | `getVlanProfile` | Get LAN/VLAN profiles. Alias for `getLanProfileList`. |
 | `getUserRoleProfile` | Get user role profiles from the controller (global, no siteId). |
 | `getPortalProfile` | Get captive portal profiles for a site. |
+
+</details>
+
+---
+
 ### Logs
 
-| Tool                  | Description                                                  |
-| --------------------- | ------------------------------------------------------------ |
+Site-level and global event, alert, and audit logs.
+
+<details>
+<summary>Read tools (5)</summary>
+
+| Tool | Description |
+|---|---|
 | `listSiteEvents` | Lists site event logs. |
 | `listSiteAlerts` | Lists site alert logs. |
 | `listSiteAuditLogs` | Lists site audit logs. |
 | `listGlobalEvents` | Lists global event logs across all sites. |
 | `listGlobalAlerts` | Lists global alert logs across all sites. |
+
+</details>
+
+---
+
 ### Controller
 
-| Tool                          | Description                                                                              |
-| ----------------------------- | ---------------------------------------------------------------------------------------- |
+Controller-level settings: certificates, ports, data retention, telemetry, and global dashboard.
+
+<details>
+<summary>Read tools (7)</summary>
+
+| Tool | Description |
+|---|---|
 | `getCertificate` | Get SSL/TLS certificate configuration for the controller. |
 | `getClientHistoryDataEnable` | Get the client history data collection enable setting. |
 | `getControllerPort` | Get the controller port configuration for device adoption. |
@@ -499,16 +667,34 @@ Single-call tools that internally aggregate multiple Omada API calls in parallel
 | `getExperienceImprovement` | Get the experience improvement program setting (telemetry). |
 | `getGlobalDashboardOverview` | Get global controller dashboard overview without client data. |
 | `getPortalPort` | Get portal port configuration for the controller web interface. |
+
+</details>
+
+---
+
 ### Maintenance
 
-| Tool                          | Description                                                                              |
-| ----------------------------- | ---------------------------------------------------------------------------------------- |
+Controller and site backups, restores, and rogue AP exports.
+
+<details>
+<summary>Read tools (5)</summary>
+
+| Tool | Description |
+|---|---|
 | `getBackupFileList` | List available controller backup files. |
 | `getBackupResult` | Get the result of the most recent controller backup operation. |
 | `getRestoreResult` | Get the result of the most recent controller restore operation. |
 | `getSiteBackupFileList` | List available backup files for a site. |
 | `getSiteBackupResult` | Get the backup result for a site. |
 | `getRogueApExport` | Export Rogue AP scan results for a site in CSV or Excel format. |
+
+</details>
+
+<details>
+<summary>Write tools (8)</summary>
+
+| Tool | Description |
+|---|---|
 | `backupController` | Trigger a controller configuration backup to the self/cloud server. |
 | `backupControllerToFileServer` | Trigger a controller configuration backup to an external file server (FTP/SFTP). |
 | `restoreController` | Restore controller configuration from a backup file on the self/cloud server. |
@@ -517,34 +703,70 @@ Single-call tools that internally aggregate multiple Omada API calls in parallel
 | `backupSitesToFileServer` | Trigger a multi-site configuration backup to an external file server (up to 300 sites). |
 | `restoreSites` | Restore multiple site configurations from backup files on the self/cloud server. |
 | `restoreSitesFromFileServer` | Restore multiple site configurations from backup files on an external file server. |
+
+</details>
+
+---
+
 ### Account Users
 
-| Tool                          | Description                                                                              |
-| ----------------------------- | ---------------------------------------------------------------------------------------- |
+User and role management for the controller.
+
+<details>
+<summary>Read tools (6)</summary>
+
+| Tool | Description |
+|---|---|
 | `getAllCloudUsers` | List all cloud users on the controller, excluding the root account. |
 | `getAllLocalUsers` | List all local users on the controller, excluding the root account. |
 | `getAllRoles` | [DEPRECATED] Use `getUserRoleProfile` instead. List all user roles configured on the controller. |
 | `getAllUsersApp` | List all users (cloud and local) in grid view. |
 | `getAvailableRoles` | List roles available for user assignment. |
 | `getRoleDetail` | Get detailed information about a specific role. Requires `roleId`. |
+
+</details>
+
+---
+
 ### Account Cloud
 
-| Tool                          | Description                                                                              |
-| ----------------------------- | ---------------------------------------------------------------------------------------- |
+Cloud access, MFA, and remote binding status.
+
+<details>
+<summary>Read tools (4)</summary>
+
+| Tool | Description |
+|---|---|
 | `getCloudAccessStatus` | Get cloud access status for the controller. |
 | `getCloudUserInfo` | Get cloud user account information. |
 | `getMfaStatus` | Get global MFA (multi-factor authentication) status. |
 | `getRemoteBindingStatus` | Get remote binding status between controller and cloud. |
+
+</details>
+
+---
+
 ### Schedules
 
-| Tool                          | Description                                                                              |
-| ----------------------------- | ---------------------------------------------------------------------------------------- |
+PoE, port, reboot, and firmware upgrade schedules.
+
+<details>
+<summary>Read tools (5)</summary>
+
+| Tool | Description |
+|---|---|
 | `getPoeScheduleList` | List PoE schedules for a site. |
 | `getPortScheduleList` | List port schedules for a site. |
 | `getPortSchedulePorts` | List ports with port schedule assignments for a site. |
 | `getRebootScheduleList` | List device reboot schedules for a site template. Requires `siteTemplateId`. |
 | `getUpgradeScheduleList` | List firmware upgrade schedules for a site. |
-## Supported Omada API Operations
+
+</details>
+
+---
+
+<details>
+<summary><strong>Supported Omada API Operations</strong> — compatibility table mapping Omada API operation IDs to MCP tool names</summary>
 
 | Operation ID                        | Description                                               | Tool                          |
 | ----------------------------------- | --------------------------------------------------------- | ----------------------------- |
@@ -590,6 +812,9 @@ Single-call tools that internally aggregate multiple Omada API calls in parallel
 | `getEapAclList` | List access point ACL rules.                              | `listEapAcls` |
 | `createEapAcl` | Create an EAP ACL with dry-run support. | `createEapAcl` |
 | `modifyEapAcl` | Update an EAP ACL with dry-run support. | `updateEapAcl` |
+| `getOswAclList` | List switch ACL rules. | `getOswAclList` |
+| `createOswAcl` | Create a switch ACL with dry-run support. | `createSwitchAcl` |
+| `modifyOswAcl` | Update a switch ACL with dry-run support. | `updateSwitchAcl` |
 | `deleteAcl` | Delete an ACL rule with dry-run support. | `deleteAcl` |
 | `getStaticRoutingList` | List static routing rules.                                | `getGridStaticRouting` (prefer); ~~`listStaticRoutes`~~ [DEPRECATED] |
 | `getRadiusProfileList` | List RADIUS authentication profiles.                      | `listRadiusProfiles` |
@@ -901,6 +1126,8 @@ Single-call tools that internally aggregate multiple Omada API calls in parallel
 | `getMulticastRateLimitByOpenApi` | Get multicast rate limit setting. | `getMulticastRateLimit` |
 | `getApLoadBalanceConfig` | Get AP load balance configuration. | `getApLoadBalance` |
 | `getApOfdmaConfig` | [DEPRECATED] Use `getSitesApsOfdma` instead. Same endpoint, retained for backward compatibility. getSitesApsOfdma is the canonical tool name. | `getApOfdmaConfig` |
+
+</details>
 
 ## Devcontainer support
 
