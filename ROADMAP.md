@@ -1,6 +1,6 @@
 # Omada MCP — Development Roadmap
 
-> Current version: **v0.16.0** · ~300 / 1648 operations implemented (18.2%)
+> Current version: **v0.17.0** · ~365 / 1648 operations implemented (22.2%)
 
 ---
 

@@ -1,6 +1,6 @@
 {
     "name": "safe-omada-mcp",
-    "version": "0.16.0",
+    "version": "0.17.0",
     "description": "Security-focused Model Context Protocol server for TP-Link Omada Open API workflows",
     "type": "module",
     "main": "dist/index.js",
