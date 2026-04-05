@@ -24,10 +24,23 @@ describe('tools/restoreSites', () => {
         expect(mockServer.registerTool).toHaveBeenCalledWith('restoreSites', expect.any(Object), expect.any(Function));
     });
 
-    it('should call restoreSites with siteRestoreInfos', async () => {
+    it('should return confirmation-required when confirmDangerous is not set', async () => {
         const infos = [{ fileName: 'site1.bak', siteId: 'site-1' }];
         registerRestoreSitesTool(mockServer, mockClient);
-        await toolHandler({ siteRestoreInfos: infos }, { sessionId: 'test' });
+        const result = (await toolHandler({ siteRestoreInfos: infos }, { sessionId: 'test' })) as { content: { text: string }[] };
+        expect(mockClient.restoreSites).not.toHaveBeenCalled();
+        const parsed = JSON.parse(result.content[0].text);
+        expect(parsed.confirmationRequired).toBe(true);
+        expect(parsed.tool).toBe('restoreSites');
+        expect(parsed.siteCount).toBe(1);
+        expect(parsed.warning).toContain('IRREVERSIBLE');
+        expect(parsed.warning).toContain('confirmDangerous: true');
+    });
+
+    it('should call restoreSites when confirmDangerous is true', async () => {
+        const infos = [{ fileName: 'site1.bak', siteId: 'site-1' }];
+        registerRestoreSitesTool(mockServer, mockClient);
+        await toolHandler({ siteRestoreInfos: infos, confirmDangerous: true }, { sessionId: 'test' });
         expect(mockClient.restoreSites).toHaveBeenCalledWith(infos, undefined);
     });
 
@@ -42,13 +55,15 @@ describe('tools/restoreSites', () => {
         expect(parsed.status).toBe('planned');
     });
 
-    it('should include siteId in target when applied', async () => {
+    it('should include siteId in target when confirmed and applied', async () => {
         const infos = [
             { fileName: 'site1.bak', siteId: 'site-1' },
             { fileName: 'site2.bak', siteId: 'site-2' },
         ];
         registerRestoreSitesTool(mockServer, mockClient);
-        const result = (await toolHandler({ siteRestoreInfos: infos }, { sessionId: 'test' })) as { content: { text: string }[] };
+        const result = (await toolHandler({ siteRestoreInfos: infos, confirmDangerous: true }, { sessionId: 'test' })) as {
+            content: { text: string }[];
+        };
         const parsed = JSON.parse(result.content[0].text);
         expect(parsed.target).toContain('site-1');
         expect(parsed.target).toContain('site-2');

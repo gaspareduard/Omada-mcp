@@ -26,9 +26,26 @@ describe('tools/restoreControllerFromFileServer', () => {
         expect(mockServer.registerTool).toHaveBeenCalledWith('restoreControllerFromFileServer', expect.any(Object), expect.any(Function));
     });
 
-    it('should call restoreControllerFromFileServer with correct args', async () => {
+    it('should return confirmation-required when confirmDangerous is not set', async () => {
         registerRestoreControllerFromFileServerTool(mockServer, mockClient);
-        await toolHandler({ serverConfig: SERVER_CONFIG, filePath: '/backups/ctrl.bak', skipDevice: false }, { sessionId: 'test' });
+        const result = (await toolHandler(
+            { serverConfig: SERVER_CONFIG, filePath: '/backups/ctrl.bak', skipDevice: false },
+            { sessionId: 'test' }
+        )) as { content: { text: string }[] };
+        expect(mockClient.restoreControllerFromFileServer).not.toHaveBeenCalled();
+        const parsed = JSON.parse(result.content[0].text);
+        expect(parsed.confirmationRequired).toBe(true);
+        expect(parsed.tool).toBe('restoreControllerFromFileServer');
+        expect(parsed.warning).toContain('IRREVERSIBLE');
+        expect(parsed.warning).toContain('confirmDangerous: true');
+    });
+
+    it('should call restoreControllerFromFileServer when confirmDangerous is true', async () => {
+        registerRestoreControllerFromFileServerTool(mockServer, mockClient);
+        await toolHandler(
+            { serverConfig: SERVER_CONFIG, filePath: '/backups/ctrl.bak', skipDevice: false, confirmDangerous: true },
+            { sessionId: 'test' }
+        );
         expect(mockClient.restoreControllerFromFileServer).toHaveBeenCalledWith(SERVER_CONFIG, '/backups/ctrl.bak', false, undefined);
     });
 
@@ -42,5 +59,17 @@ describe('tools/restoreControllerFromFileServer', () => {
         const parsed = JSON.parse(result.content[0].text);
         expect(parsed.action).toBe('restore-controller-file-server');
         expect(parsed.mode).toBe('dry-run');
+    });
+
+    it('should return applied summary when confirmed and executed', async () => {
+        registerRestoreControllerFromFileServerTool(mockServer, mockClient);
+        const result = (await toolHandler(
+            { serverConfig: SERVER_CONFIG, filePath: '/backups/ctrl.bak', skipDevice: false, confirmDangerous: true },
+            { sessionId: 'test' }
+        )) as { content: { text: string }[] };
+        const parsed = JSON.parse(result.content[0].text);
+        expect(parsed.action).toBe('restore-controller-file-server');
+        expect(parsed.mode).toBe('apply');
+        expect(parsed.status).toBe('applied');
     });
 });

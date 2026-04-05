@@ -26,10 +26,25 @@ describe('tools/restoreSitesFromFileServer', () => {
         expect(mockServer.registerTool).toHaveBeenCalledWith('restoreSitesFromFileServer', expect.any(Object), expect.any(Function));
     });
 
-    it('should call restoreSitesFromFileServer with correct args', async () => {
+    it('should return confirmation-required when confirmDangerous is not set', async () => {
         const infos = [{ filePath: '/backups/site1.bak', siteId: 'site-1' }];
         registerRestoreSitesFromFileServerTool(mockServer, mockClient);
-        await toolHandler({ serverConfig: SERVER_CONFIG, siteInfos: infos }, { sessionId: 'test' });
+        const result = (await toolHandler({ serverConfig: SERVER_CONFIG, siteInfos: infos }, { sessionId: 'test' })) as {
+            content: { text: string }[];
+        };
+        expect(mockClient.restoreSitesFromFileServer).not.toHaveBeenCalled();
+        const parsed = JSON.parse(result.content[0].text);
+        expect(parsed.confirmationRequired).toBe(true);
+        expect(parsed.tool).toBe('restoreSitesFromFileServer');
+        expect(parsed.siteCount).toBe(1);
+        expect(parsed.warning).toContain('IRREVERSIBLE');
+        expect(parsed.warning).toContain('confirmDangerous: true');
+    });
+
+    it('should call restoreSitesFromFileServer when confirmDangerous is true', async () => {
+        const infos = [{ filePath: '/backups/site1.bak', siteId: 'site-1' }];
+        registerRestoreSitesFromFileServerTool(mockServer, mockClient);
+        await toolHandler({ serverConfig: SERVER_CONFIG, siteInfos: infos, confirmDangerous: true }, { sessionId: 'test' });
         expect(mockClient.restoreSitesFromFileServer).toHaveBeenCalledWith(SERVER_CONFIG, infos, undefined);
     });
 
@@ -46,10 +61,10 @@ describe('tools/restoreSitesFromFileServer', () => {
         expect(parsed.status).toBe('planned');
     });
 
-    it('should include siteId in target when applied', async () => {
+    it('should include siteId in target when confirmed and applied', async () => {
         const infos = [{ filePath: '/backups/site1.bak', siteId: 'site-1' }];
         registerRestoreSitesFromFileServerTool(mockServer, mockClient);
-        const result = (await toolHandler({ serverConfig: SERVER_CONFIG, siteInfos: infos }, { sessionId: 'test' })) as {
+        const result = (await toolHandler({ serverConfig: SERVER_CONFIG, siteInfos: infos, confirmDangerous: true }, { sessionId: 'test' })) as {
             content: { text: string }[];
         };
         const parsed = JSON.parse(result.content[0].text);
