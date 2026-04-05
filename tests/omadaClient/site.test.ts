@@ -3,6 +3,15 @@ import type { RequestHandler } from '../../src/omadaClient/request.js';
 import { SiteOperations } from '../../src/omadaClient/site.js';
 import type { OmadaSiteSummary } from '../../src/types/index.js';
 
+vi.mock('../../src/utils/logger.js', () => ({
+    logger: {
+        info: vi.fn(),
+        warn: vi.fn(),
+        error: vi.fn(),
+        debug: vi.fn(),
+    },
+}));
+
 describe('omadaClient/site', () => {
     let mockRequest: RequestHandler;
     let buildPath: (path: string) => string;
@@ -36,47 +45,129 @@ describe('omadaClient/site', () => {
         });
 
         describe('resolveSiteId', () => {
-            it('should return provided siteId parameter', () => {
+            it('should return provided siteId parameter', async () => {
                 const siteOps = new SiteOperations(mockRequest, buildPath, 'default-site');
-                const resolved = siteOps.resolveSiteId('param-site');
+                const resolved = await siteOps.resolveSiteId('param-site');
 
                 expect(resolved).toBe('param-site');
             });
 
-            it('should return default siteId if parameter not provided', () => {
+            it('should return default siteId if parameter not provided', async () => {
                 const siteOps = new SiteOperations(mockRequest, buildPath, 'default-site');
-                const resolved = siteOps.resolveSiteId();
+                const resolved = await siteOps.resolveSiteId();
 
                 expect(resolved).toBe('default-site');
             });
 
-            it('should throw error if no siteId provided and no default', () => {
-                const siteOps = new SiteOperations(mockRequest, buildPath);
-
-                expect(() => siteOps.resolveSiteId()).toThrow('A site id must be provided either in the environment or as a parameter.');
-            });
-
-            it('should prefer parameter over default', () => {
+            it('should prefer parameter over default', async () => {
                 const siteOps = new SiteOperations(mockRequest, buildPath, 'default-site');
-                const resolved = siteOps.resolveSiteId('param-site');
+                const resolved = await siteOps.resolveSiteId('param-site');
 
                 expect(resolved).toBe('param-site');
             });
 
-            it('should handle undefined parameter explicitly', () => {
+            it('should handle undefined parameter explicitly', async () => {
                 const siteOps = new SiteOperations(mockRequest, buildPath, 'default-site');
-                const resolved = siteOps.resolveSiteId(undefined);
+                const resolved = await siteOps.resolveSiteId(undefined);
 
                 expect(resolved).toBe('default-site');
             });
 
-            it('should handle empty string parameter', () => {
+            it('should handle empty string parameter', async () => {
                 const siteOps = new SiteOperations(mockRequest, buildPath, 'default-site');
 
                 // Empty string is falsy, so should use default
-                const resolved = siteOps.resolveSiteId('');
+                const resolved = await siteOps.resolveSiteId('');
 
                 expect(resolved).toBe('default-site');
+            });
+
+            describe('auto-discovery', () => {
+                it('should auto-select when exactly one site is found', async () => {
+                    const mockSites: OmadaSiteSummary[] = [{ siteId: 'auto-site', name: 'My Only Site' }];
+                    (mockRequest.fetchPaginated as ReturnType<typeof vi.fn>).mockResolvedValue(mockSites);
+
+                    const siteOps = new SiteOperations(mockRequest, buildPath);
+                    const resolved = await siteOps.resolveSiteId();
+
+                    expect(resolved).toBe('auto-site');
+                });
+
+                it('should cache the discovered site for subsequent calls', async () => {
+                    const mockSites: OmadaSiteSummary[] = [{ siteId: 'auto-site', name: 'My Only Site' }];
+                    (mockRequest.fetchPaginated as ReturnType<typeof vi.fn>).mockResolvedValue(mockSites);
+
+                    const siteOps = new SiteOperations(mockRequest, buildPath);
+                    const first = await siteOps.resolveSiteId();
+                    const second = await siteOps.resolveSiteId();
+
+                    expect(first).toBe('auto-site');
+                    expect(second).toBe('auto-site');
+                    // listSites should only be called once due to caching
+                    expect(mockRequest.fetchPaginated).toHaveBeenCalledTimes(1);
+                });
+
+                it('should deduplicate concurrent discovery calls', async () => {
+                    const mockSites: OmadaSiteSummary[] = [{ siteId: 'auto-site', name: 'My Only Site' }];
+                    (mockRequest.fetchPaginated as ReturnType<typeof vi.fn>).mockResolvedValue(mockSites);
+
+                    const siteOps = new SiteOperations(mockRequest, buildPath);
+                    const [first, second] = await Promise.all([siteOps.resolveSiteId(), siteOps.resolveSiteId()]);
+
+                    expect(first).toBe('auto-site');
+                    expect(second).toBe('auto-site');
+                    expect(mockRequest.fetchPaginated).toHaveBeenCalledTimes(1);
+                });
+
+                it('should throw error when no sites are found', async () => {
+                    (mockRequest.fetchPaginated as ReturnType<typeof vi.fn>).mockResolvedValue([]);
+
+                    const siteOps = new SiteOperations(mockRequest, buildPath);
+
+                    await expect(siteOps.resolveSiteId()).rejects.toThrow(
+                        'No sites found on this Omada controller. Please verify your controller setup.'
+                    );
+                });
+
+                it('should throw error listing all sites when multiple are found', async () => {
+                    const mockSites: OmadaSiteSummary[] = [
+                        { siteId: 'site-1', name: 'Office' },
+                        { siteId: 'site-2', name: 'Home' },
+                    ];
+                    (mockRequest.fetchPaginated as ReturnType<typeof vi.fn>).mockResolvedValue(mockSites);
+
+                    const siteOps = new SiteOperations(mockRequest, buildPath);
+
+                    await expect(siteOps.resolveSiteId()).rejects.toThrow(
+                        'Multiple sites found on this controller. Set OMADA_SITE_ID in your configuration to one of:'
+                    );
+                });
+
+                it('should include site names and IDs in the multiple-sites error', async () => {
+                    const mockSites: OmadaSiteSummary[] = [
+                        { siteId: 'site-1', name: 'Office' },
+                        { siteId: 'site-2', name: 'Home' },
+                        { siteId: 'site-3', name: 'Lab' },
+                    ];
+                    (mockRequest.fetchPaginated as ReturnType<typeof vi.fn>).mockResolvedValue(mockSites);
+
+                    const siteOps = new SiteOperations(mockRequest, buildPath);
+
+                    await expect(siteOps.resolveSiteId()).rejects.toThrow('"Office" (siteId: site-1)');
+                    // Need a new instance since the previous discoveryPromise is cached (rejected)
+                    const siteOps2 = new SiteOperations(mockRequest, buildPath);
+                    await expect(siteOps2.resolveSiteId()).rejects.toThrow('"Home" (siteId: site-2)');
+                    const siteOps3 = new SiteOperations(mockRequest, buildPath);
+                    await expect(siteOps3.resolveSiteId()).rejects.toThrow('"Lab" (siteId: site-3)');
+                });
+
+                it('should not trigger discovery when explicit siteId is provided', async () => {
+                    const siteOps = new SiteOperations(mockRequest, buildPath);
+                    const resolved = await siteOps.resolveSiteId('explicit-site');
+
+                    expect(resolved).toBe('explicit-site');
+                    expect(mockRequest.fetchPaginated).not.toHaveBeenCalled();
+                });
             });
         });
 

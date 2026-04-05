@@ -20,7 +20,7 @@ describe('omadaClient/device', () => {
         } as unknown as RequestHandler;
 
         mockSite = {
-            resolveSiteId: vi.fn((siteId) => siteId ?? 'default-site'),
+            resolveSiteId: vi.fn(async (siteId) => siteId ?? 'default-site'),
         } as unknown as SiteOperations;
 
         buildPath = (path: string) => `/api${path}`;
