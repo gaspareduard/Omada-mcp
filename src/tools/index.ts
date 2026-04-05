@@ -3,6 +3,10 @@ import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import type { ToolCategory, ToolPermission } from '../config.js';
 import type { OmadaClient } from '../omadaClient/index.js';
 import { logger } from '../utils/logger.js';
+import { registerBackupControllerTool } from './backupController.js';
+import { registerBackupControllerToFileServerTool } from './backupControllerToFileServer.js';
+import { registerBackupSitesTool } from './backupSites.js';
+import { registerBackupSitesToFileServerTool } from './backupSitesToFileServer.js';
 import { registerBlockClientTool } from './blockClient.js';
 import { registerCreateDhcpReservationTool } from './createDhcpReservation.js';
 import { registerCreateEapAclTool } from './createEapAcl.js';
@@ -11,6 +15,7 @@ import { registerDeleteAclTool } from './deleteAcl.js';
 import { registerDeleteAppControlRuleTool } from './deleteAppControlRule.js';
 import { registerDeleteBandwidthControlRuleTool } from './deleteBandwidthControlRule.js';
 import { registerDeleteDhcpReservationTool } from './deleteDhcpReservation.js';
+import { registerDiagnoseClientTool } from './diagnoseClient.js';
 import { registerDisableClientRateLimitTool } from './disableClientRateLimit.js';
 import { registerGetAccessControlTool } from './getAccessControl.js';
 import { registerGetAclConfigTypeSettingTool } from './getAclConfigTypeSetting.js';
@@ -93,6 +98,7 @@ import { registerGetFirewallSettingTool } from './getFirewallSetting.js';
 import { registerGetFirmwareInfoTool } from './getFirmwareInfo.js';
 import { registerGetFirmwareUpgradePlanTool } from './getFirmwareUpgradePlan.js';
 import { registerGetGatewayDetailTool } from './getGatewayDetail.js';
+import { registerGetGatewayHealthTool } from './getGatewayHealth.js';
 import { registerGetGatewayLanStatusTool } from './getGatewayLanStatus.js';
 import { registerGetGatewayPortsTool } from './getGatewayPorts.js';
 import { registerGetGatewayQosClassRulesTool } from './getGatewayQosClassRules.js';
@@ -164,6 +170,7 @@ import { registerGetMeshSettingTool } from './getMeshSetting.js';
 import { registerGetMeshStatisticsTool } from './getMeshStatistics.js';
 import { registerGetMfaStatusTool } from './getMfaStatus.js';
 import { registerGetMulticastRateLimitTool } from './getMulticastRateLimit.js';
+import { registerGetNetworkHealthSummaryTool } from './getNetworkHealthSummary.js';
 import { registerGetNtpSettingTool } from './getNtpSetting.js';
 import { registerGetOsgCustomAclListTool } from './getOsgCustomAclList.js';
 import { registerGetOspfInterfaceTool } from './getOspfInterface.js';
@@ -205,10 +212,12 @@ import { registerGetRetentionTool } from './getRetention.js';
 import { registerGetRetryAndDroppedRateTool } from './getRetryAndDroppedRate.js';
 import { registerGetRFScanResultTool } from './getRFScanResult.js';
 import { registerGetRoamingSettingTool } from './getRoamingSetting.js';
+import { registerGetRogueApExportTool } from './getRogueApExport.js';
 import { registerGetRogueApsTool } from './getRogueAps.js';
 import { registerGetRoleDetailTool } from './getRoleDetail.js';
 import { registerGetRoutingTableTool } from './getRoutingTable.js';
 import { registerGetScheduleProfileTool } from './getScheduleProfile.js';
+import { registerGetSecurityOverviewTool } from './getSecurityOverview.js';
 import { registerGetServiceProfileTool } from './getServiceProfile.js';
 import { registerGetServiceTypeSummaryTool } from './getServiceTypeSummary.js';
 import { registerGetSessionLimitTool } from './getSessionLimit.js';
@@ -337,6 +346,10 @@ import { registerListWireguardTool } from './listWireguard.js';
 import { registerListWireguardPeersTool } from './listWireguardPeers.js';
 import { registerRebootDeviceTool } from './rebootDevice.js';
 import { registerReconnectClientTool } from './reconnectClient.js';
+import { registerRestoreControllerTool } from './restoreController.js';
+import { registerRestoreControllerFromFileServerTool } from './restoreControllerFromFileServer.js';
+import { registerRestoreSitesTool } from './restoreSites.js';
+import { registerRestoreSitesFromFileServerTool } from './restoreSitesFromFileServer.js';
 import { registerSearchDevicesTool } from './searchDevices.js';
 import { registerSetAccessControlTool } from './setAccessControl.js';
 import { registerSetAclConfigTypeSettingTool } from './setAclConfigTypeSetting.js';
@@ -740,6 +753,15 @@ const TOOL_REGISTRY: ToolEntry[] = [
     { fn: registerGetRestoreResultTool, category: 'maintenance', permission: 'read' },
     { fn: registerGetSiteBackupResultTool, category: 'maintenance', permission: 'read' },
     { fn: registerGetSiteBackupFileListTool, category: 'maintenance', permission: 'read' },
+    { fn: registerGetRogueApExportTool, category: 'maintenance', permission: 'read' },
+    { fn: registerBackupControllerTool, category: 'maintenance', permission: 'write' },
+    { fn: registerBackupControllerToFileServerTool, category: 'maintenance', permission: 'write' },
+    { fn: registerBackupSitesTool, category: 'maintenance', permission: 'write' },
+    { fn: registerBackupSitesToFileServerTool, category: 'maintenance', permission: 'write' },
+    { fn: registerRestoreControllerTool, category: 'maintenance', permission: 'write' },
+    { fn: registerRestoreControllerFromFileServerTool, category: 'maintenance', permission: 'write' },
+    { fn: registerRestoreSitesTool, category: 'maintenance', permission: 'write' },
+    { fn: registerRestoreSitesFromFileServerTool, category: 'maintenance', permission: 'write' },
 
     // --- Account users ---
     { fn: registerGetAllCloudUsersTool, category: 'account-users', permission: 'read' },
@@ -766,6 +788,12 @@ const TOOL_REGISTRY: ToolEntry[] = [
     { fn: registerGetSiteTemplateListTool, category: 'sites', permission: 'read' },
     { fn: registerGetSiteTemplateDetailTool, category: 'sites', permission: 'read' },
     { fn: registerGetSiteTemplateConfigTool, category: 'sites', permission: 'read' },
+
+    // --- Composite / troubleshooting tools ---
+    { fn: registerGetNetworkHealthSummaryTool, category: 'dashboard', permission: 'read' },
+    { fn: registerGetGatewayHealthTool, category: 'devices-gateway', permission: 'read' },
+    { fn: registerDiagnoseClientTool, category: 'client-insights', permission: 'read' },
+    { fn: registerGetSecurityOverviewTool, category: 'security-threat', permission: 'read' },
 
     // --- Dashboard ---
     { fn: registerGetDashboardWifiSummaryTool, category: 'dashboard', permission: 'read' },
