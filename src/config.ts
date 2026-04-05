@@ -202,7 +202,7 @@ export const DEFAULT_CAPABILITY_PROFILE: CapabilityProfile = 'safe-read';
 
 export const CAPABILITY_PROFILE_DEFAULTS: Record<CapabilityProfile, string> = {
     'safe-read': DEFAULT_TOOL_CATEGORIES,
-    'ops-write': 'dashboard:r,client-insights:r,clients:rw,devices-all:r,maintenance:r',
+    'ops-write': 'dashboard:r,client-insights:r,clients:rw,devices-all:r,maintenance:rw,logs:r,network-wan:r,security-threat:r,vpn:r',
     admin: 'all:rw',
     compatibility: 'all:rw',
 };

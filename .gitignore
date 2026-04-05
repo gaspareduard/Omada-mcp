@@ -25,4 +25,4 @@ pnpm-debug.log*
 coverage/
 
 # Claude Code local settings (personal/machine-specific)
-.claude/settings.local.json
+.claude/

@@ -339,6 +339,17 @@ HTTP is not part of the supported container baseline. It only starts when both o
 | `getThreatList` | Gets global threat management list with filtering.        |
 | `getTopThreats` | Gets top threats from the global threat management view.  |
 
+### Composite Troubleshooting Tools
+
+Single-call tools that internally aggregate multiple Omada API calls in parallel. Use these instead of chaining individual tools when you need a quick overview or are starting a troubleshooting session.
+
+| Tool | Description |
+| ---- | ----------- |
+| `getNetworkHealthSummary` | Composite: combines dashboard overview (device/client counts), internet/WAN status, client distribution, and recent active threats into a single response. First call for any troubleshooting session. |
+| `getGatewayHealth` | Composite: auto-discovers the gateway then fetches its detail (CPU, memory, firmware), WAN port statuses, LAN interface statuses, and port list in one call. Use for internet/WAN diagnostics. |
+| `diagnoseClient` | Composite: given a client MAC, IP, or hostname — fetches current connection status, detailed client info (VLAN, signal, policy), and recent connection history in one call. |
+| `getSecurityOverview` | Composite: combines active threat list (up to 20, newest first) and firewall settings into one response. Use for security posture checks or investigating alerts. |
+
 ### Dashboard / Monitor
 
 | Tool                             | Description                                                     |
@@ -429,6 +440,15 @@ HTTP is not part of the supported container baseline. It only starts when both o
 | `getRestoreResult` | Get the result of the most recent controller restore operation. |
 | `getSiteBackupFileList` | List available backup files for a site. |
 | `getSiteBackupResult` | Get the backup result for a site. |
+| `getRogueApExport` | Export Rogue AP scan results for a site in CSV or Excel format. |
+| `backupController` | Trigger a controller configuration backup to the self/cloud server. |
+| `backupControllerToFileServer` | Trigger a controller configuration backup to an external file server (FTP/SFTP). |
+| `restoreController` | Restore controller configuration from a backup file on the self/cloud server. |
+| `restoreControllerFromFileServer` | Restore controller configuration from a backup file on an external file server. |
+| `backupSites` | Trigger a multi-site configuration backup to the self/cloud server (up to 300 sites). |
+| `backupSitesToFileServer` | Trigger a multi-site configuration backup to an external file server (up to 300 sites). |
+| `restoreSites` | Restore multiple site configurations from backup files on the self/cloud server. |
+| `restoreSitesFromFileServer` | Restore multiple site configurations from backup files on an external file server. |
 ### Account Users
 
 | Tool                          | Description                                                                              |

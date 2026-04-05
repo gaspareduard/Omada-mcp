@@ -31,6 +31,7 @@ import { ControllerOperations } from './controller.js';
 import { DeviceOperations } from './device.js';
 import { InsightOperations, type SiteThreatListOptions } from './insight.js';
 import { LogOperations, type LogQueryOptions } from './log.js';
+import type { FileServerConfig, SiteFileRestoreInfo, SiteRestoreInfo } from './maintenance.js';
 import { MaintenanceOperations } from './maintenance.js';
 import { MonitorOperations } from './monitor.js';
 import { NetworkOperations } from './network.js';
@@ -1639,6 +1640,67 @@ export class OmadaClient {
 
     public async getSiteBackupFileList(siteId?: string, customHeaders?: CustomHeaders): Promise<unknown> {
         return await this.maintenanceOps.getSiteBackupFileList(siteId, customHeaders);
+    }
+
+    public async getRogueApExport(
+        siteId?: string,
+        format?: '0' | '1',
+        page?: number,
+        pageSize?: number,
+        customHeaders?: CustomHeaders
+    ): Promise<unknown> {
+        return await this.maintenanceOps.getRogueApExport(siteId, format, page, pageSize, customHeaders);
+    }
+
+    public async backupController(retainUser: boolean, customHeaders?: CustomHeaders): Promise<unknown> {
+        return await this.maintenanceOps.backupController(retainUser, customHeaders);
+    }
+
+    public async backupControllerToFileServer(
+        serverConfig: FileServerConfig,
+        filePath: string,
+        retainUser: boolean,
+        customHeaders?: CustomHeaders
+    ): Promise<unknown> {
+        return await this.maintenanceOps.backupControllerToFileServer(serverConfig, filePath, retainUser, customHeaders);
+    }
+
+    public async restoreController(fileName: string, customHeaders?: CustomHeaders): Promise<unknown> {
+        return await this.maintenanceOps.restoreController(fileName, customHeaders);
+    }
+
+    public async restoreControllerFromFileServer(
+        serverConfig: FileServerConfig,
+        filePath: string,
+        skipDevice: boolean,
+        customHeaders?: CustomHeaders
+    ): Promise<unknown> {
+        return await this.maintenanceOps.restoreControllerFromFileServer(serverConfig, filePath, skipDevice, customHeaders);
+    }
+
+    public async backupSites(siteIds: string[], customHeaders?: CustomHeaders): Promise<unknown> {
+        return await this.maintenanceOps.backupSites(siteIds, customHeaders);
+    }
+
+    public async backupSitesToFileServer(
+        serverConfig: FileServerConfig,
+        filePath: string,
+        siteIds: string[],
+        customHeaders?: CustomHeaders
+    ): Promise<unknown> {
+        return await this.maintenanceOps.backupSitesToFileServer(serverConfig, filePath, siteIds, customHeaders);
+    }
+
+    public async restoreSites(siteRestoreInfos: SiteRestoreInfo[], customHeaders?: CustomHeaders): Promise<unknown> {
+        return await this.maintenanceOps.restoreSites(siteRestoreInfos, customHeaders);
+    }
+
+    public async restoreSitesFromFileServer(
+        serverConfig: FileServerConfig,
+        siteInfos: SiteFileRestoreInfo[],
+        customHeaders?: CustomHeaders
+    ): Promise<unknown> {
+        return await this.maintenanceOps.restoreSitesFromFileServer(serverConfig, siteInfos, customHeaders);
     }
 
     // Account operations
