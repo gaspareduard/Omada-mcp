@@ -17,7 +17,7 @@ Security-focused MCP server for TP-Link Omada Open API workflows. This Docker-or
 1. Pull an image:
 
    ```bash
-   docker pull ghcr.io/ailivesinterminal/omada-mcp:latest
+   docker pull ghcr.io/gaspareduard/omada-mcp:latest
    ```
 
 2. Edit your Claude Desktop MCP config:
@@ -41,7 +41,7 @@ Security-focused MCP server for TP-Link Omada Open API workflows. This Docker-or
            "-e", "OMADA_OMADAC_ID=your-omadac-id",
            "-e", "OMADA_SITE_ID=your-site-id",
            "-e", "OMADA_STRICT_SSL=true",
-           "ghcr.io/ailivesinterminal/omada-mcp:latest"
+           "ghcr.io/gaspareduard/omada-mcp:latest"
          ]
        }
      }
@@ -55,7 +55,7 @@ Security-focused MCP server for TP-Link Omada Open API workflows. This Docker-or
 ```bash
 docker run --rm -it \
   --env-file .env \
-  ghcr.io/ailivesinterminal/omada-mcp:latest
+  ghcr.io/gaspareduard/omada-mcp:latest
 ```
 
 ## Configuration
@@ -839,8 +839,8 @@ Single-call tools that internally aggregate multiple Omada API calls in parallel
 
 Want to help improve this project? Contributions are welcome! Visit our GitHub repository to report issues, suggest features, or submit pull requests:
 
-**[https://github.com/AILivesInTerminal/Omada-mcp](https://github.com/AILivesInTerminal/Omada-mcp)**
+**[https://github.com/gaspareduard/Omada-mcp](https://github.com/gaspareduard/Omada-mcp)**
 
 ## License
 
-This project is licensed under the [MIT License](https://github.com/AILivesInTerminal/Omada-mcp?tab=MIT-1-ov-file).
+This project is licensed under the [MIT License](https://github.com/gaspareduard/Omada-mcp?tab=MIT-1-ov-file).
