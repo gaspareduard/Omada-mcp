@@ -1,3 +1,5 @@
+[![MseeP.ai Security Assessment Badge](https://mseep.net/pr/gaspareduard-omada-mcp-badge.png)](https://mseep.ai/app/gaspareduard-omada-mcp)
+
 # Safe Omada MCP
 
 [![CI](https://github.com/gaspareduard/Omada-mcp/actions/workflows/ci.yml/badge.svg)](https://github.com/gaspareduard/Omada-mcp/actions/workflows/ci.yml)
