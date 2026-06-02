@@ -3,7 +3,6 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { ToolExtra } from '../../src/server/common.js';
 import {
     clientIdSchema,
-    customRequestSchema,
     deviceIdSchema,
     safeSerialize,
     setupServerLogging,
@@ -214,53 +213,6 @@ describe('server/common', () => {
             it('should reject empty deviceId', () => {
                 const result = deviceIdSchema.safeParse({ deviceId: '' });
                 expect(result.success).toBe(false);
-            });
-        });
-
-        describe('customRequestSchema', () => {
-            it('should accept minimal valid request', () => {
-                const result = customRequestSchema.safeParse({ url: '/api/test' });
-                expect(result.success).toBe(true);
-                if (result.success) {
-                    expect(result.data.method).toBe('GET');
-                    expect(result.data.url).toBe('/api/test');
-                }
-            });
-
-            it('should accept full request with all fields', () => {
-                const result = customRequestSchema.safeParse({
-                    method: 'POST',
-                    url: '/api/test',
-                    params: { key: 'value' },
-                    data: { body: 'data' },
-                    siteId: 'site-123',
-                });
-                expect(result.success).toBe(true);
-                if (result.success) {
-                    expect(result.data.method).toBe('POST');
-                    expect(result.data.url).toBe('/api/test');
-                    expect(result.data.params).toEqual({ key: 'value' });
-                    expect(result.data.data).toEqual({ body: 'data' });
-                    expect(result.data.siteId).toBe('site-123');
-                }
-            });
-
-            it('should reject missing url', () => {
-                const result = customRequestSchema.safeParse({ method: 'GET' });
-                expect(result.success).toBe(false);
-            });
-
-            it('should reject empty url', () => {
-                const result = customRequestSchema.safeParse({ url: '' });
-                expect(result.success).toBe(false);
-            });
-
-            it('should default method to GET', () => {
-                const result = customRequestSchema.safeParse({ url: '/api/test' });
-                expect(result.success).toBe(true);
-                if (result.success) {
-                    expect(result.data.method).toBe('GET');
-                }
             });
         });
 

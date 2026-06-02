@@ -2,6 +2,7 @@ import axios, { type AxiosInstance, type AxiosRequestConfig, type AxiosRequestHe
 
 import type { CustomHeaders, OmadaApiResponse, PaginatedResult } from '../types/index.js';
 import { logger } from '../utils/logger.js';
+import { isSensitiveKey, maskValue } from '../utils/redact.js';
 
 import type { AuthManager } from './auth.js';
 
@@ -270,7 +271,7 @@ export class RequestHandler {
 
         const sanitized: Record<string, unknown> = {};
         for (const [key, value] of Object.entries(headers)) {
-            sanitized[key] = this.isSensitiveKey(key) ? this.maskValue(value) : value;
+            sanitized[key] = isSensitiveKey(key) ? maskValue(value) : value;
         }
 
         return sanitized;
@@ -290,45 +291,9 @@ export class RequestHandler {
 
         const sanitized: Record<string, unknown> = {};
         for (const [key, value] of Object.entries(payload)) {
-            sanitized[key] = this.isSensitiveKey(key) ? this.maskValue(value) : this.sanitizePayload(value);
+            sanitized[key] = isSensitiveKey(key) ? maskValue(value) : this.sanitizePayload(value);
         }
 
         return sanitized;
-    }
-
-    /**
-     * Check if a key name indicates sensitive data.
-     */
-    private isSensitiveKey(key: string): boolean {
-        const normalized = key.toLowerCase();
-        return (
-            normalized.includes('authorization') ||
-            normalized.includes('token') ||
-            normalized.includes('secret') ||
-            normalized.includes('password') ||
-            normalized.includes('client_id')
-        );
-    }
-
-    /**
-     * Mask a sensitive value for logging.
-     */
-    private maskValue(value: unknown): unknown {
-        if (typeof value === 'string') {
-            if (value.length <= 8) {
-                return '********';
-            }
-            return `${value.slice(0, 4)}…${value.slice(-4)}`;
-        }
-
-        if (Array.isArray(value)) {
-            return value.map(() => '********');
-        }
-
-        if (typeof value === 'object' && value !== null) {
-            return '[masked-object]';
-        }
-
-        return '********';
     }
 }
