@@ -287,6 +287,7 @@ HTTP is not part of the supported container baseline. It only starts when both o
 | `setAccessControl` | Updates portal access control settings with dry-run preview and schema validation for pre-auth and free-auth policy entries. |
 | `setAppControlRule` | Creates or updates an application control rule with dry-run preview after validating the create/update payload shape, existing rule id, and referenced application ids. |
 | `deleteAppControlRule` | Deletes an application control rule with dry-run preview after confirming the rule exists. |
+| `setBeaconControlSetting` | Updates site beacon control settings (beacon/DTIM/RTS thresholds and airtime fairness) with dry-run preview. |
 | `getDnsCacheSetting` | Gets DNS cache setting. |
 | `getDnsProxy` | Gets DNS proxy configuration. |
 | `getIgmp` | Gets IGMP snooping and proxy setting. |
@@ -712,6 +713,7 @@ Single-call tools that internally aggregate multiple Omada API calls in parallel
 | `getBandSteeringSetting` | Get the band steering configuration. | `getBandSteeringSetting` |
 | `getBandwidthCtrl` | [DEPRECATED] Use `getBandwidthControl` instead. Get the global bandwidth control configuration for the site. | `getBandwidthControl` |
 | `getBeaconControlSetting` | Get the beacon control setting, which manages 802.11 beacon transmi.... | `getBeaconControlSetting` |
+| `updateBeaconControlSetting` | Update the site beacon control setting (beacon/DTIM/RTS thresholds and airtime fairness) with dry-run support. | `setBeaconControlSetting` |
 | `getChannelLimitSetting` | [DEPRECATED] Get the channel limit setting that restricts which cha.... | `getChannelLimitSetting` |
 | `getClientActiveTimeout` | Get the client inactivity timeout setting. | `getClientActiveTimeout` |
 | `getClientDetail` | Get full detail for a specific client by MAC address, including con.... | `getClientDetail` |

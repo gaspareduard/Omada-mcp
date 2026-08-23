@@ -359,6 +359,7 @@ import { registerSetApConfigTool } from './setApConfig.js';
 import { registerSetApPowerSavingTool } from './setApPowerSaving.js';
 import { registerSetAppControlRuleTool } from './setAppControlRule.js';
 import { registerSetBandwidthControlRuleTool } from './setBandwidthControlRule.js';
+import { registerSetBeaconControlSettingTool } from './setBeaconControlSetting.js';
 import { registerSetClientRateLimitTool } from './setClientRateLimit.js';
 import { registerSetClientRateLimitProfileTool } from './setClientRateLimitProfile.js';
 import { registerSetDeviceLedTool } from './setDeviceLed.js';
@@ -591,6 +592,7 @@ const TOOL_REGISTRY: ToolEntry[] = [
     { fn: registerGetRadioFrequencyPlanningResultTool, category: 'wireless-radio', permission: 'read' },
     { fn: registerGetBandSteeringSettingTool, category: 'wireless-radio', permission: 'read' },
     { fn: registerGetBeaconControlSettingTool, category: 'wireless-radio', permission: 'read' },
+    { fn: registerSetBeaconControlSettingTool, category: 'wireless-radio', permission: 'write' },
     { fn: registerGetChannelLimitSettingTool, category: 'wireless-radio', permission: 'read' },
     { fn: registerGetMeshSettingTool, category: 'wireless-radio', permission: 'read' },
     { fn: registerGetRoamingSettingTool, category: 'wireless-radio', permission: 'read' },

@@ -1582,6 +1582,19 @@ describe('NetworkOperations', () => {
         });
     });
 
+    describe('setBeaconControlSetting', () => {
+        it('should patch beacon control setting for a site', async () => {
+            const mockData = { airtimeFairness: { enable2g: true, enable5g: true, enable6g: false } };
+            const mockResponse: OmadaApiResponse<unknown> = { errorCode: 0, result: mockData };
+            vi.mocked(mockRequest.patch).mockResolvedValue(mockResponse);
+
+            const result = await networkOps.setBeaconControlSetting(mockData, 'site-123');
+
+            expect(mockRequest.patch).toHaveBeenCalledWith('/openapi/v1/test-omadac/sites/site-123/beacon-control', mockData, undefined);
+            expect(result).toEqual(mockData);
+        });
+    });
+
     describe('getChannelLimitSetting', () => {
         it('should get channel limit setting', async () => {
             const mockResponse: OmadaApiResponse<unknown> = { errorCode: 0, result: {} };

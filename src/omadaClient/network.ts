@@ -984,6 +984,17 @@ export class NetworkOperations {
     }
 
     /**
+     * Update beacon control setting (includes airtime fairness).
+     * OperationId: updateBeaconControlSetting
+     */
+    public async setBeaconControlSetting(payload: unknown, siteId?: string, customHeaders?: CustomHeaders): Promise<unknown> {
+        const resolvedSiteId = await this.site.resolveSiteId(siteId);
+        const path = this.buildPath(`/sites/${encodeURIComponent(resolvedSiteId)}/beacon-control`);
+        const response = await this.request.patch<OmadaApiResponse<unknown>>(path, payload, customHeaders);
+        return this.request.ensureSuccess(response);
+    }
+
+    /**
      * Get channel limit setting.
      * OperationId: getChannelLimitSetting
      */

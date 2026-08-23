@@ -1159,6 +1159,10 @@ export class OmadaClient {
         return await this.networkOps.getBeaconControlSetting(siteId, customHeaders);
     }
 
+    public async setBeaconControlSetting(payload: unknown, siteId?: string, customHeaders?: CustomHeaders): Promise<unknown> {
+        return await this.networkOps.setBeaconControlSetting(payload, siteId, customHeaders);
+    }
+
     public async getChannelLimitSetting(siteId?: string, customHeaders?: CustomHeaders): Promise<unknown> {
         return await this.networkOps.getChannelLimitSetting(siteId, customHeaders);
     }

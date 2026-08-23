@@ -169,7 +169,7 @@ describe('tools/index', () => {
             expect(mockServer.registerTool).toHaveBeenCalledWith('deleteBandwidthControlRule', expect.any(Object), expect.any(Function));
 
             // Verify total number of tools registered
-            expect(mockServer.registerTool).toHaveBeenCalledTimes(366);
+            expect(mockServer.registerTool).toHaveBeenCalledTimes(367);
         });
     });
 });
