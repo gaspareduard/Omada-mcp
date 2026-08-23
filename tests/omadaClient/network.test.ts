@@ -28,7 +28,7 @@ describe('NetworkOperations', () => {
         } as unknown as RequestHandler;
 
         mockSite = {
-            resolveSiteId: vi.fn((siteId?: string) => siteId ?? 'default-site'),
+            resolveSiteId: vi.fn(async (siteId?: string) => siteId ?? 'default-site'),
         } as unknown as SiteOperations;
 
         mockBuildPath = vi.fn((path: string, version = 'v1') => `/openapi/${version}/test-omadac${path}`);
@@ -465,6 +465,40 @@ describe('NetworkOperations', () => {
 
             expect(mockRequest.put).toHaveBeenCalledWith('/openapi/v1/test-omadac/sites/site-123/acls/eap-acls/acl-2', payload, undefined);
             expect(result).toEqual({ ok: true });
+        });
+
+        it('should create a switch ACL rule', async () => {
+            const mockResponse: OmadaApiResponse<unknown> = {
+                errorCode: 0,
+                result: { id: 'osw-acl-1' },
+            };
+
+            vi.mocked(mockRequest.post).mockResolvedValue(mockResponse);
+
+            const payload = { description: 'Switch block rule', status: true };
+            const result = await networkOps.createOswAcl(payload, 'site-123');
+
+            expect(mockRequest.post).toHaveBeenCalledWith('/openapi/v1/test-omadac/sites/site-123/acls/osw-acls', payload, undefined);
+            expect(result).toEqual({ id: 'osw-acl-1' });
+        });
+
+        it('should update a switch ACL rule', async () => {
+            const mockResponse: OmadaApiResponse<unknown> = {
+                errorCode: 0,
+                result: { ok: true },
+            };
+
+            vi.mocked(mockRequest.put).mockResolvedValue(mockResponse);
+
+            const payload = { description: 'Updated switch block rule', status: false };
+            const result = await networkOps.updateOswAcl('osw-acl-1', payload, 'site-123');
+
+            expect(mockRequest.put).toHaveBeenCalledWith('/openapi/v1/test-omadac/sites/site-123/acls/osw-acls/osw-acl-1', payload, undefined);
+            expect(result).toEqual({ ok: true });
+        });
+
+        it('should throw when updating a switch ACL without aclId', async () => {
+            await expect(networkOps.updateOswAcl('', { description: 'bad' }, 'site-123')).rejects.toThrow('aclId is required.');
         });
 
         it('should delete an ACL rule', async () => {
@@ -1545,6 +1579,19 @@ describe('NetworkOperations', () => {
             vi.mocked(mockRequest.get).mockResolvedValue(mockResponse);
             await networkOps.getBeaconControlSetting('site-123');
             expect(mockRequest.get).toHaveBeenCalledWith('/openapi/v1/test-omadac/sites/site-123/beacon-control', undefined, undefined);
+        });
+    });
+
+    describe('setBeaconControlSetting', () => {
+        it('should patch beacon control setting for a site', async () => {
+            const mockData = { airtimeFairness: { enable2g: true, enable5g: true, enable6g: false } };
+            const mockResponse: OmadaApiResponse<unknown> = { errorCode: 0, result: mockData };
+            vi.mocked(mockRequest.patch).mockResolvedValue(mockResponse);
+
+            const result = await networkOps.setBeaconControlSetting(mockData, 'site-123');
+
+            expect(mockRequest.patch).toHaveBeenCalledWith('/openapi/v1/test-omadac/sites/site-123/beacon-control', mockData, undefined);
+            expect(result).toEqual(mockData);
         });
     });
 

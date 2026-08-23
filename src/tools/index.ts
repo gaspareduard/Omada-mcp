@@ -11,6 +11,7 @@ import { registerBlockClientTool } from './blockClient.js';
 import { registerCreateDhcpReservationTool } from './createDhcpReservation.js';
 import { registerCreateEapAclTool } from './createEapAcl.js';
 import { registerCreateGatewayAclTool } from './createGatewayAcl.js';
+import { registerCreateSwitchAclTool } from './createSwitchAcl.js';
 import { registerDeleteAclTool } from './deleteAcl.js';
 import { registerDeleteAppControlRuleTool } from './deleteAppControlRule.js';
 import { registerDeleteBandwidthControlRuleTool } from './deleteBandwidthControlRule.js';
@@ -358,6 +359,7 @@ import { registerSetApConfigTool } from './setApConfig.js';
 import { registerSetApPowerSavingTool } from './setApPowerSaving.js';
 import { registerSetAppControlRuleTool } from './setAppControlRule.js';
 import { registerSetBandwidthControlRuleTool } from './setBandwidthControlRule.js';
+import { registerSetBeaconControlSettingTool } from './setBeaconControlSetting.js';
 import { registerSetClientRateLimitTool } from './setClientRateLimit.js';
 import { registerSetClientRateLimitProfileTool } from './setClientRateLimitProfile.js';
 import { registerSetDeviceLedTool } from './setDeviceLed.js';
@@ -367,6 +369,7 @@ import { registerUnblockClientTool } from './unblockClient.js';
 import { registerUpdateDhcpReservationTool } from './updateDhcpReservation.js';
 import { registerUpdateEapAclTool } from './updateEapAcl.js';
 import { registerUpdateGatewayAclTool } from './updateGatewayAcl.js';
+import { registerUpdateSwitchAclTool } from './updateSwitchAcl.js';
 
 // ---------------------------------------------------------------------------
 // Tool registry: each entry maps a register-function to its category and
@@ -589,6 +592,7 @@ const TOOL_REGISTRY: ToolEntry[] = [
     { fn: registerGetRadioFrequencyPlanningResultTool, category: 'wireless-radio', permission: 'read' },
     { fn: registerGetBandSteeringSettingTool, category: 'wireless-radio', permission: 'read' },
     { fn: registerGetBeaconControlSettingTool, category: 'wireless-radio', permission: 'read' },
+    { fn: registerSetBeaconControlSettingTool, category: 'wireless-radio', permission: 'write' },
     { fn: registerGetChannelLimitSettingTool, category: 'wireless-radio', permission: 'read' },
     { fn: registerGetMeshSettingTool, category: 'wireless-radio', permission: 'read' },
     { fn: registerGetRoamingSettingTool, category: 'wireless-radio', permission: 'read' },
@@ -622,8 +626,10 @@ const TOOL_REGISTRY: ToolEntry[] = [
     { fn: registerSetAclConfigTypeSettingTool, category: 'firewall-acl', permission: 'write' },
     { fn: registerCreateGatewayAclTool, category: 'firewall-acl', permission: 'write' },
     { fn: registerCreateEapAclTool, category: 'firewall-acl', permission: 'write' },
+    { fn: registerCreateSwitchAclTool, category: 'firewall-acl', permission: 'write' },
     { fn: registerUpdateGatewayAclTool, category: 'firewall-acl', permission: 'write' },
     { fn: registerUpdateEapAclTool, category: 'firewall-acl', permission: 'write' },
+    { fn: registerUpdateSwitchAclTool, category: 'firewall-acl', permission: 'write' },
     { fn: registerDeleteAclTool, category: 'firewall-acl', permission: 'write' },
     { fn: registerSetFirewallSettingTool, category: 'firewall-acl', permission: 'write' },
 

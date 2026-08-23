@@ -196,7 +196,7 @@ function mergePermissions(map: Map<ToolCategory, Set<ToolPermission>>, cat: Tool
 }
 
 /** Default value for OMADA_TOOL_CATEGORIES */
-export const DEFAULT_TOOL_CATEGORIES = 'dashboard:r,client-insights:r,clients:r,devices-all:r';
+export const DEFAULT_TOOL_CATEGORIES = 'dashboard:r,client-insights:r,clients:r,devices-all:r,firewall-acl:r,firewall-traffic:r';
 
 export const DEFAULT_CAPABILITY_PROFILE: CapabilityProfile = 'safe-read';
 

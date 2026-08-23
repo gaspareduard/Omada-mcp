@@ -1159,6 +1159,10 @@ export class OmadaClient {
         return await this.networkOps.getBeaconControlSetting(siteId, customHeaders);
     }
 
+    public async setBeaconControlSetting(payload: unknown, siteId?: string, customHeaders?: CustomHeaders): Promise<unknown> {
+        return await this.networkOps.setBeaconControlSetting(payload, siteId, customHeaders);
+    }
+
     public async getChannelLimitSetting(siteId?: string, customHeaders?: CustomHeaders): Promise<unknown> {
         return await this.networkOps.getChannelLimitSetting(siteId, customHeaders);
     }
@@ -1226,6 +1230,14 @@ export class OmadaClient {
 
     public async updateEapAcl(aclId: string, payload: unknown, siteId?: string, customHeaders?: CustomHeaders): Promise<unknown> {
         return await this.networkOps.updateEapAcl(aclId, payload, siteId, customHeaders);
+    }
+
+    public async createOswAcl(payload: unknown, siteId?: string, customHeaders?: CustomHeaders): Promise<unknown> {
+        return await this.networkOps.createOswAcl(payload, siteId, customHeaders);
+    }
+
+    public async updateOswAcl(aclId: string, payload: unknown, siteId?: string, customHeaders?: CustomHeaders): Promise<unknown> {
+        return await this.networkOps.updateOswAcl(aclId, payload, siteId, customHeaders);
     }
 
     public async deleteAcl(aclId: string, siteId?: string, customHeaders?: CustomHeaders): Promise<unknown> {

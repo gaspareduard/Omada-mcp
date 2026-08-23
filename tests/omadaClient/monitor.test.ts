@@ -24,7 +24,7 @@ describe('MonitorOperations', () => {
         } as unknown as RequestHandler;
 
         mockSite = {
-            resolveSiteId: vi.fn((siteId?: string) => siteId ?? 'default-site'),
+            resolveSiteId: vi.fn(async (siteId?: string) => siteId ?? 'default-site'),
         } as unknown as SiteOperations;
 
         mockBuildPath = vi.fn((path: string) => `/openapi/v1/test-omadac${path}`);
