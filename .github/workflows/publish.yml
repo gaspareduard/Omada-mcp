@@ -61,13 +61,14 @@ jobs:
         uses: actions/setup-node@v7
         with:
           node-version: "24"
-          cache: "npm"
+          package-manager-cache: false
           registry-url: "https://registry.npmjs.org"
 
       - name: Install dependencies
         run: npm ci
 
       - name: Verify tag matches package version
+        id: release
         run: |
           TAG_VERSION="${GITHUB_REF_NAME#v}"
           PKG_VERSION=$(node -p "require('./package.json').version")
@@ -75,16 +76,23 @@ jobs:
             echo "Tag version ($TAG_VERSION) does not match package.json version ($PKG_VERSION)."
             exit 1
           fi
+          case "$TAG_VERSION" in
+            *-oidc.*) NPM_TAG="oidc-test" ;;
+            *-*) NPM_TAG="next" ;;
+            *) NPM_TAG="latest" ;;
+          esac
+          echo "npm-tag=${NPM_TAG}" >> "$GITHUB_OUTPUT"
 
       - name: Build
         run: npm run build
 
-      - name: Publish to npm
-        run: npm publish --provenance --access public
+      - name: Publish to npm with trusted publishing
+        run: npm publish --provenance --access public --tag "$NPM_DIST_TAG"
         env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+          NPM_DIST_TAG: ${{ steps.release.outputs.npm-tag }}
 
   publish-docker:
+    if: ${{ !contains(github.ref_name, '-oidc.') }}
     needs: validate
     runs-on: ubuntu-latest
     permissions:
@@ -113,6 +121,15 @@ jobs:
         run: |
           VERSION="${GITHUB_REF_NAME#v}"
           echo "version=${VERSION}" >> "$GITHUB_OUTPUT"
+          {
+            echo "tags<<EOF"
+            echo "${IMAGE_NAME}:${VERSION}"
+            case "$VERSION" in
+              *-*) ;;
+              *) echo "${IMAGE_NAME}:latest" ;;
+            esac
+            echo "EOF"
+          } >> "$GITHUB_OUTPUT"
 
       - name: Build and push Docker image
         uses: docker/build-push-action@v7
@@ -121,9 +138,7 @@ jobs:
           file: ./Dockerfile
           platforms: linux/amd64,linux/arm64
           push: true
-          tags: |
-            ${{ env.IMAGE_NAME }}:latest
-            ${{ env.IMAGE_NAME }}:${{ steps.tag.outputs.version }}
+          tags: ${{ steps.tag.outputs.tags }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
