@@ -65,6 +65,61 @@ export const eapAclPayloadSchema = z.object({
     destinationType: z.number().int(),
 });
 
+const switchAclEtherTypeSchema = z
+    .object({
+        enable: z.boolean(),
+        value: z
+            .string()
+            .regex(/^[0-9a-fA-F]{4}$/)
+            .optional(),
+    })
+    .superRefine((v, ctx) => {
+        if (v.enable && !v.value) {
+            ctx.addIssue({ code: z.ZodIssueCode.custom, message: 'value is required when etherType.enable is true.', path: ['value'] });
+        }
+    });
+
+const switchAclPortSchema = z.object({
+    mac: z.string().trim().min(1),
+    customPortIds: z.array(z.number().int()),
+    customLagIds: z.array(z.number().int()),
+});
+
+export const switchAclPayloadSchema = z.object({
+    description: z.string().trim().min(1).max(512),
+    status: z.boolean(),
+    policy: z
+        .number()
+        .int()
+        .refine((value) => value === 0 || value === 1, 'policy must be 0 (drop) or 1 (allow).'),
+    protocols: z.array(protocolNumberSchema).min(1, 'At least one protocol is required.'),
+    sourceIds: z.array(z.string().trim().min(1)).min(1, 'At least one sourceId is required.'),
+    destinationIds: z.array(z.string().trim().min(1)).optional(),
+    sourceType: z.number().int(),
+    destinationType: z.number().int(),
+    bindingType: z
+        .number()
+        .int()
+        .refine((value) => [0, 1, 2].includes(value), 'bindingType: 0=all ports, 1=custom, 2=VLAN.'),
+    customAclPorts: z.array(switchAclPortSchema).optional(),
+    networkId: z.string().trim().min(1).optional(),
+    bindingBridgeVlan: z.number().int().optional(),
+    etherType: switchAclEtherTypeSchema,
+    timeRangeId: z.string().trim().min(1).optional(),
+    biDirectional: z.boolean().optional(),
+});
+
+export const createSwitchAclInputSchema = siteInputSchema.extend({
+    payload: switchAclPayloadSchema.describe('Switch ACL payload following the official Omada SwitchACLConfig schema.'),
+    dryRun: z.boolean().optional().default(false),
+});
+
+export const updateSwitchAclInputSchema = siteInputSchema.extend({
+    aclId: aclIdSchema,
+    payload: switchAclPayloadSchema.describe('Switch ACL payload following the official Omada SwitchACLConfig schema.'),
+    dryRun: z.boolean().optional().default(false),
+});
+
 export const createGatewayAclInputSchema = siteInputSchema.extend({
     payload: gatewayAclPayloadSchema.describe('Gateway ACL payload following the official Omada GatewayACLConfig schema.'),
     dryRun: z.boolean().optional().default(false),

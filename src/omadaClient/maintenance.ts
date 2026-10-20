@@ -67,7 +67,7 @@ export class MaintenanceOperations {
      * OperationId: getSiteBackupResult
      */
     public async getSiteBackupResult(siteId?: string, customHeaders?: CustomHeaders): Promise<unknown> {
-        const resolvedSiteId = this.site.resolveSiteId(siteId);
+        const resolvedSiteId = await this.site.resolveSiteId(siteId);
         const path = this.buildPath(`/sites/${encodeURIComponent(resolvedSiteId)}/backup/result`);
         const response = await this.request.get<OmadaApiResponse<unknown>>(path, undefined, customHeaders);
         return this.request.ensureSuccess(response);
@@ -78,7 +78,7 @@ export class MaintenanceOperations {
      * OperationId: getSelfServerSiteFileList
      */
     public async getSiteBackupFileList(siteId?: string, customHeaders?: CustomHeaders): Promise<unknown> {
-        const resolvedSiteId = this.site.resolveSiteId(siteId);
+        const resolvedSiteId = await this.site.resolveSiteId(siteId);
         const path = this.buildPath(`/sites/${encodeURIComponent(resolvedSiteId)}/maintenance/backup/files`);
         const response = await this.request.get<OmadaApiResponse<unknown>>(path, undefined, customHeaders);
         return this.request.ensureSuccess(response);
@@ -95,7 +95,7 @@ export class MaintenanceOperations {
         pageSize = 10,
         customHeaders?: CustomHeaders
     ): Promise<unknown> {
-        const resolvedSiteId = this.site.resolveSiteId(siteId);
+        const resolvedSiteId = await this.site.resolveSiteId(siteId);
         const path = this.buildPath(`/sites/${encodeURIComponent(resolvedSiteId)}/rogue-ap/export/${encodeURIComponent(format)}`);
         const response = await this.request.get<OmadaApiResponse<unknown>>(path, { page, pageSize }, customHeaders);
         return this.request.ensureSuccess(response);

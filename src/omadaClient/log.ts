@@ -27,7 +27,7 @@ export class LogOperations {
      * OperationId: getSiteEvents
      */
     public async listSiteEvents(options: LogQueryOptions, siteId?: string, customHeaders?: CustomHeaders): Promise<PaginatedResult<unknown>> {
-        const resolvedSiteId = this.site.resolveSiteId(siteId);
+        const resolvedSiteId = await this.site.resolveSiteId(siteId);
         const path = this.buildPath(`/sites/${encodeURIComponent(resolvedSiteId)}/logs/events`);
 
         const params: Record<string, unknown> = {
@@ -54,7 +54,7 @@ export class LogOperations {
      * OperationId: getSiteAlerts
      */
     public async listSiteAlerts(options: LogQueryOptions, siteId?: string, customHeaders?: CustomHeaders): Promise<PaginatedResult<unknown>> {
-        const resolvedSiteId = this.site.resolveSiteId(siteId);
+        const resolvedSiteId = await this.site.resolveSiteId(siteId);
         const path = this.buildPath(`/sites/${encodeURIComponent(resolvedSiteId)}/logs/alerts`);
 
         const params: Record<string, unknown> = {
@@ -81,7 +81,7 @@ export class LogOperations {
      * OperationId: getSiteAuditLogs
      */
     public async listSiteAuditLogs(options: LogQueryOptions, siteId?: string, customHeaders?: CustomHeaders): Promise<PaginatedResult<unknown>> {
-        const resolvedSiteId = this.site.resolveSiteId(siteId);
+        const resolvedSiteId = await this.site.resolveSiteId(siteId);
         const path = this.buildPath(`/sites/${encodeURIComponent(resolvedSiteId)}/audit-logs`);
 
         const params: Record<string, unknown> = {
@@ -188,7 +188,7 @@ export class LogOperations {
      * OperationId: getLogSettingForSite
      */
     public async getLogSettingForSite(siteId?: string, customHeaders?: CustomHeaders): Promise<unknown> {
-        const resolvedSiteId = this.site.resolveSiteId(siteId);
+        const resolvedSiteId = await this.site.resolveSiteId(siteId);
         const path = this.buildPath(`/sites/${encodeURIComponent(resolvedSiteId)}/site/log-notification`);
         const response = await this.request.get<OmadaApiResponse<unknown>>(path, undefined, customHeaders);
         return this.request.ensureSuccess(response);
@@ -199,7 +199,7 @@ export class LogOperations {
      * OperationId: getLogSettingForSiteV2
      */
     public async getLogSettingForSiteV2(siteId?: string, customHeaders?: CustomHeaders): Promise<unknown> {
-        const resolvedSiteId = this.site.resolveSiteId(siteId);
+        const resolvedSiteId = await this.site.resolveSiteId(siteId);
         const path = this.buildPath(`/sites/${encodeURIComponent(resolvedSiteId)}/site/log-notification`, 'v2');
         const response = await this.request.get<OmadaApiResponse<unknown>>(path, undefined, customHeaders);
         return this.request.ensureSuccess(response);
@@ -210,7 +210,7 @@ export class LogOperations {
      * OperationId: getAuditLogSettingForSite
      */
     public async getAuditLogSettingForSite(siteId?: string, customHeaders?: CustomHeaders): Promise<unknown> {
-        const resolvedSiteId = this.site.resolveSiteId(siteId);
+        const resolvedSiteId = await this.site.resolveSiteId(siteId);
         const path = this.buildPath(`/sites/${encodeURIComponent(resolvedSiteId)}/site/audit-notification`);
         const response = await this.request.get<OmadaApiResponse<unknown>>(path, undefined, customHeaders);
         return this.request.ensureSuccess(response);

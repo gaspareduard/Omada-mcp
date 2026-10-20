@@ -3,6 +3,23 @@
 > This file is the single source of truth for AI agents working on this repository.
 > For human contributors, see [CONTRIBUTING.md](./CONTRIBUTING.md) and [CODEBASE.md](./CODEBASE.md).
 
+## Agent skills
+
+### Issue tracker
+
+Issues and specs live in GitHub Issues for `gaspareduard/Omada-mcp`.
+Before tracker operations, read `docs/agents/issue-tracker.md`.
+
+### Triage labels
+
+Use the five default triage labels.
+Before triaging, read `docs/agents/triage-labels.md`.
+
+### Domain docs
+
+Single-context: root `GLOSSARY.md` and `docs/adr/`.
+Before exploring the codebase, read `docs/agents/domain.md`.
+
 ## Repository Purpose
 
 Security-focused MCP server exposing TP-Link Omada controller APIs. Written in TypeScript/Node.js. Production baseline is `stdio`; HTTP transport is in the codebase only as an explicitly unsafe, lab-only path.

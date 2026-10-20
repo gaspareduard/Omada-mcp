@@ -8,7 +8,7 @@ describe('omadaClient/actions', () => {
         ensureSuccess: vi.fn((value) => value.result),
     };
     const mockSite = {
-        resolveSiteId: vi.fn((siteId?: string) => siteId ?? 'default-site'),
+        resolveSiteId: vi.fn(async (siteId?: string) => siteId ?? 'default-site'),
     };
     const buildPath = vi.fn((path: string) => `/api${path}`);
 

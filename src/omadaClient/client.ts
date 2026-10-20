@@ -30,7 +30,7 @@ export class ClientOperations {
      * List all clients in a site.
      */
     public async listClients(siteId?: string, customHeaders?: CustomHeaders): Promise<OmadaClientInfo[]> {
-        const resolvedSiteId = this.site.resolveSiteId(siteId);
+        const resolvedSiteId = await this.site.resolveSiteId(siteId);
         return await this.request.fetchPaginated<OmadaClientInfo>(
             this.buildPath(`/sites/${encodeURIComponent(resolvedSiteId)}/clients`),
             {},
@@ -54,7 +54,7 @@ export class ClientOperations {
      * @returns Array of active client information
      */
     public async listMostActiveClients(siteId?: string, customHeaders?: CustomHeaders): Promise<ActiveClientInfo[]> {
-        const resolvedSiteId = this.site.resolveSiteId(siteId);
+        const resolvedSiteId = await this.site.resolveSiteId(siteId);
         const response = await this.request.get<OmadaApiResponse<ActiveClientInfo[]>>(
             this.buildPath(`/sites/${encodeURIComponent(resolvedSiteId)}/dashboard/active-clients`),
             undefined,
@@ -71,7 +71,7 @@ export class ClientOperations {
      * @returns Array of client activity snapshots over time
      */
     public async listClientsActivity(options: GetClientActivityOptions = {}, customHeaders?: CustomHeaders): Promise<ClientActivity[]> {
-        const resolvedSiteId = this.site.resolveSiteId(options.siteId);
+        const resolvedSiteId = await this.site.resolveSiteId(options.siteId);
         const params: Record<string, unknown> = {};
 
         if (options.start !== undefined) {
@@ -100,7 +100,7 @@ export class ClientOperations {
         options: ListClientsPastConnectionsOptions,
         customHeaders?: CustomHeaders
     ): Promise<ClientPastConnection[]> {
-        const resolvedSiteId = this.site.resolveSiteId(options.siteId);
+        const resolvedSiteId = await this.site.resolveSiteId(options.siteId);
         const params: Record<string, unknown> = {
             page: options.page,
             pageSize: options.pageSize,
@@ -145,7 +145,7 @@ export class ClientOperations {
      * @returns Array of rate limit profiles
      */
     public async getRateLimitProfiles(siteId?: string, customHeaders?: CustomHeaders): Promise<RateLimitProfile[]> {
-        const resolvedSiteId = this.site.resolveSiteId(siteId);
+        const resolvedSiteId = await this.site.resolveSiteId(siteId);
         const response = await this.request.get<OmadaApiResponse<RateLimitProfile[]>>(
             this.buildPath(`/sites/${encodeURIComponent(resolvedSiteId)}/rate-limit-profiles`),
             undefined,
@@ -171,7 +171,7 @@ export class ClientOperations {
         siteId?: string,
         customHeaders?: CustomHeaders
     ): Promise<ClientRateLimitSetting> {
-        const resolvedSiteId = this.site.resolveSiteId(siteId);
+        const resolvedSiteId = await this.site.resolveSiteId(siteId);
         const requestBody: UpdateClientRateLimitRequest = {
             mode: 0, // 0 = custom rate limit
             customRateLimit: {
@@ -206,7 +206,7 @@ export class ClientOperations {
         siteId?: string,
         customHeaders?: CustomHeaders
     ): Promise<ClientRateLimitSetting> {
-        const resolvedSiteId = this.site.resolveSiteId(siteId);
+        const resolvedSiteId = await this.site.resolveSiteId(siteId);
         const requestBody: UpdateClientRateLimitRequest = {
             mode: 1, // 1 = use rate limit profile
             rateLimitProfileId: profileId,
@@ -229,7 +229,7 @@ export class ClientOperations {
      * @returns Updated rate limit setting
      */
     public async disableClientRateLimit(clientMac: string, siteId?: string, customHeaders?: CustomHeaders): Promise<ClientRateLimitSetting> {
-        const resolvedSiteId = this.site.resolveSiteId(siteId);
+        const resolvedSiteId = await this.site.resolveSiteId(siteId);
 
         // To disable rate limiting, use mode 0 with enable: false and minimal valid limit values
         const requestBody: UpdateClientRateLimitRequest = {
@@ -256,7 +256,7 @@ export class ClientOperations {
      * OperationId: getClientDetail
      */
     public async getClientDetail(clientMac: string, siteId?: string, customHeaders?: CustomHeaders): Promise<unknown> {
-        const resolvedSiteId = this.site.resolveSiteId(siteId);
+        const resolvedSiteId = await this.site.resolveSiteId(siteId);
         const path = this.buildPath(`/sites/${encodeURIComponent(resolvedSiteId)}/clients/${encodeURIComponent(clientMac)}`);
         const response = await this.request.get<OmadaApiResponse<unknown>>(path, undefined, customHeaders);
         return this.request.ensureSuccess(response);
@@ -273,7 +273,7 @@ export class ClientOperations {
         siteId?: string,
         customHeaders?: CustomHeaders
     ): Promise<unknown> {
-        const resolvedSiteId = this.site.resolveSiteId(siteId);
+        const resolvedSiteId = await this.site.resolveSiteId(siteId);
         const path = this.buildPath(`/sites/${encodeURIComponent(resolvedSiteId)}/insight/clients`);
         const params: Record<string, unknown> = { page, pageSize };
         if (options?.sortLastSeen !== undefined) params['sorts.lastSeen'] = options.sortLastSeen;
@@ -297,7 +297,7 @@ export class ClientOperations {
         siteId?: string,
         customHeaders?: CustomHeaders
     ): Promise<unknown> {
-        const resolvedSiteId = this.site.resolveSiteId(siteId);
+        const resolvedSiteId = await this.site.resolveSiteId(siteId);
         const path = this.buildPath(`/sites/${encodeURIComponent(resolvedSiteId)}/clients/${encodeURIComponent(clientMac)}/client-history`);
         const params: Record<string, unknown> = { page, pageSize };
         if (searchKey !== undefined) params.searchKey = searchKey;
@@ -310,7 +310,7 @@ export class ClientOperations {
      * OperationId: getClientsDistribution
      */
     public async getClientsDistribution(siteId?: string, customHeaders?: CustomHeaders): Promise<unknown> {
-        const resolvedSiteId = this.site.resolveSiteId(siteId);
+        const resolvedSiteId = await this.site.resolveSiteId(siteId);
         const path = this.buildPath(`/sites/${encodeURIComponent(resolvedSiteId)}/dashboard/client-distribution`);
         const response = await this.request.get<OmadaApiResponse<unknown>>(path, undefined, customHeaders);
         return this.request.ensureSuccess(response);
@@ -321,7 +321,7 @@ export class ClientOperations {
      * OperationId: getPastClientNum
      */
     public async getPastClientNum(start: number, end: number, siteId?: string, customHeaders?: CustomHeaders): Promise<unknown> {
-        const resolvedSiteId = this.site.resolveSiteId(siteId);
+        const resolvedSiteId = await this.site.resolveSiteId(siteId);
         const path = this.buildPath(`/sites/${encodeURIComponent(resolvedSiteId)}/dashboard/past-client-num`);
         const response = await this.request.get<OmadaApiResponse<unknown>>(path, { start, end }, customHeaders);
         return this.request.ensureSuccess(response);

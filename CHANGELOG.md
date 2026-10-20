@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.18.0 - 2026-10-20
+
+- added site auto-discovery when neither a tool argument nor `OMADA_SITE_ID` supplies a site: single-site controllers are selected automatically; controllers with no sites or multiple sites return an explanatory error
+- added `createSwitchAcl` and `updateSwitchAcl` tools with schema validation, dry-run previews, and existing-rule checks for updates
+- expanded the default `safe-read` profile with firewall ACL and traffic read tools
+- reorganized README tool tables into collapsible read and write sections
+- configured repository engineering skills with GitHub Issues, default triage labels, and single-context domain documentation conventions
+- updated CI and publishing actions to releases using the Node.js 24 runtime
+- synchronized package and lockfile versions for the release
+
 ## 0.17.0 - 2026-04-05
 
 - added explicit two-step `confirmDangerous` confirmation gate to all four restore tools (`restoreController`, `restoreControllerFromFileServer`, `restoreSites`, `restoreSitesFromFileServer`) — irreversibility warning surfaces before any execution
