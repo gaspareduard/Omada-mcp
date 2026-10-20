@@ -241,7 +241,7 @@ Site listing, client monitoring, and client-level operational controls (rate lim
 Device inventory, per-device detail (switches, gateways, APs), firmware, cable tests, and device configuration.
 
 <details>
-<summary>Read tools (62)</summary>
+<summary>Read tools (63)</summary>
 
 | Tool | Description |
 |---|---|
@@ -303,6 +303,7 @@ Device inventory, per-device detail (switches, gateways, APs), firmware, cable t
 | `listUpgradeOverviewFirmwares` | List firmware overview for upgradeable devices (paginated). |
 | `listSitesStacks` | List switch stacks in a site (paginated). |
 | `getSitesDeviceWhiteList` | Get the device adoption whitelist for a site (paginated). |
+| `listSitesSettingIotDevices` | List devices in a site that support Bluetooth advertising (iBeacon) (paginated). |
 | `getSitesGatewaysGeneralConfig` | Get general configuration for a gateway. Requires `gatewayMac`. |
 | `getSitesGatewaysPin` | Get PIN information for a gateway. Requires `gatewayMac`. |
 | `getSitesGatewaysSimCardUsed` | Get SIM card usage info for a gateway. Requires `gatewayMac`. |

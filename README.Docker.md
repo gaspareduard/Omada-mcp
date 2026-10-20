@@ -202,6 +202,7 @@ HTTP is not part of the supported container baseline. It only starts when both o
 | `listUpgradeOverviewFirmwares` | List firmware overview for upgradeable devices (paginated). |
 | `listSitesStacks` | List switch stacks in a site (paginated). |
 | `getSitesDeviceWhiteList` | Get the device adoption whitelist for a site (paginated). |
+| `listSitesSettingIotDevices` | List devices in a site that support Bluetooth advertising (iBeacon) (paginated). |
 | `getSitesGatewaysGeneralConfig` | Get general configuration for a gateway. Requires `gatewayMac`. |
 | `getSitesGatewaysPin` | Get PIN information for a gateway. Requires `gatewayMac`. |
 | `getSitesGatewaysSimCardUsed` | Get SIM card usage info for a gateway. Requires `gatewayMac`. |

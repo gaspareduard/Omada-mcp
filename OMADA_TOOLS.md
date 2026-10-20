@@ -5,8 +5,8 @@ Organised by category. Serves as ground truth for what tools exist (or should ex
 an implementation tracker, and a reference for coding agents.
 
 **Total operations:** 1648  
-**Implemented:** 287  
-**Not implemented:** 1361
+**Implemented:** 288  
+**Not implemented:** 1360
 
 ## Table of Contents
 
@@ -14,7 +14,7 @@ an implementation tracker, and a reference for coding agents.
 - [client-insights](#client-insights) (5/5 implemented)
 - [insights](#insights) (0/1 implemented)
 - [clients](#clients) (6/19 implemented)
-- [devices-general](#devices-general) (11/117 implemented)
+- [devices-general](#devices-general) (12/117 implemented)
 - [devices-ap](#devices-ap) (16/59 implemented)
 - [devices-switch](#devices-switch) (16/38 implemented)
 - [devices-gateway](#devices-gateway) (4/24 implemented)
@@ -127,7 +127,7 @@ an implementation tracker, and a reference for coding agents.
 
 ## Category: devices-general
 
-**11/117 implemented**
+**12/117 implemented**
 
 | Category | Tool | HTTP Method | Operation | API Path | OpenAPI File | JSON Path Locator | Status |
 |---|---|---|---|---|---|---|---|
@@ -224,7 +224,7 @@ an implementation tracker, and a reference for coding agents.
 | devices-general | `listSitesAllDevicesCheckLatestFirmwareTasks` | GET | Get the result of the given check latest firmware task | `/openapi/v1/{omadacId}/sites/{siteId}/all-devices/check-latest-firmware-tasks/{taskId}` | `docs/openapi/03-device.json` | `$.paths['/openapi/v1/{omadacId}/sites/{siteId}/all-devices/check-latest-firmware-tasks/{taskId}'].get` | ⬜ Not implemented |
 | devices-general | `listSitesMultiDevicesManuallyUpgradeTasks` | GET | Get the result of the given manually upgrade task | `/openapi/v1/{omadacId}/sites/{siteId}/multi-devices/manually-upgrade-tasks/{taskId}` | `docs/openapi/03-device.json` | `$.paths['/openapi/v1/{omadacId}/sites/{siteId}/multi-devices/manually-upgrade-tasks/{taskId}'].get` | ⬜ Not implemented |
 | devices-general | `listSitesMultiDevicesRollingUpgradeTasks` | GET | Get the result of the given rolling upgrade task | `/openapi/v1/{omadacId}/sites/{siteId}/multi-devices/rolling-upgrade-tasks/{taskId}` | `docs/openapi/03-device.json` | `$.paths['/openapi/v1/{omadacId}/sites/{siteId}/multi-devices/rolling-upgrade-tasks/{taskId}'].get` | ⬜ Not implemented |
-| devices-general | `listSitesSettingIotDevices` | GET | Get Bluetooth Advertising Devices | `/openapi/v1/{omadacId}/sites/{siteId}/setting/iot/devices` | `docs/openapi/04-site-setting.json` | `$.paths['/openapi/v1/{omadacId}/sites/{siteId}/setting/iot/devices'].get` | ⬜ Not implemented |
+| devices-general | `listSitesSettingIotDevices` | GET | Get Bluetooth Advertising Devices | `/openapi/v1/{omadacId}/sites/{siteId}/setting/iot/devices` | `docs/openapi/04-site-setting.json` | `$.paths['/openapi/v1/{omadacId}/sites/{siteId}/setting/iot/devices'].get` | ✅ Implemented |
 | devices-general | `listSitesStacks` | GET | Get stack list | `/openapi/v1/{omadacId}/sites/{siteId}/stacks` | `docs/openapi/03-device.json` | `$.paths['/openapi/v1/{omadacId}/sites/{siteId}/stacks'].get` | ✅ Implemented |
 | devices-general | `listSitesStacksLags` | GET | Get stack lag | `/openapi/v1/{omadacId}/sites/{siteId}/stacks/{stackId}/lags/{lagId}` | `docs/openapi/03-device.json` | `$.paths['/openapi/v1/{omadacId}/sites/{siteId}/stacks/{stackId}/lags/{lagId}'].get` | ⬜ Not implemented |
 | devices-general | `listSitesStacksStaticroutings` | GET | Get grid stack staticRouting | `/openapi/v1/{omadacId}/sites/{siteId}/stacks/{stackId}/staticRoutings` | `docs/openapi/03-device.json` | `$.paths['/openapi/v1/{omadacId}/sites/{siteId}/stacks/{stackId}/staticRoutings'].get` | ⬜ Not implemented |
