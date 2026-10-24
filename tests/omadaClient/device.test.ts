@@ -1079,6 +1079,24 @@ describe('omadaClient/device', () => {
         });
     });
 
+    describe('listSitesSettingIotDevices', () => {
+        it('should return bluetooth advertising devices with default pagination', async () => {
+            const resp = mockSimpleResponse({ totalRows: 0, currentPage: 1, currentSize: 10, data: [] });
+            (mockRequest.get as ReturnType<typeof vi.fn>).mockResolvedValue(resp);
+            const result = await deviceOps.listSitesSettingIotDevices('site-1');
+            expect(mockRequest.get).toHaveBeenCalledWith('/api/sites/site-1/setting/iot/devices', { page: 1, pageSize: 10 }, undefined);
+            expect(result).toEqual({ totalRows: 0, currentPage: 1, currentSize: 10, data: [] });
+        });
+
+        it('should use provided page, pageSize and custom headers', async () => {
+            const resp = mockSimpleResponse({ data: [] });
+            (mockRequest.get as ReturnType<typeof vi.fn>).mockResolvedValue(resp);
+            const headers = { 'X-Test': '1' };
+            await deviceOps.listSitesSettingIotDevices('site-1', 2, 50, headers);
+            expect(mockRequest.get).toHaveBeenCalledWith('/api/sites/site-1/setting/iot/devices', { page: 2, pageSize: 50 }, headers);
+        });
+    });
+
     describe('Phase 3 AP and gateway configuration methods', () => {
         it('uses the official PATCH verb and wlanGroupId contract, preserving encoded scope and headers', async () => {
             const payload = { wlanGroupId: 'group-1' };

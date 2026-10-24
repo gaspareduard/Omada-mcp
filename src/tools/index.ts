@@ -338,6 +338,7 @@ import { registerListSitesTool } from './listSites.js';
 import { registerListSitesApsPortsTool } from './listSitesApsPorts.js';
 import { registerListSitesCableTestSwitchesIncrementResultsTool } from './listSitesCableTestSwitchesIncrementResults.js';
 import { registerListSitesCableTestSwitchesPortsTool } from './listSitesCableTestSwitchesPorts.js';
+import { registerListSitesSettingIotDevicesTool } from './listSitesSettingIotDevices.js';
 import { registerListSitesStacksTool } from './listSitesStacks.js';
 import { registerListSiteThreatManagementTool } from './listSiteThreatManagement.js';
 import { registerListSiteToSiteVpnsTool } from './listSiteToSiteVpns.js';
@@ -425,6 +426,7 @@ const TOOL_REGISTRY: ToolEntry[] = [
     { fn: registerListUpgradeOverviewFirmwaresTool, category: 'devices-general', permission: 'read' },
     { fn: registerListSitesStacksTool, category: 'devices-general', permission: 'read' },
     { fn: registerGetSitesDeviceWhiteListTool, category: 'devices-general', permission: 'read' },
+    { fn: registerListSitesSettingIotDevicesTool, category: 'devices-general', permission: 'read' },
 
     // --- Devices (switch) ---
     { fn: registerGetSwitchStackDetailTool, category: 'devices-switch', permission: 'read' },

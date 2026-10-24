@@ -714,6 +714,10 @@ export class OmadaClient {
         return await this.deviceOps.getSitesDeviceWhiteList(siteId, page, pageSize, customHeaders);
     }
 
+    public async listSitesSettingIotDevices(siteId?: string, page?: number, pageSize?: number, customHeaders?: CustomHeaders): Promise<unknown> {
+        return await this.deviceOps.listSitesSettingIotDevices(siteId, page, pageSize, customHeaders);
+    }
+
     // Security operations (extended)
     public async getTopThreats(customHeaders?: CustomHeaders): Promise<unknown[]> {
         return await this.securityOps.getTopThreats(customHeaders);

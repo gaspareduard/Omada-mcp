@@ -1032,6 +1032,17 @@ export class DeviceOperations {
     }
 
     /**
+     * List devices that can configure Bluetooth advertising (iBeacon).
+     * OperationId: getGridBtIbeaconDevices
+     */
+    public async listSitesSettingIotDevices(siteId?: string, page?: number, pageSize?: number, customHeaders?: CustomHeaders): Promise<unknown> {
+        const resolvedSiteId = await this.site.resolveSiteId(siteId);
+        const path = this.buildPath(`/sites/${encodeURIComponent(resolvedSiteId)}/setting/iot/devices`);
+        const response = await this.request.get<OmadaApiResponse<unknown>>(path, { page: page ?? 1, pageSize: pageSize ?? 10 }, customHeaders);
+        return this.request.ensureSuccess(response);
+    }
+
+    /**
      * Get load balance configuration for a specific AP.
      * OperationId: getApLoadBalanceConfig
      * Delegates to getSitesApsLoadBalance to avoid duplication and ensure consistent apMac validation.
