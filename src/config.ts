@@ -220,6 +220,7 @@ const createBooleanStringSchema = (
 
 const numericStringSchema = z
     .string()
+    .regex(/^\d+$/, 'must be a positive integer (digits only)')
     .optional()
     .transform((value: string | undefined) => (value ? Number.parseInt(value, 10) : undefined))
     .pipe(z.number().positive().optional());
