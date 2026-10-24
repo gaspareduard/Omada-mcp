@@ -15,19 +15,20 @@
 2. `src/config.ts` enforces capability profiles and category/permission gates.
 3. `src/server/common.ts` owns MCP request logging, redaction, and mutation audit formatting.
 4. `src/omadaClient/*` wraps the Omada API by domain.
-5. `src/tools/*` exposes curated MCP tools and keeps the public interface small and typed.
+5. `src/server/catalog.ts` applies schema exposure, annotations, output redaction and optional discovery/dispatch after category filtering.
+6. `src/tools/*` exposes curated MCP tools and keeps the public interface small and typed.
 
 ## Tool exposure model
 
 - `safe-read`: read-only default profile
 - `ops-write`: low-risk operational mutations layered on top of read access
 - `admin`: broad administrative access for trusted operators
-- `compatibility`: reserved for future controller-specific fallback modules
+- `compatibility`: deprecated alias for `admin`, with no private API fallback
 
-Explicit `OMADA_TOOL_CATEGORIES` values can refine the profile, but the profile is the first gate.
+Explicit `OMADA_TOOL_CATEGORIES` replaces profile defaults. Recovery is excluded from built-in profiles and the `all` alias, and requires `recovery:rw`.
 
 ## Sources
 
 - Official Omada Open API docs: [omada-northbound-docs.tplinkcloud.com](https://omada-northbound-docs.tplinkcloud.com/#/home)
 - TP-Link KB OpenAPI setup guide: [How to Configure OpenAPI via Omada Controller](https://community.tp-link.com/en/business/kb/detail/412930)
-- Local spec snapshots: `docs/openapi/00-all.json`
+- Local spec snapshots: individual `docs/openapi/<tag>.json` files

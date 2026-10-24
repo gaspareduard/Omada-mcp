@@ -45,6 +45,7 @@ describe('tools/getRetryAndDroppedRate', () => {
             const result = await toolHandler({ start: 1682000000, end: 1682086400 }, { sessionId: 'test-session' });
             expect(mockClient.getRetryAndDroppedRate).toHaveBeenCalledWith(undefined, 1682000000, 1682086400, undefined);
             expect(result).toEqual({
+                structuredContent: mockData,
                 content: [{ type: 'text', text: JSON.stringify(mockData, null, 2) }],
             });
         });
@@ -56,6 +57,7 @@ describe('tools/getRetryAndDroppedRate', () => {
             const result = await toolHandler({ start: 1682000000, end: 1682086400, siteId: 'test-site' }, { sessionId: 'test-session' });
             expect(mockClient.getRetryAndDroppedRate).toHaveBeenCalledWith('test-site', 1682000000, 1682086400, undefined);
             expect(result).toEqual({
+                structuredContent: mockData,
                 content: [{ type: 'text', text: JSON.stringify(mockData, null, 2) }],
             });
         });

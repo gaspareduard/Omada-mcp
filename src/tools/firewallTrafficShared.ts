@@ -30,7 +30,7 @@ export const setAppControlRuleInputSchema = siteInputSchema.extend({
     payload: z
         .record(z.string(), z.unknown())
         .describe('Application control rule payload matching the Omada Open API schema for the selected operation.'),
-    dryRun: z.boolean().optional().default(false),
+    dryRun: z.boolean().optional().default(true),
 });
 
 export const appControlUpdatePayloadSchema = z
@@ -53,7 +53,7 @@ export const appControlUpdatePayloadSchema = z
 
 export const deleteAppControlRuleInputSchema = siteInputSchema.extend({
     ruleId: ruleIdSchema,
-    dryRun: z.boolean().optional().default(false),
+    dryRun: z.boolean().optional().default(true),
 });
 
 export const bandwidthControlRulePayloadSchema = z.object({
@@ -81,12 +81,12 @@ export const bandwidthControlRulePayloadSchema = z.object({
 export const setBandwidthControlRuleInputSchema = siteInputSchema.extend({
     ruleId: ruleIdSchema.optional(),
     payload: bandwidthControlRulePayloadSchema.describe('Bandwidth control rule payload following the official Omada BandwidthControlRule schema.'),
-    dryRun: z.boolean().optional().default(false),
+    dryRun: z.boolean().optional().default(true),
 });
 
 export const deleteBandwidthControlRuleInputSchema = siteInputSchema.extend({
     ruleId: ruleIdSchema,
-    dryRun: z.boolean().optional().default(false),
+    dryRun: z.boolean().optional().default(true),
 });
 
 const preAuthAccessPolicySchema = z
@@ -174,7 +174,7 @@ export const accessControlPayloadSchema = z
 
 export const setAccessControlInputSchema = siteInputSchema.extend({
     payload: accessControlPayloadSchema.describe('Access control payload following the official Omada PortalAccessControlOpenApiVO schema.'),
-    dryRun: z.boolean().optional().default(false),
+    dryRun: z.boolean().optional().default(true),
 });
 
 interface GridRecord {

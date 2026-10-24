@@ -48,6 +48,7 @@ describe('tools/getUplinkWiredDetail', () => {
 
             expect(mockClient.getUplinkWiredDetail).toHaveBeenCalledWith('AA-BB-CC-DD-EE-FF', undefined, undefined);
             expect(result).toEqual({
+                structuredContent: mockData,
                 content: [{ type: 'text', text: JSON.stringify(mockData, null, 2) }],
             });
         });
@@ -62,6 +63,7 @@ describe('tools/getUplinkWiredDetail', () => {
 
             expect(mockClient.getUplinkWiredDetail).toHaveBeenCalledWith('AA-BB-CC-DD-EE-FF', 'test-site', undefined);
             expect(result).toEqual({
+                structuredContent: mockData,
                 content: [{ type: 'text', text: JSON.stringify(mockData, null, 2) }],
             });
         });

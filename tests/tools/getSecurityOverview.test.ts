@@ -17,6 +17,7 @@ describe('tools/getSecurityOverview', () => {
         } as unknown as McpServer;
 
         mockClient = {
+            resolveSiteId: vi.fn(async (siteId?: string) => siteId ?? 'default-site'),
             getThreatList: vi.fn(),
             getFirewallSetting: vi.fn(),
         } as unknown as OmadaClient;
@@ -48,12 +49,23 @@ describe('tools/getSecurityOverview', () => {
         registerGetSecurityOverviewTool(mockServer, mockClient);
         const result = (await toolHandler({}, { sessionId: 'test' })) as { content: { text: string }[] };
         const parsed = JSON.parse(result.content[0].text);
+        expect(parsed.siteId).toBe('default-site');
+        expect(Number.isNaN(Date.parse(parsed.observedAt))).toBe(false);
+        expect(parsed.complete).toBe(true);
 
         expect(mockClient.getThreatList).toHaveBeenCalledWith(
-            expect.objectContaining({ page: 1, pageSize: 20, archived: false, sortTime: 'desc' }),
+            expect.objectContaining({
+                page: 1,
+                pageSize: 20,
+                archived: false,
+                sortTime: 'desc',
+                siteList: 'default-site',
+                startTime: expect.any(Number),
+                endTime: expect.any(Number),
+            }),
             undefined
         );
-        expect(mockClient.getFirewallSetting).toHaveBeenCalledWith(undefined, undefined);
+        expect(mockClient.getFirewallSetting).toHaveBeenCalledWith('default-site', undefined);
         expect(parsed.activeThreats).toEqual(mockThreats);
         expect(parsed.firewallSettings).toEqual(mockFirewall);
     });
@@ -75,6 +87,9 @@ describe('tools/getSecurityOverview', () => {
         registerGetSecurityOverviewTool(mockServer, mockClient);
         const result = (await toolHandler({}, { sessionId: 'test' })) as { content: { text: string }[] };
         const parsed = JSON.parse(result.content[0].text);
+        expect(parsed.siteId).toBe('default-site');
+        expect(Number.isNaN(Date.parse(parsed.observedAt))).toBe(false);
+        expect(parsed.complete).toBe(false);
 
         expect(parsed.activeThreats).toMatchObject({ _error: expect.stringContaining('threat endpoint unavailable') });
         expect(parsed.firewallSettings).toEqual({ enabled: true });
@@ -87,6 +102,9 @@ describe('tools/getSecurityOverview', () => {
         registerGetSecurityOverviewTool(mockServer, mockClient);
         const result = (await toolHandler({}, { sessionId: 'test' })) as { content: { text: string }[] };
         const parsed = JSON.parse(result.content[0].text);
+        expect(parsed.siteId).toBe('default-site');
+        expect(Number.isNaN(Date.parse(parsed.observedAt))).toBe(false);
+        expect(parsed.complete).toBe(false);
 
         expect(parsed.activeThreats).toEqual({ data: [], totalRows: 0 });
         expect(parsed.firewallSettings).toMatchObject({ _error: expect.stringContaining('firewall unavailable') });
@@ -99,6 +117,9 @@ describe('tools/getSecurityOverview', () => {
         registerGetSecurityOverviewTool(mockServer, mockClient);
         const result = (await toolHandler({}, { sessionId: 'test' })) as { content: { text: string }[] };
         const parsed = JSON.parse(result.content[0].text);
+        expect(parsed.siteId).toBe('default-site');
+        expect(Number.isNaN(Date.parse(parsed.observedAt))).toBe(false);
+        expect(parsed.complete).toBe(false);
 
         expect(parsed.activeThreats).toMatchObject({ _error: expect.any(String) });
         expect(parsed.firewallSettings).toMatchObject({ _error: expect.any(String) });

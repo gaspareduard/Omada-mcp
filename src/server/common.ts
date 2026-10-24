@@ -5,6 +5,7 @@ import { z } from 'zod';
 import packageMetadata from '../../package.json' with { type: 'json' };
 
 import { logger } from '../utils/logger.js';
+import { isLikelySensitiveString, isSensitiveKey, maskValue } from '../utils/redact.js';
 
 // Custom headers schema for optional HTTP headers
 export const customHeadersSchema = z.record(z.string(), z.string()).optional();
@@ -34,15 +35,6 @@ export const deviceIdSchema = siteInputSchema.extend({
     deviceId: z.string().min(1, 'deviceId (MAC or device identifier) is required'),
 });
 
-export const customRequestSchema = z.object({
-    method: z.string().default('GET'),
-    url: z.string().min(1, 'A controller API path is required'),
-    params: z.record(z.string(), z.unknown()).optional(),
-    data: z.unknown().optional(),
-    siteId: z.string().min(1).optional(),
-    customHeaders: customHeadersSchema,
-});
-
 export const stackIdSchema = siteInputSchema.extend({
     stackId: z.string().min(1, 'stackId is required'),
 });
@@ -52,6 +44,7 @@ export function toToolResult(value: unknown): CallToolResult {
 
     return {
         content: text ? [{ type: 'text' as const, text }] : [],
+        ...(value !== null && typeof value === 'object' && !Array.isArray(value) ? { structuredContent: value as Record<string, unknown> } : {}),
     };
 }
 
@@ -85,44 +78,6 @@ function sanitizeForLogs(value: unknown): unknown {
     }
 
     return value;
-}
-
-function isSensitiveKey(key: string): boolean {
-    const normalized = key.toLowerCase();
-    return (
-        normalized.includes('authorization') ||
-        normalized.includes('token') ||
-        normalized.includes('secret') ||
-        normalized.includes('password') ||
-        normalized.includes('cookie') ||
-        normalized.includes('clientid') ||
-        normalized.includes('client-id') ||
-        normalized.includes('client_id') ||
-        normalized.includes('customheaders')
-    );
-}
-
-function isLikelySensitiveString(value: string): boolean {
-    return value.length > 16 && /[A-Za-z0-9+/=._-]{16,}/.test(value);
-}
-
-function maskValue(value: unknown): unknown {
-    if (typeof value === 'string') {
-        if (value.length <= 8) {
-            return '********';
-        }
-        return `${value.slice(0, 4)}…${value.slice(-4)}`;
-    }
-
-    if (Array.isArray(value)) {
-        return value.map(() => '********');
-    }
-
-    if (typeof value === 'object' && value !== null) {
-        return '[masked-object]';
-    }
-
-    return '********';
 }
 
 function summarizeSuccess(method: string, result: unknown): Record<string, unknown> | undefined {
@@ -162,7 +117,7 @@ export interface MutationSummary {
     target: string;
     siteId?: string;
     mode: 'apply' | 'dry-run';
-    status: 'planned' | 'applied';
+    status: 'planned' | 'applied' | 'submitted' | 'verified' | 'mismatch' | 'unknown' | 'unverifiable' | 'partial';
     summary: string;
     result?: unknown;
 }
@@ -191,7 +146,20 @@ export function wrapToolHandler<Args extends z.ZodRawShape>(
 }
 
 export function toMutationResult(summary: MutationSummary): CallToolResult {
-    return toToolResult(summary);
+    const result = summary.result;
+    const verification = result !== null && typeof result === 'object' ? (result as Record<string, unknown>).verification : undefined;
+    const verifiedStatus = verification !== null && typeof verification === 'object' ? (verification as Record<string, unknown>).status : undefined;
+    const status =
+        summary.mode === 'dry-run'
+            ? 'planned'
+            : typeof verifiedStatus === 'string' && ['verified', 'mismatch', 'unknown', 'unverifiable', 'partial'].includes(verifiedStatus)
+              ? verifiedStatus
+              : summary.status === 'applied'
+                ? 'submitted'
+                : summary.status;
+    const normalized = { ...summary, status };
+    logger.info('Mutation audit event', { mutation: safeSerialize(normalized) });
+    return toToolResult(normalized);
 }
 
 export function wrapMutationToolHandler<Args extends z.ZodRawShape>(
@@ -200,14 +168,22 @@ export function wrapMutationToolHandler<Args extends z.ZodRawShape>(
     handler: (args: z.objectOutputType<Args, z.ZodTypeAny>, extra: ToolExtra) => Promise<unknown>
 ): (args: z.objectOutputType<Args, z.ZodTypeAny>, extra: ToolExtra) => Promise<CallToolResult> {
     return wrapToolHandler(name, async (args, extra) => {
-        const mode = ((args as Record<string, unknown>).dryRun === true ? 'dry-run' : 'apply') as 'apply' | 'dry-run';
-        const result = await handler(args, extra);
-        const mutationSummary = summary(args, result, mode);
-        logger.info('Mutation audit event', {
-            tool: name,
-            sessionId: extra.sessionId ?? 'unknown-session',
-            mutation: safeSerialize(mutationSummary),
-        });
+        const mode = (args as Record<string, unknown>).dryRun === false ? 'apply' : 'dry-run';
+        const normalizedArgs = { ...args, dryRun: mode === 'dry-run' };
+        let result: unknown;
+        try {
+            result = await handler(normalizedArgs, extra);
+        } catch (error) {
+            logger.error('Mutation audit event', {
+                tool: name,
+                mode,
+                status: 'failed',
+                sessionId: extra.sessionId,
+                error: safeSerialize(error instanceof Error ? error.message : String(error)),
+            });
+            throw error;
+        }
+        const mutationSummary = summary(normalizedArgs, result, mode);
         return toMutationResult(mutationSummary);
     });
 }

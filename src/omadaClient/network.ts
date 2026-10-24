@@ -1,8 +1,107 @@
-import type { CustomHeaders, OmadaApiResponse, PaginatedResult } from '../types/index.js';
+import { z } from 'zod';
 
+import type { CustomHeaders, OmadaApiResponse, PaginatedResult } from '../types/index.js';
 import type { RequestHandler } from './request.js';
 import type { SiteOperations } from './site.js';
 
+// Writable request fields from 04-site-setting.json. Strip GET-only metadata when
+// constructing the complete, required basic-config body; tool changes are strict.
+const ssidPskSettingOpenApiVOSchema = z
+    .object({
+        securityKey: z
+            .string()
+            .min(8)
+            .max(63)
+            .regex(/^[ -~]+$/)
+            .optional(),
+        versionPsk: z.number().int().min(1).max(4),
+        encryptionPsk: z.union([z.literal(1), z.literal(3)]),
+        gikRekeyPskEnable: z.boolean(),
+        rekeyPskInterval: z.number().int().optional(),
+        intervalPskType: z.number().int().min(0).max(2).optional(),
+    })
+    .strip();
+const ssidEnterpriseSettingOpenApiVOSchema = z
+    .object({
+        radiusProfileId: z.string().min(1),
+        versionEnt: z.number().int().min(1).max(4),
+        encryptionEnt: z.union([z.literal(1), z.literal(3), z.literal(4), z.literal(5), z.literal(6)]),
+        gikRekeyEntEnable: z.boolean(),
+        rekeyEntInterval: z.number().int().optional(),
+        intervalEntType: z.number().int().min(0).max(2).optional(),
+        nasIdMode: z.number().int().min(0).max(2).optional(),
+        nasId: z.string().optional(),
+    })
+    .strip()
+    .superRefine((setting, ctx) => {
+        // SsidEnterpriseSettingOpenApiVO only requires nasId in custom mode (2).
+        if (setting.nasIdMode === 2 && !setting.nasId) {
+            ctx.addIssue({ code: z.ZodIssueCode.custom, path: ['nasId'], message: 'Custom enterprise NAS ID mode requires a nonempty nasId.' });
+        }
+    });
+const ssidPpskSettingOpenApiVOSchema = z
+    .object({
+        ppskProfileId: z.string().min(1).optional(),
+        radiusProfileId: z.string().min(1).optional(),
+        macFormat: z.number().int().min(0).max(5).optional(),
+        nasId: z.string().min(1).optional(),
+        type: z.number().int().min(0).max(2).optional(),
+    })
+    .strip();
+const ssidVlanCustomSettingOpenApiVOSchema = z
+    .object({
+        customMode: z.number().int(),
+        lanNetworkVlanIds: z.record(z.array(z.number().int())).optional(),
+        vlanPoolIds: z.string().optional(),
+    })
+    .strip();
+const ssidVlanSettingOpenApiVOSchema = z
+    .object({
+        mode: z.number().int().min(0).max(1),
+        customConfig: ssidVlanCustomSettingOpenApiVOSchema.optional(),
+    })
+    .strip();
+export const updateSsidBasicConfigOpenApiVOSchema = z
+    .object({
+        name: z
+            .string()
+            .min(1)
+            .refine((value) => Buffer.byteLength(value, 'utf8') <= 32, 'SSID name must be at most 32 UTF-8 bytes.'),
+        band: z.number().int().min(1).max(7),
+        guestNetEnable: z.boolean(),
+        security: z.union([z.literal(0), z.literal(2), z.literal(3), z.literal(4), z.literal(5)]),
+        oweEnable: z.boolean().optional(),
+        broadcast: z.boolean(),
+        vlanEnable: z.boolean(),
+        vlanId: z.number().int().min(1).max(4094).optional(),
+        pskSetting: ssidPskSettingOpenApiVOSchema.optional(),
+        entSetting: ssidEnterpriseSettingOpenApiVOSchema.optional(),
+        ppskSetting: ssidPpskSettingOpenApiVOSchema.optional(),
+        mloEnable: z.boolean(),
+        pmfMode: z.number().int().min(1).max(3),
+        enable11r: z.boolean(),
+        hidePwd: z.boolean().optional(),
+        greEnable: z.boolean().optional(),
+        vlanSetting: ssidVlanSettingOpenApiVOSchema.optional(),
+        prohibitWifiShare: z.boolean().optional(),
+    })
+    .strip();
+
+export type SsidBasicConfig = z.infer<typeof updateSsidBasicConfigOpenApiVOSchema>;
+
+/** Validate a complete basic-config request after projecting the documented GET fields. */
+export function parseSsidBasicConfig(value: unknown): SsidBasicConfig {
+    const config = updateSsidBasicConfigOpenApiVOSchema.parse(value);
+    if (config.vlanEnable && config.vlanId === undefined) throw new Error('Enabled VLAN requires vlanId.');
+    if (config.security === 2 && !config.entSetting) throw new Error('Enterprise security requires entSetting.');
+    if (config.security >= 3 && !config.pskSetting) throw new Error('Personal/PPSK security requires pskSetting.');
+    if (config.security === 3 && (!config.pskSetting?.securityKey || config.hidePwd || /^\*+$/.test(config.pskSetting.securityKey))) {
+        throw new Error('Cannot safely preserve a missing or masked SSID security key.');
+    }
+    if (config.security === 4 && !config.ppskSetting?.ppskProfileId) throw new Error('PPSK security requires ppskProfileId.');
+    if (config.security === 5 && !config.ppskSetting?.radiusProfileId) throw new Error('PPSK RADIUS security requires radiusProfileId.');
+    return config;
+}
 /**
  * Network-related operations for the Omada API.
  * Covers internet, LAN, WLAN, firewall, and port forwarding configurations.
@@ -123,6 +222,25 @@ export class NetworkOperations {
             `/sites/${encodeURIComponent(resolvedSiteId)}/wireless-network/wlans/${encodeURIComponent(wlanId)}/ssids/${encodeURIComponent(ssidId)}`
         );
         const response = await this.request.get<OmadaApiResponse<unknown>>(path, undefined, customHeaders);
+        return this.request.ensureSuccess(response);
+    }
+
+    /** docs/openapi/04-site-setting.json: updateSsidBasicConfig (PATCH, v1). */
+    public async updateSsidBasicConfig(
+        wlanId: string,
+        ssidId: string,
+        payload: SsidBasicConfig,
+        siteId?: string,
+        customHeaders?: CustomHeaders
+    ): Promise<unknown> {
+        if (!wlanId.trim()) throw new Error('A wlanId must be provided.');
+        if (!ssidId.trim()) throw new Error('An ssidId must be provided.');
+        const parsedPayload = parseSsidBasicConfig(payload);
+        const resolvedSiteId = await this.site.resolveSiteId(siteId);
+        const path = this.buildPath(
+            `/sites/${encodeURIComponent(resolvedSiteId)}/wireless-network/wlans/${encodeURIComponent(wlanId)}/ssids/${encodeURIComponent(ssidId)}/update-basic-config`
+        );
+        const response = await this.request.patch<OmadaApiResponse<unknown>>(path, parsedPayload, customHeaders);
         return this.request.ensureSuccess(response);
     }
 

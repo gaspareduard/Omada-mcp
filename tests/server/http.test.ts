@@ -48,10 +48,7 @@ describe('server/http helpers', () => {
 
             const sanitized = sanitizeHeaders(headers);
 
-            expect(sanitized.Authorization).toMatch(/…/);
-            expect(sanitized['x-custom']).toBeUndefined();
-            expect(sanitized['X-Custom']).toBe('value');
-            expect(Array.isArray(sanitized.Cookie)).toBe(true);
+            expect(sanitized).toEqual({ Authorization: '********', 'X-Custom': 'value', Cookie: ['********', '********'] });
         });
     });
 
@@ -65,16 +62,14 @@ describe('server/http helpers', () => {
 
             const sanitized = sanitizePayload(payload) as Record<string, unknown>;
 
-            expect(sanitized.token).toMatch(/…/);
-            expect((sanitized.nested as Record<string, unknown>).password).toBe('********');
-            expect((sanitized.nested as Record<string, unknown>).value).toBe('safe');
+            expect(sanitized).toEqual({ token: '********', nested: { password: '********', value: 'safe' }, array: ['short', '********'] });
         });
     });
 
     describe('maskValue utility', () => {
         it('masks strings of varying lengths', () => {
             expect(maskValue('short')).toBe('********');
-            expect(maskValue('verylongsecretvalue')).toBe('very…alue');
+            expect(maskValue('verylongsecretvalue')).toBe('********');
         });
 
         it('replaces arrays/objects with masked markers', () => {

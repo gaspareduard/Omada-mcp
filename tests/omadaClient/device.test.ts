@@ -1080,6 +1080,28 @@ describe('omadaClient/device', () => {
     });
 
     describe('Phase 3 AP and gateway configuration methods', () => {
+        it('uses the official PATCH verb and wlanGroupId contract, preserving encoded scope and headers', async () => {
+            const payload = { wlanGroupId: 'group-1' };
+            vi.mocked(mockRequest.patch).mockResolvedValue(mockSimpleResponse({}));
+            await deviceOps.setApWlanGroup('AA:BB:CC:DD:EE:FF', payload, 'site/a', { 'X-Test': 'value' });
+            expect(mockRequest.patch).toHaveBeenCalledExactlyOnceWith('/api/sites/site%2Fa/aps/AA%3ABB%3ACC%3ADD%3AEE%3AFF/wlan-group', payload, {
+                'X-Test': 'value',
+            });
+            expect(mockRequest.put).not.toHaveBeenCalled();
+        });
+
+        it('passes the documented named-band radio body unchanged to PATCH', async () => {
+            const payload = {
+                radioSetting2g: { radioEnable: false },
+                radioSetting5g: { radioEnable: true, channel: '1', freq: 5180, channelWidth: '5' },
+            };
+            vi.mocked(mockRequest.patch).mockResolvedValue(mockSimpleResponse({}));
+            await deviceOps.setRadiosConfig('AA:BB:CC:DD:EE:FF', payload, 'site/a', { 'X-Test': 'value' });
+            expect(mockRequest.patch).toHaveBeenCalledExactlyOnceWith('/api/sites/site%2Fa/aps/AA%3ABB%3ACC%3ADD%3AEE%3AFF/radio-config', payload, {
+                'X-Test': 'value',
+            });
+        });
+
         it.each([
             ['setApGeneralConfig', '/api/sites/site-1/aps/AA%3ABB%3ACC%3ADD%3AEE%3AFF/general-config'],
             ['setApQosConfig', '/api/sites/site-1/aps/AA%3ABB%3ACC%3ADD%3AEE%3AFF/qos'],
@@ -1091,6 +1113,7 @@ describe('omadaClient/device', () => {
             ['setSitesApsBridge', '/api/sites/site-1/aps/AA%3ABB%3ACC%3ADD%3AEE%3AFF/bridge'],
             ['setRadiosConfig', '/api/sites/site-1/aps/AA%3ABB%3ACC%3ADD%3AEE%3AFF/radio-config'],
             ['setApServiceConfig', '/api/sites/site-1/aps/AA%3ABB%3ACC%3ADD%3AEE%3AFF/service-config'],
+            ['setApWlanGroup', '/api/sites/site-1/aps/AA%3ABB%3ACC%3ADD%3AEE%3AFF/wlan-group'],
             ['setSitesApsPortConfig', '/api/sites/site-1/aps/AA%3ABB%3ACC%3ADD%3AEE%3AFF/ports'],
             ['setAntennaGainConfig', '/api/sites/site-1/aps/AA%3ABB%3ACC%3ADD%3AEE%3AFF/antenna-gain'],
             ['setSitesGatewaysGeneralConfig', '/api/sites/site-1/gateways/AA%3ABB%3ACC%3ADD%3AEE%3AFF/general-config'],
@@ -1115,7 +1138,6 @@ describe('omadaClient/device', () => {
         it.each([
             ['setApChannelConfig', '/api/sites/site-1/aps/AA%3ABB%3ACC%3ADD%3AEE%3AFF/channel-config'],
             ['setAfcConfig', '/api/sites/site-1/aps/AA%3ABB%3ACC%3ADD%3AEE%3AFF/afc-config'],
-            ['setApWlanGroup', '/api/sites/site-1/aps/AA%3ABB%3ACC%3ADD%3AEE%3AFF/wlan-group'],
             ['setSitesGatewaysConfigGeneral', '/api/sites/site-1/gateways/AA%3ABB%3ACC%3ADD%3AEE%3AFF/config/general'],
             ['setSitesGatewaysConfigServices', '/api/sites/site-1/gateways/AA%3ABB%3ACC%3ADD%3AEE%3AFF/config/services'],
             ['setSitesGatewaysConfigAdvanced', '/api/sites/site-1/gateways/AA%3ABB%3ACC%3ADD%3AEE%3AFF/config/advanced'],

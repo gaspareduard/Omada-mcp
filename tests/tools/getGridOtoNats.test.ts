@@ -50,6 +50,7 @@ describe('tools/getGridOtoNats', () => {
 
             expect(mockClient.getGridOtoNats).toHaveBeenCalledWith(undefined, undefined, undefined, undefined);
             expect(result).toEqual({
+                structuredContent: mockData,
                 content: [{ type: 'text', text: JSON.stringify(mockData, null, 2) }],
             });
         });

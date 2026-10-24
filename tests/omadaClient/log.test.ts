@@ -1,3 +1,4 @@
+import axios from 'axios';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { LogOperations } from '../../src/omadaClient/log.js';
@@ -37,6 +38,66 @@ describe('LogOperations', () => {
         logOps = new LogOperations(mockRequest, mockSite, mockBuildPath);
     });
 
+    it.each([
+        ['listSiteEvents', 'events'],
+        ['listSiteAlerts', 'alerts'],
+    ] as const)('%s sends the documented millisecond filters and forwards site/header scope', async (method, route) => {
+        vi.mocked(mockRequest.get).mockResolvedValue(makePaginatedResponse());
+        const headers = { 'X-Request-Id': 'site-logs' };
+
+        await logOps[method]({ page: 2, pageSize: 20, startTime: 1678060800000, endTime: 1678665599999 }, 'site/123', headers);
+
+        expect(mockRequest.get).toHaveBeenCalledExactlyOnceWith(
+            `/openapi/v1/test-omadac/sites/site%2F123/logs/${route}`,
+            { page: 2, pageSize: 20, 'filters.timeStart': 1678060800000, 'filters.timeEnd': 1678665599999 },
+            headers
+        );
+    });
+
+    it.each([
+        ['listGlobalEvents', 'events'],
+        ['listGlobalAlerts', 'alerts'],
+    ] as const)('%s uses the documented global route and retains a zero start timestamp', async (method, route) => {
+        vi.mocked(mockRequest.get).mockResolvedValue(makePaginatedResponse());
+        const headers = { 'X-Request-Id': 'global-logs' };
+
+        await logOps[method]({ page: 1, pageSize: 20, startTime: 0, endTime: 1678665599999, searchKey: 'device' }, headers);
+
+        expect(mockSite.resolveSiteId).not.toHaveBeenCalled();
+        expect(mockRequest.get).toHaveBeenCalledExactlyOnceWith(
+            `/openapi/v1/test-omadac/logs/${route}`,
+            { page: 1, pageSize: 20, 'filters.timeStart': 0, 'filters.timeEnd': 1678665599999, searchKey: 'device' },
+            headers
+        );
+    });
+
+    it.each(['site', 'global'])('serializes %s audit ranges as one JSON query value, encoded once by Axios', async (scope) => {
+        vi.mocked(mockRequest.get).mockResolvedValue(makePaginatedResponse());
+        const headers = { 'X-Request-Id': 'audit' };
+        const options = { page: 1, pageSize: 20, startTime: 0, endTime: 1678665599999, searchKey: 'admin' };
+        if (scope === 'site') await logOps.listSiteAuditLogs(options, 'site/123', headers);
+        else await logOps.listGlobalAuditLogs(options, headers);
+
+        const path = scope === 'site' ? '/openapi/v1/test-omadac/sites/site%2F123/audit-logs' : '/openapi/v1/test-omadac/audit-logs';
+        const filter = '[{"timeStart":0,"timeEnd":1678665599999}]';
+        expect(mockRequest.get).toHaveBeenCalledExactlyOnceWith(
+            path,
+            { page: 1, pageSize: 20, 'filters.times': filter, searchKey: 'admin' },
+            headers
+        );
+        const [, params] = vi.mocked(mockRequest.get).mock.calls[0];
+        const query = new URL(axios.getUri({ url: path, params }), 'https://controller.invalid').searchParams;
+        expect(query.get('filters.times')).toBe(filter);
+        expect(JSON.parse(query.get('filters.times') ?? '')).toEqual([{ timeStart: 0, timeEnd: 1678665599999 }]);
+    });
+
+    it.each([{ startTime: 0 }, { endTime: 1678665599999 }])('rejects incomplete audit windows before dispatch: %j', async (window) => {
+        const options = { page: 1, pageSize: 20, ...window };
+        await expect(logOps.listSiteAuditLogs(options, 'site-123')).rejects.toThrow('require both startTime and endTime');
+        await expect(logOps.listGlobalAuditLogs(options)).rejects.toThrow('require both startTime and endTime');
+        expect(mockRequest.get).not.toHaveBeenCalled();
+    });
+
     describe('listSiteEvents', () => {
         it('should list site events', async () => {
             const mockEvent = { id: 'event-1', type: 'info', message: 'Device connected' };
@@ -57,8 +118,8 @@ describe('LogOperations', () => {
             expect(mockRequest.get).toHaveBeenCalledWith(
                 expect.any(String),
                 expect.objectContaining({
-                    'filters.startTime': 1000000,
-                    'filters.endTime': 2000000,
+                    'filters.timeStart': 1000000,
+                    'filters.timeEnd': 2000000,
                     searchKey: 'device',
                 }),
                 undefined
@@ -106,8 +167,8 @@ describe('LogOperations', () => {
             expect(mockRequest.get).toHaveBeenCalledWith(
                 expect.any(String),
                 expect.objectContaining({
-                    'filters.startTime': 1000,
-                    'filters.endTime': 2000,
+                    'filters.timeStart': 1000,
+                    'filters.timeEnd': 2000,
                     searchKey: 'test',
                 }),
                 undefined
@@ -206,6 +267,17 @@ describe('LogOperations', () => {
                 undefined
             );
         });
+
+        it('preserves the existing explicit JSON filter API', async () => {
+            vi.mocked(mockRequest.get).mockResolvedValue(makeSimpleResponse({ data: [] }));
+            const filterTimes = '[{"timeStart":1678060800000,"timeEnd":1678665599999}]';
+            await logOps.getAuditLogsForGlobal(1, 20, { filterTimes, filterResult: 0, filterAuditTypes: 'Log' });
+            expect(mockRequest.get).toHaveBeenCalledWith(
+                '/openapi/v1/test-omadac/audit-logs',
+                { page: 1, pageSize: 20, 'filters.times': filterTimes, 'filters.result': 0, 'filters.auditTypes': 'Log' },
+                undefined
+            );
+        });
     });
 
     describe('listSiteAlerts - optional params', () => {
@@ -214,7 +286,7 @@ describe('LogOperations', () => {
             await logOps.listSiteAlerts({ page: 1, pageSize: 10, startTime: 1640000000000, endTime: 1640100000000, searchKey: 'test' }, 'site-123');
             expect(mockRequest.get).toHaveBeenCalledWith(
                 '/openapi/v1/test-omadac/sites/site-123/logs/alerts',
-                { page: 1, pageSize: 10, 'filters.startTime': 1640000000000, 'filters.endTime': 1640100000000, searchKey: 'test' },
+                { page: 1, pageSize: 10, 'filters.timeStart': 1640000000000, 'filters.timeEnd': 1640100000000, searchKey: 'test' },
                 undefined
             );
         });
@@ -229,7 +301,7 @@ describe('LogOperations', () => {
             );
             expect(mockRequest.get).toHaveBeenCalledWith(
                 '/openapi/v1/test-omadac/sites/site-123/audit-logs',
-                { page: 1, pageSize: 10, 'filters.startTime': 1640000000000, 'filters.endTime': 1640100000000, searchKey: 'test' },
+                { page: 1, pageSize: 10, 'filters.times': '[{"timeStart":1640000000000,"timeEnd":1640100000000}]', searchKey: 'test' },
                 undefined
             );
         });
@@ -249,7 +321,7 @@ describe('LogOperations', () => {
 
             expect(mockRequest.get).toHaveBeenCalledWith(
                 '/openapi/v1/test-omadac/audit-logs',
-                { page: 1, pageSize: 10, 'filters.startTime': 1640000000000, 'filters.endTime': 1640100000000, searchKey: 'admin' },
+                { page: 1, pageSize: 10, 'filters.times': '[{"timeStart":1640000000000,"timeEnd":1640100000000}]', searchKey: 'admin' },
                 undefined
             );
             expect(result.data).toHaveLength(1);

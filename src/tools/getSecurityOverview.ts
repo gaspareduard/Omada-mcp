@@ -12,6 +12,7 @@ export function registerGetSecurityOverviewTool(server: McpServer, client: Omada
             inputSchema: siteInputSchema.shape,
         },
         wrapToolHandler('getSecurityOverview', async ({ siteId, customHeaders }) => {
+            siteId = await client.resolveSiteId(siteId);
             const [threats, firewall] = await Promise.allSettled([
                 client.getThreatList(
                     {
@@ -29,6 +30,9 @@ export function registerGetSecurityOverviewTool(server: McpServer, client: Omada
             ]);
 
             return toToolResult({
+                siteId,
+                observedAt: new Date().toISOString(),
+                complete: [threats, firewall].every((section) => section.status === 'fulfilled'),
                 activeThreats: threats.status === 'fulfilled' ? threats.value : { _error: String(threats.reason) },
                 firewallSettings: firewall.status === 'fulfilled' ? firewall.value : { _error: String(firewall.reason) },
             });

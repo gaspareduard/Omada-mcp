@@ -48,6 +48,7 @@ describe('tools/getWids', () => {
 
             expect(mockClient.getWids).toHaveBeenCalledWith(undefined, undefined);
             expect(result).toEqual({
+                structuredContent: mockData,
                 content: [{ type: 'text', text: JSON.stringify(mockData, null, 2) }],
             });
         });
@@ -62,6 +63,7 @@ describe('tools/getWids', () => {
 
             expect(mockClient.getWids).toHaveBeenCalledWith('test-site', undefined);
             expect(result).toEqual({
+                structuredContent: mockData,
                 content: [{ type: 'text', text: JSON.stringify(mockData, null, 2) }],
             });
         });

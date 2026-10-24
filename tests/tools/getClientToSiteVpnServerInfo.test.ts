@@ -48,6 +48,7 @@ describe('tools/getClientToSiteVpnServerInfo', () => {
 
             expect(mockClient.getClientToSiteVpnServerInfo).toHaveBeenCalledWith('vpn-1', undefined, undefined);
             expect(result).toEqual({
+                structuredContent: mockData,
                 content: [{ type: 'text', text: JSON.stringify(mockData, null, 2) }],
             });
         });

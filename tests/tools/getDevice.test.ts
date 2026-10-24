@@ -55,6 +55,7 @@ describe('tools/getDevice', () => {
 
             expect(mockClient.getDevice).toHaveBeenCalledWith('00:11:22:33:44:55', undefined, undefined);
             expect(result).toEqual({
+                structuredContent: mockDevice,
                 content: [
                     {
                         type: 'text',

@@ -45,6 +45,7 @@ describe('tools/getRoutingTable', () => {
             const result = await toolHandler({ type: 'static' }, { sessionId: 'test-session' });
             expect(mockClient.getRoutingTable).toHaveBeenCalledWith('static', undefined, undefined);
             expect(result).toEqual({
+                structuredContent: mockData,
                 content: [{ type: 'text', text: JSON.stringify(mockData, null, 2) }],
             });
         });
@@ -56,6 +57,7 @@ describe('tools/getRoutingTable', () => {
             const result = await toolHandler({ type: 'policy', siteId: 'test-site' }, { sessionId: 'test-session' });
             expect(mockClient.getRoutingTable).toHaveBeenCalledWith('policy', 'test-site', undefined);
             expect(result).toEqual({
+                structuredContent: mockData,
                 content: [{ type: 'text', text: JSON.stringify(mockData, null, 2) }],
             });
         });
@@ -67,6 +69,7 @@ describe('tools/getRoutingTable', () => {
             const result = await toolHandler({ type: 'ospf' }, { sessionId: 'test-session' });
             expect(mockClient.getRoutingTable).toHaveBeenCalledWith('ospf', undefined, undefined);
             expect(result).toEqual({
+                structuredContent: mockData,
                 content: [{ type: 'text', text: JSON.stringify(mockData, null, 2) }],
             });
         });

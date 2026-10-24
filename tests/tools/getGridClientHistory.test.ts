@@ -50,6 +50,7 @@ describe('tools/getGridClientHistory', () => {
 
             expect(mockClient.getGridClientHistory).toHaveBeenCalledWith('AA-BB-CC-DD-EE-FF', 1, 10, undefined, undefined, undefined);
             expect(result).toEqual({
+                structuredContent: mockData,
                 content: [{ type: 'text', text: JSON.stringify(mockData, null, 2) }],
             });
         });

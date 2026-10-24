@@ -2,291 +2,244 @@ import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import type { OmadaClient } from '../../src/omadaClient/index.js';
-import { registerSetApConfigTool } from '../../src/tools/setApConfig.js';
+import { parseApPayload, registerSetApConfigTool } from '../../src/tools/setApConfig.js';
+
+const cases = [
+    ['general-config', 'getApGeneralConfig', 'setApGeneralConfig', { ledSetting: 0 }],
+    ['ip-setting', 'getSitesApsIpSetting', 'setSitesApsIpSetting', { mode: 'dhcp' }],
+    ['ipv6-setting', 'getApIpv6Config', 'setApIpv6Config', { ipv6Enable: false }],
+    ['qos', 'getApQosConfig', 'setApQosConfig', { deliveryEnable2g: false }],
+    ['radio-config', 'getRadiosConfig', 'setRadiosConfig', { radioSetting2g: { radioEnable: false } }],
+    ['load-balance', 'getSitesApsLoadBalance', 'setSitesApsLoadBalance', { enable: false, maxClients2g: 50 }],
+    ['ofdma', 'getSitesApsOfdma', 'setSitesApsOfdma', { ofdmaEnable2g: false }],
+    ['trunk-setting', 'getSitesApsTrunkSetting', 'setSitesApsTrunkSetting', { enable: false }],
+    ['bridge', 'getSitesApsBridge', 'setSitesApsBridge', { bridgeSsidName: 'bridge', bridgeSsidPassword: 'example-password' }],
+    ['port-config', 'listSitesApsPorts', 'setSitesApsPortConfig', { lanPort: '1', status: false }],
+    ['afc-config', 'getAfcConfig', 'setAfcConfig', { enable: false }],
+    ['antenna-gain', 'getAntennaGainConfig', 'setAntennaGainConfig', { anteGainList: [{ radioId: 0, anteGain: 5 }] }],
+    ['service-config', null, 'setApServiceConfig', { lldpEnable: 0 }],
+    ['wlan-group', null, 'setApWlanGroup', { wlanGroupId: 'wlan-1' }],
+    ['channel-config', null, 'setApChannelConfig', { radioId: 0, radioEnable: true, channel: 1, channelWidth: 20 }],
+] as const;
+
+const split5gCases = [
+    {
+        configType: 'qos',
+        getter: 'getApQosConfig',
+        setter: 'setApQosConfig',
+        firstField: 'deliveryEnable5g1',
+        requested: { deliveryEnable5g1: false, deliveryEnable5g2: true },
+        observed: { support5g2: true, deliveryEnable5g: false, deliveryEnable5g2: true },
+        ignored: { support5g2: true, deliveryEnable5g: true, deliveryEnable5g2: true },
+    },
+    {
+        configType: 'load-balance',
+        getter: 'getSitesApsLoadBalance',
+        setter: 'setSitesApsLoadBalance',
+        firstField: 'maxClients5g1',
+        requested: { maxClients5g1: 48, maxClients5g2: 96 },
+        observed: { enable: true, maxClients2g: 32, maxClients5g: 48, maxClients5g2: 96 },
+        ignored: { enable: true, maxClients2g: 32, maxClients5g: 64, maxClients5g2: 96 },
+    },
+] as const;
 
 describe('tools/setApConfig', () => {
-    let mockServer: McpServer;
-    let mockClient: OmadaClient;
-    let toolHandler: (args: unknown, extra: { sessionId?: string }) => Promise<unknown>;
+    let handler: (args: unknown, extra: object) => Promise<{ content: { text: string }[] }>;
+    let client: Record<string, ReturnType<typeof vi.fn>>;
+    let server: McpServer;
 
     beforeEach(() => {
-        mockServer = {
-            registerTool: vi.fn((name, schema, handler) => {
-                toolHandler = handler;
+        client = {
+            getDevice: vi.fn().mockResolvedValue({ type: 'ap' }),
+            getSitesApsAvailableChannel: vi
+                .fn()
+                .mockResolvedValue({ radioId: 0, apChannelDetailList: [{ channel: 1, index: 1, freq: 2412, availableChannelWidthList: [20, 40] }] }),
+        };
+        for (const [, getter, setter] of cases) {
+            if (getter) client[getter] = vi.fn().mockResolvedValue({});
+            client[setter] = vi.fn().mockResolvedValue({ accepted: true });
+        }
+        server = {
+            registerTool: vi.fn((_name, _schema, callback) => {
+                handler = callback;
             }),
         } as unknown as McpServer;
-
-        mockClient = {
-            getDevice: vi.fn().mockResolvedValue({ mac: 'AA:BB:CC:DD:EE:FF', type: 'ap', name: 'Birou AP' }),
-            getApGeneralConfig: vi.fn().mockResolvedValue({ led: true }),
-            getSitesApsIpSetting: vi.fn().mockResolvedValue({ mode: 'dhcp' }),
-            getApIpv6Config: vi.fn().mockResolvedValue({ ipv6Enable: true }),
-            getApQosConfig: vi.fn().mockResolvedValue({ qosEnable: true }),
-            getRadiosConfig: vi.fn().mockResolvedValue({ radios: [] }),
-            getSitesApsAvailableChannel: vi.fn().mockResolvedValue([{ radioId: 0, apChannelDetailList: [{ channel: 1 }] }]),
-            getSitesApsLoadBalance: vi.fn().mockResolvedValue({ enabled: true }),
-            getSitesApsOfdma: vi.fn().mockResolvedValue({ enabled: true }),
-            getSitesApsTrunkSetting: vi.fn().mockResolvedValue({ profile: 'trunk' }),
-            getSitesApsBridge: vi.fn().mockResolvedValue({ enabled: false }),
-            listSitesApsPorts: vi.fn().mockResolvedValue([{ port: 1 }]),
-            getAfcConfig: vi.fn().mockResolvedValue({ enabled: true }),
-            getAntennaGainConfig: vi.fn().mockResolvedValue({ gain: 5 }),
-            setApGeneralConfig: vi.fn().mockResolvedValue({ accepted: true }),
-            setSitesApsIpSetting: vi.fn().mockResolvedValue({ accepted: true }),
-            setApIpv6Config: vi.fn().mockResolvedValue({ accepted: true }),
-            setApQosConfig: vi.fn().mockResolvedValue({ accepted: true }),
-            setRadiosConfig: vi.fn().mockResolvedValue({ accepted: true }),
-            setApServiceConfig: vi.fn().mockResolvedValue({ accepted: true }),
-            setSitesApsLoadBalance: vi.fn().mockResolvedValue({ accepted: true }),
-            setSitesApsOfdma: vi.fn().mockResolvedValue({ accepted: true }),
-            setSitesApsTrunkSetting: vi.fn().mockResolvedValue({ accepted: true }),
-            setSitesApsBridge: vi.fn().mockResolvedValue({ accepted: true }),
-            setApWlanGroup: vi.fn().mockResolvedValue({ accepted: true }),
-            setSitesApsPortConfig: vi.fn().mockResolvedValue({ accepted: true }),
-            setApChannelConfig: vi.fn().mockResolvedValue({ accepted: true }),
-            setAfcConfig: vi.fn().mockResolvedValue({ accepted: true }),
-            setAntennaGainConfig: vi.fn().mockResolvedValue({ accepted: true }),
-        } as unknown as OmadaClient;
+        registerSetApConfigTool(server, client as unknown as OmadaClient);
     });
 
-    it('returns a dry-run summary with before state when getter exists', async () => {
-        registerSetApConfigTool(mockServer, mockClient);
+    function call(configType: string, payload: unknown, dryRun?: boolean): Promise<{ content: { text: string }[] }> {
+        return handler({ apMac: 'AA:BB:CC:DD:EE:FF', siteId: 'site-1', configType, payload, ...(dryRun === undefined ? {} : { dryRun }) }, {});
+    }
 
-        const result = await toolHandler(
-            {
-                apMac: 'AA:BB:CC:DD:EE:FF',
-                configType: 'general-config',
-                payload: { led: false },
-                dryRun: true,
-            },
-            { sessionId: 's1' }
-        );
+    it.each(cases)('validates and defaults to dry-run for %s', async (configType, getter, setter, payload) => {
+        const result = JSON.parse((await call(configType, payload)).content[0].text);
+        expect(result).toMatchObject({ mode: 'dry-run', status: 'planned', result: { plannedConfig: payload, beforeAvailable: getter !== null } });
+        expect(client[setter]).not.toHaveBeenCalled();
+        if (getter) expect(client[getter]).toHaveBeenCalledTimes(1);
+    });
 
-        expect(mockClient.setApGeneralConfig).not.toHaveBeenCalled();
-        expect(result).toEqual({
-            content: [
-                {
-                    type: 'text',
-                    text: JSON.stringify(
-                        {
-                            action: 'set-ap-config',
-                            target: 'AA:BB:CC:DD:EE:FF',
-                            mode: 'dry-run',
-                            status: 'planned',
-                            summary: 'Planned general-config update for AP AA:BB:CC:DD:EE:FF.',
-                            result: {
-                                accepted: true,
-                                dryRun: true,
-                                device: { mac: 'AA:BB:CC:DD:EE:FF', type: 'ap', name: 'Birou AP' },
-                                configType: 'general-config',
-                                before: { led: true },
-                                beforeAvailable: true,
-                                plannedConfig: { led: false },
-                            },
-                        },
-                        null,
-                        2
-                    ),
-                },
-            ],
+    it.each(cases)('applies and verifies the documented %s family', async (configType, getter, setter, payload) => {
+        if (getter) client[getter].mockResolvedValueOnce({}).mockResolvedValue(payload);
+        const result = JSON.parse((await call(configType, payload, false)).content[0].text);
+        expect(client[setter]).toHaveBeenCalledExactlyOnceWith('AA:BB:CC:DD:EE:FF', payload, 'site-1', undefined);
+        expect(result.result.verification.status).toBe(getter && configType !== 'port-config' ? 'verified' : 'unverifiable');
+    });
+
+    it.each(cases)('rejects unknown fields for %s before reading or writing', async (configType, _getter, setter, payload) => {
+        await expect(call(configType, { ...payload, inventedSetting: true })).rejects.toThrow();
+        expect(client.getDevice).not.toHaveBeenCalled();
+        expect(client[setter]).not.toHaveBeenCalled();
+    });
+
+    it('uses strict nested types, required fields, ranges, and nonempty payloads', () => {
+        expect(() => parseApPayload('service-config', {})).toThrow('at least one field');
+        expect(() => parseApPayload('service-config', { snmp: {} })).toThrow('at least one field');
+        expect(() => parseApPayload('service-config', { l3AccessSetting: { madeUp: true } })).toThrow();
+        expect(() => parseApPayload('ip-setting', { mode: 'auto' })).toThrow();
+        expect(() => parseApPayload('ip-setting', { mode: 'static', staticIpSetting: { configIp: '999.1.2.3' } })).toThrow();
+        expect(() => parseApPayload('ipv6-setting', { ipv6Enable: true, staticIpv6Setting: { ipv6Addr: 'not-ipv6' } })).toThrow();
+        expect(() => parseApPayload('general-config', { ledSetting: 4 })).toThrow();
+        expect(() => parseApPayload('qos', { deliveryEnable2g: 'false' })).toThrow();
+        expect(() => parseApPayload('radio-config', { radioSetting2g: { channelWidth: '20', injected: 1 } })).toThrow();
+        expect(() => parseApPayload('load-balance', { maxClients2g: 513 })).toThrow();
+        expect(() => parseApPayload('bridge', { bridgeSsidName: 'bridge' })).toThrow();
+        expect(() => parseApPayload('wlan-group', { wlanId: 'old-wrong-name' })).toThrow();
+        expect(() => parseApPayload('channel-config', { radioEnable: true })).toThrow();
+        expect(() => parseApPayload('antenna-gain', { anteGainList: [{ radioId: 4, anteGain: 31 }] })).toThrow();
+        expect(() => parseApPayload('port-config', { status: false })).toThrow();
+    });
+
+    it('does not write when current fields already match', async () => {
+        client.getApGeneralConfig.mockResolvedValue({ ledSetting: 0, extra: true });
+        const result = JSON.parse((await call('general-config', { ledSetting: 0 }, false)).content[0].text);
+        expect(result.result).toMatchObject({ noOp: true, verification: { status: 'verified' } });
+        expect(client.setApGeneralConfig).not.toHaveBeenCalled();
+    });
+
+    it.each(split5gCases)('recognizes an actual $configType GET as a split-band no-op', async ({
+        configType,
+        getter,
+        setter,
+        requested,
+        observed,
+    }) => {
+        client.getApQosConfig.mockResolvedValue({ support5g2: true });
+        const snapshot = Object.freeze({ ...observed });
+        client[getter].mockResolvedValue(snapshot);
+
+        const result = JSON.parse((await call(configType, requested, false)).content[0].text);
+
+        expect(result.result).toMatchObject({ noOp: true, before: snapshot, verification: { status: 'verified', attempts: 0, differences: [] } });
+        expect(client[setter]).not.toHaveBeenCalled();
+        expect(client[getter]).toHaveBeenCalledTimes(1);
+        expect(client.getApQosConfig).toHaveBeenCalledExactlyOnceWith('AA:BB:CC:DD:EE:FF', 'site-1', undefined);
+        expect(result.result.before).not.toHaveProperty(configType === 'qos' ? 'deliveryEnable5g1' : 'maxClients5g1');
+    });
+
+    it.each(split5gCases)('verifies $configType after applying against actual GET field names', async ({
+        configType,
+        getter,
+        setter,
+        requested,
+        observed,
+        ignored,
+    }) => {
+        client.getApQosConfig.mockResolvedValue({ support5g2: true });
+        client[getter].mockResolvedValueOnce(ignored).mockResolvedValue(observed);
+
+        const result = JSON.parse((await call(configType, requested, false)).content[0].text);
+
+        expect(client[setter]).toHaveBeenCalledExactlyOnceWith('AA:BB:CC:DD:EE:FF', requested, 'site-1', undefined);
+        expect(result.result).toMatchObject({ noOp: false, before: ignored, verification: { status: 'verified', attempts: 1, differences: [] } });
+    });
+
+    it.each(split5gCases)('reports ignored $configType first-radio changes as mismatch, not missing', async ({
+        configType,
+        getter,
+        setter,
+        requested,
+        ignored,
+        firstField,
+    }) => {
+        client.getApQosConfig.mockResolvedValue({ support5g2: true });
+        client[getter].mockResolvedValue(ignored);
+
+        const result = JSON.parse((await call(configType, requested, false)).content[0].text);
+
+        expect(result.result.verification).toEqual({ status: 'mismatch', attempts: 3, differences: [{ path: firstField, reason: 'different' }] });
+        expect(client[setter]).toHaveBeenCalledTimes(1);
+        expect(client[getter]).toHaveBeenCalledTimes(4);
+    });
+
+    it.each([false, undefined, 'true'])('does not infer a split QoS radio from support5g2=%s', async (support5g2) => {
+        client.getApQosConfig.mockResolvedValue({ support5g2, deliveryEnable5g: false, deliveryEnable5g2: true });
+        const result = JSON.parse((await call('qos', { deliveryEnable5g1: false, deliveryEnable5g2: true }, false)).content[0].text);
+        expect(result.result).toMatchObject({
+            noOp: false,
+            verification: { status: 'unverifiable', differences: [{ path: 'deliveryEnable5g1', reason: 'missing' }] },
         });
+        expect(client.setApQosConfig).toHaveBeenCalledTimes(1);
     });
 
-    it('applies an AP config update through the matching setter', async () => {
-        registerSetApConfigTool(mockServer, mockClient);
-
-        await toolHandler(
-            {
-                apMac: 'AA:BB:CC:DD:EE:FF',
-                configType: 'service-config',
-                payload: { sshEnable: false },
-                siteId: 'site-1',
-            },
-            { sessionId: 's1' }
-        );
-
-        expect(mockClient.setApServiceConfig).toHaveBeenCalledWith('AA:BB:CC:DD:EE:FF', { sshEnable: false }, 'site-1', undefined);
-    });
-
-    it.each([
-        ['ip-setting', 'getSitesApsIpSetting', 'setSitesApsIpSetting'],
-        ['ipv6-setting', 'getApIpv6Config', 'setApIpv6Config'],
-        ['qos', 'getApQosConfig', 'setApQosConfig'],
-        ['radio-config', 'getRadiosConfig', 'setRadiosConfig'],
-        ['load-balance', 'getSitesApsLoadBalance', 'setSitesApsLoadBalance'],
-        ['ofdma', 'getSitesApsOfdma', 'setSitesApsOfdma'],
-        ['trunk-setting', 'getSitesApsTrunkSetting', 'setSitesApsTrunkSetting'],
-        ['bridge', 'getSitesApsBridge', 'setSitesApsBridge'],
-        ['port-config', 'listSitesApsPorts', 'setSitesApsPortConfig'],
-        ['afc-config', 'getAfcConfig', 'setAfcConfig'],
-        ['antenna-gain', 'getAntennaGainConfig', 'setAntennaGainConfig'],
-    ])('supports the %s config branch', async (configType, getterName, setterName) => {
-        registerSetApConfigTool(mockServer, mockClient);
-
-        await toolHandler(
-            {
-                apMac: 'AA:BB:CC:DD:EE:FF',
-                configType,
-                payload: { enabled: true },
-            },
-            { sessionId: 's1' }
-        );
-
-        expect(mockClient[getterName as keyof OmadaClient] as ReturnType<typeof vi.fn>).toHaveBeenCalled();
-        expect(mockClient[setterName as keyof OmadaClient] as ReturnType<typeof vi.fn>).toHaveBeenCalledWith(
-            'AA:BB:CC:DD:EE:FF',
-            { enabled: true },
-            undefined,
-            undefined
-        );
-    });
-
-    it.each([
-        ['service-config', 'setApServiceConfig', { sshEnable: false }],
-        ['wlan-group', 'setApWlanGroup', { wlanId: 'wlan-1' }],
-        ['channel-config', 'setApChannelConfig', { radioSettings: [{ radioId: 0, channel: 1 }] }],
-    ])('returns explicit dry-run limitations for setter-only AP config branch %s', async (configType, setterName, payload) => {
-        registerSetApConfigTool(mockServer, mockClient);
-
-        const result = await toolHandler(
-            {
-                apMac: 'AA:BB:CC:DD:EE:FF',
-                configType,
-                payload,
-                dryRun: true,
-            },
-            { sessionId: 's1' }
-        );
-
-        expect(mockClient[setterName as keyof OmadaClient] as ReturnType<typeof vi.fn>).not.toHaveBeenCalled();
-        expect(result).toEqual({
-            content: [
-                {
-                    type: 'text',
-                    text: JSON.stringify(
-                        {
-                            action: 'set-ap-config',
-                            target: 'AA:BB:CC:DD:EE:FF',
-                            mode: 'dry-run',
-                            status: 'planned',
-                            summary: `Planned ${configType} update for AP AA:BB:CC:DD:EE:FF.`,
-                            result: {
-                                accepted: true,
-                                dryRun: true,
-                                device: { mac: 'AA:BB:CC:DD:EE:FF', type: 'ap', name: 'Birou AP' },
-                                configType,
-                                before: null,
-                                beforeAvailable: false,
-                                warning: 'Current controller state cannot be previewed for this config family before apply.',
-                                plannedConfig: payload,
-                            },
-                        },
-                        null,
-                        2
-                    ),
-                },
-            ],
+    it('uses only documented QoS capability evidence for the load-balance mapping', async () => {
+        client.getApQosConfig.mockResolvedValue({ support5g2: false });
+        client.getSitesApsLoadBalance.mockResolvedValue({ support5g2: true, maxClients5g: 48, maxClients5g2: 96 });
+        const result = JSON.parse((await call('load-balance', { maxClients5g1: 48, maxClients5g2: 96 }, false)).content[0].text);
+        expect(result.result).toMatchObject({
+            noOp: false,
+            verification: { status: 'unverifiable', differences: [{ path: 'maxClients5g1', reason: 'missing' }] },
         });
     });
 
     it.each([
-        ['service-config', 'setApServiceConfig', { sshEnable: false }],
-        ['wlan-group', 'setApWlanGroup', { wlanId: 'wlan-1' }],
-        ['channel-config', 'setApChannelConfig', { radioSettings: [{ radioId: 0, channel: 1 }] }],
-    ])('applies setter-only AP config branch %s after validation', async (configType, setterName, payload) => {
-        registerSetApConfigTool(mockServer, mockClient);
-
-        await toolHandler(
-            {
-                apMac: 'AA:BB:CC:DD:EE:FF',
-                configType,
-                payload,
-            },
-            { sessionId: 's1' }
-        );
-
-        expect(mockClient[setterName as keyof OmadaClient] as ReturnType<typeof vi.fn>).toHaveBeenCalledWith(
-            'AA:BB:CC:DD:EE:FF',
-            payload,
-            undefined,
-            undefined
-        );
+        ['qos', 'getApQosConfig', 'setApQosConfig', { deliveryEnable5g: false }],
+        ['load-balance', 'getSitesApsLoadBalance', 'setSitesApsLoadBalance', { maxClients5g: 48 }],
+    ] as const)('retains the unsplit %s field when frequency splitting is unsupported', async (configType, getter, setter, requested) => {
+        client.getApQosConfig.mockResolvedValue({ support5g2: false });
+        client[getter].mockResolvedValue({ support5g2: false, ...requested });
+        const result = JSON.parse((await call(configType, requested, false)).content[0].text);
+        expect(result.result).toMatchObject({ noOp: true, verification: { status: 'verified' } });
+        expect(client[setter]).not.toHaveBeenCalled();
     });
 
-    it('rejects empty service-config payloads', async () => {
-        registerSetApConfigTool(mockServer, mockClient);
-
-        await expect(
-            toolHandler(
-                {
-                    apMac: 'AA:BB:CC:DD:EE:FF',
-                    configType: 'service-config',
-                    payload: {},
-                },
-                { sessionId: 's1' }
-            )
-        ).rejects.toThrow('payload must include at least one field.');
+    it('does not equate a whole-band QoS request with only the first split radio', async () => {
+        client.getApQosConfig.mockResolvedValue({ support5g2: true, deliveryEnable5g: false, deliveryEnable5g2: true });
+        const result = JSON.parse((await call('qos', { deliveryEnable5g: false }, false)).content[0].text);
+        expect(result.result.verification).toMatchObject({ status: 'unverifiable', differences: [{ path: 'deliveryEnable5g', reason: 'missing' }] });
     });
 
-    it('rejects wlan-group payloads without WLAN identifiers', async () => {
-        registerSetApConfigTool(mockServer, mockClient);
-
-        await expect(
-            toolHandler(
-                {
-                    apMac: 'AA:BB:CC:DD:EE:FF',
-                    configType: 'wlan-group',
-                    payload: { profile: 'default' },
-                },
-                { sessionId: 's1' }
-            )
-        ).rejects.toThrow('wlan-group payload must include wlanId or wlanIds.');
+    it.each([null, [], { support5g2: true }])('does not invent absent split QoS values from %j', async (snapshot) => {
+        client.getApQosConfig.mockResolvedValue(snapshot);
+        const result = JSON.parse((await call('qos', { deliveryEnable5g1: false }, false)).content[0].text);
+        expect(result.result.noOp).toBe(false);
+        expect(result.result.verification.status).not.toBe('verified');
     });
 
-    it('rejects empty channel-config payloads', async () => {
-        registerSetApConfigTool(mockServer, mockClient);
-
-        await expect(
-            toolHandler(
-                {
-                    apMac: 'AA:BB:CC:DD:EE:FF',
-                    configType: 'channel-config',
-                    payload: {},
-                },
-                { sessionId: 's1' }
-            )
-        ).rejects.toThrow('payload must include at least one field.');
+    it('reports an ignored field as mismatch and does not replay', async () => {
+        client.getApGeneralConfig.mockResolvedValue({ ledSetting: 1 });
+        const result = JSON.parse((await call('general-config', { ledSetting: 0 }, false)).content[0].text);
+        expect(result.result.verification).toMatchObject({ status: 'mismatch', attempts: 3 });
+        expect(client.setApGeneralConfig).toHaveBeenCalledTimes(1);
     });
 
-    it('rejects channel-config updates when available channel data is missing', async () => {
-        vi.mocked(mockClient.getSitesApsAvailableChannel).mockResolvedValue([] as never);
-        registerSetApConfigTool(mockServer, mockClient);
-
-        await expect(
-            toolHandler(
-                {
-                    apMac: 'AA:BB:CC:DD:EE:FF',
-                    configType: 'channel-config',
-                    payload: { radioSettings: [{ radioId: 0, channel: 1 }] },
-                },
-                { sessionId: 's1' }
-            )
-        ).rejects.toThrow('AP AA:BB:CC:DD:EE:FF does not expose available channel data for channel-config validation.');
+    it.each([
+        { radioId: 0, radioEnable: true, channel: 99 },
+        { radioId: 0, radioEnable: true, channel: 1, channelWidth: 160 },
+        { radioId: 1, radioEnable: true },
+    ])('rejects unavailable channel capability %j even in dry run', async (payload) => {
+        await expect(call('channel-config', payload)).rejects.toThrow();
+        expect(client.setApChannelConfig).not.toHaveBeenCalled();
     });
 
-    it('throws when the AP is not found', async () => {
-        vi.mocked(mockClient.getDevice).mockResolvedValue(undefined);
-        registerSetApConfigTool(mockServer, mockClient);
+    it('accepts automatic channels only with an advertised width', async () => {
+        await call('channel-config', { radioId: 0, radioEnable: true, channel: 0, channelWidth: 40 });
+        await expect(call('channel-config', { radioId: 0, radioEnable: true, channelWidth: 160 })).rejects.toThrow('not advertised');
+    });
 
-        await expect(
-            toolHandler(
-                {
-                    apMac: 'AA:BB:CC:DD:EE:FF',
-                    configType: 'general-config',
-                    payload: { led: false },
-                },
-                { sessionId: 's1' }
-            )
-        ).rejects.toThrow('AP AA:BB:CC:DD:EE:FF was not found in the selected site.');
+    it('fails safely with missing channel data or device', async () => {
+        client.getSitesApsAvailableChannel.mockResolvedValue([]);
+        await expect(call('channel-config', { radioId: 0, radioEnable: true })).rejects.toThrow('does not expose');
+        client.getDevice.mockResolvedValue(undefined);
+        await expect(call('general-config', { ledSetting: 0 })).rejects.toThrow('not found');
     });
 });

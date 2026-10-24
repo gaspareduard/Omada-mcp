@@ -22,9 +22,6 @@ export default defineConfig({
                 // Network infrastructure — HTTP retry/streaming internals; logic is tested via integration
                 'src/server/http.ts',
                 'src/server/stream.ts',
-                // request.ts: patch() and maskValue() are untested — patch is a write method (no write tools yet),
-                // maskValue is a private logging utility. Both covered when write tools are implemented in v1.0.0.
-                'src/omadaClient/request.ts',
             ],
             thresholds: {
                 // Per-file enforcement: every source file must maintain ≥90% line/function/statement coverage.

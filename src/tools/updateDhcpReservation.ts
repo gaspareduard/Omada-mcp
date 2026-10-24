@@ -31,7 +31,7 @@ export function registerUpdateDhcpReservationTool(server: McpServer, client: Oma
         description: dhcpReservationPayloadSchema.shape.description,
         confirmConflict: dhcpReservationPayloadSchema.shape.confirmConflict,
         options: dhcpReservationPayloadSchema.shape.options,
-        dryRun: z.boolean().optional().default(false).describe('If true, validate and summarize the planned change without applying it.'),
+        dryRun: z.boolean().optional().default(true).describe('If true, validate and summarize the planned change without applying it.'),
     });
 
     server.registerTool(

@@ -25,7 +25,7 @@ Every new tool should include:
 
 ## Mutation safety checklist
 
-1. Support `dryRun` if the action is operator-triggered and previewable.
+1. Default `dryRun` to true and require explicit false before any mutation.
 2. Emit a mutation audit summary.
 3. Validate identifiers and allowed values before sending the request.
 4. Keep high-blast-radius tools behind a stricter category/profile.

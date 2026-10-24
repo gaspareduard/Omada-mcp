@@ -14,7 +14,7 @@ export function registerGetRFScanResultTool(server: McpServer, client: OmadaClie
         'getRFScanResult',
         {
             description:
-                '[DEPRECATED] Get the last RF scan results for an access point. This endpoint is marked deprecated in the Omada OpenAPI spec. Returns detected neighbouring networks, per-channel utilization, interference levels, and RSSI data. Use triggerRfScan first to initiate a fresh scan; this returns the most recent stored results.',
+                '[DEPRECATED] Get the last RF scan results for an access point. This endpoint is marked deprecated in the Omada OpenAPI spec. Returns detected neighbouring networks, per-channel utilization, interference levels, and RSSI data. This returns stored results; this server does not initiate an RF scan.',
             inputSchema: inputSchema.shape,
         },
         wrapToolHandler('getRFScanResult', async ({ apMac, siteId, customHeaders }) =>

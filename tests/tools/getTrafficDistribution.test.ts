@@ -48,6 +48,7 @@ describe('tools/getTrafficDistribution', () => {
 
             expect(mockClient.getTrafficDistribution).toHaveBeenCalledWith(undefined, 1682000000, 1682086400, undefined);
             expect(result).toEqual({
+                structuredContent: mockData,
                 content: [{ type: 'text', text: JSON.stringify(mockData, null, 2) }],
             });
         });
@@ -62,6 +63,7 @@ describe('tools/getTrafficDistribution', () => {
 
             expect(mockClient.getTrafficDistribution).toHaveBeenCalledWith('test-site', 1682000000, 1682086400, undefined);
             expect(result).toEqual({
+                structuredContent: mockData,
                 content: [{ type: 'text', text: JSON.stringify(mockData, null, 2) }],
             });
         });

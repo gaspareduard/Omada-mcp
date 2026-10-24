@@ -83,6 +83,46 @@ describe('omadaClient/site', () => {
             });
 
             describe('auto-discovery', () => {
+                it('shares a discovery failure and a subsequent recovery wave', async () => {
+                    const failure = new Error('Temporary outage');
+                    vi.mocked(mockRequest.fetchPaginated)
+                        .mockRejectedValueOnce(failure)
+                        .mockResolvedValueOnce([{ siteId: 'recovered', name: 'Lab' }]);
+                    const siteOps = new SiteOperations(mockRequest, buildPath);
+                    expect(await Promise.allSettled([siteOps.resolveSiteId(), siteOps.resolveSiteId()])).toEqual([
+                        { status: 'rejected', reason: failure },
+                        { status: 'rejected', reason: failure },
+                    ]);
+                    expect(await Promise.all([siteOps.resolveSiteId(), siteOps.resolveSiteId()])).toEqual(['recovered', 'recovered']);
+                    expect(mockRequest.fetchPaginated).toHaveBeenCalledTimes(2);
+                });
+
+                it.each([
+                    [],
+                    [
+                        { siteId: 'one', name: 'One' },
+                        { siteId: 'two', name: 'Two' },
+                    ],
+                ])('retries discovery after an unresolved topology %j', async (sites) => {
+                    vi.mocked(mockRequest.fetchPaginated)
+                        .mockResolvedValueOnce(sites)
+                        .mockResolvedValueOnce([{ siteId: 'one', name: 'One' }]);
+                    const siteOps = new SiteOperations(mockRequest, buildPath);
+                    await expect(siteOps.resolveSiteId()).rejects.toThrow();
+                    await expect(siteOps.resolveSiteId()).resolves.toBe('one');
+                    expect(mockRequest.fetchPaginated).toHaveBeenCalledTimes(2);
+                });
+
+                it('retries discovery after a rejected attempt', async () => {
+                    vi.mocked(mockRequest.fetchPaginated)
+                        .mockRejectedValueOnce(new Error('Temporary outage'))
+                        .mockResolvedValueOnce([{ siteId: 'recovered', name: 'Lab' }]);
+                    const siteOps = new SiteOperations(mockRequest, buildPath);
+                    await expect(siteOps.resolveSiteId()).rejects.toThrow('Temporary outage');
+                    await expect(siteOps.resolveSiteId()).resolves.toBe('recovered');
+                    expect(mockRequest.fetchPaginated).toHaveBeenCalledTimes(2);
+                });
+
                 it('should auto-select when exactly one site is found', async () => {
                     const mockSites: OmadaSiteSummary[] = [{ siteId: 'auto-site', name: 'My Only Site' }];
                     (mockRequest.fetchPaginated as ReturnType<typeof vi.fn>).mockResolvedValue(mockSites);
@@ -154,7 +194,7 @@ describe('omadaClient/site', () => {
                     const siteOps = new SiteOperations(mockRequest, buildPath);
 
                     await expect(siteOps.resolveSiteId()).rejects.toThrow('"Office" (siteId: site-1)');
-                    // Need a new instance since the previous discoveryPromise is cached (rejected)
+                    // Each failed discovery remains retryable; fresh instances also report each site.
                     const siteOps2 = new SiteOperations(mockRequest, buildPath);
                     await expect(siteOps2.resolveSiteId()).rejects.toThrow('"Home" (siteId: site-2)');
                     const siteOps3 = new SiteOperations(mockRequest, buildPath);

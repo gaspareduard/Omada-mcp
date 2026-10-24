@@ -12,6 +12,7 @@ export function registerGetNetworkHealthSummaryTool(server: McpServer, client: O
             inputSchema: siteInputSchema.shape,
         },
         wrapToolHandler('getNetworkHealthSummary', async ({ siteId, customHeaders }) => {
+            siteId = await client.resolveSiteId(siteId);
             const [overview, internet, clientDist, threats] = await Promise.allSettled([
                 client.getDashboardOverview(siteId, customHeaders),
                 client.getInternetInfo(siteId, customHeaders),
@@ -30,6 +31,9 @@ export function registerGetNetworkHealthSummaryTool(server: McpServer, client: O
             ]);
 
             return toToolResult({
+                siteId,
+                observedAt: new Date().toISOString(),
+                complete: [overview, internet, clientDist, threats].every((section) => section.status === 'fulfilled'),
                 overview: overview.status === 'fulfilled' ? overview.value : { _error: String(overview.reason) },
                 internet: internet.status === 'fulfilled' ? internet.value : { _error: String(internet.reason) },
                 clientDistribution: clientDist.status === 'fulfilled' ? clientDist.value : { _error: String(clientDist.reason) },

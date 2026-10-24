@@ -45,6 +45,7 @@ describe('tools/getRFScanResult', () => {
             const result = await toolHandler({ apMac: 'AA-BB-CC-DD-EE-FF' }, { sessionId: 'test-session' });
             expect(mockClient.getRFScanResult).toHaveBeenCalledWith('AA-BB-CC-DD-EE-FF', undefined, undefined);
             expect(result).toEqual({
+                structuredContent: mockData,
                 content: [{ type: 'text', text: JSON.stringify(mockData, null, 2) }],
             });
         });

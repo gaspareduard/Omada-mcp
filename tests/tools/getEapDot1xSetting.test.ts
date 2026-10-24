@@ -48,6 +48,7 @@ describe('tools/getEapDot1xSetting', () => {
 
             expect(mockClient.getEapDot1xSetting).toHaveBeenCalledWith(undefined, undefined);
             expect(result).toEqual({
+                structuredContent: mockData,
                 content: [{ type: 'text', text: JSON.stringify(mockData, null, 2) }],
             });
         });

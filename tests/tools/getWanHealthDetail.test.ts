@@ -39,7 +39,10 @@ describe('tools/getWanHealthDetail', () => {
         registerGetWanHealthDetailTool(mockServer, mockClient);
         const result = await toolHandler({ gatewayMac: 'AA-BB-CC-DD-EE-FF' }, { sessionId: 'test' });
         expect(mockClient.getWanHealthDetail).toHaveBeenCalledWith('AA-BB-CC-DD-EE-FF', undefined, undefined);
-        expect(result).toEqual({ content: [{ type: 'text', text: JSON.stringify(mockData, null, 2) }] });
+        expect(result).toEqual({
+            structuredContent: mockData,
+            content: [{ type: 'text', text: JSON.stringify(mockData, null, 2) }],
+        });
     });
 
     it('should pass siteId', async () => {

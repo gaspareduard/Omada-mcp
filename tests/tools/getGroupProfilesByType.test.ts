@@ -45,6 +45,7 @@ describe('tools/getGroupProfilesByType', () => {
             const result = await toolHandler({ groupType: '0' }, { sessionId: 'test-session' });
             expect(mockClient.getGroupProfilesByType).toHaveBeenCalledWith('0', undefined, undefined);
             expect(result).toEqual({
+                structuredContent: mockData,
                 content: [{ type: 'text', text: JSON.stringify(mockData, null, 2) }],
             });
         });
@@ -56,6 +57,7 @@ describe('tools/getGroupProfilesByType', () => {
             const result = await toolHandler({ groupType: '1' }, { sessionId: 'test-session' });
             expect(mockClient.getGroupProfilesByType).toHaveBeenCalledWith('1', undefined, undefined);
             expect(result).toEqual({
+                structuredContent: mockData,
                 content: [{ type: 'text', text: JSON.stringify(mockData, null, 2) }],
             });
         });
@@ -67,6 +69,7 @@ describe('tools/getGroupProfilesByType', () => {
             const result = await toolHandler({ groupType: '2', siteId: 'test-site' }, { sessionId: 'test-session' });
             expect(mockClient.getGroupProfilesByType).toHaveBeenCalledWith('2', 'test-site', undefined);
             expect(result).toEqual({
+                structuredContent: mockData,
                 content: [{ type: 'text', text: JSON.stringify(mockData, null, 2) }],
             });
         });

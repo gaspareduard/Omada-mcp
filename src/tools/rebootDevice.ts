@@ -7,7 +7,7 @@ import { deviceMacSchema, siteInputSchema, wrapMutationToolHandler } from '../se
 export function registerRebootDeviceTool(server: McpServer, client: OmadaClient): void {
     const inputSchema = siteInputSchema.extend({
         deviceMac: deviceMacSchema.describe('Device MAC address to reboot.'),
-        dryRun: z.boolean().optional().default(false).describe('If true, return the planned action without sending it to the controller.'),
+        dryRun: z.boolean().optional().default(true).describe('If true, return the planned action without sending it to the controller.'),
     });
 
     server.registerTool(

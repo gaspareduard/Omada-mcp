@@ -45,6 +45,7 @@ describe('tools/getGridVirtualWan', () => {
             const result = await toolHandler({}, { sessionId: 'test-session' });
             expect(mockClient.getGridVirtualWan).toHaveBeenCalledWith(undefined, undefined, undefined, undefined);
             expect(result).toEqual({
+                structuredContent: mockData,
                 content: [{ type: 'text', text: JSON.stringify(mockData, null, 2) }],
             });
         });
@@ -56,6 +57,7 @@ describe('tools/getGridVirtualWan', () => {
             const result = await toolHandler({ page: 3, pageSize: 15 }, { sessionId: 'test-session' });
             expect(mockClient.getGridVirtualWan).toHaveBeenCalledWith(3, 15, undefined, undefined);
             expect(result).toEqual({
+                structuredContent: mockData,
                 content: [{ type: 'text', text: JSON.stringify(mockData, null, 2) }],
             });
         });
@@ -67,6 +69,7 @@ describe('tools/getGridVirtualWan', () => {
             const result = await toolHandler({ siteId: 'test-site' }, { sessionId: 'test-session' });
             expect(mockClient.getGridVirtualWan).toHaveBeenCalledWith(undefined, undefined, 'test-site', undefined);
             expect(result).toEqual({
+                structuredContent: mockData,
                 content: [{ type: 'text', text: JSON.stringify(mockData, null, 2) }],
             });
         });

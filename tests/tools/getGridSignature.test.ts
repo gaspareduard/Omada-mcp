@@ -45,6 +45,7 @@ describe('tools/getGridSignature', () => {
             const result = await toolHandler({}, { sessionId: 'test-session' });
             expect(mockClient.getGridSignature).toHaveBeenCalledWith(1, 10, undefined, undefined);
             expect(result).toEqual({
+                structuredContent: mockData,
                 content: [{ type: 'text', text: JSON.stringify(mockData, null, 2) }],
             });
         });
@@ -56,6 +57,7 @@ describe('tools/getGridSignature', () => {
             const result = await toolHandler({ page: 2, pageSize: 20 }, { sessionId: 'test-session' });
             expect(mockClient.getGridSignature).toHaveBeenCalledWith(2, 20, undefined, undefined);
             expect(result).toEqual({
+                structuredContent: mockData,
                 content: [{ type: 'text', text: JSON.stringify(mockData, null, 2) }],
             });
         });
@@ -67,6 +69,7 @@ describe('tools/getGridSignature', () => {
             const result = await toolHandler({ siteId: 'test-site' }, { sessionId: 'test-session' });
             expect(mockClient.getGridSignature).toHaveBeenCalledWith(1, 10, 'test-site', undefined);
             expect(result).toEqual({
+                structuredContent: mockData,
                 content: [{ type: 'text', text: JSON.stringify(mockData, null, 2) }],
             });
         });

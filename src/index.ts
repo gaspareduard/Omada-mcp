@@ -52,10 +52,11 @@ async function main(): Promise<void> {
             omadacId: config.omadacId as string,
             siteId: config.siteId,
             strictSsl: config.strictSsl,
+            caFile: config.caFile,
             requestTimeout: config.requestTimeout,
         };
         const client = new OmadaClient(omadaConfig);
-        await startStdioServer(client, config.toolCategories);
+        await startStdioServer(client, config.toolCategories, config);
     }
 }
 main().catch((error) => {

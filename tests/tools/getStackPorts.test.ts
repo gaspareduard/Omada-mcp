@@ -45,6 +45,7 @@ describe('tools/getStackPorts', () => {
             const result = await toolHandler({ stackId: 'stack-123' }, { sessionId: 'test-session' });
             expect(mockClient.getStackPorts).toHaveBeenCalledWith('stack-123', undefined, undefined);
             expect(result).toEqual({
+                structuredContent: mockData,
                 content: [{ type: 'text', text: JSON.stringify(mockData, null, 2) }],
             });
         });
@@ -56,6 +57,7 @@ describe('tools/getStackPorts', () => {
             const result = await toolHandler({ stackId: 'stack-123', siteId: 'test-site' }, { sessionId: 'test-session' });
             expect(mockClient.getStackPorts).toHaveBeenCalledWith('stack-123', 'test-site', undefined);
             expect(result).toEqual({
+                structuredContent: mockData,
                 content: [{ type: 'text', text: JSON.stringify(mockData, null, 2) }],
             });
         });

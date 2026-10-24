@@ -51,6 +51,7 @@ export const ALL_CATEGORIES = [
     'controller',
     'sites',
     'maintenance',
+    'recovery',
     'account-users',
     'account-sso',
     'account-cloud',
@@ -81,7 +82,8 @@ export const FUTURE_CATEGORIES = new Set<ToolCategory>([
 
 /** Group aliases that expand to multiple categories */
 export const CATEGORY_GROUP_ALIASES: Record<string, ToolCategory[]> = {
-    all: [...ALL_CATEGORIES],
+    // Recovery requires an explicit recovery:rw category, even for admin.
+    all: ALL_CATEGORIES.filter((category) => category !== 'recovery'),
     'devices-all': ['devices-general', 'devices-ap', 'devices-switch', 'devices-gateway'],
     'wireless-all': ['wireless-ssid', 'wireless-radio', 'wireless-auth'],
     'network-all': ['network-wan', 'network-lan', 'network-routing', 'network-nat', 'network-services'],
@@ -220,6 +222,7 @@ const createBooleanStringSchema = (
 
 const numericStringSchema = z
     .string()
+    .regex(/^\d+$/, 'must be a positive integer (digits only)')
     .optional()
     .transform((value: string | undefined) => (value ? Number.parseInt(value, 10) : undefined))
     .pipe(z.number().positive().optional());
@@ -241,6 +244,9 @@ const envSchema = z
         capabilityProfile: z.enum(['safe-read', 'ops-write', 'admin', 'compatibility']).optional().default(DEFAULT_CAPABILITY_PROFILE),
         // Tool category filtering
         toolCategories: z.string().optional(),
+        includeDeprecated: createBooleanStringSchema(false),
+        catalogMode: z.enum(['standard', 'compact']).optional().default('standard'),
+        allowToolHeaders: createBooleanStringSchema(false),
 
         // Omada Client Configuration
         baseUrl: z.string().url({ message: 'OMADA_BASE_URL must be a valid URL' }),
@@ -249,6 +255,7 @@ const envSchema = z
         omadacId: z.string().min(1, 'OMADA_OMADAC_ID must not be empty').optional(),
         siteId: z.string().min(1).optional(),
         strictSsl: createBooleanStringSchema(true),
+        caFile: z.string().min(1).optional(),
         requestTimeout: numericStringSchema,
 
         // MCP Generic Server Configuration
@@ -327,11 +334,16 @@ export interface OmadaConnectionConfig {
     omadacId: string;
     siteId?: string;
     strictSsl: boolean;
+    caFile?: string;
     requestTimeout?: number;
 }
 
 export interface EnvironmentConfig {
     capabilityProfile: CapabilityProfile;
+    includeDeprecated?: boolean;
+    catalogMode?: 'standard' | 'compact';
+    allowToolHeaders?: boolean;
+    caFile?: string;
     // Tool category filtering
     toolCategories: Map<ToolCategory, Set<ToolPermission>>;
     startupWarnings: string[];
@@ -371,6 +383,9 @@ export function loadConfigFromEnv(env: NodeJS.ProcessEnv = process.env): Environ
         capabilityProfile: env.OMADA_CAPABILITY_PROFILE,
         // Tool category filtering
         toolCategories: env.OMADA_TOOL_CATEGORIES,
+        includeDeprecated: env.OMADA_INCLUDE_DEPRECATED,
+        catalogMode: env.OMADA_CATALOG_MODE,
+        allowToolHeaders: env.OMADA_ALLOW_TOOL_HEADERS,
 
         // Omada Client Configuration
         baseUrl: env.OMADA_BASE_URL,
@@ -379,6 +394,7 @@ export function loadConfigFromEnv(env: NodeJS.ProcessEnv = process.env): Environ
         omadacId: env.OMADA_OMADAC_ID,
         siteId: env.OMADA_SITE_ID,
         strictSsl: env.OMADA_STRICT_SSL,
+        caFile: env.OMADA_CA_FILE,
         requestTimeout: env.OMADA_TIMEOUT,
 
         // MCP Generic Server Configuration
@@ -427,7 +443,9 @@ export function loadConfigFromEnv(env: NodeJS.ProcessEnv = process.env): Environ
         warnings.push(`OMADA_CAPABILITY_PROFILE=${parsed.data.capabilityProfile} selected default tool categories: ${rawToolCategories}`);
     }
     if (parsed.data.capabilityProfile === 'compatibility') {
-        warnings.push('Compatibility profile is reserved for future controller-specific fallback modules and should stay disabled in production.');
+        warnings.push(
+            'Compatibility profile is deprecated; it is an alias of admin and adds no private-API support. Use admin with explicit categories instead.'
+        );
     }
     if (parsed.data.useHttp) {
         warnings.push('HTTP transport is enabled with explicit unsafe acknowledgement. The supported production baseline remains stdio only.');
@@ -435,6 +453,10 @@ export function loadConfigFromEnv(env: NodeJS.ProcessEnv = process.env): Environ
 
     return {
         capabilityProfile: parsed.data.capabilityProfile,
+        includeDeprecated: parsed.data.includeDeprecated,
+        catalogMode: parsed.data.catalogMode,
+        allowToolHeaders: parsed.data.allowToolHeaders,
+        caFile: parsed.data.caFile,
         // Tool category filtering
         toolCategories,
         startupWarnings: warnings,

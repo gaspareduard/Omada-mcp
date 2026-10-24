@@ -216,11 +216,17 @@ describe('Stream Server', () => {
             expect(sessionId1).not.toBe(sessionId2);
         });
 
-        it('should pass toolCategories from config to registerAllTools', () => {
+        it('forwards category permissions and catalog policy to registerAllTools', () => {
             const toolCategories = new Map<ToolCategory, Set<ToolPermission>>([['dashboard' as ToolCategory, new Set<ToolPermission>(['read'])]]);
-            const configWithCategories = { ...mockConfig, toolCategories };
+            const configWithCategories = {
+                ...mockConfig,
+                toolCategories,
+                includeDeprecated: true,
+                allowToolHeaders: true,
+                catalogMode: 'compact' as const,
+            };
             createStreamTransport(mockClient, configWithCategories);
-            expect(vi.mocked(registerAllTools)).toHaveBeenCalledWith(expect.anything(), expect.anything(), toolCategories);
+            expect(vi.mocked(registerAllTools)).toHaveBeenCalledWith(expect.anything(), mockClient, toolCategories, configWithCategories);
         });
     });
 

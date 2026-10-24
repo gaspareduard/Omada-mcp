@@ -11,7 +11,7 @@ const inputSchema = siteInputSchema.extend({
     dryRun: z
         .boolean()
         .optional()
-        .default(false)
+        .default(true)
         .describe('If true, fetch the current firewall settings and return the planned change without applying it.'),
 });
 

@@ -58,6 +58,7 @@ describe('tools/listSiteThreatManagement', () => {
                 undefined
             );
             expect(result).toEqual({
+                structuredContent: mockData,
                 content: [{ type: 'text', text: JSON.stringify(mockData, null, 2) }],
             });
         });

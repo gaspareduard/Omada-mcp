@@ -49,6 +49,7 @@ describe('tools/getBandSteeringSetting', () => {
 
             expect(mockClient.getBandSteeringSetting).toHaveBeenCalledWith(undefined, undefined);
             expect(result).toEqual({
+                structuredContent: mockData,
                 content: [{ type: 'text', text: JSON.stringify(mockData, null, 2) }],
             });
         });

@@ -50,6 +50,7 @@ describe('tools/getGeneralSettings', () => {
 
             expect(mockClient.getGeneralSettings).toHaveBeenCalledWith(undefined);
             expect(result).toEqual({
+                structuredContent: mockData,
                 content: [{ type: 'text', text: JSON.stringify(mockData, null, 2) }],
             });
         });

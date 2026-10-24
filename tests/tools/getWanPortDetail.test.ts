@@ -39,7 +39,10 @@ describe('tools/getWanPortDetail', () => {
         registerGetWanPortDetailTool(mockServer, mockClient);
         const result = await toolHandler({}, { sessionId: 'test' });
         expect(mockClient.getWanPortDetail).toHaveBeenCalledWith(undefined, undefined);
-        expect(result).toEqual({ content: [{ type: 'text', text: JSON.stringify(mockData, null, 2) }] });
+        expect(result).toEqual({
+            structuredContent: mockData,
+            content: [{ type: 'text', text: JSON.stringify(mockData, null, 2) }],
+        });
     });
 
     it('should pass siteId', async () => {

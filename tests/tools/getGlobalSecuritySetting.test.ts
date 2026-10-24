@@ -47,7 +47,10 @@ describe('tools/getGlobalSecuritySetting', () => {
                 { archived: false, page: 1, pageSize: 10, startTime: 1000000, endTime: 2000000 },
                 undefined
             );
-            expect(result).toEqual({ content: [{ type: 'text', text: JSON.stringify(mockData, null, 2) }] });
+            expect(result).toEqual({
+                structuredContent: mockData,
+                content: [{ type: 'text', text: JSON.stringify(mockData, null, 2) }],
+            });
         });
 
         it('should handle errors', async () => {

@@ -30,6 +30,92 @@ describe('AuthManager', () => {
     });
 
     describe('getAccessToken', () => {
+        it('shares a concurrent refresh, including a single credential fallback', async () => {
+            vi.mocked(mockHttp.post)
+                .mockResolvedValueOnce({ data: { errorCode: 0, result: { accessToken: 'old', refreshToken: 'refresh', expiresIn: 0 } } })
+                .mockRejectedValueOnce(new Error('Refresh expired'))
+                .mockResolvedValueOnce({ data: { errorCode: 0, result: { accessToken: 'new', expiresIn: 3600 } } });
+            await authManager.getAccessToken();
+            expect(await Promise.all(Array.from({ length: 5 }, () => authManager.getAccessToken()))).toEqual(Array(5).fill('new'));
+            expect(mockHttp.post).toHaveBeenCalledTimes(3);
+        });
+
+        it('shares a successful refresh without repeated token calls', async () => {
+            vi.mocked(mockHttp.post)
+                .mockResolvedValueOnce({ data: { errorCode: 0, result: { accessToken: 'old', refreshToken: 'refresh', expiresIn: 0 } } })
+                .mockResolvedValueOnce({ data: { errorCode: 0, result: { accessToken: 'new', expiresIn: 3600 } } });
+            await authManager.getAccessToken();
+            expect(await Promise.all(Array.from({ length: 5 }, () => authManager.getAccessToken()))).toEqual(Array(5).fill('new'));
+            expect(mockHttp.post).toHaveBeenCalledTimes(2);
+        });
+
+        it('clears a failed shared login and allows a later retry', async () => {
+            const failure = new Error('Controller unavailable');
+            vi.mocked(mockHttp.post)
+                .mockRejectedValueOnce(failure)
+                .mockResolvedValueOnce({ data: { errorCode: 0, result: { accessToken: 'recovered', expiresIn: 3600 } } });
+            const outcomes = await Promise.allSettled(Array.from({ length: 5 }, () => authManager.getAccessToken()));
+            expect(outcomes).toEqual(Array(5).fill({ status: 'rejected', reason: failure }));
+            expect(mockHttp.post).toHaveBeenCalledTimes(1);
+            await expect(authManager.getAccessToken()).resolves.toBe('recovered');
+            expect(mockHttp.post).toHaveBeenCalledTimes(2);
+        });
+
+        it('clears failed refresh and credential fallback so a later caller can recover', async () => {
+            vi.mocked(mockHttp.post)
+                .mockResolvedValueOnce({ data: { errorCode: 0, result: { accessToken: 'old', refreshToken: 'refresh', expiresIn: 0 } } })
+                .mockRejectedValueOnce(new Error('Refresh failed'))
+                .mockRejectedValueOnce(new Error('Credentials failed'))
+                .mockResolvedValueOnce({ data: { errorCode: 0, result: { accessToken: 'recovered', expiresIn: 3600 } } });
+            await authManager.getAccessToken();
+            const outcomes = await Promise.allSettled([authManager.getAccessToken(), authManager.getAccessToken()]);
+            expect(outcomes.every((outcome) => outcome.status === 'rejected')).toBe(true);
+            expect(mockHttp.post).toHaveBeenCalledTimes(3);
+            await expect(authManager.getAccessToken()).resolves.toBe('recovered');
+            expect(mockHttp.post).toHaveBeenLastCalledWith('/openapi/authorize/token', expect.objectContaining({ omadacId }), {
+                params: { grant_type: 'client_credentials' },
+            });
+        });
+
+        it.each([
+            {},
+            { accessToken: '' },
+            { accessToken: ' ' },
+            { accessToken: 123 },
+        ])('rejects malformed successful token %j and permits recovery', async (result) => {
+            vi.mocked(mockHttp.post)
+                .mockResolvedValueOnce({ data: { errorCode: 0, result } })
+                .mockResolvedValueOnce({ data: { errorCode: 0, result: { accessToken: 'valid', expiresIn: 3600 } } });
+            await expect(authManager.getAccessToken()).rejects.toThrow('no valid access token');
+            await expect(authManager.getAccessToken()).resolves.toBe('valid');
+        });
+
+        it('surfaces generic authentication errors and non-Error transport failures', async () => {
+            vi.mocked(mockHttp.post)
+                .mockResolvedValueOnce({ data: { errorCode: -1 } })
+                .mockRejectedValueOnce('transport failure');
+            await expect(authManager.getAccessToken()).rejects.toThrow('Omada authentication failed');
+            await expect(authManager.getAccessToken()).rejects.toBe('transport failure');
+            expect(loggerModule.logger.error).toHaveBeenCalledWith(
+                'Omada authentication failed',
+                expect.objectContaining({ error: 'transport failure' })
+            );
+        });
+
+        it('does not cache a token with a nonfinite expiry', async () => {
+            vi.mocked(mockHttp.post).mockResolvedValue({ data: { errorCode: 0, result: { accessToken: 'valid', expiresIn: Number.NaN } } });
+            await authManager.getAccessToken();
+            await authManager.getAccessToken();
+            expect(mockHttp.post).toHaveBeenCalledTimes(2);
+        });
+        it('shares a single authentication across concurrent cold callers', async () => {
+            vi.mocked(mockHttp.post).mockResolvedValue({
+                data: { errorCode: 0, result: { accessToken: 'shared', expiresIn: 3600 } },
+            });
+            expect(await Promise.all(Array.from({ length: 5 }, () => authManager.getAccessToken()))).toEqual(Array(5).fill('shared'));
+            expect(mockHttp.post).toHaveBeenCalledTimes(1);
+        });
+
         it('should authenticate and return access token on first call', async () => {
             const mockToken: TokenResult = {
                 accessToken: 'test-access-token',
@@ -223,10 +309,7 @@ describe('AuthManager', () => {
 
             (mockHttp.post as ReturnType<typeof vi.fn>).mockResolvedValue({ data: mockResponse });
 
-            const token = await authManager.getAccessToken();
-
-            // Should return empty string when token is undefined
-            expect(token).toBe('');
+            await expect(authManager.getAccessToken()).rejects.toThrow('Omada authentication returned no valid access token');
         });
 
         it('should handle zero or negative expiresIn', async () => {
@@ -252,6 +335,18 @@ describe('AuthManager', () => {
     });
 
     describe('clearToken', () => {
+        it('ignores delayed rejection of an old token after a replacement has been issued', async () => {
+            vi.mocked(mockHttp.post)
+                .mockResolvedValueOnce({ data: { errorCode: 0, result: { accessToken: 'old', expiresIn: 3600 } } })
+                .mockResolvedValueOnce({ data: { errorCode: 0, result: { accessToken: 'new', expiresIn: 3600 } } });
+            await authManager.getAccessToken();
+            authManager.clearToken('old');
+            await expect(authManager.getAccessToken()).resolves.toBe('new');
+            authManager.clearToken('old');
+            await expect(authManager.getAccessToken()).resolves.toBe('new');
+            expect(mockHttp.post).toHaveBeenCalledTimes(2);
+        });
+
         it('should clear all token state', async () => {
             const mockToken: TokenResult = {
                 accessToken: 'test-token',

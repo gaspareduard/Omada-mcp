@@ -45,6 +45,7 @@ describe('tools/getRadioFrequencyPlanningConfig', () => {
             const result = await toolHandler({}, { sessionId: 'test-session' });
             expect(mockClient.getRadioFrequencyPlanningConfig).toHaveBeenCalledWith(undefined, undefined);
             expect(result).toEqual({
+                structuredContent: mockData,
                 content: [{ type: 'text', text: JSON.stringify(mockData, null, 2) }],
             });
         });

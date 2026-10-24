@@ -50,6 +50,7 @@ describe('tools/getGridDashboardTunnelStats', () => {
 
             expect(mockClient.getGridDashboardTunnelStats).toHaveBeenCalledWith(undefined, 0, undefined);
             expect(result).toEqual({
+                structuredContent: mockData,
                 content: [{ type: 'text', text: JSON.stringify(mockData, null, 2) }],
             });
         });

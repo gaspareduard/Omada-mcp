@@ -45,7 +45,9 @@ export class SiteOperations {
         }
 
         if (!this.discoveryPromise) {
-            this.discoveryPromise = this.discoverSiteId();
+            this.discoveryPromise = this.discoverSiteId().finally(() => {
+                this.discoveryPromise = null;
+            });
         }
         return this.discoveryPromise;
     }

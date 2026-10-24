@@ -48,7 +48,10 @@ describe('tools/listUpgradeFirmwares', () => {
             const result = await toolHandler({ page: 1, pageSize: 10 }, { sessionId: 'test-session' });
 
             expect(mockClient.listUpgradeFirmwares).toHaveBeenCalledWith(1, 10, undefined);
-            expect(result).toEqual({ content: [{ type: 'text', text: JSON.stringify(mockData, null, 2) }] });
+            expect(result).toEqual({
+                structuredContent: mockData,
+                content: [{ type: 'text', text: JSON.stringify(mockData, null, 2) }],
+            });
         });
 
         it('should use default page and pageSize when not provided', async () => {

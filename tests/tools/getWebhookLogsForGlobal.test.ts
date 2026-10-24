@@ -51,6 +51,7 @@ describe('tools/getWebhookLogsForGlobal', () => {
 
             expect(mockClient.getWebhookLogsForGlobal).toHaveBeenCalledWith(1, 10, 'webhook-1', 1679297710438, 1681889710438, undefined);
             expect(result).toEqual({
+                structuredContent: mockData,
                 content: [{ type: 'text', text: JSON.stringify(mockData, null, 2) }],
             });
         });
@@ -68,6 +69,7 @@ describe('tools/getWebhookLogsForGlobal', () => {
 
             expect(mockClient.getWebhookLogsForGlobal).toHaveBeenCalledWith(2, 20, 'webhook-2', 1679297710438, 1681889710438, undefined);
             expect(result).toEqual({
+                structuredContent: mockData,
                 content: [{ type: 'text', text: JSON.stringify(mockData, null, 2) }],
             });
         });

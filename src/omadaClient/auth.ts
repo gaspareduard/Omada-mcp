@@ -14,6 +14,7 @@ export class AuthManager {
     private refreshToken?: string;
 
     private tokenExpiresAt?: number;
+    private authenticationPromise?: Promise<void>;
 
     constructor(
         private readonly http: AxiosInstance,
@@ -33,7 +34,11 @@ export class AuthManager {
     /**
      * Clear the current authentication token.
      */
-    public clearToken(): void {
+    public clearToken(rejectedAccessToken?: string): void {
+        // A late rejection for an old token must not invalidate a newer login.
+        if (rejectedAccessToken !== undefined && this.accessToken !== rejectedAccessToken) {
+            return;
+        }
         this.accessToken = undefined;
         this.refreshToken = undefined;
         this.tokenExpiresAt = undefined;
@@ -42,11 +47,21 @@ export class AuthManager {
     /**
      * Ensure a valid access token is available, refreshing or re-authenticating if necessary.
      */
-    private async ensureAccessToken(): Promise<void> {
+    private ensureAccessToken(): Promise<void> {
+        if (this.authenticationPromise) {
+            return this.authenticationPromise;
+        }
         if (this.accessToken && this.tokenExpiresAt && Date.now() < this.tokenExpiresAt) {
-            return;
+            return Promise.resolve();
         }
 
+        this.authenticationPromise = this.refreshOrAuthenticate().finally(() => {
+            this.authenticationPromise = undefined;
+        });
+        return this.authenticationPromise;
+    }
+
+    private async refreshOrAuthenticate(): Promise<void> {
         if (this.refreshToken) {
             try {
                 await this.authenticate('refresh_token');
@@ -56,7 +71,12 @@ export class AuthManager {
             }
         }
 
-        await this.authenticate('client_credentials');
+        try {
+            await this.authenticate('client_credentials');
+        } catch (error) {
+            this.clearToken();
+            throw error;
+        }
     }
 
     /**
@@ -90,7 +110,10 @@ export class AuthManager {
                 throw new Error(data.msg ?? 'Omada authentication failed');
             }
 
-            const token = data.result ?? ({} as TokenResult);
+            const token = data.result;
+            if (!token || typeof token.accessToken !== 'string' || token.accessToken.trim().length === 0) {
+                throw new Error('Omada authentication returned no valid access token');
+            }
             this.setToken(token);
         } catch (error) {
             logger.error('Omada authentication failed', {

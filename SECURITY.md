@@ -45,3 +45,11 @@ This server is designed with a defense-in-depth approach:
 - **Loopback-only HTTP**: When HTTP mode is explicitly enabled, the server binds to loopback addresses only.
 
 See [docs/security-model.md](./docs/security-model.md) for the full security design.
+
+## 0.19 release-candidate dependency limitation
+
+The compatible dependency update clears the previously reported critical runtime advisories, but `zod@3.25.76` remains affected according to [GHSA-mrhx-c7xc-m3w5](https://github.com/advisories/GHSA-mrhx-c7xc-m3w5): oversized collections can exhaust memory during validation. The advisory's first patched version is 4.6.6; no Zod 3 patch was available during this review. A Zod 4 migration needs schema/SDK regression testing and is not represented as fixed by this candidate.
+
+Use trusted local stdio clients and keep HTTP restricted to isolated lab use. These boundaries reduce exposure but do not eliminate resource-exhaustion risk from oversized local requests or controller responses. Re-run `npm audit --omit=dev` before promotion and track the schema migration as an unresolved gate.
+
+The full development audit also reports four high-severity entries through the optional MCP Inspector dependency tree (five high entries including Zod). Inspector is a development-only tool, excluded from production installs. Its major-version upgrade is separate from the compatible runtime update. Both audits contain zero critical entries at this validation point.

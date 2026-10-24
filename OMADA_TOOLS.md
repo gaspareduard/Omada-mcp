@@ -4,9 +4,7 @@ Complete catalogue of every MCP tool derivable from the Omada OpenAPI specificat
 Organised by category. Serves as ground truth for what tools exist (or should exist),
 an implementation tracker, and a reference for coding agents.
 
-**Total operations:** 1648  
-**Implemented:** 287  
-**Not implemented:** 1361
+**Historical specification operations:** 1648. The checkmarks and category tallies below are a baseline snapshot, not a current runtime inventory or a controller compatibility guarantee. Several tools compose multiple routes; aliases share routes. After building, `node scripts/check-readme-sync.mjs` enumerates unique runtime tools. The 0.19 additions and validation limits are tracked in [the release plan](docs/operations/0.19-release-plan.md).
 
 ## Table of Contents
 

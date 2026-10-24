@@ -45,6 +45,7 @@ describe('tools/getSiteToSiteVpnInfo', () => {
             const result = await toolHandler({ vpnId: 'vpn-123' }, { sessionId: 'test-session' });
             expect(mockClient.getSiteToSiteVpnInfo).toHaveBeenCalledWith('vpn-123', undefined, undefined);
             expect(result).toEqual({
+                structuredContent: mockData,
                 content: [{ type: 'text', text: JSON.stringify(mockData, null, 2) }],
             });
         });
@@ -56,6 +57,7 @@ describe('tools/getSiteToSiteVpnInfo', () => {
             const result = await toolHandler({ vpnId: 'vpn-456', siteId: 'test-site' }, { sessionId: 'test-session' });
             expect(mockClient.getSiteToSiteVpnInfo).toHaveBeenCalledWith('vpn-456', 'test-site', undefined);
             expect(result).toEqual({
+                structuredContent: mockData,
                 content: [{ type: 'text', text: JSON.stringify(mockData, null, 2) }],
             });
         });

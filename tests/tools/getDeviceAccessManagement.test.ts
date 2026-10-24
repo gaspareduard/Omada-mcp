@@ -48,6 +48,7 @@ describe('tools/getDeviceAccessManagement', () => {
 
             expect(mockClient.getDeviceAccessManagement).toHaveBeenCalledWith(undefined);
             expect(result).toEqual({
+                structuredContent: mockData,
                 content: [{ type: 'text', text: JSON.stringify(mockData, null, 2) }],
             });
         });

@@ -49,6 +49,7 @@ describe('tools/getDeviceTagList', () => {
 
             expect(mockClient.getDeviceTagList).toHaveBeenCalledWith(undefined, undefined);
             expect(result).toEqual({
+                structuredContent: mockData,
                 content: [{ type: 'text', text: JSON.stringify(mockData, null, 2) }],
             });
         });

@@ -1,6 +1,9 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 const baseConfig = {
+    includeDeprecated: true,
+    allowToolHeaders: true,
+    catalogMode: 'compact',
     useHttp: false,
     unsafeEnableHttp: false,
     capabilityProfile: 'safe-read',
@@ -80,7 +83,7 @@ describe('src/index main entry', () => {
 
         expect(mockInitLogger).toHaveBeenCalledWith('info', 'plain', true);
         expect(OmadaClient).toHaveBeenCalledWith(expect.objectContaining({ baseUrl: 'https://controller.local' }));
-        expect(startStdioServer).toHaveBeenCalledWith(expect.objectContaining({ client: 'instance' }), new Map());
+        expect(startStdioServer).toHaveBeenCalledWith(expect.objectContaining({ client: 'instance' }), new Map(), baseConfig);
         expect(startHttpServer).not.toHaveBeenCalled();
         expect(loggerInfo).toHaveBeenCalledWith(
             'Starting Safe Omada MCP server',

@@ -11,7 +11,7 @@ User / Claude
      │ stdio (production)
      ▼
 MCP Server (src/server/stdio.ts)
-     │ registers tools via src/server/common.ts
+     │ filters tools via src/tools/index.ts and src/server/catalog.ts
      ▼
 Tool handlers (src/tools/*.ts)
      │ call
@@ -29,8 +29,10 @@ TP-Link Omada Controller
 **Tool gating** is controlled by `OMADA_CAPABILITY_PROFILE` and `OMADA_TOOL_CATEGORIES`:
 - `safe-read` (default): read-only tools for dashboard, clients, devices
 - `ops-write`: adds write tools for clients and maintenance
-- `admin`: all categories read+write
-- `compatibility`: reserved for future controller-specific fallback
+- `admin`: all categories read+write except recovery
+- `compatibility`: deprecated alias for `admin`; no private API fallback
+
+`OMADA_TOOL_CATEGORIES` replaces profile defaults. Restore tools require explicit `recovery:rw`; the `all` alias excludes recovery. Writes default to previews. See [0.19 migration](docs/operations/0.19-migration.md) for dispatch, header and verification contracts.
 
 ---
 
@@ -62,7 +64,8 @@ src/
     schedules.ts        Schedule API calls
 
   server/               MCP transport implementations
-    common.ts           Tool + prompt registration, shared handler logic
+    common.ts           Shared handlers, mutation results and audit logging
+    catalog.ts          Effective schemas, discovery/dispatch and output redaction
     stdio.ts            stdio transport (production)
     http.ts             HTTP coordinator (lab-only)
     stream.ts           Streamable HTTP transport (MCP 2025-03-26, lab-only)
@@ -120,71 +123,19 @@ Check `OMADA_TOOLS.md` for the operation. Find its `OpenAPI File` and `JSON Path
 
 ### 2. Add the method to the Operations class
 
-If the endpoint belongs to a new area, add a method to the appropriate `src/omadaClient/<area>.ts` file. Example:
-
-```typescript
-// src/omadaClient/maintenance.ts
-async getBackupList(omadacId: string, siteId: string): Promise<BackupFile[]> {
-    const resp = await this.request.get<OmadaApiResponse<{ data: BackupFile[] }>>(
-        `/openapi/v1/${omadacId}/sites/${siteId}/cmd/backup/files`
-    );
-    return resp.data.result.data;
-}
-```
-
-Expose it on `OmadaClient` in `src/omadaClient/index.ts`.
+Add the verified route to its domain class and expose it through `src/omadaClient/index.ts`. Reuse `RequestHandler.ensureSuccess` for envelopes and `fetchPaginated` for complete collections; see [site operations](src/omadaClient/site.ts). Credentials and controller identity come from configuration.
 
 ### 3. Create the tool file
 
-```typescript
-// src/tools/getBackupList.ts
-import { z } from 'zod';
-import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
-import type { OmadaClient } from '../omadaClient/index.js';
-import { logger } from '../utils/logger.js';
-
-export function registerGetBackupList(server: McpServer, client: OmadaClient): void {
-    server.registerTool(
-        'getBackupList',
-        {
-            description: 'List backup files for a site',
-            inputSchema: z.object({
-                omadacId: z.string().describe('Omada controller ID'),
-                siteId: z.string().describe('Site ID'),
-            }),
-            // category and permission used by capability gating in index.ts
-        },
-        async (args) => {
-            try {
-                const files = await client.getBackupList(args.omadacId, args.siteId);
-                return { content: [{ type: 'text', text: JSON.stringify(files, null, 2) }] };
-            } catch (error) {
-                logger.error('getBackupList failed', { error });
-                throw error;
-            }
-        }
-    );
-}
-```
+Use [listSites](src/tools/listSites.ts) for a read tool and [setSwitchPorts](src/tools/setSwitchPorts.ts) for a validated mutation workflow. Register a raw Zod shape, use the common handler/result helpers, and default `dryRun` to true. Validate real response shapes rather than echoing write payloads in tests.
 
 ### 4. Register in `src/tools/index.ts`
 
-Find the appropriate category block and add your import + registration call, following the exact pattern of adjacent tools.
+Add the import and a `TOOL_REGISTRY` entry with category and read/write permission. Catalog registration applies the effective schema, annotations and redaction in standard and compact modes.
 
 ### 5. Write the test
 
-Create `tests/tools/getBackupList.test.ts`. Pattern:
-
-```typescript
-import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { registerGetBackupList } from '../../src/tools/getBackupList.js';
-
-describe('getBackupList', () => {
-    // mock server + client, capture handler, assert correct call
-});
-```
-
-See `tests/tools/getClient.test.ts` for a complete example.
+Add matching operation/tool tests. Cover actual schema defaults, invalid input, preview without mutation, explicit apply, and partial/uncertain outcomes where relevant. See [MCP protocol tests](tests/integration/mcpProtocol.test.ts) for actual SDK negotiation and calls. Follow the [release validation rules](CLAUDE.md#integration-validation) before promoting writes.
 
 ### 6. Update documentation
 

@@ -28,7 +28,7 @@ Security-focused MCP server exposing TP-Link Omada controller APIs. Written in T
 
 - Node.js 24.x — CI target and minimum runtime.
 - TypeScript 5.9 — `module`/`moduleResolution`: `NodeNext`.
-- Zod 3.x — config validation (MCP SDK requires Zod 3 APIs).
+- Zod 3.x — existing schema APIs; the SDK also supports Zod 4. See SECURITY.md for the remaining dependency advisory.
 - Biome 2.x — linting and formatting (not ESLint/Prettier).
 - Vitest 4.x — test framework.
 
@@ -165,7 +165,7 @@ Before adding a new method to any `*Operations` class:
 | Per-file | Lines, Statements, Functions | **90%** |
 | Global | Branches | **70%** |
 
-- Excluded from coverage: `src/omadaClient/index.ts`, `src/server/http.ts`, `src/server/stream.ts`, `src/omadaClient/request.ts`
+- Excluded from coverage: `src/omadaClient/index.ts`, `src/server/http.ts`, `src/server/stream.ts`
 
 ### Always use `npm run test:coverage`
 
@@ -191,6 +191,7 @@ All of the following must pass before committing:
 npm run check                      # Biome lint + tsc --noEmit
 npm run build                      # tsc → dist/
 npm run test:coverage              # Vitest with 90% per-file enforcement
+node scripts/check-branch-coverage.mjs # Global branches >=70%
 node scripts/check-tool-tests.mjs  # 1:1 test file mirroring
 node scripts/check-readme-sync.mjs # README tool table sync
 ```
@@ -234,27 +235,14 @@ The husky pre-commit hook runs `test:coverage` automatically.
 
 ### `confirmDangerous` — scope and limitations
 
-The four restore tools (`restoreController`, `restoreControllerFromFileServer`, `restoreSites`, `restoreSitesFromFileServer`) require `confirmDangerous: true` as a second call. This gate is **conversational-context protection only**: it forces the AI to surface an irreversibility warning to a human user before proceeding in a normal back-and-forth session.
+The four restore tools require the explicit `recovery:rw` category, `dryRun: false`, and `confirmDangerous: true`. `all:rw` and built-in profiles exclude recovery. The confirmation boolean is an argument check, not enforced human approval or a stateful second call. Use MCP-host approval policies where human approval is required.
 
-It does **not** prevent a fully autonomous agent from passing `confirmDangerous: true` programmatically without human review.
+All write tools default to preview. Validate payloads before preview and apply; report controller acceptance as `submitted`, and use `verified` only after semantic readback. Consult `docs/operations/0.19-migration.md` when changing these contracts.
 
-True human-in-the-loop enforcement for destructive operations requires:
-1. **MCP client approval mode** — Claude Desktop and some other MCP hosts support requiring explicit human approval before any tool call executes. This is the only reliable technical gate.
-2. **Capability profile restriction** — keeping the deployment on `safe-read` (default) or `ops-write` without `maintenance:rw` blocks restore tools entirely, regardless of what the agent attempts.
+## Integration validation
 
-## Integration Tests (Planned)
-
-Not yet implemented — tracked for v1.0.0. Will run against a real Omada Software Controller in Docker. Write tools **must** be tested against the Docker controller before release — never against a production controller.
+Local MCP protocol and HTTP contract tests exercise the SDK and request layer without a controller. They do not prove hardware behavior. Write tools must be tested against a disposable Docker/lab controller before stable release, never against a production controller. Until this gate is satisfied, publish only a release candidate and record missing evidence in `docs/support-matrix.md`. Production checks are read-only or write previews.
 
 ## Implementation Backlog
 
-`OMADA_TOOLS.md` is the canonical backlog. Current state: **287/1648 operations implemented**.
-
-Priority order for next phases:
-1. `maintenance` (0/14) — reboot, backup, firmware
-2. `account-users` (0/19) — user management
-3. `devices-general` (11/117) — largest gap in a core category
-4. `clients` writes (6/19) — block/unblock/reconnect
-5. `vpn` (27/77) — VPN management
-6. `profiles` (12/154) — automation workflows
-7. `schedules` (0/7) — small, high value
+`OMADA_TOOLS.md` is the historical API-route backlog; its checkmarks are not a runtime tool count. After building, run `node scripts/check-readme-sync.mjs` to validate the unique runtime inventory (including discovery and optional aliases). Consult `docs/operations/0.19-release-plan.md` for this release's priority order and deferred work.

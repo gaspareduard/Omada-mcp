@@ -23,7 +23,8 @@ export function registerDiagnoseClientTool(server: McpServer, client: OmadaClien
         },
         wrapToolHandler('diagnoseClient', async ({ identifier, siteId, customHeaders }) => {
             // Step 1: resolve the client to get its MAC address
-            const currentClient = await client.getClient(identifier, siteId, customHeaders);
+            const lookup = await Promise.allSettled([client.getClient(identifier, siteId, customHeaders)]);
+            const currentClient = lookup[0].status === 'fulfilled' ? lookup[0].value : undefined;
 
             // Extract MAC — needed for getClientDetail; fall back to identifier if it looks like a MAC
             const macPattern = /^([0-9A-Fa-f]{2}[:-]){5}[0-9A-Fa-f]{2}$/;
@@ -36,6 +37,10 @@ export function registerDiagnoseClientTool(server: McpServer, client: OmadaClien
             ]);
 
             return toToolResult({
+                observedAt: new Date().toISOString(),
+                complete:
+                    lookup[0].status === 'fulfilled' && detail.status === 'fulfilled' && history.status === 'fulfilled' && resolvedMac !== undefined,
+                ...(lookup[0].status === 'rejected' ? { lookupError: String(lookup[0].reason) } : {}),
                 currentStatus: currentClient ?? null,
                 detail: detail.status === 'fulfilled' ? detail.value : { _error: String(detail.reason) },
                 recentConnectionHistory: history.status === 'fulfilled' ? history.value : { _error: String(history.reason) },

@@ -45,6 +45,7 @@ describe('tools/getRadiusServer', () => {
             const result = await toolHandler({}, { sessionId: 'test-session' });
             expect(mockClient.getRadiusServer).toHaveBeenCalledWith(undefined);
             expect(result).toEqual({
+                structuredContent: mockData,
                 content: [{ type: 'text', text: JSON.stringify(mockData, null, 2) }],
             });
         });

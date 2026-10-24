@@ -1,5 +1,7 @@
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
+import type { CallToolResult } from '@modelcontextprotocol/sdk/types.js';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { z } from 'zod';
 
 import type { OmadaClient } from '../../src/omadaClient/index.js';
 import { registerCreateEapAclTool } from '../../src/tools/createEapAcl.js';
@@ -7,7 +9,7 @@ import { registerCreateEapAclTool } from '../../src/tools/createEapAcl.js';
 describe('tools/createEapAcl', () => {
     let mockServer: McpServer;
     let mockClient: OmadaClient;
-    let toolHandler: (args: unknown, extra: { sessionId?: string }) => Promise<unknown>;
+    let toolHandler: (args: unknown, extra: { sessionId?: string }) => Promise<CallToolResult>;
 
     const payload = {
         description: 'Guests wireless',
@@ -22,7 +24,7 @@ describe('tools/createEapAcl', () => {
     beforeEach(() => {
         mockServer = {
             registerTool: vi.fn((name, schema, handler) => {
-                toolHandler = handler;
+                toolHandler = (args, extra) => handler(z.object(schema.inputSchema).parse(args), extra);
             }),
         } as unknown as McpServer;
 
@@ -42,30 +44,23 @@ describe('tools/createEapAcl', () => {
 
         expect(mockClient.createEapAcl).not.toHaveBeenCalled();
         expect(result).toEqual({
-            content: [
-                {
-                    type: 'text',
-                    text: JSON.stringify(
-                        {
-                            action: 'create-eap-acl',
-                            target: 'default-site',
-                            mode: 'dry-run',
-                            status: 'planned',
-                            summary: 'Planned EAP ACL creation.',
-                            result: { accepted: true, dryRun: true, plannedAcl: payload },
-                        },
-                        null,
-                        2
-                    ),
-                },
-            ],
+            content: [{ type: 'text', text: expect.any(String) }],
+            structuredContent: {
+                action: 'create-eap-acl',
+                target: 'default-site',
+                mode: 'dry-run',
+                status: 'planned',
+                summary: 'Planned EAP ACL creation.',
+                result: { accepted: true, dryRun: true, plannedAcl: payload },
+            },
         });
+        expect(JSON.parse(result.content[0].text as string)).toEqual(result.structuredContent);
     });
 
     it('creates the EAP ACL through the client', async () => {
         registerCreateEapAclTool(mockServer, mockClient);
 
-        await toolHandler({ payload, siteId: 'site-1' }, { sessionId: 's1' });
+        await toolHandler({ dryRun: false, payload, siteId: 'site-1' }, { sessionId: 's1' });
 
         expect(mockClient.createEapAcl).toHaveBeenCalledWith(payload, 'site-1', undefined);
     });
@@ -78,39 +73,47 @@ describe('tools/createEapAcl', () => {
 
         registerCreateEapAclTool(mockServer, mockClient);
 
-        const result = await toolHandler({ payload, siteId: 'site-1' }, { sessionId: 's1' });
+        const result = await toolHandler({ dryRun: false, payload, siteId: 'site-1' }, { sessionId: 's1' });
 
         expect(result).toEqual({
-            content: [
-                {
-                    type: 'text',
-                    text: JSON.stringify(
-                        {
-                            action: 'create-eap-acl',
-                            target: 'site-1',
-                            siteId: 'site-1',
-                            mode: 'apply',
-                            status: 'applied',
-                            summary: 'EAP ACL creation requested.',
-                            result: {
-                                aclId: 'acl-2',
-                                createdAcl: { id: 'acl-2', description: payload.description },
-                            },
-                        },
-                        null,
-                        2
-                    ),
+            content: [{ type: 'text', text: expect.any(String) }],
+            structuredContent: {
+                action: 'create-eap-acl',
+                target: 'site-1',
+                siteId: 'site-1',
+                mode: 'apply',
+                status: 'submitted',
+                summary: 'EAP ACL creation requested.',
+                result: {
+                    aclId: 'acl-2',
+                    createdAcl: { id: 'acl-2', description: payload.description },
                 },
-            ],
+            },
         });
+        expect(JSON.parse(result.content[0].text as string)).toEqual(result.structuredContent);
     });
 
     it('rejects unknown SSID ids before mutating', async () => {
         registerCreateEapAclTool(mockServer, mockClient);
         vi.mocked(mockClient.getSsidList).mockResolvedValue([{ id: 'ssid-1' }] as never);
 
-        await expect(toolHandler({ payload, siteId: 'site-1' }, { sessionId: 's1' })).rejects.toThrow('Unknown SSID ids in sourceIds: ssid-guests.');
+        await expect(toolHandler({ dryRun: false, payload, siteId: 'site-1' }, { sessionId: 's1' })).rejects.toThrow(
+            'Unknown SSID ids in sourceIds: ssid-guests.'
+        );
 
         expect(mockClient.createEapAcl).not.toHaveBeenCalled();
+    });
+    it('defaults omitted dryRun to preview through the registered schema', async () => {
+        registerCreateEapAclTool(mockServer, mockClient);
+        const result = (await toolHandler({ payload }, { sessionId: 'preview' })) as {
+            content: { text: string }[];
+            structuredContent: Record<string, unknown>;
+        };
+        const summary = JSON.parse(result.content[0].text);
+        expect(summary).toMatchObject({ mode: 'dry-run', status: 'planned' });
+        expect(result.structuredContent).toEqual(expect.objectContaining(summary));
+        for (const [name, operation] of Object.entries(mockClient)) {
+            if (!/^(get|list|resolve)/.test(name)) expect(operation).not.toHaveBeenCalled();
+        }
     });
 });

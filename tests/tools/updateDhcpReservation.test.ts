@@ -1,5 +1,7 @@
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
+import type { CallToolResult } from '@modelcontextprotocol/sdk/types.js';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { z } from 'zod';
 
 import type { OmadaClient } from '../../src/omadaClient/index.js';
 import { registerUpdateDhcpReservationTool } from '../../src/tools/updateDhcpReservation.js';
@@ -7,12 +9,12 @@ import { registerUpdateDhcpReservationTool } from '../../src/tools/updateDhcpRes
 describe('tools/updateDhcpReservation', () => {
     let mockServer: McpServer;
     let mockClient: OmadaClient;
-    let toolHandler: (args: unknown, extra: { sessionId?: string }) => Promise<unknown>;
+    let toolHandler: (args: unknown, extra: { sessionId?: string }) => Promise<CallToolResult>;
 
     beforeEach(() => {
         mockServer = {
             registerTool: vi.fn((name, schema, handler) => {
-                toolHandler = handler;
+                toolHandler = (args, extra) => handler(z.object(schema.inputSchema).parse(args), extra);
             }),
         } as unknown as McpServer;
 
@@ -39,38 +41,31 @@ describe('tools/updateDhcpReservation', () => {
 
         expect(mockClient.updateDhcpReservation).not.toHaveBeenCalled();
         expect(result).toEqual({
-            content: [
-                {
-                    type: 'text',
-                    text: JSON.stringify(
-                        {
-                            action: 'update-dhcp-reservation',
-                            target: 'AA:BB:CC:DD:EE:FF',
-                            mode: 'dry-run',
-                            status: 'planned',
-                            summary: 'Planned DHCP reservation update for AA:BB:CC:DD:EE:FF.',
-                            result: {
-                                accepted: true,
-                                dryRun: true,
-                                before: { mac: 'AA:BB:CC:DD:EE:FF', ip: '192.168.10.40', status: true },
-                                network: { id: 'net-1', name: 'Trusted', gatewaySubnet: '192.168.10.1/24' },
-                                plannedReservation: {
-                                    mac: 'AA:BB:CC:DD:EE:FF',
-                                    netId: 'net-1',
-                                    status: false,
-                                    ip: '192.168.10.60',
-                                    description: undefined,
-                                    confirmConflict: false,
-                                    options: undefined,
-                                },
-                            },
-                        },
-                        null,
-                        2
-                    ),
+            content: [{ type: 'text', text: expect.any(String) }],
+            structuredContent: {
+                action: 'update-dhcp-reservation',
+                target: 'AA:BB:CC:DD:EE:FF',
+                mode: 'dry-run',
+                status: 'planned',
+                summary: 'Planned DHCP reservation update for AA:BB:CC:DD:EE:FF.',
+                result: {
+                    accepted: true,
+                    dryRun: true,
+                    before: { mac: 'AA:BB:CC:DD:EE:FF', ip: '192.168.10.40', status: true },
+                    network: { id: 'net-1', name: 'Trusted', gatewaySubnet: '192.168.10.1/24' },
+                    plannedReservation: {
+                        mac: 'AA:BB:CC:DD:EE:FF',
+                        netId: 'net-1',
+                        status: false,
+                        ip: '192.168.10.60',
+                        description: undefined,
+                        confirmConflict: false,
+                        options: undefined,
+                    },
                 },
-            ],
+            },
         });
+        expect(JSON.parse(result.content[0].text as string)).toEqual(result.structuredContent);
     });
 
     it('throws when the reservation does not exist', async () => {
@@ -79,14 +74,7 @@ describe('tools/updateDhcpReservation', () => {
         registerUpdateDhcpReservationTool(mockServer, mockClient);
 
         await expect(
-            toolHandler(
-                {
-                    reservationMac: 'AA:BB:CC:DD:EE:FF',
-                    netId: 'net-1',
-                    status: true,
-                },
-                { sessionId: 's1' }
-            )
+            toolHandler({ dryRun: false, reservationMac: 'AA:BB:CC:DD:EE:FF', netId: 'net-1', status: true }, { sessionId: 's1' })
         ).rejects.toThrow('No DHCP reservation exists for AA:BB:CC:DD:EE:FF.');
     });
 
@@ -94,13 +82,7 @@ describe('tools/updateDhcpReservation', () => {
         registerUpdateDhcpReservationTool(mockServer, mockClient);
 
         await toolHandler(
-            {
-                reservationMac: 'AA:BB:CC:DD:EE:FF',
-                netId: 'net-1',
-                status: true,
-                description: 'Reserved printer',
-                siteId: 'site-1',
-            },
+            { dryRun: false, reservationMac: 'AA:BB:CC:DD:EE:FF', netId: 'net-1', status: true, description: 'Reserved printer', siteId: 'site-1' },
             { sessionId: 's1' }
         );
 
@@ -126,14 +108,7 @@ describe('tools/updateDhcpReservation', () => {
         registerUpdateDhcpReservationTool(mockServer, mockClient);
 
         await expect(
-            toolHandler(
-                {
-                    reservationMac: 'AA:BB:CC:DD:EE:FF',
-                    netId: 'missing-net',
-                    status: true,
-                },
-                { sessionId: 's1' }
-            )
+            toolHandler({ dryRun: false, reservationMac: 'AA:BB:CC:DD:EE:FF', netId: 'missing-net', status: true }, { sessionId: 's1' })
         ).rejects.toThrow('LAN network missing-net was not found in the selected site.');
     });
 
@@ -146,14 +121,7 @@ describe('tools/updateDhcpReservation', () => {
         registerUpdateDhcpReservationTool(mockServer, mockClient);
 
         await expect(
-            toolHandler(
-                {
-                    reservationMac: 'AA:BB:CC:DD:EE:FF',
-                    netId: 'net-2',
-                    status: true,
-                },
-                { sessionId: 's1' }
-            )
+            toolHandler({ dryRun: false, reservationMac: 'AA:BB:CC:DD:EE:FF', netId: 'net-2', status: true }, { sessionId: 's1' })
         ).rejects.toThrow('IP 192.168.10.40 is outside the selected LAN network subnet 192.168.40.1/24.');
     });
 
@@ -169,12 +137,7 @@ describe('tools/updateDhcpReservation', () => {
 
         await expect(
             toolHandler(
-                {
-                    reservationMac: 'AA:BB:CC:DD:EE:FF',
-                    netId: 'net-1',
-                    status: true,
-                    ip: '192.168.10.99',
-                },
+                { dryRun: false, reservationMac: 'AA:BB:CC:DD:EE:FF', netId: 'net-1', status: true, ip: '192.168.10.99' },
                 { sessionId: 's1' }
             )
         ).rejects.toThrow(
@@ -194,6 +157,7 @@ describe('tools/updateDhcpReservation', () => {
 
         await toolHandler(
             {
+                dryRun: false,
                 reservationMac: 'AA:BB:CC:DD:EE:FF',
                 netId: 'net-1',
                 status: true,
@@ -229,16 +193,22 @@ describe('tools/updateDhcpReservation', () => {
 
         registerUpdateDhcpReservationTool(mockServer, mockClient);
 
-        await toolHandler(
-            {
-                reservationMac: 'AA:BB:CC:DD:EE:FF',
-                netId: 'net-1',
-                status: true,
-            },
-            { sessionId: 's1' }
-        );
+        await toolHandler({ dryRun: false, reservationMac: 'AA:BB:CC:DD:EE:FF', netId: 'net-1', status: true }, { sessionId: 's1' });
 
         expect(mockClient.getDhcpReservationGrid).toHaveBeenNthCalledWith(1, 1, 1000, undefined, undefined);
         expect(mockClient.getDhcpReservationGrid).toHaveBeenNthCalledWith(2, 2, 1000, undefined, undefined);
+    });
+    it('defaults omitted dryRun to preview through the registered schema', async () => {
+        registerUpdateDhcpReservationTool(mockServer, mockClient);
+        const result = (await toolHandler(
+            { reservationMac: 'AA:BB:CC:DD:EE:FF', netId: 'net-1', status: false, ip: '192.168.10.60' },
+            { sessionId: 'preview' }
+        )) as { content: { text: string }[]; structuredContent: Record<string, unknown> };
+        const summary = JSON.parse(result.content[0].text);
+        expect(summary).toMatchObject({ mode: 'dry-run', status: 'planned' });
+        expect(result.structuredContent).toEqual(expect.objectContaining(summary));
+        for (const [name, operation] of Object.entries(mockClient)) {
+            if (!/^(get|list|resolve)/.test(name)) expect(operation).not.toHaveBeenCalled();
+        }
     });
 });

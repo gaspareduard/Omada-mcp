@@ -45,6 +45,7 @@ describe('tools/getSsidsBySite', () => {
             const result = await toolHandler({ type: 1 }, { sessionId: 'test-session' });
             expect(mockClient.getSsidsBySite).toHaveBeenCalledWith(1, undefined, undefined);
             expect(result).toEqual({
+                structuredContent: mockData,
                 content: [{ type: 'text', text: JSON.stringify(mockData, null, 2) }],
             });
         });
@@ -56,6 +57,7 @@ describe('tools/getSsidsBySite', () => {
             const result = await toolHandler({ type: 2, siteId: 'test-site' }, { sessionId: 'test-session' });
             expect(mockClient.getSsidsBySite).toHaveBeenCalledWith(2, 'test-site', undefined);
             expect(result).toEqual({
+                structuredContent: mockData,
                 content: [{ type: 'text', text: JSON.stringify(mockData, null, 2) }],
             });
         });
@@ -67,6 +69,7 @@ describe('tools/getSsidsBySite', () => {
             const result = await toolHandler({ type: 3 }, { sessionId: 'test-session' });
             expect(mockClient.getSsidsBySite).toHaveBeenCalledWith(3, undefined, undefined);
             expect(result).toEqual({
+                structuredContent: mockData,
                 content: [{ type: 'text', text: JSON.stringify(mockData, null, 2) }],
             });
         });

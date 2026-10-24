@@ -25,12 +25,14 @@ export function registerRestoreSitesTool(server: McpServer, client: OmadaClient)
             .min(1)
             .max(300)
             .describe('List of site restore entries, each pairing a site ID with its backup file name (up to 300).'),
-        dryRun: z.boolean().optional().default(false).describe('If true, return the planned action without executing it.'),
+        dryRun: z.boolean().optional().default(true).describe('If true, return the planned action without executing it.'),
         confirmDangerous: z
             .boolean()
             .optional()
             .default(false)
-            .describe('Must be explicitly set to true to confirm execution. A second confirmation is required because this action is irreversible.'),
+            .describe(
+                'Must be explicitly set to true to confirm execution. This boolean acknowledges the risk; human approval must be enforced by the MCP host.'
+            ),
         customHeaders: customHeadersSchema,
     });
 
@@ -38,7 +40,7 @@ export function registerRestoreSitesTool(server: McpServer, client: OmadaClient)
         'restoreSites',
         {
             description:
-                'Restore multiple site configurations from backup files stored on the self/cloud server (up to 300 sites). Use getSiteBackupFileList to get available file names. REQUIRES explicit confirmDangerous: true — a second confirmation step is enforced because this action is irreversible.',
+                'Restore multiple site configurations from backup files stored on the self/cloud server (up to 300 sites). Use getSiteBackupFileList to get available file names. REQUIRES explicit confirmDangerous: true — this acknowledges the risk and is not a technical human-approval gate.',
             inputSchema: inputSchema.shape,
             annotations: {
                 destructiveHint: true,
@@ -47,7 +49,7 @@ export function registerRestoreSitesTool(server: McpServer, client: OmadaClient)
         wrapToolHandler('restoreSites', async ({ siteRestoreInfos, dryRun, confirmDangerous, customHeaders }) => {
             const targetSites = siteRestoreInfos.map((s: { siteId: string }) => s.siteId).join(', ');
 
-            if (dryRun) {
+            if (dryRun !== false) {
                 return toMutationResult({
                     action: 'restore-sites',
                     target: targetSites,

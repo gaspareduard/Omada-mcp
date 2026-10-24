@@ -7,11 +7,7 @@ import { deviceMacSchema, siteInputSchema, wrapMutationToolHandler } from '../se
 const inputSchema = siteInputSchema.extend({
     apMac: deviceMacSchema.describe('MAC address of the access point to update.'),
     channelLimitType: z.union([z.literal(0), z.literal(1), z.literal(2)]).describe('Channel limit status: 0=default, 1=disabled, 2=enabled.'),
-    dryRun: z
-        .boolean()
-        .optional()
-        .default(false)
-        .describe('If true, validate and summarize the planned AP channel-limit change without applying it.'),
+    dryRun: z.boolean().optional().default(true).describe('If true, validate and summarize the planned AP channel-limit change without applying it.'),
 });
 
 export function registerSetApChannelLimitTool(server: McpServer, client: OmadaClient): void {

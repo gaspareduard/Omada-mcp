@@ -45,6 +45,7 @@ describe('tools/getRetention', () => {
             const result = await toolHandler({}, { sessionId: 'test-session' });
             expect(mockClient.getRetention).toHaveBeenCalledWith(undefined);
             expect(result).toEqual({
+                structuredContent: mockData,
                 content: [{ type: 'text', text: JSON.stringify(mockData, null, 2) }],
             });
         });

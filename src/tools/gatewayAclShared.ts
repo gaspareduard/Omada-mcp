@@ -111,45 +111,45 @@ export const switchAclPayloadSchema = z.object({
 
 export const createSwitchAclInputSchema = siteInputSchema.extend({
     payload: switchAclPayloadSchema.describe('Switch ACL payload following the official Omada SwitchACLConfig schema.'),
-    dryRun: z.boolean().optional().default(false),
+    dryRun: z.boolean().optional().default(true),
 });
 
 export const updateSwitchAclInputSchema = siteInputSchema.extend({
     aclId: aclIdSchema,
     payload: switchAclPayloadSchema.describe('Switch ACL payload following the official Omada SwitchACLConfig schema.'),
-    dryRun: z.boolean().optional().default(false),
+    dryRun: z.boolean().optional().default(true),
 });
 
 export const createGatewayAclInputSchema = siteInputSchema.extend({
     payload: gatewayAclPayloadSchema.describe('Gateway ACL payload following the official Omada GatewayACLConfig schema.'),
-    dryRun: z.boolean().optional().default(false),
+    dryRun: z.boolean().optional().default(true),
 });
 
 export const updateGatewayAclInputSchema = siteInputSchema.extend({
     aclId: aclIdSchema,
     payload: gatewayAclPayloadSchema.describe('Gateway ACL payload following the official Omada GatewayACLConfig schema.'),
-    dryRun: z.boolean().optional().default(false),
+    dryRun: z.boolean().optional().default(true),
 });
 
 export const createEapAclInputSchema = siteInputSchema.extend({
     payload: eapAclPayloadSchema.describe('EAP ACL payload following the official Omada EapACLConfig schema.'),
-    dryRun: z.boolean().optional().default(false),
+    dryRun: z.boolean().optional().default(true),
 });
 
 export const updateEapAclInputSchema = siteInputSchema.extend({
     aclId: aclIdSchema,
     payload: eapAclPayloadSchema.describe('EAP ACL payload following the official Omada EapACLConfig schema.'),
-    dryRun: z.boolean().optional().default(false),
+    dryRun: z.boolean().optional().default(true),
 });
 
 export const deleteAclInputSchema = siteInputSchema.extend({
     aclId: aclIdSchema,
-    dryRun: z.boolean().optional().default(false),
+    dryRun: z.boolean().optional().default(true),
 });
 
 export const setAclConfigTypeInputSchema = siteInputSchema.extend({
     mode: gatewayAclConfigModeSchema.shape.mode,
-    dryRun: z.boolean().optional().default(false),
+    dryRun: z.boolean().optional().default(true),
 });
 
 interface AclRecord {

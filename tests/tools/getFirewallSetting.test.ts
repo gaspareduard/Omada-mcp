@@ -48,6 +48,7 @@ describe('tools/getFirewallSetting', () => {
 
             expect(mockClient.getFirewallSetting).toHaveBeenCalledWith(undefined, undefined);
             expect(result).toEqual({
+                structuredContent: mockData,
                 content: [{ type: 'text', text: JSON.stringify(mockData, null, 2) }],
             });
         });

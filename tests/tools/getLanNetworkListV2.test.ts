@@ -45,6 +45,7 @@ describe('tools/getLanNetworkListV2', () => {
             const result = await toolHandler({}, { sessionId: 'test-session' });
             expect(mockClient.getLanNetworkListV2).toHaveBeenCalledWith(undefined, undefined, undefined, undefined);
             expect(result).toEqual({
+                structuredContent: mockData,
                 content: [{ type: 'text', text: JSON.stringify(mockData, null, 2) }],
             });
         });
@@ -56,6 +57,7 @@ describe('tools/getLanNetworkListV2', () => {
             const result = await toolHandler({ page: 2, pageSize: 20 }, { sessionId: 'test-session' });
             expect(mockClient.getLanNetworkListV2).toHaveBeenCalledWith(2, 20, undefined, undefined);
             expect(result).toEqual({
+                structuredContent: mockData,
                 content: [{ type: 'text', text: JSON.stringify(mockData, null, 2) }],
             });
         });
@@ -67,6 +69,7 @@ describe('tools/getLanNetworkListV2', () => {
             const result = await toolHandler({ siteId: 'test-site' }, { sessionId: 'test-session' });
             expect(mockClient.getLanNetworkListV2).toHaveBeenCalledWith(undefined, undefined, 'test-site', undefined);
             expect(result).toEqual({
+                structuredContent: mockData,
                 content: [{ type: 'text', text: JSON.stringify(mockData, null, 2) }],
             });
         });

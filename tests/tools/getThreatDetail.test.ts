@@ -45,6 +45,7 @@ describe('tools/getThreatDetail', () => {
             const result = await toolHandler({ threatId: 'threat-123', time: 1682000000 }, { sessionId: 'test-session' });
             expect(mockClient.getThreatDetail).toHaveBeenCalledWith('threat-123', 1682000000, undefined, undefined);
             expect(result).toEqual({
+                structuredContent: mockData,
                 content: [{ type: 'text', text: JSON.stringify(mockData, null, 2) }],
             });
         });
@@ -56,6 +57,7 @@ describe('tools/getThreatDetail', () => {
             const result = await toolHandler({ threatId: 'threat-456', time: 1682000000, siteId: 'test-site' }, { sessionId: 'test-session' });
             expect(mockClient.getThreatDetail).toHaveBeenCalledWith('threat-456', 1682000000, 'test-site', undefined);
             expect(result).toEqual({
+                structuredContent: mockData,
                 content: [{ type: 'text', text: JSON.stringify(mockData, null, 2) }],
             });
         });

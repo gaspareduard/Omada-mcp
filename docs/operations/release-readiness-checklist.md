@@ -5,6 +5,9 @@
 - [ ] `npm run build` passes
 - [ ] `npm run test:coverage` passes
 - [ ] new tools have matching tests and README entries
+- [ ] unique runtime catalog matches both READMEs; global branch coverage is at least 70%
+- [ ] dependency advisories are assessed and unresolved issues explicitly recorded
+- [ ] stable write release has disposable-controller and adopted-hardware evidence (production reads/previews do not satisfy this gate)
 - [ ] docs reflect the current capability model and supported transport
 - [ ] no unsupported HTTP or compatibility feature appears in the secure quick start
 - [ ] all major feature additions reference official Omada API docs or are explicitly marked compatibility-only

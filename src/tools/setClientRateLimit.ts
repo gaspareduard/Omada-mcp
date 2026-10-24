@@ -1,25 +1,36 @@
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { z } from 'zod';
-
 import type { OmadaClient } from '../omadaClient/index.js';
-import { siteInputSchema, toToolResult, wrapToolHandler } from '../server/common.js';
-
+import { deviceMacSchema, siteInputSchema, wrapMutationToolHandler } from '../server/common.js';
 export function registerSetClientRateLimitTool(server: McpServer, client: OmadaClient): void {
     const inputSchema = siteInputSchema.extend({
-        clientMac: z.string().min(1, 'clientMac (MAC address) is required'),
-        downLimit: z.number().positive('downLimit must be a positive number (in Kbps)'),
-        upLimit: z.number().positive('upLimit must be a positive number (in Kbps)'),
+        clientMac: deviceMacSchema,
+        downLimit: z.number().positive(),
+        upLimit: z.number().positive(),
+        dryRun: z.boolean().optional().default(true).describe('Preview without changing the controller. Set false explicitly to apply.'),
     });
-
     server.registerTool(
         'setClientRateLimit',
         {
-            description:
-                'Set custom rate limit (bandwidth control) for a specific client. Specify download and upload limits in Kbps. This configures custom limits directly without using a predefined profile.',
+            description: 'Set custom client rate limits in Kbps. Preview is the default; set dryRun:false to apply.',
             inputSchema: inputSchema.shape,
+            annotations: { readOnlyHint: false, destructiveHint: true },
         },
-        wrapToolHandler('setClientRateLimit', async ({ clientMac, downLimit, upLimit, siteId, customHeaders }) =>
-            toToolResult(await client.setClientRateLimit(clientMac, downLimit, upLimit, siteId, customHeaders))
+        wrapMutationToolHandler(
+            'setClientRateLimit',
+            ({ clientMac, siteId }, result, mode) => ({
+                action: 'setClientRateLimit',
+                target: clientMac,
+                siteId,
+                mode,
+                status: mode === 'dry-run' ? 'planned' : 'submitted',
+                summary: mode === 'dry-run' ? 'Client rate-limit change planned.' : 'Client rate-limit change submitted.',
+                result,
+            }),
+            async ({ clientMac, downLimit, upLimit, siteId, customHeaders, dryRun }) => {
+                if (dryRun) return { accepted: true, dryRun: true };
+                return await client.setClientRateLimit(clientMac, downLimit, upLimit, siteId, customHeaders);
+            }
         )
     );
 }

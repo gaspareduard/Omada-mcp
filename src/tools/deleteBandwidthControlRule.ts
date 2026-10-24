@@ -7,7 +7,7 @@ import { findGridRecordById } from './firewallTrafficShared.js';
 
 const inputSchema = siteInputSchema.extend({
     ruleId: z.string().trim().min(1, 'ruleId is required.'),
-    dryRun: z.boolean().optional().default(false),
+    dryRun: z.boolean().optional().default(true),
 });
 
 export function registerDeleteBandwidthControlRuleTool(server: McpServer, client: OmadaClient): void {

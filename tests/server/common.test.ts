@@ -3,13 +3,14 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { ToolExtra } from '../../src/server/common.js';
 import {
     clientIdSchema,
-    customRequestSchema,
     deviceIdSchema,
     safeSerialize,
     setupServerLogging,
     siteInputSchema,
     stackIdSchema,
+    toMutationResult,
     toToolResult,
+    wrapMutationToolHandler,
     wrapToolHandler,
 } from '../../src/server/common.js';
 import { logger } from '../../src/utils/logger.js';
@@ -46,6 +47,7 @@ describe('server/common', () => {
                         text: JSON.stringify(obj, null, 2),
                     },
                 ],
+                structuredContent: obj,
             });
         });
 
@@ -106,17 +108,27 @@ describe('server/common', () => {
 
     describe('safeSerialize', () => {
         it('should serialize simple objects', () => {
-            const obj = { key: 'value' };
+            const obj = { message: 'value' };
             expect(safeSerialize(obj)).toBe(JSON.stringify(obj));
         });
 
         it('should redact sensitive fields recursively', () => {
             const obj = {
                 token: 'abcd1234abcd1234',
-                nested: { clientSecret: 'super-secret-value', note: 'safe' },
+                nested: {
+                    clientSecret: 'super-secret-value',
+                    psk: 'wifi-passphrase',
+                    key: 'shared-key',
+                    pin: 1234,
+                    securityKey: 'ssid-key',
+                    note: 'safe',
+                },
             };
 
-            expect(safeSerialize(obj)).toBe('{"token":"abcd…1234","nested":{"clientSecret":"supe…alue","note":"safe"}}');
+            expect(JSON.parse(safeSerialize(obj))).toEqual({
+                token: '********',
+                nested: { clientSecret: '********', psk: '********', key: '********', pin: '********', securityKey: '********', note: 'safe' },
+            });
         });
 
         it('should serialize arrays', () => {
@@ -214,53 +226,6 @@ describe('server/common', () => {
             it('should reject empty deviceId', () => {
                 const result = deviceIdSchema.safeParse({ deviceId: '' });
                 expect(result.success).toBe(false);
-            });
-        });
-
-        describe('customRequestSchema', () => {
-            it('should accept minimal valid request', () => {
-                const result = customRequestSchema.safeParse({ url: '/api/test' });
-                expect(result.success).toBe(true);
-                if (result.success) {
-                    expect(result.data.method).toBe('GET');
-                    expect(result.data.url).toBe('/api/test');
-                }
-            });
-
-            it('should accept full request with all fields', () => {
-                const result = customRequestSchema.safeParse({
-                    method: 'POST',
-                    url: '/api/test',
-                    params: { key: 'value' },
-                    data: { body: 'data' },
-                    siteId: 'site-123',
-                });
-                expect(result.success).toBe(true);
-                if (result.success) {
-                    expect(result.data.method).toBe('POST');
-                    expect(result.data.url).toBe('/api/test');
-                    expect(result.data.params).toEqual({ key: 'value' });
-                    expect(result.data.data).toEqual({ body: 'data' });
-                    expect(result.data.siteId).toBe('site-123');
-                }
-            });
-
-            it('should reject missing url', () => {
-                const result = customRequestSchema.safeParse({ method: 'GET' });
-                expect(result.success).toBe(false);
-            });
-
-            it('should reject empty url', () => {
-                const result = customRequestSchema.safeParse({ url: '' });
-                expect(result.success).toBe(false);
-            });
-
-            it('should default method to GET', () => {
-                const result = customRequestSchema.safeParse({ url: '/api/test' });
-                expect(result.success).toBe(true);
-                if (result.success) {
-                    expect(result.data.method).toBe('GET');
-                }
             });
         });
 
@@ -440,5 +405,98 @@ describe('server/common', () => {
             expect(logger.warn).toHaveBeenCalledWith('Unhandled request received', expect.objectContaining({ method: 'custom' }));
             expect(logger.warn).toHaveBeenCalledWith('Unhandled notification received', expect.objectContaining({ method: 'notify' }));
         });
+    });
+});
+
+describe('mutation result semantics', () => {
+    afterEach(() => vi.restoreAllMocks());
+
+    it.each([undefined, true])('treats dryRun=%s as preview even without SDK schema parsing', async (dryRun) => {
+        const handler = vi.fn(async () => ({ accepted: true }));
+        const wrapped = wrapMutationToolHandler(
+            'test-mutation',
+            (_args, result, mode) => ({
+                action: 'test',
+                target: 'device',
+                mode,
+                status: 'applied',
+                summary: 'Test mutation',
+                result,
+            }),
+            handler
+        );
+        const args = dryRun === undefined ? {} : { dryRun };
+        const extra = createToolExtra();
+        const result = await wrapped(args, extra);
+        expect(handler).toHaveBeenCalledWith({ dryRun: true }, extra);
+        expect(result.structuredContent).toMatchObject({ mode: 'dry-run', status: 'planned' });
+    });
+
+    it('requires literal false to apply and reports submission without evidence', async () => {
+        const handler = vi.fn(async () => ({ accepted: true }));
+        const wrapped = wrapMutationToolHandler(
+            'test-mutation',
+            (_args, result, mode) => ({
+                action: 'test',
+                target: 'device',
+                mode,
+                status: 'applied',
+                summary: 'Test mutation',
+                result,
+            }),
+            handler
+        );
+        const extra = createToolExtra();
+        const result = await wrapped({ dryRun: false }, extra);
+        expect(handler).toHaveBeenCalledWith({ dryRun: false }, extra);
+        expect(result.structuredContent).toMatchObject({ mode: 'apply', status: 'submitted', result: { accepted: true } });
+        expect(JSON.parse((result.content[0] as { text: string }).text)).toEqual(result.structuredContent);
+    });
+
+    it.each(['verified', 'mismatch', 'unknown', 'unverifiable', 'partial'] as const)('preserves the read-back outcome %s', (status) => {
+        const result = toMutationResult({
+            action: 'test',
+            target: 'device',
+            mode: 'apply',
+            status: 'applied',
+            summary: 'Test mutation',
+            result: { verification: { status } },
+        });
+        expect(result.structuredContent).toMatchObject({ status, result: { verification: { status } } });
+    });
+
+    it('does not mistake a controller result or unrecognized verification state for success', () => {
+        for (const result of [null, undefined, 1, { success: true }, { verification: { status: 'success' } }]) {
+            expect(
+                toMutationResult({ action: 'test', target: 'device', mode: 'apply', status: 'applied', summary: 'Test', result }).structuredContent
+                    ?.status
+            ).toBe('submitted');
+        }
+        expect(
+            toMutationResult({ action: 'test', target: 'device', mode: 'apply', status: 'unverifiable', summary: 'Test' }).structuredContent?.status
+        ).toBe('unverifiable');
+        expect(
+            toMutationResult({
+                action: 'test',
+                target: 'device',
+                mode: 'dry-run',
+                status: 'applied',
+                summary: 'Test',
+                result: { verification: { status: 'verified' } },
+            }).structuredContent?.status
+        ).toBe('planned');
+    });
+
+    it('audits a failure and rethrows without producing a success result', async () => {
+        const error = new Error('controller unavailable');
+        const audit = vi.spyOn(logger, 'error').mockImplementation(() => undefined);
+        const summary = vi.fn();
+        const wrapped = wrapMutationToolHandler('test-mutation', summary, vi.fn().mockRejectedValue(error));
+        await expect(wrapped({ dryRun: false }, createToolExtra({ sessionId: 'audit-session' }))).rejects.toBe(error);
+        expect(summary).not.toHaveBeenCalled();
+        expect(audit).toHaveBeenCalledWith(
+            'Mutation audit event',
+            expect.objectContaining({ tool: 'test-mutation', mode: 'apply', status: 'failed', sessionId: 'audit-session' })
+        );
     });
 });

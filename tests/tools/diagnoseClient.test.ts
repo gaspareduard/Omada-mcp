@@ -54,6 +54,8 @@ describe('tools/diagnoseClient', () => {
 
         expect(mockClient.getClient).toHaveBeenCalledWith('192.168.1.50', undefined, undefined);
         expect(mockClient.getClientDetail).toHaveBeenCalledWith('AA:BB:CC:DD:EE:FF', undefined, undefined);
+        expect(parsed.complete).toBe(true);
+        expect(Number.isNaN(Date.parse(parsed.observedAt))).toBe(false);
         expect(parsed.currentStatus).toEqual(clientInfo);
         expect(parsed.detail).toEqual(detail);
         expect(parsed.recentConnectionHistory).toEqual(history);
@@ -81,6 +83,7 @@ describe('tools/diagnoseClient', () => {
         const parsed = JSON.parse(result.content[0].text);
 
         expect(mockClient.getClientDetail).not.toHaveBeenCalled();
+        expect(parsed.complete).toBe(false);
         expect(parsed.currentStatus).toBeNull();
         expect(parsed._resolvedMac).toBeNull();
         expect(parsed.detail).toBeNull();
@@ -111,14 +114,24 @@ describe('tools/diagnoseClient', () => {
         const result = (await toolHandler({ identifier: 'AA:BB:CC:DD:EE:FF' }, { sessionId: 'test' })) as { content: { text: string }[] };
         const parsed = JSON.parse(result.content[0].text);
 
+        expect(parsed.complete).toBe(false);
         expect(parsed.detail).toMatchObject({ _error: expect.stringContaining('detail unavailable') });
         expect(parsed.recentConnectionHistory).toEqual([]);
     });
 
-    it('should throw when getClient itself fails (non-graceful error)', async () => {
+    it('retains history and reports incomplete evidence when lookup fails', async () => {
         vi.mocked(mockClient.getClient).mockRejectedValue(new Error('auth failure'));
 
         registerDiagnoseClientTool(mockServer, mockClient);
-        await expect(toolHandler({ identifier: '192.168.1.1' }, { sessionId: 'test' })).rejects.toThrow('auth failure');
+        vi.mocked(mockClient.listClientsPastConnections).mockResolvedValue([]);
+        const result = (await toolHandler({ identifier: '192.168.1.1' }, { sessionId: 'test' })) as { content: { text: string }[] };
+        expect(JSON.parse(result.content[0].text)).toMatchObject({
+            complete: false,
+            lookupError: 'Error: auth failure',
+            currentStatus: null,
+            detail: null,
+            recentConnectionHistory: [],
+        });
+        expect(mockClient.getClientDetail).not.toHaveBeenCalled();
     });
 });

@@ -61,6 +61,7 @@ describe('tools/getThreatList', () => {
                 undefined
             );
             expect(result).toEqual({
+                structuredContent: mockData,
                 content: [{ type: 'text', text: JSON.stringify(mockData, null, 2) }],
             });
         });
@@ -101,6 +102,7 @@ describe('tools/getThreatList', () => {
                 undefined
             );
             expect(result).toEqual({
+                structuredContent: mockData,
                 content: [{ type: 'text', text: JSON.stringify(mockData, null, 2) }],
             });
         });

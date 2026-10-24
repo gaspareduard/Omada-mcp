@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { ClientOperations } from '../../src/omadaClient/client.js';
-import type { RequestHandler } from '../../src/omadaClient/request.js';
+import { RequestHandler } from '../../src/omadaClient/request.js';
 import type { SiteOperations } from '../../src/omadaClient/site.js';
 import type {
     ActiveClientInfo,
@@ -63,6 +63,51 @@ describe('omadaClient/client', () => {
     });
 
     describe('getClient', () => {
+        it.each([
+            'aa:bb:cc:dd:ee:ff',
+            'AABB.CCDD.EEFF',
+            'aabbccddeeff',
+            ' AA-BB-CC-DD-EE-FF ',
+        ])('normalizes supported MAC spelling %s', async (identifier) => {
+            const client = { mac: 'AA:BB:CC:DD:EE:FF' };
+            vi.mocked(mockRequest.fetchPaginated).mockResolvedValue([client]);
+            await expect(clientOps.getClient(identifier, 'site/one', { 'X-Trace': 'trace' })).resolves.toEqual(client);
+            expect(mockRequest.fetchPaginated).toHaveBeenCalledWith('/api/sites/site%2Fone/clients', {}, { 'X-Trace': 'trace' });
+        });
+
+        it('rejects empty identifiers before fetching clients', async () => {
+            await expect(clientOps.getClient('  ')).rejects.toThrow('Client identifier must not be empty');
+            expect(mockRequest.fetchPaginated).not.toHaveBeenCalled();
+        });
+
+        it('does not turn malformed MACs or name substrings into an accidental match', async () => {
+            vi.mocked(mockRequest.fetchPaginated).mockResolvedValue([{ mac: 'AA:BB:CC:DD:EE:FF', name: 'Camera', hostName: null }]);
+            await expect(clientOps.getClient('AABB:CCDD:EEFF')).resolves.toBeUndefined();
+            await expect(clientOps.getClient('Cam')).resolves.toBeUndefined();
+        });
+
+        it('rejects reused IP addresses with identifiers for disambiguation', async () => {
+            vi.mocked(mockRequest.fetchPaginated).mockResolvedValue([
+                { mac: 'AA:BB:CC:DD:EE:01', ip: '192.0.2.10' },
+                { mac: 'AA:BB:CC:DD:EE:02', ip: '192.0.2.10' },
+            ]);
+            await expect(clientOps.getClient('192.0.2.10')).rejects.toThrow('AA:BB:CC:DD:EE:01, AA:BB:CC:DD:EE:02');
+        });
+
+        it.each(['aa-bb-cc-dd-ee-ff', '192.0.2.10', 'camera.local', 'front door'])('resolves %s to the matching client', async (identifier) => {
+            const client = { mac: 'AA:BB:CC:DD:EE:FF', ip: '192.0.2.10', hostName: 'Camera.Local', name: 'Front Door' };
+            vi.mocked(mockRequest.fetchPaginated).mockResolvedValue([client]);
+            await expect(clientOps.getClient(identifier)).resolves.toEqual(client);
+        });
+
+        it('rejects ambiguous names instead of picking the first client', async () => {
+            vi.mocked(mockRequest.fetchPaginated).mockResolvedValue([
+                { mac: 'AA:BB:CC:DD:EE:01', name: 'camera' },
+                { mac: 'AA:BB:CC:DD:EE:02', hostName: 'camera' },
+            ]);
+            await expect(clientOps.getClient('camera')).rejects.toThrow(/ambiguous/i);
+        });
+
         it('should find client by MAC address', async () => {
             const mockClients: OmadaClientInfo[] = [
                 { mac: '00:11:22:33:44:55', name: 'Client 1', id: 'client-1' } as OmadaClientInfo,
@@ -100,6 +145,19 @@ describe('omadaClient/client', () => {
     });
 
     describe('listMostActiveClients', () => {
+        it.each([
+            'listMostActiveClients',
+            'listClientsActivity',
+            'getRateLimitProfiles',
+        ] as const)('%s validates actual error envelopes while preserving empty success arrays', async (method) => {
+            vi.mocked(mockRequest.ensureSuccess).mockImplementation(RequestHandler.prototype.ensureSuccess);
+            vi.mocked(mockRequest.get)
+                .mockResolvedValueOnce({ errorCode: -1005, msg: 'Operation forbidden' })
+                .mockResolvedValueOnce({ errorCode: 0 });
+            await expect(clientOps[method]()).rejects.toThrow('Operation forbidden');
+            await expect(clientOps[method]()).resolves.toEqual([]);
+        });
+
         it('should fetch most active clients', async () => {
             const mockClients: ActiveClientInfo[] = [
                 {

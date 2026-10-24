@@ -12,7 +12,7 @@ const clientMacSchema = z
 export function registerUnblockClientTool(server: McpServer, client: OmadaClient): void {
     const inputSchema = siteInputSchema.extend({
         clientMac: clientMacSchema.describe('Client MAC address to unblock.'),
-        dryRun: z.boolean().optional().default(false).describe('If true, return the planned action without sending it to the controller.'),
+        dryRun: z.boolean().optional().default(true).describe('If true, return the planned action without sending it to the controller.'),
     });
 
     server.registerTool(

@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { MonitorOperations } from '../../src/omadaClient/monitor.js';
 import type { RequestHandler } from '../../src/omadaClient/request.js';
@@ -10,8 +10,12 @@ describe('MonitorOperations', () => {
     let mockRequest: RequestHandler;
     let mockSite: SiteOperations;
     let mockBuildPath: (path: string) => string;
+    const now = 1792845296789;
+
+    afterEach(() => vi.restoreAllMocks());
 
     beforeEach(() => {
+        vi.spyOn(Date, 'now').mockReturnValue(now);
         mockRequest = {
             get: vi.fn(),
             fetchPaginated: vi.fn(),
@@ -33,7 +37,7 @@ describe('MonitorOperations', () => {
     });
 
     describe('getDashboardWifiSummary', () => {
-        it('should fetch WiFi summary for a site', async () => {
+        it('defaults existing callers to the last hour in Unix seconds', async () => {
             const mockResponse: OmadaApiResponse<unknown> = {
                 errorCode: 0,
                 result: { totalAps: 5, connectedAps: 4 },
@@ -41,10 +45,15 @@ describe('MonitorOperations', () => {
 
             vi.mocked(mockRequest.get).mockResolvedValue(mockResponse);
 
-            const result = await monitorOps.getDashboardWifiSummary('site-123');
+            const headers = { 'X-Request-Id': 'wifi-summary' };
+            const result = await monitorOps.getDashboardWifiSummary('site-123', headers);
 
             expect(mockSite.resolveSiteId).toHaveBeenCalledWith('site-123');
-            expect(mockRequest.get).toHaveBeenCalledWith('/openapi/v1/test-omadac/sites/site-123/dashboard/wifi-summary', undefined, undefined);
+            expect(mockRequest.get).toHaveBeenCalledWith(
+                '/openapi/v1/test-omadac/sites/site-123/dashboard/wifi-summary',
+                { start: 1792841696, end: 1792845296 },
+                headers
+            );
             expect(result).toEqual({ totalAps: 5, connectedAps: 4 });
         });
 
@@ -55,6 +64,27 @@ describe('MonitorOperations', () => {
             await monitorOps.getDashboardWifiSummary();
 
             expect(mockSite.resolveSiteId).toHaveBeenCalledWith(undefined);
+            expect(mockRequest.get).toHaveBeenCalledWith(
+                '/openapi/v1/test-omadac/sites/default-site/dashboard/wifi-summary',
+                { start: 1792841696, end: 1792845296 },
+                undefined
+            );
+        });
+
+        it.each([
+            { start: 1682000000, end: 1682007200 },
+            { start: 0, end: 60 },
+        ])('forwards an explicit seconds window without replacing it: %j', async (window) => {
+            vi.mocked(mockRequest.get).mockResolvedValue({ errorCode: 0, result: { channelUtilization: 35 } });
+            const headers = { 'X-Request-Id': 'explicit-window' };
+
+            await expect(monitorOps.getDashboardWifiSummary('site/123', headers, window)).resolves.toEqual({ channelUtilization: 35 });
+            expect(mockRequest.get).toHaveBeenCalledWith('/openapi/v1/test-omadac/sites/site%2F123/dashboard/wifi-summary', window, headers);
+        });
+
+        it('propagates a rejected summary instead of inventing dashboard evidence', async () => {
+            vi.mocked(mockRequest.get).mockResolvedValue({ errorCode: 403, msg: 'denied' });
+            await expect(monitorOps.getDashboardWifiSummary()).rejects.toThrow('denied');
         });
     });
 

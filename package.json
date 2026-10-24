@@ -1,6 +1,6 @@
 {
     "name": "safe-omada-mcp",
-    "version": "0.18.0",
+    "version": "0.19.0-rc.1",
     "description": "Security-focused Model Context Protocol server for TP-Link Omada Open API workflows",
     "type": "module",
     "main": "dist/index.js",
@@ -8,7 +8,7 @@
         "safe-omada-mcp": "./dist/index.js"
     },
     "scripts": {
-        "build": "tsc -p tsconfig.json",
+        "build": "node -e \"require('node:fs').rmSync('dist', { recursive: true, force: true })\" && tsc -p tsconfig.json",
         "lint": "biome check --error-on-warnings .",
         "lint:fix": "biome check --write .",
         "format": "biome format --write .",
@@ -25,7 +25,7 @@
         "docker:push": "docker push ghcr.io/gaspareduard/omada-mcp:latest",
         "prepare": "husky"
     },
-    "files": ["dist/", "README.md", "README.Docker.md", "CHANGELOG.md", "LICENSE", ".env.example"],
+    "files": ["dist/", "README.md", "README.Docker.md", "CHANGELOG.md", "LICENSE", ".env.example", "SECURITY.md", "docs/operations/", "docs/support-matrix.md", "docs/security-model.md"],
     "keywords": ["mcp", "tp-link", "omada"],
     "engines": {
         "node": ">=24.0.0"
@@ -41,10 +41,10 @@
         "url": "https://github.com/gaspareduard/Omada-mcp/issues"
     },
     "dependencies": {
-        "@modelcontextprotocol/sdk": "^1.21.0",
-        "axios": "^1.13.2",
-        "dotenv": "^17.2.3",
-        "pino": "^10.1.0",
+        "@modelcontextprotocol/sdk": "^1.32.2",
+        "axios": "^1.20.0",
+        "dotenv": "^17.3.1",
+        "pino": "^10.3.1",
         "zod": "^3.25.76"
     },
     "devDependencies": {

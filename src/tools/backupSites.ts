@@ -7,7 +7,7 @@ import { customHeadersSchema, wrapMutationToolHandler } from '../server/common.j
 export function registerBackupSitesTool(server: McpServer, client: OmadaClient): void {
     const inputSchema = z.object({
         siteIds: z.array(z.string().min(1)).min(1).max(300).describe('List of site IDs to back up (up to 300).'),
-        dryRun: z.boolean().optional().default(false).describe('If true, return the planned action without executing it.'),
+        dryRun: z.boolean().optional().default(true).describe('If true, return the planned action without executing it.'),
         customHeaders: customHeadersSchema,
     });
 

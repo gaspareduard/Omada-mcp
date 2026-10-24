@@ -2,24 +2,51 @@ import axios, { type AxiosInstance, type AxiosRequestConfig, type AxiosRequestHe
 
 import type { CustomHeaders, OmadaApiResponse, PaginatedResult } from '../types/index.js';
 import { logger } from '../utils/logger.js';
+import { isSensitiveKey, maskValue } from '../utils/redact.js';
 
 import type { AuthManager } from './auth.js';
 
 const DEFAULT_PAGE_SIZE = 200;
-const MIN_REQUEST_INTERVAL_MS = 125;
 const RETRYABLE_STATUS_CODES = new Set([429, 502, 503, 504]);
-const RETRYABLE_ERROR_CODES = new Set([-1005]);
+// The Open API guide defines -1005 as "Operation forbidden", not rate limiting.
+const RETRYABLE_ERROR_CODES = new Set([-7132]);
+const RETRYABLE_NETWORK_CODES = new Set(['ECONNRESET', 'ETIMEDOUT', 'ECONNABORTED', 'EAI_AGAIN']);
+
+export interface RequestHandlerOptions {
+    minRequestIntervalMs?: number;
+    maxReadRetries?: number;
+    maxRetryDelayMs?: number;
+    maxPages?: number;
+    maxRecords?: number;
+}
 
 /**
  * HTTP request handler for Omada API calls with authentication and retry logic.
  */
 export class RequestHandler {
     private nextAllowedRequestAt = 0;
+    private requestSlot: Promise<void> = Promise.resolve();
+    private readonly options: Required<RequestHandlerOptions>;
 
     constructor(
         private readonly http: AxiosInstance,
-        private readonly auth: AuthManager
-    ) {}
+        private readonly auth: AuthManager,
+        options: RequestHandlerOptions = {}
+    ) {
+        this.options = {
+            minRequestIntervalMs: options.minRequestIntervalMs ?? 125,
+            maxReadRetries: options.maxReadRetries ?? 2,
+            maxRetryDelayMs: options.maxRetryDelayMs ?? 30_000,
+            maxPages: options.maxPages ?? 1000,
+            maxRecords: options.maxRecords ?? 100_000,
+        };
+        for (const [key, value] of Object.entries(this.options)) {
+            const minimum = key === 'maxPages' || key === 'maxRecords' ? 1 : 0;
+            if (!Number.isSafeInteger(value) || value < minimum) {
+                throw new Error(`Invalid request option ${key}: expected an integer >= ${minimum}`);
+            }
+        }
+    }
 
     /**
      * Make a GET request to the Omada API.
@@ -60,105 +87,124 @@ export class RequestHandler {
      * Make an arbitrary HTTP request to the Omada API.
      */
     public async request<T>(config: AxiosRequestConfig, retry = true, customHeaders?: CustomHeaders): Promise<T> {
-        await this.waitForRateWindow();
-        const accessToken = await this.auth.getAccessToken();
+        let authRetried = false;
+        let readRetries = 0;
+        const method = (config.method ?? 'GET').toUpperCase();
+        const safeRead = method === 'GET' || method === 'HEAD' || method === 'OPTIONS';
 
-        const requestConfig: AxiosRequestConfig = {
-            ...config,
-            headers: {
-                ...(config.headers ?? {}),
-                ...(customHeaders ?? {}),
-                Authorization: `AccessToken=${accessToken}`,
-            },
-        };
+        for (;;) {
+            const accessToken = await this.auth.getAccessToken();
+            // Acquire a dispatch slot after authentication; a slow cold login must not
+            // cause previously reserved slots to collapse into a burst.
+            await this.waitForRateWindow();
 
-        const method = (requestConfig.method ?? 'GET').toUpperCase();
-        const url = requestConfig.url ?? 'unknown-url';
-        logger.info('Omada request', {
-            method,
-            url,
-            params: requestConfig.params,
-            siteId: requestConfig.params?.siteId ?? undefined,
-        });
+            const requestConfig: AxiosRequestConfig = {
+                ...config,
+                headers: {
+                    ...(config.headers ?? {}),
+                    ...(customHeaders ?? {}),
+                    Authorization: `AccessToken=${accessToken}`,
+                },
+            };
 
-        logger.debug('Omada request details', {
-            method,
-            url,
-            headers: this.sanitizeHeaders(requestConfig.headers as AxiosRequestHeaders | undefined),
-            params: requestConfig.params ?? null,
-            data: this.sanitizePayload(requestConfig.data),
-        });
-
-        try {
-            const response = await this.http.request<T>(requestConfig);
-            logger.info('Omada response', {
+            const url = requestConfig.url ?? 'unknown-url';
+            logger.info('Omada request', {
                 method,
                 url,
-                status: response.status,
+                params: this.sanitizePayload(requestConfig.params),
+                siteId: requestConfig.params?.siteId ?? undefined,
             });
 
-            logger.debug('Omada response payload', {
+            logger.debug('Omada request details', {
                 method,
                 url,
-                status: response.status,
-                headers: this.sanitizeHeaders(response.headers as AxiosRequestHeaders | undefined),
-                data: this.sanitizePayload(response.data),
+                headers: this.sanitizeHeaders(requestConfig.headers as AxiosRequestHeaders | undefined),
+                params: this.sanitizePayload(requestConfig.params ?? null),
+                data: this.sanitizePayload(requestConfig.data),
             });
 
-            // Check if the response data indicates an authentication error
-            const errorCode = (response.data as { errorCode?: number } | undefined)?.errorCode;
-            const errorMsg = (response.data as { msg?: string } | undefined)?.msg;
-
-            if (retry && (this.isAuthErrorCode(errorCode) || this.isTokenExpiredMessage(errorMsg))) {
-                logger.warn('Omada authentication error in response, retrying with fresh token', {
+            try {
+                const response = await this.http.request<T>(requestConfig);
+                logger.info('Omada response', {
                     method,
                     url,
-                    errorCode,
-                    message: errorMsg,
+                    status: response.status,
                 });
-                this.auth.clearToken();
-                return this.request<T>(config, false, customHeaders);
-            }
 
-            return response.data;
-        } catch (error) {
-            logger.error('Omada request failed', {
-                method,
-                url,
-                message: error instanceof Error ? error.message : String(error),
-            });
-
-            if (axios.isAxiosError(error) && error.response) {
-                logger.debug('Omada error response payload', {
+                logger.debug('Omada response payload', {
                     method,
                     url,
-                    status: error.response.status,
-                    headers: this.sanitizeHeaders(error.response.headers as AxiosRequestHeaders | undefined),
-                    data: this.sanitizePayload(error.response.data),
+                    status: response.status,
+                    headers: this.sanitizeHeaders(response.headers as AxiosRequestHeaders | undefined),
+                    data: this.sanitizePayload(response.data),
                 });
-            }
 
-            if (!retry || !axios.isAxiosError(error)) {
+                // Check if the response data indicates an authentication error
+                if (retry && !authRetried && this.isAuthFailure(response.data)) {
+                    logger.warn('Omada authentication error in response, retrying with fresh token', {
+                        method,
+                        url,
+                    });
+                    this.auth.clearToken(accessToken);
+                    authRetried = true;
+                    continue;
+                }
+
+                if (retry && safeRead && readRetries < this.options.maxReadRetries && RETRYABLE_ERROR_CODES.has(this.errorCode(response.data) ?? 0)) {
+                    const delay = this.getRetryDelayMs(readRetries, response.status, response.headers?.['retry-after']);
+                    if (delay !== undefined) {
+                        readRetries += 1;
+                        await this.sleep(delay);
+                        continue;
+                    }
+                }
+
+                return response.data;
+            } catch (error) {
+                logger.error('Omada request failed', {
+                    method,
+                    url,
+                    message: error instanceof Error ? error.message : String(error),
+                });
+
+                if (axios.isAxiosError(error) && error.response) {
+                    logger.debug('Omada error response payload', {
+                        method,
+                        url,
+                        status: error.response.status,
+                        headers: this.sanitizeHeaders(error.response.headers as AxiosRequestHeaders | undefined),
+                        data: this.sanitizePayload(error.response.data),
+                    });
+                }
+
+                if (!retry || !axios.isAxiosError(error)) {
+                    throw error;
+                }
+
+                const status = error.response?.status;
+                if (!authRetried && this.isAuthFailure(error.response?.data, status)) {
+                    this.auth.clearToken(accessToken);
+                    authRetried = true;
+                    continue;
+                }
+
+                if (
+                    safeRead &&
+                    readRetries < this.options.maxReadRetries &&
+                    ((status !== undefined && RETRYABLE_STATUS_CODES.has(status)) ||
+                        RETRYABLE_ERROR_CODES.has(this.errorCode(error.response?.data) ?? 0) ||
+                        (!error.response && RETRYABLE_NETWORK_CODES.has(error.code ?? '')))
+                ) {
+                    const delay = this.getRetryDelayMs(readRetries, status, error.response?.headers?.['retry-after']);
+                    if (delay !== undefined) {
+                        readRetries += 1;
+                        await this.sleep(delay);
+                        continue;
+                    }
+                }
+
                 throw error;
             }
-
-            const status = error.response?.status;
-            const errorCode = (error.response?.data as { errorCode?: number } | undefined)?.errorCode;
-
-            if (status === 401 || status === 403 || this.isAuthErrorCode(errorCode)) {
-                this.auth.clearToken();
-                return this.request<T>(config, false, customHeaders);
-            }
-
-            if (
-                retry &&
-                ((status !== undefined && RETRYABLE_STATUS_CODES.has(status)) || (errorCode !== undefined && RETRYABLE_ERROR_CODES.has(errorCode)))
-            ) {
-                await this.sleep(this.getRetryDelayMs(status));
-                return this.request<T>(config, false, customHeaders);
-            }
-
-            throw error;
         }
     }
 
@@ -167,11 +213,11 @@ export class RequestHandler {
      */
     public async fetchPaginated<T>(path: string, params: Record<string, unknown> = {}, customHeaders?: CustomHeaders): Promise<T[]> {
         const records: T[] = [];
-        let page = 1;
         let totalRows: number | undefined;
+        const seenPages = new Set<string>();
 
         // Fetch sequential pages because OpenAPI requires explicit pagination parameters.
-        do {
+        for (let page = 1; page <= this.options.maxPages; page += 1) {
             const response = await this.get<OmadaApiResponse<PaginatedResult<T>>>(
                 path,
                 {
@@ -183,18 +229,73 @@ export class RequestHandler {
             );
 
             const result = this.ensureSuccess(response);
-            const pageData = result.data ?? [];
-            totalRows = result.totalRows ?? totalRows;
-
-            records.push(...pageData);
-            page += 1;
-
-            if (pageData.length === 0) {
-                break;
+            if (!result || typeof result !== 'object' || Array.isArray(result)) {
+                throw new Error(`Malformed pagination result on page ${page}`);
             }
-        } while (!totalRows || records.length < totalRows);
+            if (result.totalRows !== undefined) {
+                if (!Number.isSafeInteger(result.totalRows) || result.totalRows < 0) {
+                    throw new Error(`Invalid pagination totalRows on page ${page}`);
+                }
+                if (totalRows !== undefined && totalRows !== result.totalRows) {
+                    throw new Error(`Pagination totalRows changed on page ${page}; retry the read for a consistent result`);
+                }
+                totalRows = result.totalRows;
+                if (totalRows > this.options.maxRecords) {
+                    throw new Error(`Pagination record limit exceeded (${this.options.maxRecords})`);
+                }
+            }
+            if (result.currentPage !== undefined && result.currentPage !== page) {
+                throw new Error(`Unexpected pagination currentPage on page ${page}`);
+            }
+            if (result.currentSize !== undefined && (!Number.isSafeInteger(result.currentSize) || result.currentSize < 0)) {
+                throw new Error(`Invalid pagination currentSize on page ${page}`);
+            }
+            // Missing data is accepted only when the controller explicitly reports
+            // an empty collection. An absent result must not hide a partial read.
+            if (result.data === undefined && totalRows === 0 && records.length === 0) {
+                return [];
+            }
+            if (!Array.isArray(result.data)) {
+                throw new Error(`Missing or malformed pagination data on page ${page}`);
+            }
+            const pageData = result.data;
+            if (pageData.length > DEFAULT_PAGE_SIZE || records.length + pageData.length > this.options.maxRecords) {
+                throw new Error(`Pagination record limit exceeded (${this.options.maxRecords}) or oversized page ${page}`);
+            }
+            if (pageData.length === 0) {
+                if (totalRows !== undefined && records.length < totalRows) {
+                    throw new Error(`Incomplete pagination: received ${records.length} of ${totalRows} records`);
+                }
+                return records;
+            }
+            // Include all JSON fields, sorting object keys and page entries so a
+            // controller returning the same page in another order is still caught.
+            const fingerprint = JSON.stringify(pageData.map((record) => this.paginationFingerprint(record)).sort());
+            if (seenPages.has(fingerprint)) {
+                throw new Error(`Repeated pagination data on page ${page}`);
+            }
+            seenPages.add(fingerprint);
+            records.push(...pageData);
+            if (totalRows !== undefined) {
+                if (records.length > totalRows) {
+                    throw new Error(`Pagination returned more records than totalRows (${totalRows})`);
+                }
+                if (records.length === totalRows) {
+                    return records;
+                }
+            }
+        }
 
-        return records;
+        throw new Error(`Pagination page limit exceeded (${this.options.maxPages})`);
+    }
+
+    private paginationFingerprint(value: unknown): string {
+        return JSON.stringify(value, (_key, item: unknown) => {
+            if (item && typeof item === 'object' && !Array.isArray(item)) {
+                return Object.fromEntries(Object.entries(item).sort(([a], [b]) => a.localeCompare(b)));
+            }
+            return item;
+        });
     }
 
     /**
@@ -202,6 +303,9 @@ export class RequestHandler {
      * @throws {Error} If the response contains an error code
      */
     public ensureSuccess<T>(response: OmadaApiResponse<T>): T {
+        if (!response || typeof response !== 'object' || typeof response.errorCode !== 'number') {
+            throw new Error('Malformed Omada API response');
+        }
         if (response.errorCode !== 0) {
             logger.error('Omada API error', {
                 errorCode: response.errorCode,
@@ -216,19 +320,28 @@ export class RequestHandler {
     /**
      * Check if an error code indicates an authentication error.
      */
-    private isAuthErrorCode(errorCode?: number): boolean {
-        if (errorCode === undefined) {
+    private errorCode(data: unknown): number | undefined {
+        return data && typeof data === 'object' && 'errorCode' in data && typeof data.errorCode === 'number' ? data.errorCode : undefined;
+    }
+
+    private isAuthFailure(data: unknown, status?: number): boolean {
+        const code = this.errorCode(data);
+        // Invalid credentials/grants/permissions cannot be repaired by refreshing.
+        if (code !== undefined && [-1005, -1505, -44106, -44111, -44116, -44118].includes(code)) {
             return false;
         }
-
-        return [-44106, -44111, -44112, -44113, -44114, -44116].includes(errorCode);
+        if (status === 401 || (code !== undefined && [-44112, -44113, -44114].includes(code))) {
+            return true;
+        }
+        const message = data && typeof data === 'object' && 'msg' in data ? data.msg : undefined;
+        return code !== 0 && this.isTokenExpiredMessage(message);
     }
 
     /**
      * Check if an error message indicates token expiration.
      */
-    private isTokenExpiredMessage(message?: string): boolean {
-        if (!message) {
+    private isTokenExpiredMessage(message: unknown): boolean {
+        if (typeof message !== 'string') {
             return false;
         }
 
@@ -241,19 +354,33 @@ export class RequestHandler {
         );
     }
 
-    private async waitForRateWindow(): Promise<void> {
-        const now = Date.now();
-        if (now < this.nextAllowedRequestAt) {
-            await this.sleep(this.nextAllowedRequestAt - now);
-        }
-        this.nextAllowedRequestAt = Date.now() + MIN_REQUEST_INTERVAL_MS;
+    private waitForRateWindow(): Promise<void> {
+        const slot = this.requestSlot.then(async () => {
+            const delay = this.nextAllowedRequestAt - Date.now();
+            if (delay > 0) {
+                await this.sleep(delay);
+            }
+            this.nextAllowedRequestAt = Date.now() + this.options.minRequestIntervalMs;
+        });
+        this.requestSlot = slot;
+        return slot;
     }
 
-    private getRetryDelayMs(status?: number): number {
-        if (status === 429) {
-            return 1000;
+    private getRetryDelayMs(attempt: number, status: number | undefined, retryAfter: unknown): number | undefined {
+        const base = status === 429 ? 1000 : 500;
+        let delay = Math.min(base * 2 ** attempt * (1 + Math.random() * 0.25), this.options.maxRetryDelayMs);
+        if (typeof retryAfter === 'string' || typeof retryAfter === 'number') {
+            const value = String(retryAfter).trim();
+            const seconds = /^\d+(\.\d+)?$/.test(value) ? Number(value) : undefined;
+            const date = seconds === undefined && /[a-z]/i.test(value) ? Date.parse(value) : Number.NaN;
+            const requestedDelay = seconds === undefined ? date - Date.now() : seconds * 1000;
+            if (requestedDelay > this.options.maxRetryDelayMs) return undefined;
+            if (Number.isFinite(requestedDelay)) {
+                // Do not retry earlier than Retry-After just to satisfy our bound.
+                delay = Math.max(delay, requestedDelay);
+            }
         }
-        return 500;
+        return delay;
     }
 
     private async sleep(ms: number): Promise<void> {
@@ -270,7 +397,7 @@ export class RequestHandler {
 
         const sanitized: Record<string, unknown> = {};
         for (const [key, value] of Object.entries(headers)) {
-            sanitized[key] = this.isSensitiveKey(key) ? this.maskValue(value) : value;
+            sanitized[key] = isSensitiveKey(key) ? maskValue(value) : value;
         }
 
         return sanitized;
@@ -290,45 +417,9 @@ export class RequestHandler {
 
         const sanitized: Record<string, unknown> = {};
         for (const [key, value] of Object.entries(payload)) {
-            sanitized[key] = this.isSensitiveKey(key) ? this.maskValue(value) : this.sanitizePayload(value);
+            sanitized[key] = isSensitiveKey(key) ? maskValue(value) : this.sanitizePayload(value);
         }
 
         return sanitized;
-    }
-
-    /**
-     * Check if a key name indicates sensitive data.
-     */
-    private isSensitiveKey(key: string): boolean {
-        const normalized = key.toLowerCase();
-        return (
-            normalized.includes('authorization') ||
-            normalized.includes('token') ||
-            normalized.includes('secret') ||
-            normalized.includes('password') ||
-            normalized.includes('client_id')
-        );
-    }
-
-    /**
-     * Mask a sensitive value for logging.
-     */
-    private maskValue(value: unknown): unknown {
-        if (typeof value === 'string') {
-            if (value.length <= 8) {
-                return '********';
-            }
-            return `${value.slice(0, 4)}…${value.slice(-4)}`;
-        }
-
-        if (Array.isArray(value)) {
-            return value.map(() => '********');
-        }
-
-        if (typeof value === 'object' && value !== null) {
-            return '[masked-object]';
-        }
-
-        return '********';
     }
 }

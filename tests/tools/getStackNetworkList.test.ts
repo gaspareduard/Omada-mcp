@@ -45,6 +45,7 @@ describe('tools/getStackNetworkList', () => {
             const result = await toolHandler({ stackId: 'stack-123' }, { sessionId: 'test-session' });
             expect(mockClient.getStackNetworkList).toHaveBeenCalledWith('stack-123', 1, 10, undefined, undefined);
             expect(result).toEqual({
+                structuredContent: mockData,
                 content: [{ type: 'text', text: JSON.stringify(mockData, null, 2) }],
             });
         });
@@ -56,6 +57,7 @@ describe('tools/getStackNetworkList', () => {
             const result = await toolHandler({ stackId: 'stack-123', page: 1, pageSize: 10, siteId: 'test-site' }, { sessionId: 'test-session' });
             expect(mockClient.getStackNetworkList).toHaveBeenCalledWith('stack-123', 1, 10, 'test-site', undefined);
             expect(result).toEqual({
+                structuredContent: mockData,
                 content: [{ type: 'text', text: JSON.stringify(mockData, null, 2) }],
             });
         });

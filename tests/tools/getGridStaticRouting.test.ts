@@ -45,6 +45,7 @@ describe('tools/getGridStaticRouting', () => {
             const result = await toolHandler({}, { sessionId: 'test-session' });
             expect(mockClient.getGridStaticRouting).toHaveBeenCalledWith(undefined, undefined, undefined, undefined);
             expect(result).toEqual({
+                structuredContent: mockData,
                 content: [{ type: 'text', text: JSON.stringify(mockData, null, 2) }],
             });
         });
@@ -56,6 +57,7 @@ describe('tools/getGridStaticRouting', () => {
             const result = await toolHandler({ page: 2, pageSize: 25 }, { sessionId: 'test-session' });
             expect(mockClient.getGridStaticRouting).toHaveBeenCalledWith(2, 25, undefined, undefined);
             expect(result).toEqual({
+                structuredContent: mockData,
                 content: [{ type: 'text', text: JSON.stringify(mockData, null, 2) }],
             });
         });
@@ -67,6 +69,7 @@ describe('tools/getGridStaticRouting', () => {
             const result = await toolHandler({ siteId: 'test-site' }, { sessionId: 'test-session' });
             expect(mockClient.getGridStaticRouting).toHaveBeenCalledWith(undefined, undefined, 'test-site', undefined);
             expect(result).toEqual({
+                structuredContent: mockData,
                 content: [{ type: 'text', text: JSON.stringify(mockData, null, 2) }],
             });
         });

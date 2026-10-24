@@ -16,6 +16,14 @@ import type {
 import type { RequestHandler } from './request.js';
 import type { SiteOperations } from './site.js';
 
+function normalizeMac(value: string): string | undefined {
+    const mac = value.trim();
+    if (!/^(?:[\da-f]{12}|(?:[\da-f]{2}:){5}[\da-f]{2}|(?:[\da-f]{2}-){5}[\da-f]{2}|(?:[\da-f]{4}\.){2}[\da-f]{4})$/i.test(mac)) {
+        return undefined;
+    }
+    return mac.replace(/[:.-]/g, '').toLowerCase();
+}
+
 /**
  * Client-related operations for the Omada API.
  */
@@ -39,11 +47,31 @@ export class ClientOperations {
     }
 
     /**
-     * Get a specific client by MAC address or client ID.
+     * Get an online client by MAC address, client ID, IP, hostName, or name.
+     * Name/hostname matching is exact (case-insensitive); ambiguous matches fail.
      */
     public async getClient(identifier: string, siteId?: string, customHeaders?: CustomHeaders): Promise<OmadaClientInfo | undefined> {
+        const query = identifier.trim();
+        if (!query) {
+            throw new Error('Client identifier must not be empty');
+        }
+        const mac = normalizeMac(query);
+        const name = query.toLowerCase();
         const clients = await this.listClients(siteId, customHeaders);
-        return clients.find((client) => client.mac === identifier || client.id === identifier);
+        const matches = clients.filter(
+            (client) =>
+                client.id === query ||
+                (mac !== undefined && typeof client.mac === 'string' && normalizeMac(client.mac) === mac) ||
+                client.ip === query ||
+                (typeof client.hostName === 'string' && client.hostName.toLowerCase() === name) ||
+                (typeof client.name === 'string' && client.name.toLowerCase() === name)
+        );
+        if (matches.length > 1) {
+            throw new Error(
+                `Ambiguous client identifier "${query}": matched ${matches.length} clients (${matches.map((client) => client.mac).join(', ')}). Use a unique MAC address or client ID.`
+            );
+        }
+        return matches[0];
     }
 
     /**
@@ -60,6 +88,7 @@ export class ClientOperations {
             undefined,
             customHeaders
         );
+        this.request.ensureSuccess(response);
         return response.result ?? [];
     }
 
@@ -86,6 +115,7 @@ export class ClientOperations {
             params,
             customHeaders
         );
+        this.request.ensureSuccess(response);
         return response.result ?? [];
     }
 
@@ -151,7 +181,8 @@ export class ClientOperations {
             undefined,
             customHeaders
         );
-        return this.request.ensureSuccess(response) ?? [];
+        this.request.ensureSuccess(response);
+        return response.result ?? [];
     }
 
     /**

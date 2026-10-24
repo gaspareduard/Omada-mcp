@@ -17,6 +17,7 @@ describe('tools/getNetworkHealthSummary', () => {
         } as unknown as McpServer;
 
         mockClient = {
+            resolveSiteId: vi.fn(async (siteId?: string) => siteId ?? 'default-site'),
             getDashboardOverview: vi.fn(),
             getInternetInfo: vi.fn(),
             getClientsDistribution: vi.fn(),
@@ -54,11 +55,24 @@ describe('tools/getNetworkHealthSummary', () => {
         registerGetNetworkHealthSummaryTool(mockServer, mockClient);
         const result = (await toolHandler({}, { sessionId: 'test' })) as { content: { text: string }[] };
         const parsed = JSON.parse(result.content[0].text);
+        expect(parsed.siteId).toBe('default-site');
+        expect(Number.isNaN(Date.parse(parsed.observedAt))).toBe(false);
+        expect(parsed.complete).toBe(true);
 
-        expect(mockClient.getDashboardOverview).toHaveBeenCalledWith(undefined, undefined);
-        expect(mockClient.getInternetInfo).toHaveBeenCalledWith(undefined, undefined);
-        expect(mockClient.getClientsDistribution).toHaveBeenCalledWith(undefined, undefined);
-        expect(mockClient.getThreatList).toHaveBeenCalledWith(expect.objectContaining({ page: 1, pageSize: 5, archived: false }), undefined);
+        expect(mockClient.getDashboardOverview).toHaveBeenCalledWith('default-site', undefined);
+        expect(mockClient.getInternetInfo).toHaveBeenCalledWith('default-site', undefined);
+        expect(mockClient.getClientsDistribution).toHaveBeenCalledWith('default-site', undefined);
+        expect(mockClient.getThreatList).toHaveBeenCalledWith(
+            expect.objectContaining({
+                page: 1,
+                pageSize: 5,
+                archived: false,
+                siteList: 'default-site',
+                startTime: expect.any(Number),
+                endTime: expect.any(Number),
+            }),
+            undefined
+        );
 
         expect(parsed.overview).toEqual(mockOverview);
         expect(parsed.internet).toEqual(mockInternet);
@@ -89,6 +103,9 @@ describe('tools/getNetworkHealthSummary', () => {
         registerGetNetworkHealthSummaryTool(mockServer, mockClient);
         const result = (await toolHandler({}, { sessionId: 'test' })) as { content: { text: string }[] };
         const parsed = JSON.parse(result.content[0].text);
+        expect(parsed.siteId).toBe('default-site');
+        expect(Number.isNaN(Date.parse(parsed.observedAt))).toBe(false);
+        expect(parsed.complete).toBe(false);
 
         expect(parsed.overview).toEqual({ gateways: 1 });
         expect(parsed.internet).toMatchObject({ _error: expect.stringContaining('WAN unavailable') });
@@ -104,6 +121,9 @@ describe('tools/getNetworkHealthSummary', () => {
         registerGetNetworkHealthSummaryTool(mockServer, mockClient);
         const result = (await toolHandler({}, { sessionId: 'test' })) as { content: { text: string }[] };
         const parsed = JSON.parse(result.content[0].text);
+        expect(parsed.siteId).toBe('default-site');
+        expect(Number.isNaN(Date.parse(parsed.observedAt))).toBe(false);
+        expect(parsed.complete).toBe(false);
 
         expect(parsed.overview).toMatchObject({ _error: expect.any(String) });
         expect(parsed.internet).toMatchObject({ _error: expect.any(String) });

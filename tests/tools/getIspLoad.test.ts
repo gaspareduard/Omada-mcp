@@ -47,6 +47,7 @@ describe('tools/getIspLoad', () => {
             const result = await toolHandler({ start, end }, { sessionId: 'test-session' });
             expect(mockClient.getIspLoad).toHaveBeenCalledWith(undefined, start, end, undefined);
             expect(result).toEqual({
+                structuredContent: mockData,
                 content: [{ type: 'text', text: JSON.stringify(mockData, null, 2) }],
             });
         });
@@ -60,6 +61,7 @@ describe('tools/getIspLoad', () => {
             const result = await toolHandler({ siteId: 'test-site', start, end }, { sessionId: 'test-session' });
             expect(mockClient.getIspLoad).toHaveBeenCalledWith('test-site', start, end, undefined);
             expect(result).toEqual({
+                structuredContent: mockData,
                 content: [{ type: 'text', text: JSON.stringify(mockData, null, 2) }],
             });
         });

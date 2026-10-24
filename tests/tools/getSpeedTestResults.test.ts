@@ -45,6 +45,7 @@ describe('tools/getSpeedTestResults', () => {
             const result = await toolHandler({ apMac: 'AA-BB-CC-DD-EE-FF' }, { sessionId: 'test-session' });
             expect(mockClient.getSpeedTestResults).toHaveBeenCalledWith('AA-BB-CC-DD-EE-FF', undefined, undefined);
             expect(result).toEqual({
+                structuredContent: mockData,
                 content: [{ type: 'text', text: JSON.stringify(mockData, null, 2) }],
             });
         });
@@ -56,6 +57,7 @@ describe('tools/getSpeedTestResults', () => {
             const result = await toolHandler({ apMac: 'AA-BB-CC-DD-EE-FF', siteId: 'test-site' }, { sessionId: 'test-session' });
             expect(mockClient.getSpeedTestResults).toHaveBeenCalledWith('AA-BB-CC-DD-EE-FF', 'test-site', undefined);
             expect(result).toEqual({
+                structuredContent: mockData,
                 content: [{ type: 'text', text: JSON.stringify(mockData, null, 2) }],
             });
         });

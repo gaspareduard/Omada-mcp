@@ -17,11 +17,14 @@ export class MonitorOperations {
     /**
      * Get WiFi summary for a site dashboard.
      * OperationId: getWifiSummary
+     * The required window uses Unix seconds; existing callers default to the last hour.
      */
-    public async getDashboardWifiSummary(siteId?: string, customHeaders?: CustomHeaders): Promise<unknown> {
+    public async getDashboardWifiSummary(siteId?: string, customHeaders?: CustomHeaders, window?: { start: number; end: number }): Promise<unknown> {
         const resolvedSiteId = await this.site.resolveSiteId(siteId);
         const path = this.buildPath(`/sites/${encodeURIComponent(resolvedSiteId)}/dashboard/wifi-summary`);
-        const response = await this.request.get<OmadaApiResponse<unknown>>(path, undefined, customHeaders);
+        const end = window?.end ?? Math.floor(Date.now() / 1000);
+        const start = window?.start ?? end - 3600;
+        const response = await this.request.get<OmadaApiResponse<unknown>>(path, { start, end }, customHeaders);
         return this.request.ensureSuccess(response);
     }
 

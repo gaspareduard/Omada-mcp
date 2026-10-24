@@ -48,6 +48,7 @@ describe('tools/getUiInterface', () => {
 
             expect(mockClient.getUiInterface).toHaveBeenCalledWith(undefined);
             expect(result).toEqual({
+                structuredContent: mockData,
                 content: [{ type: 'text', text: JSON.stringify(mockData, null, 2) }],
             });
         });

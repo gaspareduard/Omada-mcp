@@ -34,12 +34,14 @@ export function registerRestoreSitesFromFileServerTool(server: McpServer, client
             .min(1)
             .max(300)
             .describe('List of site restore entries, each pairing a site ID with the file path on the file server (up to 300).'),
-        dryRun: z.boolean().optional().default(false).describe('If true, return the planned action without executing it.'),
+        dryRun: z.boolean().optional().default(true).describe('If true, return the planned action without executing it.'),
         confirmDangerous: z
             .boolean()
             .optional()
             .default(false)
-            .describe('Must be explicitly set to true to confirm execution. A second confirmation is required because this action is irreversible.'),
+            .describe(
+                'Must be explicitly set to true to confirm execution. This boolean acknowledges the risk; human approval must be enforced by the MCP host.'
+            ),
         customHeaders: customHeadersSchema,
     });
 
@@ -47,7 +49,7 @@ export function registerRestoreSitesFromFileServerTool(server: McpServer, client
         'restoreSitesFromFileServer',
         {
             description:
-                'Restore multiple site configurations from backup files stored on an external file server (FTP/SFTP, up to 300 sites). REQUIRES explicit confirmDangerous: true — a second confirmation step is enforced because this action is irreversible.',
+                'Restore multiple site configurations from backup files stored on an external file server (FTP/SFTP, up to 300 sites). REQUIRES explicit confirmDangerous: true — this acknowledges the risk and is not a technical human-approval gate.',
             inputSchema: inputSchema.shape,
             annotations: {
                 destructiveHint: true,
@@ -56,7 +58,7 @@ export function registerRestoreSitesFromFileServerTool(server: McpServer, client
         wrapToolHandler('restoreSitesFromFileServer', async ({ serverConfig, siteInfos, dryRun, confirmDangerous, customHeaders }) => {
             const targetSites = siteInfos.map((s: { siteId: string }) => s.siteId).join(', ');
 
-            if (dryRun) {
+            if (dryRun !== false) {
                 return toMutationResult({
                     action: 'restore-sites-file-server',
                     target: targetSites,

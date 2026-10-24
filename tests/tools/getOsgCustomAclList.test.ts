@@ -45,6 +45,7 @@ describe('tools/getOsgCustomAclList', () => {
             const result = await toolHandler({}, { sessionId: 'test-session' });
             expect(mockClient.getOsgCustomAclList).toHaveBeenCalledWith(1, 10, undefined, undefined);
             expect(result).toEqual({
+                structuredContent: mockData,
                 content: [{ type: 'text', text: JSON.stringify(mockData, null, 2) }],
             });
         });

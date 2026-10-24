@@ -63,7 +63,13 @@ describe('server/stdio', () => {
             const { registerAllTools } = await import('../../src/tools/index.js');
             const activeCategories = new Map<ToolCategory, Set<ToolPermission>>([['dashboard' as ToolCategory, new Set<ToolPermission>(['read'])]]);
             await startStdioServer(mockClient, activeCategories);
-            expect(registerAllTools).toHaveBeenCalledWith(mockServer, mockClient, activeCategories);
+            expect(registerAllTools).toHaveBeenCalledWith(mockServer, mockClient, activeCategories, {});
+        });
+        it('forwards explicit catalog policy options', async () => {
+            const { registerAllTools } = await import('../../src/tools/index.js');
+            const options = { includeDeprecated: true, allowToolHeaders: true, catalogMode: 'compact' as const, capabilityProfile: 'admin' };
+            await startStdioServer(mockClient, new Map(), options);
+            expect(registerAllTools).toHaveBeenCalledWith(mockServer, mockClient, new Map(), options);
         });
     });
 });

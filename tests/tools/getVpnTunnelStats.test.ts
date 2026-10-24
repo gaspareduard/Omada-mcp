@@ -48,6 +48,7 @@ describe('tools/getVpnTunnelStats', () => {
 
             expect(mockClient.getVpnTunnelStats).toHaveBeenCalledWith(1, 10, undefined, undefined);
             expect(result).toEqual({
+                structuredContent: mockData,
                 content: [{ type: 'text', text: JSON.stringify(mockData, null, 2) }],
             });
         });
@@ -62,6 +63,7 @@ describe('tools/getVpnTunnelStats', () => {
 
             expect(mockClient.getVpnTunnelStats).toHaveBeenCalledWith(2, 5, 'test-site', undefined);
             expect(result).toEqual({
+                structuredContent: mockData,
                 content: [{ type: 'text', text: JSON.stringify(mockData, null, 2) }],
             });
         });

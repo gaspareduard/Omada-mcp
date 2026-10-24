@@ -1,7 +1,51 @@
+import { z } from 'zod';
+
 import type { CustomHeaders, GetDeviceStatsOptions, OmadaApiResponse, OmadaDeviceInfo, OmadaDeviceStats, OswStackDetail } from '../types/index.js';
 
 import type { RequestHandler } from './request.js';
 import type { SiteOperations } from './site.js';
+
+/** Writable fields from 03-device.json: ApRadioSetting. GET-only fields must never be replayed. */
+export const apRadioSettingSchema = z
+    .object({
+        radioEnable: z.boolean().optional(),
+        channelRange: z.array(z.number().int().positive()).optional(),
+        channelWidth: z.enum(['2', '3', '4', '5', '6', '7', '8', '9', '10']).optional(),
+        channel: z.string().regex(/^\d+$/).optional(),
+        txPower: z.number().int().optional(),
+        txPowerLevel: z.number().int().min(0).max(4).optional(),
+        channelLimitEnable: z.boolean().optional(),
+        freq: z.number().int().nonnegative().optional(),
+        wirelessMode: z
+            .union([
+                z.literal(-2),
+                z.literal(3),
+                z.literal(4),
+                z.literal(13),
+                z.literal(17),
+                z.literal(7),
+                z.literal(10),
+                z.literal(16),
+                z.literal(18),
+                z.literal(11),
+                z.literal(19),
+            ])
+            .optional(),
+    })
+    .strict();
+
+export const apRadiosConfigSchema = z
+    .object({
+        radioSetting2g: apRadioSettingSchema.optional(),
+        radioSetting5g: apRadioSettingSchema.optional(),
+        radioSetting5g1: apRadioSettingSchema.optional(),
+        radioSetting5g2: apRadioSettingSchema.optional(),
+        radioSetting6g: apRadioSettingSchema.optional(),
+    })
+    .strict();
+
+export type ApRadioSetting = z.infer<typeof apRadioSettingSchema>;
+export type ApRadiosConfig = z.infer<typeof apRadiosConfigSchema>;
 
 /**
  * Device-related operations for the Omada API.
@@ -873,7 +917,7 @@ export class DeviceOperations {
         if (!apMac) throw new Error('An apMac must be provided.');
         const resolvedSiteId = await this.site.resolveSiteId(siteId);
         const path = this.buildPath(`/sites/${encodeURIComponent(resolvedSiteId)}/aps/${encodeURIComponent(apMac)}/wlan-group`);
-        const response = await this.request.put<OmadaApiResponse<unknown>>(path, payload, customHeaders);
+        const response = await this.request.patch<OmadaApiResponse<unknown>>(path, payload, customHeaders);
         return this.request.ensureSuccess(response);
     }
 

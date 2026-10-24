@@ -8,7 +8,11 @@ Security-focused MCP server for TP-Link Omada Open API workflows. This Docker-or
 - Omada credentials are passed by environment variables only
 - Capability profiles control which tools are exposed
 - HTTP remains a legacy, explicitly unsafe lab-only path
-- Validated against live Omada Controller 6.x environments and designed around the documented 5.x/6.x Open API surface
+- Uses documented Open API routes; controller/device validation is operation-specific (see [support matrix](docs/support-matrix.md))
+
+## 0.19 release candidate
+
+This branch prepares `0.19.0-rc.1`. Write previews, compact discovery, diagnostics and reliability changes are described in the [migration guide](docs/operations/0.19-migration.md). Stable write-tool release awaits disposable-controller and hardware validation; `latest` remains the existing stable version.
 
 ## Quick Start
 
@@ -70,6 +74,7 @@ docker run --rm -it \
 | `OMADA_OMADAC_ID` | Yes | - | Omada controller ID (`omadacId`) |
 | `OMADA_SITE_ID` | No | - | Optional default site ID. When omitted and no tool-level site ID is supplied, a single available site is selected automatically; zero or multiple sites return an error. |
 | `OMADA_STRICT_SSL` | No | `true` | Enforce TLS certificate validation |
+| `OMADA_CA_FILE` | No | - | PEM private CA bundle path; retains hostname verification. Mount the file read-only in Docker. |
 | `OMADA_TIMEOUT` | No | `30000` | HTTP timeout in milliseconds |
 
 ### Capability and Logging
@@ -77,9 +82,29 @@ docker run --rm -it \
 | Variable | Required | Default | Description |
 | --- | --- | --- | --- |
 | `OMADA_CAPABILITY_PROFILE` | No | `safe-read` | Built-in profile: `safe-read`, `ops-write`, `admin`, `compatibility` |
-| `OMADA_TOOL_CATEGORIES` | No | profile default | Explicit category override |
-| `MCP_SERVER_LOG_LEVEL` | No | `info` | `debug`, `info`, `warn`, `error`, `silent` |
+| `OMADA_TOOL_CATEGORIES` | No | profile default | Explicit category override; recovery requires `recovery:rw` |
+| `OMADA_CATALOG_MODE` | No | `standard` | `standard` tools or `compact` discovery/dispatch |
+| `OMADA_INCLUDE_DEPRECATED` | No | `false` | Include deprecated aliases |
+| `OMADA_ALLOW_TOOL_HEADERS` | No | `false` | Expose only bounded `X-Request-ID` / `X-Correlation-ID` headers |
+| `MCP_SERVER_LOG_LEVEL` | No | `info` | `debug`, `info`, `warn`, `error` |
 | `MCP_SERVER_LOG_FORMAT` | No | `plain` | `plain`, `json`, or `gcp-json` |
+
+### Capability Profiles
+
+| Profile | Intended use |
+| --- | --- |
+| `safe-read` | Default read-only operational visibility |
+| `ops-write` | Client operations and maintenance writes, excluding recovery |
+| `admin` | All implemented categories except recovery |
+| `compatibility` | Deprecated alias for `admin`; no private API fallback |
+
+`OMADA_TOOL_CATEGORIES` replaces profile defaults. Restore tools require explicit `recovery:rw`; neither `admin`, `compatibility`, nor `all:rw` grants recovery.
+
+### Mutation previews and recovery
+
+Writes default to `dryRun: true`. Review the preview and explicitly pass `dryRun: false` to apply. `submitted` means the controller accepted a request; only `verified` indicates a matching readback. See the [0.19 migration guide](docs/operations/0.19-migration.md) for verification limits and partial outcomes.
+
+Restore tools also require `confirmDangerous: true`. This is an argument check, not enforced human approval or a stateful second-call protocol. Configure approvals in the MCP host and grant `recovery:rw` only when recovery is intended.
 
 ### Optional HTTP Lab Mode
 
@@ -108,6 +133,22 @@ HTTP is not part of the supported container baseline. It only starts when both o
 - The tool tables below are kept in sync with the registered MCP tools.
 
 ## Tools
+
+### 0.19 workflows and discovery
+
+| Tool | Description |
+| --- | --- |
+| `getWifiHealthSummary` | Composes dashboard, channel, interference and retry evidence with timestamps, missing sections and bounded review heuristics. Read-only. |
+| `diagnoseLogs` | Reads recent event, alert and audit pages plus log settings; distinguishes unavailable data from empty results and reports incomplete history. |
+| `diagnoseCameraConnectivity` | Resolves a camera client and reads its detail/session evidence; reports missing data and network drilldowns without claiming to diagnose Frigate inference. |
+| `setApRadio` | Previews or updates one supported AP band with advertised channel/width validation, preserved sibling settings and bounded readback verification. |
+| `updateSsid` | Previews or updates SSID name, broadcast visibility, guest status or sharing policy while preserving required security fields. Broadcast visibility is not SSID enable/disable. |
+| `setSwitchPorts` | Previews or updates name, status, PoE, profile or override for 1–32 explicit ports. Checks existence, guards known LAG disruption and reports per-port verification/partial completion. |
+| `searchOperations` | Searches only enabled operations by name, description or category. |
+| `describeOperation` | Returns an enabled operation's exact argument schema and permission. |
+| `getServerCapabilities` | Reports version, effective catalog, profile and validation limits. |
+| `callOperation` | Compact mode only: invokes an enabled operation through its existing schema and handler. |
+
 
 ### Site & Client
 

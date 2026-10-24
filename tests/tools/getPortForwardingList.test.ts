@@ -45,6 +45,7 @@ describe('tools/getPortForwardingList', () => {
             const result = await toolHandler({}, { sessionId: 'test-session' });
             expect(mockClient.getPortForwardingListPage).toHaveBeenCalledWith(undefined, undefined, undefined, undefined);
             expect(result).toEqual({
+                structuredContent: mockData,
                 content: [{ type: 'text', text: JSON.stringify(mockData, null, 2) }],
             });
         });

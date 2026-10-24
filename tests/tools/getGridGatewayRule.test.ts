@@ -50,6 +50,7 @@ describe('tools/getGridGatewayRule', () => {
 
             expect(mockClient.getGridGatewayRule).toHaveBeenCalledWith(1, 10, undefined, undefined);
             expect(result).toEqual({
+                structuredContent: mockData,
                 content: [{ type: 'text', text: JSON.stringify(mockData, null, 2) }],
             });
         });

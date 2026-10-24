@@ -45,6 +45,7 @@ describe('tools/getThreatCount', () => {
             const result = await toolHandler({ startTime: 1682000000, endTime: 1682086400 }, { sessionId: 'test-session' });
             expect(mockClient.getThreatSeverity).toHaveBeenCalledWith(1682000000, 1682086400, undefined);
             expect(result).toEqual({
+                structuredContent: mockData,
                 content: [{ type: 'text', text: JSON.stringify(mockData, null, 2) }],
             });
         });

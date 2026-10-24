@@ -81,7 +81,7 @@ function getSessionIdFromHeaders(req: IncomingMessage): string | undefined {
  */
 export function createStreamTransport(client: OmadaClient, config: EnvironmentConfig, hooks?: StreamLifecycleHooks): StreamTransportState {
     const mcpServer = createServer();
-    registerAllTools(mcpServer, client, config.toolCategories);
+    registerAllTools(mcpServer, client, config.toolCategories, config);
 
     logger.info('Starting Streamable HTTP transport; Mcp-Session-Id headers are optional in client-credentials mode');
     logger.warn('HTTP transport is running in explicitly unsafe mode. The supported production baseline remains stdio only.');
@@ -118,8 +118,8 @@ export function createStreamTransport(client: OmadaClient, config: EnvironmentCo
 
 /**
  * Handles incoming Streamable HTTP requests (GET, POST, DELETE) using persistent session state.
- * For new sessions, resolves Omada credentials from env config (wins) and request headers (fallback).
- * Existing sessions reuse the OmadaClient that was created when the session was initialized.
+ * New sessions build an OmadaClient from environment-supplied credentials only; request headers
+ * are never used as a credential source. Existing sessions reuse the client created at init time.
  */
 export async function handleStreamRequest(
     config: EnvironmentConfig,

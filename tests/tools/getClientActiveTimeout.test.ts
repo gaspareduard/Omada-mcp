@@ -48,6 +48,7 @@ describe('tools/getClientActiveTimeout', () => {
 
             expect(mockClient.getClientActiveTimeout).toHaveBeenCalledWith(undefined);
             expect(result).toEqual({
+                structuredContent: mockData,
                 content: [{ type: 'text', text: JSON.stringify(mockData, null, 2) }],
             });
         });

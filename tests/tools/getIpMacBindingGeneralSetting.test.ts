@@ -45,6 +45,7 @@ describe('tools/getIpMacBindingGeneralSetting', () => {
             const result = await toolHandler({}, { sessionId: 'test-session' });
             expect(mockClient.getIpMacBindingGeneralSetting).toHaveBeenCalledWith(undefined, undefined);
             expect(result).toEqual({
+                structuredContent: mockData,
                 content: [{ type: 'text', text: JSON.stringify(mockData, null, 2) }],
             });
         });
@@ -56,6 +57,7 @@ describe('tools/getIpMacBindingGeneralSetting', () => {
             const result = await toolHandler({ siteId: 'test-site' }, { sessionId: 'test-session' });
             expect(mockClient.getIpMacBindingGeneralSetting).toHaveBeenCalledWith('test-site', undefined);
             expect(result).toEqual({
+                structuredContent: mockData,
                 content: [{ type: 'text', text: JSON.stringify(mockData, null, 2) }],
             });
         });

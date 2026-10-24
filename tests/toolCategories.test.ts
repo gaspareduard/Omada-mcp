@@ -98,16 +98,16 @@ describe('parseToolCategories', () => {
     // Group alias: all
     // -----------------------------------------------------------------------
 
-    it('all alias expands to every non-future category', () => {
+    it('all alias expands to implemented categories except recovery', () => {
         const { categories } = parseToolCategories('all:r');
-        const expectedCount = ALL_CATEGORIES.filter((c) => !FUTURE_CATEGORIES.has(c)).length;
+        const expectedCount = ALL_CATEGORIES.filter((c) => !FUTURE_CATEGORIES.has(c) && c !== 'recovery').length;
         expect(categories.size).toBe(expectedCount);
     });
 
-    it('all:rw gives read+write to every non-future category', () => {
+    it('all:rw grants read+write to implemented categories except recovery', () => {
         const { categories } = parseToolCategories('all:rw');
         for (const cat of ALL_CATEGORIES) {
-            if (FUTURE_CATEGORIES.has(cat)) {
+            if (FUTURE_CATEGORIES.has(cat) || cat === 'recovery') {
                 expect(categories.has(cat)).toBe(false);
             } else {
                 expect(categories.get(cat)).toEqual(new Set(['read', 'write']));
@@ -115,10 +115,12 @@ describe('parseToolCategories', () => {
         }
     });
 
-    it('all (no suffix) gives read+write to every non-future category', () => {
+    it('all without suffix still excludes recovery', () => {
         const { categories } = parseToolCategories('all');
         for (const cat of ALL_CATEGORIES) {
-            if (!FUTURE_CATEGORIES.has(cat)) {
+            if (FUTURE_CATEGORIES.has(cat) || cat === 'recovery') {
+                expect(categories.has(cat)).toBe(false);
+            } else {
                 expect(categories.get(cat)).toEqual(new Set(['read', 'write']));
             }
         }
@@ -268,41 +270,103 @@ describe('registerAllTools category filtering', () => {
         vi.restoreAllMocks();
     });
 
-    it('registers only tools matching active categories and permissions', () => {
-        const { categories: activeCategories } = parseToolCategories('dashboard:r');
-        registerAllTools(mockServer, mockClient, activeCategories);
+    const discoveryNames = ['searchOperations', 'describeOperation', 'getServerCapabilities'];
+    const restoreNames = ['restoreController', 'restoreControllerFromFileServer', 'restoreSites', 'restoreSitesFromFileServer'];
+    const dashboardNames = [
+        'getNetworkHealthSummary',
+        'getDashboardWifiSummary',
+        'getDashboardSwitchSummary',
+        'getDashboardTrafficActivities',
+        'getDashboardPoEUsage',
+        'getDashboardTopCpuUsage',
+        'getDashboardTopMemoryUsage',
+        'getDashboardMostActiveSwitches',
+        'getDashboardMostActiveEaps',
+        'getDashboardOverview',
+        'getTrafficDistribution',
+        'getIspLoad',
+    ];
+    const fullOperationCount = 372;
+    const deprecatedOperationCount = 28;
 
-        expect((mockServer.registerTool as ReturnType<typeof vi.fn>).mock.calls.length).toBeGreaterThan(0);
-        // dashboard read tools are a subset of the full registry
-        expect((mockServer.registerTool as ReturnType<typeof vi.fn>).mock.calls.length).toBeLessThan(366);
+    function names(): string[] {
+        return vi.mocked(mockServer.registerTool).mock.calls.map(([name]) => name);
+    }
+
+    it('registers exactly the active dashboard operations and discovery tools', () => {
+        registerAllTools(mockServer, mockClient, parseToolCategories('dashboard:r').categories);
+        expect(names().sort()).toEqual([...dashboardNames, ...discoveryNames].sort());
+        for (const [, definition] of vi.mocked(mockServer.registerTool).mock.calls) {
+            expect(definition.annotations).toMatchObject({ readOnlyHint: true, destructiveHint: false });
+        }
     });
 
-    it('registers all 366 tools when no activeCategories provided', () => {
+    it('omitted categories expose nondeprecated operations with recovery denied', () => {
         registerAllTools(mockServer, mockClient);
-        expect(mockServer.registerTool).toHaveBeenCalledTimes(366);
+        expect(names()).toHaveLength(fullOperationCount - deprecatedOperationCount - restoreNames.length + discoveryNames.length);
+        expect(names()).toEqual(expect.arrayContaining(discoveryNames));
+        expect(names().filter((name) => restoreNames.includes(name))).toEqual([]);
+        for (const [, definition] of vi.mocked(mockServer.registerTool).mock.calls) {
+            expect(definition.description).not.toMatch(/^\[DEPRECATED\]/);
+        }
     });
 
-    it('registers zero tools when active categories map is empty', () => {
+    it('registers exactly the discovery tools when categories are empty', () => {
         registerAllTools(mockServer, mockClient, new Map());
-        expect(mockServer.registerTool).not.toHaveBeenCalled();
+        expect(names().sort()).toEqual([...discoveryNames].sort());
     });
 
-    it('registers all tools when all:rw is active', () => {
-        const { categories: activeCategories } = parseToolCategories('all:rw');
-        registerAllTools(mockServer, mockClient, activeCategories);
-        expect(mockServer.registerTool).toHaveBeenCalledTimes(366);
+    it('all:rw excludes recovery even when deprecated tools are requested', () => {
+        registerAllTools(mockServer, mockClient, parseToolCategories('all:rw').categories, { includeDeprecated: true });
+        expect(names()).toHaveLength(fullOperationCount - restoreNames.length + discoveryNames.length);
+        expect(names().filter((name) => restoreNames.includes(name))).toEqual([]);
+        expect(names()).toContain('getRFScanResult');
     });
 
-    it('write-only filter registers only write tools for clients category', () => {
-        // clients:w registers the rate-limit tools plus block/unblock/reconnect.
-        const { categories: activeCategories } = parseToolCategories('clients:w');
-        registerAllTools(mockServer, mockClient, activeCategories);
-        expect((mockServer.registerTool as ReturnType<typeof vi.fn>).mock.calls.length).toBe(6);
+    it('registers 372 operations plus three discovery tools with explicit recovery and aliases', () => {
+        registerAllTools(mockServer, mockClient, parseToolCategories('all:rw,recovery:rw').categories, { includeDeprecated: true });
+        expect(names()).toHaveLength(fullOperationCount + discoveryNames.length);
+        expect(new Set(names()).size).toBe(fullOperationCount + discoveryNames.length);
+        expect(names()).toEqual(
+            expect.arrayContaining([...restoreNames, ...discoveryNames, 'getRFScanResult', 'setApRadio', 'updateSsid', 'setSwitchPorts'])
+        );
+        expect(names()).not.toContain('callOperation');
+        expect(
+            vi.mocked(mockServer.registerTool).mock.calls.filter(([, definition]) => definition.description?.startsWith('[DEPRECATED]'))
+        ).toHaveLength(deprecatedOperationCount);
     });
 
-    it('logs active categories and tool count on startup', () => {
-        const { categories: activeCategories } = parseToolCategories('dashboard:r');
-        registerAllTools(mockServer, mockClient, activeCategories);
-        expect(loggerModule.logger.info).toHaveBeenCalledWith('Tool categories loaded', expect.objectContaining({ toolCount: expect.any(Number) }));
+    it('has 376 distinct tool names across the standard and compact interfaces', () => {
+        const categories = parseToolCategories('all:rw,recovery:rw').categories;
+        registerAllTools(mockServer, mockClient, categories, { includeDeprecated: true });
+        const standardNames = names();
+        vi.mocked(mockServer.registerTool).mockClear();
+        registerAllTools(mockServer, mockClient, categories, { includeDeprecated: true, catalogMode: 'compact' });
+        expect(names().sort()).toEqual([...discoveryNames, 'callOperation'].sort());
+        expect(new Set([...standardNames, ...names()]).size).toBe(376);
+    });
+
+    it('write-only clients expose six mutations and the three discovery tools', () => {
+        registerAllTools(mockServer, mockClient, parseToolCategories('clients:w').categories);
+        const mutations = [
+            'blockClient',
+            'unblockClient',
+            'reconnectClient',
+            'setClientRateLimit',
+            'setClientRateLimitProfile',
+            'disableClientRateLimit',
+        ];
+        expect(names().sort()).toEqual([...mutations, ...discoveryNames].sort());
+        for (const [name, definition] of vi.mocked(mockServer.registerTool).mock.calls) {
+            expect(definition.annotations).toMatchObject({ readOnlyHint: discoveryNames.includes(name), destructiveHint: mutations.includes(name) });
+        }
+    });
+
+    it('logs registered operation count separately from the discovery interface', () => {
+        registerAllTools(mockServer, mockClient, parseToolCategories('dashboard:r').categories);
+        expect(loggerModule.logger.info).toHaveBeenCalledWith('Tool categories loaded', {
+            registeredOperations: dashboardNames.length,
+            catalogMode: 'standard',
+        });
     });
 });

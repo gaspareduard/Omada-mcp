@@ -44,7 +44,10 @@ describe('tools/getVpnUserList', () => {
             registerGetVpnUserListTool(mockServer, mockClient);
             const result = await toolHandler({ page: 1, pageSize: 10 }, { sessionId: 'test' });
             expect(mockClient.getVpnUserList).toHaveBeenCalledWith(1, 10, undefined, undefined);
-            expect(result).toEqual({ content: [{ type: 'text', text: JSON.stringify(mockData, null, 2) }] });
+            expect(result).toEqual({
+                structuredContent: mockData,
+                content: [{ type: 'text', text: JSON.stringify(mockData, null, 2) }],
+            });
         });
 
         it('should pass siteId', async () => {

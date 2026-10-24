@@ -45,6 +45,7 @@ describe('tools/getSsidDetail', () => {
             const result = await toolHandler({ wlanId: 'wlan-123', ssidId: 'ssid-456' }, { sessionId: 'test-session' });
             expect(mockClient.getSsidDetail).toHaveBeenCalledWith('wlan-123', 'ssid-456', undefined, undefined);
             expect(result).toEqual({
+                structuredContent: mockData,
                 content: [{ type: 'text', text: JSON.stringify(mockData, null, 2) }],
             });
         });
@@ -56,6 +57,7 @@ describe('tools/getSsidDetail', () => {
             const result = await toolHandler({ wlanId: 'wlan-123', ssidId: 'ssid-456', siteId: 'test-site' }, { sessionId: 'test-session' });
             expect(mockClient.getSsidDetail).toHaveBeenCalledWith('wlan-123', 'ssid-456', 'test-site', undefined);
             expect(result).toEqual({
+                structuredContent: mockData,
                 content: [{ type: 'text', text: JSON.stringify(mockData, null, 2) }],
             });
         });

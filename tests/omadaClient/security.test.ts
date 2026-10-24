@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import type { RequestHandler } from '../../src/omadaClient/request.js';
+import { RequestHandler } from '../../src/omadaClient/request.js';
 import { SecurityOperations } from '../../src/omadaClient/security.js';
 import type { GetThreatListOptions, OmadaApiResponse, PaginatedResult, ThreatInfo } from '../../src/types/index.js';
 
@@ -12,7 +12,7 @@ describe('omadaClient/security', () => {
         mockRequest = {
             request: vi.fn(),
             get: vi.fn(),
-            ensureSuccess: vi.fn((response: { result: unknown }) => response.result),
+            ensureSuccess: vi.fn(RequestHandler.prototype.ensureSuccess),
         } as unknown as RequestHandler;
 
         buildPath = (path: string) => `/api${path}`;
@@ -21,6 +21,13 @@ describe('omadaClient/security', () => {
     });
 
     describe('getThreatList', () => {
+        it('rejects controller failure envelopes with the real validator', async () => {
+            vi.mocked(mockRequest.request).mockResolvedValue({ errorCode: -1005, msg: 'Operation forbidden' });
+            await expect(securityOps.getThreatList({ archived: false, page: 1, pageSize: 10, startTime: 1, endTime: 2 })).rejects.toThrow(
+                'Operation forbidden'
+            );
+        });
+
         it('should fetch threat list with required options', async () => {
             const options: GetThreatListOptions = {
                 archived: false,
@@ -37,7 +44,7 @@ describe('omadaClient/security', () => {
                 currentSize: 0,
             };
 
-            (mockRequest.request as ReturnType<typeof vi.fn>).mockResolvedValue(mockResult);
+            (mockRequest.request as ReturnType<typeof vi.fn>).mockResolvedValue({ errorCode: 0, result: mockResult });
 
             const result = await securityOps.getThreatList(options);
 
@@ -79,7 +86,7 @@ describe('omadaClient/security', () => {
                 currentSize: 0,
             };
 
-            (mockRequest.request as ReturnType<typeof vi.fn>).mockResolvedValue(mockResult);
+            (mockRequest.request as ReturnType<typeof vi.fn>).mockResolvedValue({ errorCode: 0, result: mockResult });
 
             await securityOps.getThreatList(options);
 
@@ -115,10 +122,8 @@ describe('omadaClient/security', () => {
             };
 
             (mockRequest.request as ReturnType<typeof vi.fn>).mockResolvedValue({
-                data: [],
-                totalRows: 0,
-                currentPage: 1,
-                currentSize: 0,
+                errorCode: 0,
+                result: { data: [], totalRows: 0, currentPage: 1, currentSize: 0 },
             });
 
             await securityOps.getThreatList(options);
@@ -132,6 +137,14 @@ describe('omadaClient/security', () => {
     });
 
     describe('getTopThreats', () => {
+        it('surfaces a failed success envelope rather than returning no threats', async () => {
+            vi.mocked(mockRequest.get).mockResolvedValue({ errorCode: -1005, msg: 'Operation forbidden' });
+            vi.mocked(mockRequest.ensureSuccess).mockImplementation(() => {
+                throw new Error('Operation forbidden');
+            });
+            await expect(securityOps.getTopThreats()).rejects.toThrow('Operation forbidden');
+        });
+
         it('should return top threats list', async () => {
             const mockThreats = [
                 { ip: '1.2.3.4', count: 10 },
@@ -156,6 +169,11 @@ describe('omadaClient/security', () => {
     });
 
     describe('getThreatSeverity', () => {
+        it('rejects controller failure envelopes instead of returning undefined', async () => {
+            vi.mocked(mockRequest.get).mockResolvedValue({ errorCode: -1505, msg: 'No site permission' });
+            await expect(securityOps.getThreatSeverity(1, 2)).rejects.toThrow('No site permission');
+        });
+
         it('should return threat severity summary', async () => {
             const mockSeverity = { high: 3, medium: 10, low: 25 };
             const mockResponse: OmadaApiResponse<unknown> = { errorCode: 0, result: mockSeverity };

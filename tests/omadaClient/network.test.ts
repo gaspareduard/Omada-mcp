@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { NetworkOperations } from '../../src/omadaClient/network.js';
+import { NetworkOperations, parseSsidBasicConfig, type SsidBasicConfig } from '../../src/omadaClient/network.js';
 import type { RequestHandler } from '../../src/omadaClient/request.js';
 import type { SiteOperations } from '../../src/omadaClient/site.js';
 import type { OmadaApiResponse, PaginatedResult } from '../../src/types/index.js';
@@ -34,6 +34,103 @@ describe('NetworkOperations', () => {
         mockBuildPath = vi.fn((path: string, version = 'v1') => `/openapi/${version}/test-omadac${path}`);
 
         networkOps = new NetworkOperations(mockRequest, mockSite, mockBuildPath);
+    });
+
+    describe('updateSsidBasicConfig', () => {
+        const payload: SsidBasicConfig = {
+            name: 'Office',
+            band: 3,
+            guestNetEnable: false,
+            security: 0,
+            broadcast: true,
+            vlanEnable: false,
+            mloEnable: false,
+            pmfMode: 3,
+            enable11r: false,
+        };
+        const pskSetting = { securityKey: 'example-key', versionPsk: 2, encryptionPsk: 3, gikRekeyPskEnable: false };
+        const entSetting = { radiusProfileId: 'radius', versionEnt: 2, encryptionEnt: 3, gikRekeyEntEnable: false } as const;
+
+        it.each([undefined, 0, 1])('preserves an empty inactive enterprise NAS ID in mode %s', async (nasIdMode) => {
+            const enterprisePayload: SsidBasicConfig = { ...payload, security: 2, entSetting: { ...entSetting, nasIdMode, nasId: '' } };
+            vi.mocked(mockRequest.patch).mockResolvedValue({ errorCode: 0 });
+
+            await networkOps.updateSsidBasicConfig('wlan', 'ssid', enterprisePayload, 'site-1');
+
+            expect(mockRequest.patch).toHaveBeenCalledExactlyOnceWith(
+                '/openapi/v1/test-omadac/sites/site-1/wireless-network/wlans/wlan/ssids/ssid/update-basic-config',
+                enterprisePayload,
+                undefined
+            );
+            expect(parseSsidBasicConfig({ ...payload, security: 2, entSetting: { ...entSetting, nasIdMode } }).entSetting).not.toHaveProperty(
+                'nasId'
+            );
+        });
+
+        it.each([undefined, ''])('rejects custom enterprise NAS mode with nasId=%s before making requests', async (nasId) => {
+            const enterprisePayload: SsidBasicConfig = { ...payload, security: 2, entSetting: { ...entSetting, nasIdMode: 2, nasId } };
+            await expect(networkOps.updateSsidBasicConfig('wlan', 'ssid', enterprisePayload)).rejects.toThrow('nonempty nasId');
+            expect(mockRequest.patch).not.toHaveBeenCalled();
+            expect(mockSite.resolveSiteId).not.toHaveBeenCalled();
+        });
+
+        it('preserves a nonempty custom enterprise NAS ID without rewriting it', () => {
+            const enterprise = { ...entSetting, nasIdMode: 2, nasId: 'Office APs' };
+            expect(parseSsidBasicConfig({ ...payload, security: 2, entSetting: enterprise }).entSetting).toEqual(enterprise);
+        });
+
+        it('patches the individually documented v1 endpoint with encoded IDs and headers', async () => {
+            vi.mocked(mockRequest.patch).mockResolvedValue({ errorCode: 0, result: { accepted: true } });
+            expect(await networkOps.updateSsidBasicConfig('wlan/a', 'ssid?b', payload, 'site/c', { 'X-Test': 'value' })).toEqual({ accepted: true });
+            expect(mockRequest.patch).toHaveBeenCalledExactlyOnceWith(
+                '/openapi/v1/test-omadac/sites/site%2Fc/wireless-network/wlans/wlan%2Fa/ssids/ssid%3Fb/update-basic-config',
+                payload,
+                { 'X-Test': 'value' }
+            );
+        });
+
+        it('uses the configured default site and propagates controller rejection', async () => {
+            vi.mocked(mockRequest.patch).mockResolvedValue({ errorCode: -1, msg: 'rejected' });
+            await expect(networkOps.updateSsidBasicConfig('wlan', 'ssid', payload)).rejects.toThrow('rejected');
+            expect(mockSite.resolveSiteId).toHaveBeenCalledWith(undefined);
+        });
+
+        it('validates identifiers and payload before any request', async () => {
+            await expect(networkOps.updateSsidBasicConfig(' ', 'ssid', payload)).rejects.toThrow('wlanId');
+            await expect(networkOps.updateSsidBasicConfig('wlan', '', payload)).rejects.toThrow('ssidId');
+            await expect(networkOps.updateSsidBasicConfig('wlan', 'ssid', { ...payload, name: '😀'.repeat(9) })).rejects.toThrow('32 UTF-8 bytes');
+            expect(mockRequest.patch).not.toHaveBeenCalled();
+        });
+
+        it.each([
+            [{ vlanEnable: true }, 'vlanId'],
+            [{ security: 2 }, 'entSetting'],
+            [{ security: 3 }, 'pskSetting'],
+            [{ security: 3, pskSetting: { ...pskSetting, securityKey: undefined } }, 'missing or masked'],
+            [{ security: 3, pskSetting, hidePwd: true }, 'missing or masked'],
+            [{ security: 3, pskSetting: { ...pskSetting, securityKey: '********' } }, 'missing or masked'],
+            [{ security: 4, pskSetting }, 'ppskProfileId'],
+            [{ security: 5, pskSetting }, 'radiusProfileId'],
+        ])('rejects incomplete security/VLAN data %j', (changes, message) => {
+            expect(() => parseSsidBasicConfig({ ...payload, ...changes })).toThrow(message);
+        });
+
+        it('preserves valid enterprise, personal, PPSK and VLAN configurations', () => {
+            expect(parseSsidBasicConfig({ ...payload, security: 3, pskSetting, vlanEnable: true, vlanId: 10 })).toMatchObject({
+                security: 3,
+                pskSetting,
+                vlanId: 10,
+            });
+            expect(
+                parseSsidBasicConfig({
+                    ...payload,
+                    security: 2,
+                    entSetting: { radiusProfileId: 'radius', versionEnt: 2, encryptionEnt: 3, gikRekeyEntEnable: false },
+                }).security
+            ).toBe(2);
+            expect(parseSsidBasicConfig({ ...payload, security: 4, pskSetting, ppskSetting: { ppskProfileId: 'ppsk' } }).security).toBe(4);
+            expect(parseSsidBasicConfig({ ...payload, security: 5, pskSetting, ppskSetting: { radiusProfileId: 'radius' } }).security).toBe(5);
+        });
     });
 
     describe('getInternetInfo', () => {

@@ -39,6 +39,9 @@ jobs:
       - name: Unit tests with coverage
         run: npm run test:coverage
 
+      - name: Check global branch coverage
+        run: node scripts/check-branch-coverage.mjs
+
       - name: Verify tool test coverage mapping
         run: node scripts/check-tool-tests.mjs
 

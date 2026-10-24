@@ -1,5 +1,7 @@
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
+import type { CallToolResult } from '@modelcontextprotocol/sdk/types.js';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { z } from 'zod';
 
 import type { OmadaClient } from '../../src/omadaClient/index.js';
 import { registerSetBandwidthControlRuleTool } from '../../src/tools/setBandwidthControlRule.js';
@@ -7,7 +9,7 @@ import { registerSetBandwidthControlRuleTool } from '../../src/tools/setBandwidt
 describe('tools/setBandwidthControlRule', () => {
     let mockServer: McpServer;
     let mockClient: OmadaClient;
-    let toolHandler: (args: unknown, extra: { sessionId?: string }) => Promise<unknown>;
+    let toolHandler: (args: unknown, extra: { sessionId?: string }) => Promise<CallToolResult>;
 
     const payload = {
         name: 'Guests cap',
@@ -25,7 +27,7 @@ describe('tools/setBandwidthControlRule', () => {
     beforeEach(() => {
         mockServer = {
             registerTool: vi.fn((name, schema, handler) => {
-                toolHandler = handler;
+                toolHandler = (args, extra) => handler(z.object(schema.inputSchema).parse(args), extra);
             }),
         } as unknown as McpServer;
 
@@ -46,35 +48,28 @@ describe('tools/setBandwidthControlRule', () => {
 
         expect(mockClient.createBandwidthCtrlRule).not.toHaveBeenCalled();
         expect(result).toEqual({
-            content: [
-                {
-                    type: 'text',
-                    text: JSON.stringify(
-                        {
-                            action: 'create-bandwidth-control-rule',
-                            target: 'default-site',
-                            mode: 'dry-run',
-                            status: 'planned',
-                            summary: 'Planned bandwidth control rule mutation.',
-                            result: {
-                                accepted: true,
-                                dryRun: true,
-                                before: undefined,
-                                plannedRule: payload,
-                            },
-                        },
-                        null,
-                        2
-                    ),
+            content: [{ type: 'text', text: expect.any(String) }],
+            structuredContent: {
+                action: 'create-bandwidth-control-rule',
+                target: 'default-site',
+                mode: 'dry-run',
+                status: 'planned',
+                summary: 'Planned bandwidth control rule mutation.',
+                result: {
+                    accepted: true,
+                    dryRun: true,
+                    before: undefined,
+                    plannedRule: payload,
                 },
-            ],
+            },
         });
+        expect(JSON.parse(result.content[0].text as string)).toEqual(result.structuredContent);
     });
 
     it('throws when updating a missing bandwidth rule', async () => {
         registerSetBandwidthControlRuleTool(mockServer, mockClient);
 
-        await expect(toolHandler({ ruleId: 'missing', payload }, { sessionId: 's1' })).rejects.toThrow(
+        await expect(toolHandler({ dryRun: false, ruleId: 'missing', payload }, { sessionId: 's1' })).rejects.toThrow(
             'No bandwidth control rule exists for missing.'
         );
     });
@@ -85,6 +80,7 @@ describe('tools/setBandwidthControlRule', () => {
         await expect(
             toolHandler(
                 {
+                    dryRun: false,
                     payload: {
                         ...payload,
                         sourceIds: ['missing-net'],
@@ -105,6 +101,7 @@ describe('tools/setBandwidthControlRule', () => {
         await expect(
             toolHandler(
                 {
+                    dryRun: false,
                     payload: {
                         ...payload,
                         wanPortIds: ['missing-wan'],
@@ -121,10 +118,10 @@ describe('tools/setBandwidthControlRule', () => {
     it('routes create and update calls to the client', async () => {
         registerSetBandwidthControlRuleTool(mockServer, mockClient);
 
-        await toolHandler({ payload, siteId: 'site-1' }, { sessionId: 's1' });
+        await toolHandler({ dryRun: false, payload, siteId: 'site-1' }, { sessionId: 's1' });
         expect(mockClient.createBandwidthCtrlRule).toHaveBeenCalledWith(payload, 'site-1', undefined);
 
-        await toolHandler({ ruleId: 'bw-1', payload, siteId: 'site-1' }, { sessionId: 's1' });
+        await toolHandler({ dryRun: false, ruleId: 'bw-1', payload, siteId: 'site-1' }, { sessionId: 's1' });
         expect(mockClient.updateBandwidthCtrlRule).toHaveBeenCalledWith('bw-1', payload, 'site-1', undefined);
     });
 
@@ -141,30 +138,36 @@ describe('tools/setBandwidthControlRule', () => {
 
         registerSetBandwidthControlRuleTool(mockServer, mockClient);
 
-        const result = await toolHandler({ payload, siteId: 'site-1' }, { sessionId: 's1' });
+        const result = await toolHandler({ dryRun: false, payload, siteId: 'site-1' }, { sessionId: 's1' });
 
         expect(result).toEqual({
-            content: [
-                {
-                    type: 'text',
-                    text: JSON.stringify(
-                        {
-                            action: 'create-bandwidth-control-rule',
-                            target: 'site-1',
-                            siteId: 'site-1',
-                            mode: 'apply',
-                            status: 'applied',
-                            summary: 'Bandwidth control rule mutation requested.',
-                            result: {
-                                id: 'bw-2',
-                                createdRule: { id: 'bw-2', name: payload.name },
-                            },
-                        },
-                        null,
-                        2
-                    ),
+            content: [{ type: 'text', text: expect.any(String) }],
+            structuredContent: {
+                action: 'create-bandwidth-control-rule',
+                target: 'site-1',
+                siteId: 'site-1',
+                mode: 'apply',
+                status: 'submitted',
+                summary: 'Bandwidth control rule mutation requested.',
+                result: {
+                    id: 'bw-2',
+                    createdRule: { id: 'bw-2', name: payload.name },
                 },
-            ],
+            },
         });
+        expect(JSON.parse(result.content[0].text as string)).toEqual(result.structuredContent);
+    });
+    it('defaults omitted dryRun to preview through the registered schema', async () => {
+        registerSetBandwidthControlRuleTool(mockServer, mockClient);
+        const result = (await toolHandler({ payload }, { sessionId: 'preview' })) as {
+            content: { text: string }[];
+            structuredContent: Record<string, unknown>;
+        };
+        const summary = JSON.parse(result.content[0].text);
+        expect(summary).toMatchObject({ mode: 'dry-run', status: 'planned' });
+        expect(result.structuredContent).toEqual(expect.objectContaining(summary));
+        for (const [name, operation] of Object.entries(mockClient)) {
+            if (!/^(get|list|resolve)/.test(name)) expect(operation).not.toHaveBeenCalled();
+        }
     });
 });

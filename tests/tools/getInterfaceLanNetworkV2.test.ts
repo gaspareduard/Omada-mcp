@@ -45,6 +45,7 @@ describe('tools/getInterfaceLanNetworkV2', () => {
             const result = await toolHandler({}, { sessionId: 'test-session' });
             expect(mockClient.getInterfaceLanNetworkV2).toHaveBeenCalledWith(undefined, undefined, undefined);
             expect(result).toEqual({
+                structuredContent: mockData,
                 content: [{ type: 'text', text: JSON.stringify(mockData, null, 2) }],
             });
         });
@@ -56,6 +57,7 @@ describe('tools/getInterfaceLanNetworkV2', () => {
             const result = await toolHandler({ type: 0 }, { sessionId: 'test-session' });
             expect(mockClient.getInterfaceLanNetworkV2).toHaveBeenCalledWith(0, undefined, undefined);
             expect(result).toEqual({
+                structuredContent: mockData,
                 content: [{ type: 'text', text: JSON.stringify(mockData, null, 2) }],
             });
         });
@@ -67,6 +69,7 @@ describe('tools/getInterfaceLanNetworkV2', () => {
             const result = await toolHandler({ type: 1, siteId: 'test-site' }, { sessionId: 'test-session' });
             expect(mockClient.getInterfaceLanNetworkV2).toHaveBeenCalledWith(1, 'test-site', undefined);
             expect(result).toEqual({
+                structuredContent: mockData,
                 content: [{ type: 'text', text: JSON.stringify(mockData, null, 2) }],
             });
         });

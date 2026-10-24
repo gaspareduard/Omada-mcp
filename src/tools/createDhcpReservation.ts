@@ -16,7 +16,7 @@ import {
 export function registerCreateDhcpReservationTool(server: McpServer, client: OmadaClient): void {
     const inputSchema = siteInputSchema.extend({
         ...dhcpReservationPayloadSchema.shape,
-        dryRun: z.boolean().optional().default(false).describe('If true, validate and summarize the planned reservation without applying it.'),
+        dryRun: z.boolean().optional().default(true).describe('If true, validate and summarize the planned reservation without applying it.'),
     });
 
     server.registerTool(

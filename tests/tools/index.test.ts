@@ -1,5 +1,6 @@
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { loadConfigFromEnv, parseToolCategories } from '../../src/config.js';
 import type { OmadaClient } from '../../src/omadaClient/index.js';
 import { registerAllTools } from '../../src/tools/index.js';
 
@@ -17,7 +18,7 @@ describe('tools/index', () => {
 
     describe('registerAllTools', () => {
         it('should register all tools with the server', () => {
-            registerAllTools(mockServer, mockClient);
+            registerAllTools(mockServer, mockClient, parseToolCategories('all:rw,recovery:rw').categories, { includeDeprecated: true });
 
             // Verify registerTool was called for each tool
             expect(mockServer.registerTool).toHaveBeenCalledWith('listSites', expect.any(Object), expect.any(Function));
@@ -169,7 +170,71 @@ describe('tools/index', () => {
             expect(mockServer.registerTool).toHaveBeenCalledWith('deleteBandwidthControlRule', expect.any(Object), expect.any(Function));
 
             // Verify total number of tools registered
-            expect(mockServer.registerTool).toHaveBeenCalledTimes(366);
+            const names = vi.mocked(mockServer.registerTool).mock.calls.map(([name]) => name);
+            expect(names.length).toBeGreaterThan(350);
+            expect(new Set(names).size).toBe(names.length);
+            expect(names).toEqual(expect.arrayContaining(['searchOperations', 'describeOperation', 'getServerCapabilities']));
         });
+    });
+    function names(): string[] {
+        return vi.mocked(mockServer.registerTool).mock.calls.map(([name]) => name);
+    }
+
+    it('hides deprecated aliases and custom headers by default', () => {
+        registerAllTools(mockServer, mockClient, parseToolCategories('all:r').categories);
+        expect(names()).toContain('getApDetail');
+        expect(names()).not.toContain('getRFScanResult');
+        for (const [, definition] of vi.mocked(mockServer.registerTool).mock.calls) {
+            expect(definition.description).not.toMatch(/^\[DEPRECATED\]/);
+            expect(definition.inputSchema).not.toHaveProperty('customHeaders');
+        }
+    });
+
+    it.each(['safe-read', 'ops-write', 'admin', 'compatibility'])('keeps recovery isolated from the %s profile', (profile) => {
+        const config = loadConfigFromEnv({
+            OMADA_BASE_URL: 'https://controller.invalid',
+            OMADA_CLIENT_ID: 'client',
+            OMADA_CLIENT_SECRET: 'secret',
+            OMADA_OMADAC_ID: 'controller',
+            OMADA_CAPABILITY_PROFILE: profile,
+        });
+        registerAllTools(mockServer, mockClient, config.toolCategories, config);
+        expect(names()).not.toEqual(expect.arrayContaining(['restoreController']));
+        expect(names().filter((name) => name.startsWith('restore'))).toEqual([]);
+    });
+
+    it('exposes only discovery when no category permissions are granted', () => {
+        registerAllTools(mockServer, mockClient, new Map());
+        expect(names().sort()).toEqual(['describeOperation', 'getServerCapabilities', 'searchOperations']);
+    });
+
+    it('does not grant recovery through maintenance, all, or read-only recovery', () => {
+        registerAllTools(mockServer, mockClient, parseToolCategories('all:rw,maintenance:rw,recovery:r').categories);
+        expect(names().filter((name) => name.startsWith('restore'))).toEqual([]);
+        expect(names()).toContain('backupController');
+    });
+
+    it('registers all four restore tools only with explicit recovery write permission', () => {
+        registerAllTools(mockServer, mockClient, parseToolCategories('recovery:rw').categories);
+        expect(names().sort()).toEqual([
+            'describeOperation',
+            'getServerCapabilities',
+            'restoreController',
+            'restoreControllerFromFileServer',
+            'restoreSites',
+            'restoreSitesFromFileServer',
+            'searchOperations',
+        ]);
+    });
+
+    it('restricts compact registration to discovery and the policy-aware dispatcher', () => {
+        registerAllTools(mockServer, mockClient, parseToolCategories('clients:r').categories, { catalogMode: 'compact' });
+        expect(names().sort()).toEqual(['callOperation', 'describeOperation', 'getServerCapabilities', 'searchOperations']);
+    });
+
+    it('fails closed for recovery when categories are omitted', () => {
+        registerAllTools(mockServer, mockClient);
+        expect(names()).toContain('backupController');
+        expect(names().filter((name) => name.startsWith('restore'))).toEqual([]);
     });
 });

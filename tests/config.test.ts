@@ -486,3 +486,43 @@ describe('loadConfigFromEnv (startupWarnings)', () => {
         vi.restoreAllMocks();
     });
 });
+
+describe('v0.19 catalog policy configuration', () => {
+    const env = {
+        OMADA_BASE_URL: 'https://controller.example.com',
+        OMADA_CLIENT_ID: 'client-id',
+        OMADA_CLIENT_SECRET: 'secret',
+        OMADA_OMADAC_ID: 'controller-id',
+    };
+
+    it('defaults to standard discovery with hidden aliases and disabled tool headers', () => {
+        expect(loadConfigFromEnv(env)).toMatchObject({ includeDeprecated: false, catalogMode: 'standard', allowToolHeaders: false });
+    });
+
+    it('accepts explicit discovery and header options', () => {
+        expect(
+            loadConfigFromEnv({ ...env, OMADA_INCLUDE_DEPRECATED: 'true', OMADA_CATALOG_MODE: 'compact', OMADA_ALLOW_TOOL_HEADERS: 'true' })
+        ).toMatchObject({ includeDeprecated: true, catalogMode: 'compact', allowToolHeaders: true });
+    });
+
+    it.each(['OMADA_INCLUDE_DEPRECATED', 'OMADA_ALLOW_TOOL_HEADERS', 'OMADA_CATALOG_MODE'])('rejects invalid %s values', (key) => {
+        expect(() => loadConfigFromEnv({ ...env, [key]: 'invalid' })).toThrow();
+    });
+
+    it.each(['safe-read', 'ops-write', 'admin', 'compatibility'])('never grants recovery through the %s profile', (profile) => {
+        const config = loadConfigFromEnv({ ...env, OMADA_CAPABILITY_PROFILE: profile });
+        expect(config.toolCategories.has('recovery')).toBe(false);
+    });
+
+    it('requires explicit recovery permission in addition to the all alias', () => {
+        expect(parseToolCategories('all:rw').categories.has('recovery')).toBe(false);
+        const { categories, warnings } = parseToolCategories('all:rw,recovery:rw');
+        expect(categories.get('recovery')).toEqual(new Set(['read', 'write']));
+        expect(warnings.some((warning) => warning.includes('recovery'))).toBe(false);
+    });
+
+    it('warns that compatibility does not add private API support', () => {
+        const config = loadConfigFromEnv({ ...env, OMADA_CAPABILITY_PROFILE: 'compatibility' });
+        expect(config.startupWarnings).toContainEqual(expect.stringContaining('adds no private-API support'));
+    });
+});

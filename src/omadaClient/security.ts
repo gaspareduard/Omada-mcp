@@ -46,7 +46,7 @@ export class SecurityOperations {
 
         const path = this.buildPath('/security/threat-management');
 
-        return await this.request.request<PaginatedResult<ThreatInfo>>(
+        const response = await this.request.request<OmadaApiResponse<PaginatedResult<ThreatInfo>>>(
             {
                 method: 'GET',
                 url: path,
@@ -55,6 +55,7 @@ export class SecurityOperations {
             true,
             customHeaders
         );
+        return this.request.ensureSuccess(response);
     }
 
     /**
@@ -63,7 +64,8 @@ export class SecurityOperations {
      */
     public async getTopThreats(customHeaders?: CustomHeaders): Promise<unknown[]> {
         const path = this.buildPath('/security/threat-management/top');
-        const response = await this.request.get<{ errorCode: number; result: unknown[] }>(path, undefined, customHeaders);
+        const response = await this.request.get<OmadaApiResponse<unknown[]>>(path, undefined, customHeaders);
+        this.request.ensureSuccess(response);
         return response.result ?? [];
     }
 
@@ -73,7 +75,8 @@ export class SecurityOperations {
      */
     public async getThreatSeverity(startTime: number, endTime: number, customHeaders?: CustomHeaders): Promise<unknown> {
         const path = this.buildPath('/security/threat-management/severity');
-        const response = await this.request.get<{ errorCode: number; result: unknown }>(path, { startTime, endTime }, customHeaders);
+        const response = await this.request.get<OmadaApiResponse<unknown>>(path, { startTime, endTime }, customHeaders);
+        this.request.ensureSuccess(response);
         return response.result;
     }
 

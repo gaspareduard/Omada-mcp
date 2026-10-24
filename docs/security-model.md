@@ -31,3 +31,11 @@ These must come from environment variables or a secret manager. They must never 
 ## Unsafe/compatibility features
 
 Anything that depends on undocumented controller internals belongs in a future compatibility module, disabled by default and documented separately.
+
+## 0.19 policy
+
+Catalog registration hides deprecated aliases and tool headers by default. Header opt-in permits only bounded request/correlation IDs. Compact dispatch resolves only the already enabled catalog and validates through the same schema/handler; it grants no additional permissions.
+
+Recovery needs an explicit `recovery:rw` category and apply/confirmation arguments. Built-in profiles and `all` exclude it. The confirmation argument is not a human approval mechanism. Mutation audit events distinguish previews, controller acceptance and bounded readback outcomes.
+
+Private CA bundles preserve TLS hostname checking; redirects are disabled. See [SECURITY.md](../SECURITY.md) for the remaining Zod advisory and trust-boundary limitations.

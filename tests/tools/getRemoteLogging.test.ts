@@ -45,6 +45,7 @@ describe('tools/getRemoteLogging', () => {
             const result = await toolHandler({}, { sessionId: 'test-session' });
             expect(mockClient.getRemoteLogging).toHaveBeenCalledWith(undefined);
             expect(result).toEqual({
+                structuredContent: mockData,
                 content: [{ type: 'text', text: JSON.stringify(mockData, null, 2) }],
             });
         });

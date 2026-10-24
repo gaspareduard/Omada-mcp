@@ -3,6 +3,7 @@ import http from 'node:http';
 import type { EnvironmentConfig, OmadaConnectionConfig } from '../config.js';
 import { normalizePath, resolvePort } from '../utils/config-validations.js';
 import { logger } from '../utils/logger.js';
+import { isLikelySensitiveString, isSensitiveKey, maskValue } from '../utils/redact.js';
 import type { StreamTransportState } from './stream.js';
 import { closeAllStreamSessions, handleStreamRequest } from './stream.js';
 
@@ -80,41 +81,6 @@ function sanitizePayload(payload: unknown): unknown {
     return payload;
 }
 
-function isSensitiveKey(key: string): boolean {
-    const normalized = key.toLowerCase();
-    return (
-        normalized.includes('authorization') ||
-        normalized.includes('token') ||
-        normalized.includes('secret') ||
-        normalized.includes('password') ||
-        normalized.includes('cookie') ||
-        normalized.includes('client-id')
-    );
-}
-
-function isLikelySensitiveString(value: string): boolean {
-    return value.length > 16 && /[A-Za-z0-9+/=]{16,}/.test(value);
-}
-
-function maskValue(value: unknown): unknown {
-    if (typeof value === 'string') {
-        if (value.length <= 8) {
-            return '********';
-        }
-        return `${value.slice(0, 4)}…${value.slice(-4)}`;
-    }
-
-    if (Array.isArray(value)) {
-        return value.map(() => '********');
-    }
-
-    if (typeof value === 'object' && value !== null) {
-        return '[masked-object]';
-    }
-
-    return '********';
-}
-
 async function createShutdownHandler(signal: NodeJS.Signals, closeHttp: () => Promise<void>, closeSessions: () => Promise<void>): Promise<void> {
     logger.warn('Received shutdown signal', { signal });
 
@@ -133,8 +99,8 @@ async function createShutdownHandler(signal: NodeJS.Signals, closeHttp: () => Pr
 
 /**
  * Starts the HTTP server with the Streamable HTTP transport.
- * Omada credentials are resolved per-connection/session from env vars (always win)
- * and request headers (x-omada-client-id, x-omada-client-secret, x-omada-omadac-id).
+ * Omada credentials come exclusively from environment variables; they are never
+ * accepted as request headers or tool arguments (see the security model in CLAUDE.md).
  */
 export async function startHttpServer(config: EnvironmentConfig): Promise<void> {
     const transport = config.httpTransport;
@@ -148,6 +114,7 @@ export async function startHttpServer(config: EnvironmentConfig): Promise<void> 
         omadacId: config.omadacId as string,
         siteId: config.siteId,
         strictSsl: config.strictSsl,
+        caFile: config.caFile,
         requestTimeout: config.requestTimeout,
     };
 

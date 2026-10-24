@@ -8,7 +8,7 @@ import { findReservationByMac, getAllDhcpReservations } from './dhcpReservationS
 export function registerDeleteDhcpReservationTool(server: McpServer, client: OmadaClient): void {
     const inputSchema = siteInputSchema.extend({
         reservationMac: deviceMacSchema.describe('MAC address of the DHCP reservation to delete.'),
-        dryRun: z.boolean().optional().default(false).describe('If true, validate and summarize the planned delete without applying it.'),
+        dryRun: z.boolean().optional().default(true).describe('If true, validate and summarize the planned delete without applying it.'),
     });
 
     server.registerTool(

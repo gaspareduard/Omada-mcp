@@ -17,7 +17,7 @@ export function registerBackupControllerToFileServerTool(server: McpServer, clie
         serverConfig: fileServerConfigSchema.describe('File server connection details.'),
         filePath: z.string().min(1).describe('Destination path on the file server where the backup will be stored.'),
         retainUser: z.boolean().describe('Whether to retain user account data in the backup.'),
-        dryRun: z.boolean().optional().default(false).describe('If true, return the planned action without executing it.'),
+        dryRun: z.boolean().optional().default(true).describe('If true, return the planned action without executing it.'),
         customHeaders: customHeadersSchema,
     });
 

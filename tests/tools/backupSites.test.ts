@@ -1,17 +1,19 @@
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
+import type { CallToolResult } from '@modelcontextprotocol/sdk/types.js';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { z } from 'zod';
 import type { OmadaClient } from '../../src/omadaClient/index.js';
 import { registerBackupSitesTool } from '../../src/tools/backupSites.js';
 
 describe('tools/backupSites', () => {
     let mockServer: McpServer;
     let mockClient: OmadaClient;
-    let toolHandler: (args: unknown, extra: { sessionId?: string }) => Promise<unknown>;
+    let toolHandler: (args: unknown, extra: { sessionId?: string }) => Promise<CallToolResult>;
 
     beforeEach(() => {
         mockServer = {
-            registerTool: vi.fn((_name, _schema, handler) => {
-                toolHandler = handler;
+            registerTool: vi.fn((_name, schema, handler) => {
+                toolHandler = (args, extra) => handler(z.object(schema.inputSchema).parse(args), extra);
             }),
         } as unknown as McpServer;
         mockClient = {
@@ -26,7 +28,7 @@ describe('tools/backupSites', () => {
 
     it('should call backupSites with siteIds', async () => {
         registerBackupSitesTool(mockServer, mockClient);
-        await toolHandler({ siteIds: ['site-1', 'site-2'] }, { sessionId: 'test' });
+        await toolHandler({ dryRun: false, siteIds: ['site-1', 'site-2'] }, { sessionId: 'test' });
         expect(mockClient.backupSites).toHaveBeenCalledWith(['site-1', 'site-2'], undefined);
     });
 
@@ -40,11 +42,26 @@ describe('tools/backupSites', () => {
         expect(parsed.status).toBe('planned');
     });
 
-    it('should return applied summary when executed', async () => {
+    it('should return submitted summary when executed', async () => {
         registerBackupSitesTool(mockServer, mockClient);
-        const result = (await toolHandler({ siteIds: ['site-1', 'site-2'] }, { sessionId: 'test' })) as { content: { text: string }[] };
+        const result = (await toolHandler({ dryRun: false, siteIds: ['site-1', 'site-2'] }, { sessionId: 'test' })) as {
+            content: { text: string }[];
+        };
         const parsed = JSON.parse(result.content[0].text);
         expect(parsed.action).toBe('backup-sites');
         expect(parsed.mode).toBe('apply');
+    });
+    it('defaults omitted dryRun to preview through the registered schema', async () => {
+        registerBackupSitesTool(mockServer, mockClient);
+        const result = (await toolHandler({ siteIds: ['site-1', 'site-2'] }, { sessionId: 'preview' })) as {
+            content: { text: string }[];
+            structuredContent: Record<string, unknown>;
+        };
+        const summary = JSON.parse(result.content[0].text);
+        expect(summary).toMatchObject({ mode: 'dry-run', status: 'planned' });
+        expect(result.structuredContent).toEqual(expect.objectContaining(summary));
+        for (const [name, operation] of Object.entries(mockClient)) {
+            if (!/^(get|list|resolve)/.test(name)) expect(operation).not.toHaveBeenCalled();
+        }
     });
 });

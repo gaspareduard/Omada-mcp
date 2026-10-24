@@ -44,7 +44,10 @@ describe('tools/getIpsecTunnelDetail', () => {
             registerGetIpsecTunnelDetailTool(mockServer, mockClient);
             const result = await toolHandler({ vpnId: 'vpn-1' }, { sessionId: 'test' });
             expect(mockClient.getSiteToSiteVpnInfo).toHaveBeenCalledWith('vpn-1', undefined, undefined);
-            expect(result).toEqual({ content: [{ type: 'text', text: JSON.stringify(mockData, null, 2) }] });
+            expect(result).toEqual({
+                structuredContent: mockData,
+                content: [{ type: 'text', text: JSON.stringify(mockData, null, 2) }],
+            });
         });
 
         it('should pass siteId', async () => {

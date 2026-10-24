@@ -45,6 +45,7 @@ describe('tools/getMacFilteringGeneralSetting', () => {
             const result = await toolHandler({}, { sessionId: 'test-session' });
             expect(mockClient.getMacFilteringGeneralSetting).toHaveBeenCalledWith(undefined, undefined);
             expect(result).toEqual({
+                structuredContent: mockData,
                 content: [{ type: 'text', text: JSON.stringify(mockData, null, 2) }],
             });
         });

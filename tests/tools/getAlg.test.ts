@@ -49,6 +49,7 @@ describe('tools/getAlg', () => {
 
             expect(mockClient.getAlg).toHaveBeenCalledWith(undefined, undefined);
             expect(result).toEqual({
+                structuredContent: mockData,
                 content: [{ type: 'text', text: JSON.stringify(mockData, null, 2) }],
             });
         });

@@ -48,7 +48,10 @@ describe('tools/getSitesGatewaysSimCardUsed', () => {
             const result = await toolHandler({ gatewayMac: 'AA-BB-CC-DD-EE-FF' }, { sessionId: 'test-session' });
 
             expect(mockClient.getSitesGatewaysSimCardUsed).toHaveBeenCalledWith('AA-BB-CC-DD-EE-FF', undefined, undefined);
-            expect(result).toEqual({ content: [{ type: 'text', text: JSON.stringify(mockData, null, 2) }] });
+            expect(result).toEqual({
+                structuredContent: mockData,
+                content: [{ type: 'text', text: JSON.stringify(mockData, null, 2) }],
+            });
         });
 
         it('should pass siteId when provided', async () => {

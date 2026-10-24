@@ -49,6 +49,7 @@ describe('tools/getCableTestFullResults', () => {
 
             expect(mockClient.getCableTestFullResults).toHaveBeenCalledWith('AA-BB-CC-DD-EE-FF', undefined, undefined);
             expect(result).toEqual({
+                structuredContent: mockData,
                 content: [{ type: 'text', text: JSON.stringify(mockData, null, 2) }],
             });
         });

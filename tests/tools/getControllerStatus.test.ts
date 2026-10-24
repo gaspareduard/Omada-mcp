@@ -48,6 +48,7 @@ describe('tools/getControllerStatus', () => {
 
             expect(mockClient.getControllerStatus).toHaveBeenCalledWith(undefined);
             expect(result).toEqual({
+                structuredContent: mockData,
                 content: [{ type: 'text', text: JSON.stringify(mockData, null, 2) }],
             });
         });

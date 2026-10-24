@@ -8,7 +8,7 @@ export function registerSetDeviceLedTool(server: McpServer, client: OmadaClient)
     const inputSchema = siteInputSchema.extend({
         deviceMac: deviceMacSchema.describe('Device MAC address to update.'),
         ledSetting: z.number().int().min(0).max(2).describe('LED setting. 0=off, 1=on, 2=site-default as documented by the Omada controller.'),
-        dryRun: z.boolean().optional().default(false).describe('If true, return the planned action without sending it to the controller.'),
+        dryRun: z.boolean().optional().default(true).describe('If true, return the planned action without sending it to the controller.'),
     });
 
     server.registerTool(

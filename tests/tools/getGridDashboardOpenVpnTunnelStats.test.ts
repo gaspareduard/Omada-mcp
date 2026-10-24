@@ -50,6 +50,7 @@ describe('tools/getGridDashboardOpenVpnTunnelStats', () => {
 
             expect(mockClient.getGridDashboardOpenVpnTunnelStats).toHaveBeenCalledWith(undefined, 0, undefined);
             expect(result).toEqual({
+                structuredContent: mockData,
                 content: [{ type: 'text', text: JSON.stringify(mockData, null, 2) }],
             });
         });

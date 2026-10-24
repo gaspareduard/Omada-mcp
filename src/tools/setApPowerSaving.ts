@@ -25,7 +25,7 @@ const baseInputSchema = siteInputSchema.extend({
     bandEnable: z.boolean().describe('Enable or disable idle-based band power saving.'),
     bands: z.array(z.number().int().min(0).max(3)).optional().describe('Band ids for idle-based power saving: 0=2.4GHz, 1=5GHz, 2=5GHz-2, 3=6GHz.'),
     idleDuration: z.number().int().min(60).max(1440).optional().describe('Idle duration in minutes, required when bandEnable is true.'),
-    dryRun: z.boolean().optional().default(false).describe('If true, validate and summarize the planned AP power-saving change without applying it.'),
+    dryRun: z.boolean().optional().default(true).describe('If true, validate and summarize the planned AP power-saving change without applying it.'),
 });
 
 const inputSchema = baseInputSchema.superRefine((value, ctx) => {

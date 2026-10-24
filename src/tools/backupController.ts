@@ -7,7 +7,7 @@ import { customHeadersSchema, wrapMutationToolHandler } from '../server/common.j
 export function registerBackupControllerTool(server: McpServer, client: OmadaClient): void {
     const inputSchema = z.object({
         retainUser: z.boolean().describe('Whether to retain user account data in the backup.'),
-        dryRun: z.boolean().optional().default(false).describe('If true, return the planned action without executing it.'),
+        dryRun: z.boolean().optional().default(true).describe('If true, return the planned action without executing it.'),
         customHeaders: customHeadersSchema,
     });
 

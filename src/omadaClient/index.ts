@@ -1,3 +1,4 @@
+import { readFileSync } from 'node:fs';
 import https from 'node:https';
 
 import axios, { type AxiosInstance, type AxiosRequestConfig } from 'axios';
@@ -34,11 +35,12 @@ import { LogOperations, type LogQueryOptions } from './log.js';
 import type { FileServerConfig, SiteFileRestoreInfo, SiteRestoreInfo } from './maintenance.js';
 import { MaintenanceOperations } from './maintenance.js';
 import { MonitorOperations } from './monitor.js';
-import { NetworkOperations } from './network.js';
+import { NetworkOperations, type SsidBasicConfig } from './network.js';
 import { RequestHandler } from './request.js';
 import { ScheduleOperations } from './schedules.js';
 import { SecurityOperations } from './security.js';
 import { SiteOperations } from './site.js';
+import { type SwitchPortChange, SwitchPortOperations } from './switchPorts.js';
 
 export type { LogQueryOptions, SiteThreatListOptions };
 
@@ -56,6 +58,7 @@ export class OmadaClient {
     private readonly request: RequestHandler;
 
     private readonly siteOps: SiteOperations;
+    private readonly switchPortOps: SwitchPortOperations;
 
     private readonly deviceOps: DeviceOperations;
 
@@ -88,7 +91,8 @@ export class OmadaClient {
 
         const axiosOptions: AxiosRequestConfig = {
             baseURL: options.baseUrl,
-            httpsAgent: new https.Agent({ rejectUnauthorized: options.strictSsl }),
+            httpsAgent: new https.Agent({ rejectUnauthorized: options.strictSsl, ...(options.caFile ? { ca: readFileSync(options.caFile) } : {}) }),
+            maxRedirects: 0,
             headers: {
                 'Content-Type': 'application/json',
                 Accept: 'application/json',
@@ -105,6 +109,7 @@ export class OmadaClient {
         this.auth = new AuthManager(this.http, options.clientId, options.clientSecret, options.omadacId);
         this.request = new RequestHandler(this.http, this.auth);
         this.siteOps = new SiteOperations(this.request, this.buildOmadaPath.bind(this), options.siteId);
+        this.switchPortOps = new SwitchPortOperations(this.request, this.siteOps, this.buildOmadaPath.bind(this));
         this.deviceOps = new DeviceOperations(this.request, this.siteOps, this.buildOmadaPath.bind(this));
         this.clientOps = new ClientOperations(this.request, this.siteOps, this.buildOmadaPath.bind(this));
         this.securityOps = new SecurityOperations(this.request, this.buildOmadaPath.bind(this));
@@ -119,12 +124,36 @@ export class OmadaClient {
         this.actionOps = new ActionOperations(this.request, this.siteOps, this.buildOmadaPath.bind(this));
     }
 
+    public async updateSsidBasicConfig(
+        wlanId: string,
+        ssidId: string,
+        payload: SsidBasicConfig,
+        siteId?: string,
+        customHeaders?: CustomHeaders
+    ): Promise<unknown> {
+        return await this.networkOps.updateSsidBasicConfig(wlanId, ssidId, payload, siteId, customHeaders);
+    }
+
     // Site operations
+    public async resolveSiteId(siteId?: string): Promise<string> {
+        return await this.siteOps.resolveSiteId(siteId);
+    }
+
     public async listSites(customHeaders?: CustomHeaders): Promise<OmadaSiteSummary[]> {
         return await this.siteOps.listSites(customHeaders);
     }
 
     // Device operations
+    public async setSwitchPorts(
+        switchMac: string,
+        ports: number[],
+        change: SwitchPortChange,
+        siteId?: string,
+        customHeaders?: CustomHeaders
+    ): Promise<unknown> {
+        return await this.switchPortOps.setSwitchPorts(switchMac, ports, change, siteId, customHeaders);
+    }
+
     public async listDevices(siteId?: string, customHeaders?: CustomHeaders): Promise<OmadaDeviceInfo[]> {
         return await this.deviceOps.listDevices(siteId, customHeaders);
     }
@@ -1293,8 +1322,8 @@ export class OmadaClient {
     }
 
     // Monitor / dashboard operations
-    public async getDashboardWifiSummary(siteId?: string, customHeaders?: CustomHeaders): Promise<unknown> {
-        return await this.monitorOps.getDashboardWifiSummary(siteId, customHeaders);
+    public async getDashboardWifiSummary(siteId?: string, customHeaders?: CustomHeaders, window?: { start: number; end: number }): Promise<unknown> {
+        return await this.monitorOps.getDashboardWifiSummary(siteId, customHeaders, window);
     }
 
     public async getDashboardSwitchSummary(siteId?: string, customHeaders?: CustomHeaders): Promise<unknown> {

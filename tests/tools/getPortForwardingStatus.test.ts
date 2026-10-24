@@ -70,6 +70,7 @@ describe('getPortForwardingStatus Tool', () => {
 
         expect(mockClient.getPortForwardingStatus).toHaveBeenCalledWith('user', 'test-site', 1, 10, undefined);
         expect(result).toEqual({
+            structuredContent: mockResponse,
             content: [{ type: 'text', text: JSON.stringify(mockResponse, null, 2) }],
         });
     });
@@ -99,6 +100,7 @@ describe('getPortForwardingStatus Tool', () => {
 
         expect(mockClient.getPortForwardingStatus).toHaveBeenCalledWith('upnp', 'test-site', 1, 10, undefined);
         expect(result).toEqual({
+            structuredContent: mockResponse,
             content: [{ type: 'text', text: JSON.stringify(mockResponse, null, 2) }],
         });
     });

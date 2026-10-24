@@ -1,7 +1,7 @@
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
-
 import type { ToolCategory, ToolPermission } from '../config.js';
 import type { OmadaClient } from '../omadaClient/index.js';
+import { type CatalogOptions, type CatalogTool, registerCatalog } from '../server/catalog.js';
 import { logger } from '../utils/logger.js';
 import { registerBackupControllerTool } from './backupController.js';
 import { registerBackupControllerToFileServerTool } from './backupControllerToFileServer.js';
@@ -16,7 +16,9 @@ import { registerDeleteAclTool } from './deleteAcl.js';
 import { registerDeleteAppControlRuleTool } from './deleteAppControlRule.js';
 import { registerDeleteBandwidthControlRuleTool } from './deleteBandwidthControlRule.js';
 import { registerDeleteDhcpReservationTool } from './deleteDhcpReservation.js';
+import { registerDiagnoseCameraConnectivityTool } from './diagnoseCameraConnectivity.js';
 import { registerDiagnoseClientTool } from './diagnoseClient.js';
+import { registerDiagnoseLogsTool } from './diagnoseLogs.js';
 import { registerDisableClientRateLimitTool } from './disableClientRateLimit.js';
 import { registerGetAccessControlTool } from './getAccessControl.js';
 import { registerGetAclConfigTypeSettingTool } from './getAclConfigTypeSetting.js';
@@ -306,6 +308,7 @@ import { registerGetWebhookForGlobalTool } from './getWebhookForGlobal.js';
 import { registerGetWebhookLogsForGlobalTool } from './getWebhookLogsForGlobal.js';
 import { registerGetWidsTool } from './getWids.js';
 import { registerGetWidsBlacklistTool } from './getWidsBlacklist.js';
+import { registerGetWifiHealthSummaryTool } from './getWifiHealthSummary.js';
 import { registerGetWireguardSummaryTool } from './getWireguardSummary.js';
 import { registerGetWlanGroupListTool } from './getWlanGroupList.js';
 import { registerListAllSsidsTool } from './listAllSsids.js';
@@ -358,16 +361,19 @@ import { registerSetApChannelLimitTool } from './setApChannelLimit.js';
 import { registerSetApConfigTool } from './setApConfig.js';
 import { registerSetApPowerSavingTool } from './setApPowerSaving.js';
 import { registerSetAppControlRuleTool } from './setAppControlRule.js';
+import { registerSetApRadioTool } from './setApRadio.js';
 import { registerSetBandwidthControlRuleTool } from './setBandwidthControlRule.js';
 import { registerSetClientRateLimitTool } from './setClientRateLimit.js';
 import { registerSetClientRateLimitProfileTool } from './setClientRateLimitProfile.js';
 import { registerSetDeviceLedTool } from './setDeviceLed.js';
 import { registerSetFirewallSettingTool } from './setFirewallSetting.js';
 import { registerSetGatewayConfigTool } from './setGatewayConfig.js';
+import { registerSetSwitchPortsTool } from './setSwitchPorts.js';
 import { registerUnblockClientTool } from './unblockClient.js';
 import { registerUpdateDhcpReservationTool } from './updateDhcpReservation.js';
 import { registerUpdateEapAclTool } from './updateEapAcl.js';
 import { registerUpdateGatewayAclTool } from './updateGatewayAcl.js';
+import { registerUpdateSsidTool } from './updateSsid.js';
 import { registerUpdateSwitchAclTool } from './updateSwitchAcl.js';
 
 // ---------------------------------------------------------------------------
@@ -382,6 +388,12 @@ interface ToolEntry {
 }
 
 const TOOL_REGISTRY: ToolEntry[] = [
+    { fn: registerSetSwitchPortsTool, category: 'devices-switch', permission: 'write' },
+    { fn: registerSetApRadioTool, category: 'devices-ap', permission: 'write' },
+    { fn: registerUpdateSsidTool, category: 'wireless-ssid', permission: 'write' },
+    { fn: registerDiagnoseCameraConnectivityTool, category: 'client-insights', permission: 'read' },
+    { fn: registerDiagnoseLogsTool, category: 'logs', permission: 'read' },
+    { fn: registerGetWifiHealthSummaryTool, category: 'wireless-radio', permission: 'read' },
     // --- Sites ---
     { fn: registerListSitesTool, category: 'sites', permission: 'read' },
     { fn: registerGetSiteDetailTool, category: 'sites', permission: 'read' },
@@ -762,10 +774,10 @@ const TOOL_REGISTRY: ToolEntry[] = [
     { fn: registerBackupControllerToFileServerTool, category: 'maintenance', permission: 'write' },
     { fn: registerBackupSitesTool, category: 'maintenance', permission: 'write' },
     { fn: registerBackupSitesToFileServerTool, category: 'maintenance', permission: 'write' },
-    { fn: registerRestoreControllerTool, category: 'maintenance', permission: 'write' },
-    { fn: registerRestoreControllerFromFileServerTool, category: 'maintenance', permission: 'write' },
-    { fn: registerRestoreSitesTool, category: 'maintenance', permission: 'write' },
-    { fn: registerRestoreSitesFromFileServerTool, category: 'maintenance', permission: 'write' },
+    { fn: registerRestoreControllerTool, category: 'recovery', permission: 'write' },
+    { fn: registerRestoreControllerFromFileServerTool, category: 'recovery', permission: 'write' },
+    { fn: registerRestoreSitesTool, category: 'recovery', permission: 'write' },
+    { fn: registerRestoreSitesFromFileServerTool, category: 'recovery', permission: 'write' },
 
     // --- Account users ---
     { fn: registerGetAllCloudUsersTool, category: 'account-users', permission: 'read' },
@@ -818,40 +830,30 @@ const TOOL_REGISTRY: ToolEntry[] = [
 // registers matching tools with the MCP server.
 // ---------------------------------------------------------------------------
 
-export function registerAllTools(server: McpServer, client: OmadaClient, activeCategories?: Map<ToolCategory, Set<ToolPermission>>): void {
-    // If no filter map provided, register everything (backward-compat / tests)
-    if (!activeCategories) {
-        for (const entry of TOOL_REGISTRY) {
-            entry.fn(server, client);
-        }
-        return;
-    }
-
-    // Deduplicate: some tools appear in multiple categories; track which fns we've already called.
-    const registered = new Set<(server: McpServer, client: OmadaClient) => void>();
-
-    let toolCount = 0;
+export function registerAllTools(
+    server: McpServer,
+    client: OmadaClient,
+    activeCategories?: Map<ToolCategory, Set<ToolPermission>>,
+    options: CatalogOptions = {}
+): void {
+    const registered = new Set<ToolEntry['fn']>();
+    const catalog: CatalogTool[] = [];
     for (const entry of TOOL_REGISTRY) {
-        const allowed = activeCategories.get(entry.category);
-        if (!allowed) continue;
-        if (!allowed.has(entry.permission)) continue;
+        if (entry.category === 'recovery' && !activeCategories?.get('recovery')?.has('write')) continue;
+        if (activeCategories && !activeCategories.get(entry.category)?.has(entry.permission)) continue;
         if (registered.has(entry.fn)) continue;
-
         registered.add(entry.fn);
-        entry.fn(server, client);
-        toolCount++;
+        const collector = {
+            registerTool(
+                name: string,
+                definition: Pick<CatalogTool, 'description' | 'inputSchema' | 'annotations'>,
+                handler: CatalogTool['handler']
+            ): void {
+                catalog.push({ name, ...definition, category: entry.category, permission: entry.permission, handler });
+            },
+        } as unknown as McpServer;
+        entry.fn(collector, client);
     }
-
-    // Startup log
-    const categoryList = [...activeCategories.entries()]
-        .map(([cat, perms]) => {
-            const p = [...perms].sort().join('+');
-            return `${cat}:${p}`;
-        })
-        .join(', ');
-
-    logger.info('Tool categories loaded', {
-        categories: categoryList,
-        toolCount,
-    });
+    registerCatalog(server, catalog, options);
+    logger.info('Tool categories loaded', { registeredOperations: catalog.length, catalogMode: options.catalogMode ?? 'standard' });
 }

@@ -48,7 +48,10 @@ describe('tools/getSitesApsAvailableChannel', () => {
             const result = await toolHandler({ apMac: 'AA-BB-CC-DD-EE-FF' }, { sessionId: 'test-session' });
 
             expect(mockClient.getSitesApsAvailableChannel).toHaveBeenCalledWith('AA-BB-CC-DD-EE-FF', undefined, undefined);
-            expect(result).toEqual({ content: [{ type: 'text', text: JSON.stringify(mockData, null, 2) }] });
+            expect(result).toEqual({
+                structuredContent: mockData,
+                content: [{ type: 'text', text: JSON.stringify(mockData, null, 2) }],
+            });
         });
 
         it('should pass siteId when provided', async () => {

@@ -26,12 +26,14 @@ export function registerRestoreControllerFromFileServerTool(server: McpServer, c
         serverConfig: fileServerConfigSchema.describe('File server connection details.'),
         filePath: z.string().min(1).describe('Path to the backup file on the file server.'),
         skipDevice: z.boolean().describe('If true, skip restoring device configurations.'),
-        dryRun: z.boolean().optional().default(false).describe('If true, return the planned action without executing it.'),
+        dryRun: z.boolean().optional().default(true).describe('If true, return the planned action without executing it.'),
         confirmDangerous: z
             .boolean()
             .optional()
             .default(false)
-            .describe('Must be explicitly set to true to confirm execution. A second confirmation is required because this action is irreversible.'),
+            .describe(
+                'Must be explicitly set to true to confirm execution. This boolean acknowledges the risk; human approval must be enforced by the MCP host.'
+            ),
         customHeaders: customHeadersSchema,
     });
 
@@ -39,7 +41,7 @@ export function registerRestoreControllerFromFileServerTool(server: McpServer, c
         'restoreControllerFromFileServer',
         {
             description:
-                'Restore controller configuration from a backup file stored on an external file server (FTP/SFTP). This will overwrite current controller settings. Use getRestoreResult to poll the restore status. REQUIRES explicit confirmDangerous: true — a second confirmation step is enforced because this action is irreversible.',
+                'Restore controller configuration from a backup file stored on an external file server (FTP/SFTP). This will overwrite current controller settings. Use getRestoreResult to poll the restore status. REQUIRES explicit confirmDangerous: true — this acknowledges the risk and is not a technical human-approval gate.',
             inputSchema: inputSchema.shape,
             annotations: {
                 destructiveHint: true,
@@ -48,7 +50,7 @@ export function registerRestoreControllerFromFileServerTool(server: McpServer, c
         wrapToolHandler(
             'restoreControllerFromFileServer',
             async ({ serverConfig, filePath, skipDevice, dryRun, confirmDangerous, customHeaders }) => {
-                if (dryRun) {
+                if (dryRun !== false) {
                     return toMutationResult({
                         action: 'restore-controller-file-server',
                         target: filePath,

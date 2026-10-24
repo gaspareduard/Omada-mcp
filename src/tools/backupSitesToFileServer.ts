@@ -17,7 +17,7 @@ export function registerBackupSitesToFileServerTool(server: McpServer, client: O
         serverConfig: fileServerConfigSchema.describe('File server connection details.'),
         filePath: z.string().min(1).describe('Destination path on the file server where the backup will be stored.'),
         siteIds: z.array(z.string().min(1)).min(1).max(300).describe('List of site IDs to back up (up to 300).'),
-        dryRun: z.boolean().optional().default(false).describe('If true, return the planned action without executing it.'),
+        dryRun: z.boolean().optional().default(true).describe('If true, return the planned action without executing it.'),
         customHeaders: customHeadersSchema,
     });
 

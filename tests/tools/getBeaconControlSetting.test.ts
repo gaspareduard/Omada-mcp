@@ -49,6 +49,7 @@ describe('tools/getBeaconControlSetting', () => {
 
             expect(mockClient.getBeaconControlSetting).toHaveBeenCalledWith(undefined, undefined);
             expect(result).toEqual({
+                structuredContent: mockData,
                 content: [{ type: 'text', text: JSON.stringify(mockData, null, 2) }],
             });
         });

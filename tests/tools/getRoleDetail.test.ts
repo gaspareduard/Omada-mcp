@@ -40,7 +40,10 @@ describe('tools/getRoleDetail', () => {
             registerGetRoleDetailTool(mockServer, mockClient);
             const result = await toolHandler({ roleId: 'role-1' }, { sessionId: 'test' });
             expect(mockClient.getRoleDetail).toHaveBeenCalledWith('role-1', undefined);
-            expect(result).toEqual({ content: [{ type: 'text', text: JSON.stringify(mockData, null, 2) }] });
+            expect(result).toEqual({
+                structuredContent: mockData,
+                content: [{ type: 'text', text: JSON.stringify(mockData, null, 2) }],
+            });
         });
 
         it('should handle errors', async () => {

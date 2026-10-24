@@ -6,6 +6,7 @@ import type { SiteOperations } from './site.js';
 export interface LogQueryOptions {
     page: number;
     pageSize: number;
+    /** Unix milliseconds; provide both bounds when filtering audit logs. */
     startTime?: number;
     endTime?: number;
     searchKey?: string;
@@ -24,7 +25,7 @@ export class LogOperations {
 
     /**
      * List site event logs.
-     * OperationId: getSiteEvents
+     * OperationId: getEventLogsForSite
      */
     public async listSiteEvents(options: LogQueryOptions, siteId?: string, customHeaders?: CustomHeaders): Promise<PaginatedResult<unknown>> {
         const resolvedSiteId = await this.site.resolveSiteId(siteId);
@@ -36,10 +37,10 @@ export class LogOperations {
         };
 
         if (options.startTime !== undefined) {
-            params['filters.startTime'] = options.startTime;
+            params['filters.timeStart'] = options.startTime;
         }
         if (options.endTime !== undefined) {
-            params['filters.endTime'] = options.endTime;
+            params['filters.timeEnd'] = options.endTime;
         }
         if (options.searchKey) {
             params.searchKey = options.searchKey;
@@ -51,7 +52,7 @@ export class LogOperations {
 
     /**
      * List site alert logs.
-     * OperationId: getSiteAlerts
+     * OperationId: getAlertLogsForSite
      */
     public async listSiteAlerts(options: LogQueryOptions, siteId?: string, customHeaders?: CustomHeaders): Promise<PaginatedResult<unknown>> {
         const resolvedSiteId = await this.site.resolveSiteId(siteId);
@@ -63,10 +64,10 @@ export class LogOperations {
         };
 
         if (options.startTime !== undefined) {
-            params['filters.startTime'] = options.startTime;
+            params['filters.timeStart'] = options.startTime;
         }
         if (options.endTime !== undefined) {
-            params['filters.endTime'] = options.endTime;
+            params['filters.timeEnd'] = options.endTime;
         }
         if (options.searchKey) {
             params.searchKey = options.searchKey;
@@ -78,7 +79,7 @@ export class LogOperations {
 
     /**
      * List site audit logs.
-     * OperationId: getSiteAuditLogs
+     * OperationId: getAuditLogsForSite
      */
     public async listSiteAuditLogs(options: LogQueryOptions, siteId?: string, customHeaders?: CustomHeaders): Promise<PaginatedResult<unknown>> {
         const resolvedSiteId = await this.site.resolveSiteId(siteId);
@@ -89,11 +90,12 @@ export class LogOperations {
             pageSize: options.pageSize,
         };
 
-        if (options.startTime !== undefined) {
-            params['filters.startTime'] = options.startTime;
+        if ((options.startTime === undefined) !== (options.endTime === undefined)) {
+            throw new Error('Audit log time filters require both startTime and endTime in Unix milliseconds.');
         }
-        if (options.endTime !== undefined) {
-            params['filters.endTime'] = options.endTime;
+        if (options.startTime !== undefined) {
+            // Pass JSON to the HTTP client so it is URL-encoded exactly once.
+            params['filters.times'] = JSON.stringify([{ timeStart: options.startTime, timeEnd: options.endTime }]);
         }
         if (options.searchKey) {
             params.searchKey = options.searchKey;
@@ -105,7 +107,7 @@ export class LogOperations {
 
     /**
      * List global event logs (all sites).
-     * OperationId: getEvents
+     * OperationId: getEventLogsForGlobal
      */
     public async listGlobalEvents(options: LogQueryOptions, customHeaders?: CustomHeaders): Promise<PaginatedResult<unknown>> {
         const path = this.buildPath('/logs/events');
@@ -116,10 +118,10 @@ export class LogOperations {
         };
 
         if (options.startTime !== undefined) {
-            params['filters.startTime'] = options.startTime;
+            params['filters.timeStart'] = options.startTime;
         }
         if (options.endTime !== undefined) {
-            params['filters.endTime'] = options.endTime;
+            params['filters.timeEnd'] = options.endTime;
         }
         if (options.searchKey) {
             params.searchKey = options.searchKey;
@@ -131,7 +133,7 @@ export class LogOperations {
 
     /**
      * List global alert logs (all sites).
-     * OperationId: getAlerts
+     * OperationId: getAlertLogsForGlobal
      */
     public async listGlobalAlerts(options: LogQueryOptions, customHeaders?: CustomHeaders): Promise<PaginatedResult<unknown>> {
         const path = this.buildPath('/logs/alerts');
@@ -142,10 +144,10 @@ export class LogOperations {
         };
 
         if (options.startTime !== undefined) {
-            params['filters.startTime'] = options.startTime;
+            params['filters.timeStart'] = options.startTime;
         }
         if (options.endTime !== undefined) {
-            params['filters.endTime'] = options.endTime;
+            params['filters.timeEnd'] = options.endTime;
         }
         if (options.searchKey) {
             params.searchKey = options.searchKey;
@@ -157,7 +159,7 @@ export class LogOperations {
 
     /**
      * List global audit logs (all sites).
-     * OperationId: getAuditLogs
+     * OperationId: getAuditLogsForGlobal
      */
     public async listGlobalAuditLogs(options: LogQueryOptions, customHeaders?: CustomHeaders): Promise<PaginatedResult<unknown>> {
         const path = this.buildPath('/audit-logs');
@@ -167,11 +169,12 @@ export class LogOperations {
             pageSize: options.pageSize,
         };
 
-        if (options.startTime !== undefined) {
-            params['filters.startTime'] = options.startTime;
+        if ((options.startTime === undefined) !== (options.endTime === undefined)) {
+            throw new Error('Audit log time filters require both startTime and endTime in Unix milliseconds.');
         }
-        if (options.endTime !== undefined) {
-            params['filters.endTime'] = options.endTime;
+        if (options.startTime !== undefined) {
+            // Pass JSON to the HTTP client so it is URL-encoded exactly once.
+            params['filters.times'] = JSON.stringify([{ timeStart: options.startTime, timeEnd: options.endTime }]);
         }
         if (options.searchKey) {
             params.searchKey = options.searchKey;
