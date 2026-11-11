@@ -19,6 +19,7 @@ describe('NetworkOperations', () => {
             patch: vi.fn(),
             delete: vi.fn(),
             fetchPaginated: vi.fn(),
+            fetchCollection: vi.fn(),
             ensureSuccess: vi.fn((response: OmadaApiResponse<unknown>) => {
                 if (response.errorCode === 0) {
                     return response.result;
@@ -860,13 +861,13 @@ describe('NetworkOperations', () => {
     });
 
     describe('listSiteToSiteVpns', () => {
-        it('should list site-to-site VPN configurations', async () => {
+        it('should read the complete documented collection', async () => {
             const mockData = [{ id: 'vpn-1', name: 'Main VPN' }];
-            vi.mocked(mockRequest.fetchPaginated).mockResolvedValue(mockData);
+            vi.mocked(mockRequest.fetchCollection).mockResolvedValue(mockData);
 
             const result = await networkOps.listSiteToSiteVpns('site-123');
 
-            expect(mockRequest.fetchPaginated).toHaveBeenCalledWith('/openapi/v1/test-omadac/sites/site-123/vpn/site-to-site-vpns', {}, undefined);
+            expect(mockRequest.fetchCollection).toHaveBeenCalledWith('/openapi/v1/test-omadac/sites/site-123/vpn/site-to-site-vpns', undefined);
             expect(result).toEqual(mockData);
         });
     });
@@ -874,13 +875,12 @@ describe('NetworkOperations', () => {
     describe('listClientToSiteVpnServers', () => {
         it('should list client-to-site VPN server configurations', async () => {
             const mockData = [{ id: 'server-1', name: 'VPN Server' }];
-            vi.mocked(mockRequest.fetchPaginated).mockResolvedValue(mockData);
+            vi.mocked(mockRequest.fetchCollection).mockResolvedValue(mockData);
 
             const result = await networkOps.listClientToSiteVpnServers('site-123');
 
-            expect(mockRequest.fetchPaginated).toHaveBeenCalledWith(
+            expect(mockRequest.fetchCollection).toHaveBeenCalledWith(
                 '/openapi/v1/test-omadac/sites/site-123/vpn/client-to-site-vpn-servers',
-                {},
                 undefined
             );
             expect(result).toEqual(mockData);
@@ -1110,21 +1110,21 @@ describe('NetworkOperations', () => {
     describe('listGroupProfiles', () => {
         it('should list group profiles without type', async () => {
             const mockData = [{ id: 'group-1', name: 'Group 1' }];
-            vi.mocked(mockRequest.fetchPaginated).mockResolvedValue(mockData);
+            vi.mocked(mockRequest.fetchCollection).mockResolvedValue(mockData);
 
             const result = await networkOps.listGroupProfiles(undefined, 'site-123');
 
-            expect(mockRequest.fetchPaginated).toHaveBeenCalledWith('/openapi/v1/test-omadac/sites/site-123/profiles/groups', {}, undefined);
+            expect(mockRequest.fetchCollection).toHaveBeenCalledWith('/openapi/v1/test-omadac/sites/site-123/profiles/groups', undefined);
             expect(result).toEqual(mockData);
         });
 
         it('should list group profiles with specific type', async () => {
             const mockData = [{ id: 'ip-group-1', name: 'IP Group 1' }];
-            vi.mocked(mockRequest.fetchPaginated).mockResolvedValue(mockData);
+            vi.mocked(mockRequest.fetchCollection).mockResolvedValue(mockData);
 
             const result = await networkOps.listGroupProfiles('ip', 'site-123');
 
-            expect(mockRequest.fetchPaginated).toHaveBeenCalledWith('/openapi/v1/test-omadac/sites/site-123/profiles/groups/ip', {}, undefined);
+            expect(mockRequest.fetchCollection).toHaveBeenCalledWith('/openapi/v1/test-omadac/sites/site-123/profiles/groups/ip', undefined);
             expect(result).toEqual(mockData);
         });
     });

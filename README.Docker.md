@@ -150,6 +150,114 @@ HTTP is not part of the supported container baseline. It only starts when both o
 | `callOperation` | Compact mode only: invokes an enabled operation through its existing schema and handler. |
 
 
+### Network configuration writes
+
+Create, update and delete the objects needed for VLAN segmentation and day-to-day network changes: LAN networks, switch port profiles, WLAN groups and SSIDs, IP/MAC groups, mDNS, NAT, routing, DNS, filtering, VPN, and device/client actions. Combined with the ACL and switch-port tools above, these cover the networking workflows of the UniFi MCP server for Omada.
+
+Every write previews by default (`dryRun` omitted or `true`), validates its payload against strict schemas generated from the official OpenAPI specs (`scripts/generate-request-schemas.mjs`), sends at most one write with `dryRun: false`, and then reads the controller back. Results report `verified`, `mismatch`, `unknown` or `unverifiable`, or `submitted` for one-shot commands with no readable end state. Secrets such as PSKs, DDNS passwords and WireGuard private keys are write-only; they are listed in `notVerifiedFields` and are redacted from output. Controller rejections are returned with their Omada error code. Enable a group with `OMADA_TOOL_CATEGORIES`, for example `network-lan:rw,wireless-ssid:rw,profiles:rw`.
+
+#### VLANs, port profiles and Wi-Fi segmentation
+
+| Tool | Description | Category |
+| --- | --- | --- |
+| `createGroupProfile` | Create an IP, IP-port, MAC, IPv6, country, or domain group used as a source/destination in ACLs, policy routes, URL filters and MAC filters (UniFi firewall/client groups). | `profiles:rw` |
+| `updateGroupProfile` | Replace an existing group profile. Every ACL or rule that references the group changes behaviour immediately. | `profiles:rw` |
+| `deleteGroupProfile` | Delete a custom group profile. Built-in groups are refused; the controller also refuses groups still referenced by rules. | `profiles:rw` |
+| `createMdnsRule` | Create an mDNS (Bonjour) reflector rule so services such as AirPlay or Chromecast in one VLAN are discoverable from another. | `network-services:rw` |
+| `updateMdnsRule` | Replace an existing mDNS rule, e.g. to enable/disable it or change which networks are bridged. | `network-services:rw` |
+| `deleteMdnsRule` | Delete an mDNS rule by ID. Cross-VLAN service discovery it provided stops. | `network-services:rw` |
+| `createLanProfile` | Create a switch port profile (native VLAN, tagged VLANs, isolation, PoE, STP). Assign it to ports with setSwitchPorts. | `network-lan:rw` |
+| `updateLanProfile` | Replace an existing switch port profile. Every port using the profile is re-provisioned and may briefly lose connectivity. | `network-lan:rw` |
+| `deleteLanProfile` | Delete a custom switch port profile. System profiles are refused. | `network-lan:rw` |
+| `createWlanGroup` | Create a WLAN group (a set of SSIDs that APs can be assigned to with setApConfig configType wlan-group; UniFi AP groups). | `wireless-ssid:rw` |
+| `updateWlanGroup` | Rename an existing WLAN group. | `wireless-ssid:rw` |
+| `deleteWlanGroup` | Delete a WLAN group. The primary group is refused; the controller refuses groups still assigned to APs. | `wireless-ssid:rw` |
+| `createSsid` | Create an SSID in a WLAN group, optionally mapped to a VLAN for segmentation. APs using the group start broadcasting it after provisioning, which can briefly interrupt their radios. | `wireless-ssid:rw` |
+| `deleteSsid` | Delete an SSID. Clients connected to it are disconnected. | `wireless-ssid:rw` |
+| `createLanNetwork` | Create a LAN network / VLAN (gateway interface with subnet and DHCP, or a switch-only VLAN) for segmentation. Gateways and switches re-provision. | `network-lan:rw` |
+| `updateLanNetwork` | Replace an existing LAN network (subnet, DHCP, VLAN, interfaces). Clients on the network can lose connectivity while devices re-provision. | `network-lan:rw` |
+| `deleteLanNetwork` | Delete a LAN network. The primary network is refused; clients on the network lose connectivity. | `network-lan:rw` |
+| `listMdnsRules` | List mDNS (Bonjour) reflector rules: which Bonjour services (listMdnsProfile) are bridged between which networks or VLANs. Returns every page. | `network-services:r` |
+
+#### NAT and routing
+
+| Tool | Description | Category |
+| --- | --- | --- |
+| `createStaticRoute` | Create a gateway static route to one or more destination subnets. Create it with status:false first if you want to review it before it takes effect. | `network-routing:rw` |
+| `updateStaticRoute` | Replace an existing static route, e.g. to enable/disable it or change its next hop. Changes affect live routing. | `network-routing:rw` |
+| `deleteStaticRoute` | Delete a static route by ID. Traffic to its destinations falls back to other routes. | `network-routing:rw` |
+| `createPolicyRoute` | Create a gateway policy-based route that steers matching traffic out of a chosen WAN or VPN (equivalent to UniFi traffic routes). | `network-routing:rw` |
+| `updatePolicyRoute` | Replace an existing policy route, e.g. to enable/disable it or retarget the WAN/VPN. | `network-routing:rw` |
+| `deletePolicyRoute` | Delete a policy route by ID. | `network-routing:rw` |
+| `createPortForwardingRule` | Create a gateway port forwarding (DNAT) rule exposing a LAN host to the WAN. Exposes services to the internet when enabled; create with status:false to stage it. | `network-nat:rw` |
+| `updatePortForwardingRule` | Replace an existing port forwarding rule, e.g. to enable/disable it or change ports. | `network-nat:rw` |
+| `deletePortForwardingRule` | Delete a port forwarding rule by ID. | `network-nat:rw` |
+| `createOneToOneNat` | Create a one-to-one (static) NAT rule on the gateway. Enabled rules expose the internal host; create with status:false to stage it. | `network-nat:rw` |
+| `updateOneToOneNat` | Replace an existing one-to-one NAT rule. | `network-nat:rw` |
+| `deleteOneToOneNat` | Delete a one-to-one NAT rule by ID. | `network-nat:rw` |
+
+#### DNS and gateway services
+
+| Tool | Description | Category |
+| --- | --- | --- |
+| `createLanDnsRule` | Create a LAN DNS rule (local DNS record: A/AAAA answer, CNAME, or conditional forward) served by the gateway to the selected LAN networks. | `network-lan:rw` |
+| `updateLanDnsRule` | Replace an existing LAN DNS rule. The preview lists fields that differ from the current rule. | `network-lan:rw` |
+| `deleteLanDnsRule` | Delete a LAN DNS rule by ID. | `network-lan:rw` |
+| `createDdnsEntry` | Create a dynamic DNS entry that keeps a hostname pointed at a gateway WAN address. | `network-services:rw` |
+| `updateDdnsEntry` | Replace an existing dynamic DNS entry. The provider password must be resent because reads never return it. | `network-services:rw` |
+| `deleteDdnsEntry` | Delete a dynamic DNS entry by ID. | `network-services:rw` |
+| `setUpnpSetting` | Enable or disable UPnP on the gateway. Enabling UPnP lets LAN devices open inbound ports automatically. | `network-services:rw` |
+| `setAlgSetting` | Enable or disable gateway application layer gateways (FTP, H.323, PPTP, SIP, IPsec passthrough). | `network-services:rw` |
+| `setSnmpSetting` | Enable or disable SNMPv1/v2c and SNMPv3 on site devices. The community string and v3 password are write-only and are not verified by readback. | `network-services:rw` |
+
+#### Filtering and threat management
+
+| Tool | Description | Category |
+| --- | --- | --- |
+| `createUrlFilterRule` | Create a gateway or AP URL/content filtering rule that blocks or allows URLs, keywords or categories for chosen networks, IP groups or SSIDs. | `firewall-acl:rw` |
+| `updateUrlFilterRule` | Replace an existing URL filtering rule, e.g. to enable/disable it. | `firewall-acl:rw` |
+| `deleteUrlFilterRule` | Delete a URL filtering rule by ID. | `firewall-acl:rw` |
+| `createMacFilter` | Create a gateway MAC filtering allow/deny entry (UniFi MAC ACL). Takes effect when MAC filtering is enabled (getMacFilteringGeneralSetting); a deny entry blocks the listed devices. | `wireless-auth:rw` |
+| `updateMacFilter` | Replace an existing MAC filtering entry. | `wireless-auth:rw` |
+| `deleteMacFilter` | Delete a MAC filtering entry by ID. | `wireless-auth:rw` |
+| `setAttackDefenseSetting` | Update gateway attack and DoS defense (flood limits, scan/ping-of-death protection, WAN ping blocking). | `firewall-traffic:rw` |
+| `setIpsConfig` | Enable or disable gateway IDS/IPS (threat management). Inspection adds gateway load and can reduce throughput. | `firewall-ids:rw` |
+
+#### VPN
+
+| Tool | Description | Category |
+| --- | --- | --- |
+| `updateSiteToSiteVpn` | Modify a site-to-site VPN, e.g. status:false to disable the tunnel. Tunnel traffic stops while it is down. | `vpn:rw` |
+| `deleteSiteToSiteVpn` | Delete a site-to-site VPN. Traffic between the sites stops. | `vpn:rw` |
+| `updateClientToSiteVpnServer` | Modify a client-to-site (remote access) VPN server, e.g. disable it. Connected remote users are dropped. | `vpn:rw` |
+| `deleteClientToSiteVpnServer` | Delete a client-to-site VPN server. Remote users can no longer connect. | `vpn:rw` |
+| `updateClientToSiteVpnClient` | Modify a gateway VPN client connection (the gateway dialing out to a VPN provider), e.g. disable it. | `vpn:rw` |
+| `deleteClientToSiteVpnClient` | Delete a gateway VPN client connection. Policy routes using it stop working. | `vpn:rw` |
+| `updateWireguard` | Replace a WireGuard interface, e.g. to enable/disable it or change its listen port. Peers reconnect. | `vpn:rw` |
+| `deleteWireguard` | Delete a WireGuard interface. Its peers can no longer connect. | `vpn:rw` |
+| `deleteWireguardPeer` | Delete a WireGuard peer. That remote device can no longer connect. | `vpn:rw` |
+
+#### Devices and clients
+
+| Tool | Description | Category |
+| --- | --- | --- |
+| `locateDevice` | Blink (or stop blinking) the locate LED of an adopted gateway, switch or AP so it can be found physically. Does not affect traffic. | `devices-general:rw` |
+| `forceProvisionDevice` | Force the controller to re-push the full configuration to an adopted device. The device can restart services or radios and briefly drop connected clients. | `devices-general:rw` |
+| `adoptDevice` | Adopt a pending (discovered, not yet managed) device into this site using its default login; devices with changed credentials must be adopted in the controller UI. The controller then provisions it with site configuration, which can reboot it. | `devices-general:rw` |
+| `startDeviceOnlineUpgrade` | Upgrade one adopted device to the latest firmware the controller offers online. Refused when getFirmwareInfo reports no newer version. The device reboots and its clients lose connectivity for several minutes. | `devices-general:rw` |
+| `recoverSwitchPortPoe` | Power-cycle PoE on switch ports (PoE recovery) to reboot powered devices such as cameras or APs. Connected devices lose power and connectivity until they boot. | `devices-switch:rw` |
+| `setClientName` | Rename a client (its display name in the controller). Does not affect connectivity. | `clients:rw` |
+| `setClientLockToAp` | Pin a wireless client to specific APs (lock to AP) or remove the pin, e.g. to keep a static IoT device on its nearest AP. Locking to APs out of its range disconnects the client. | `clients:rw` |
+| `authorizeHotspotClient` | Authorize a client on a hotspot (captive portal) network without it completing the portal, granting it internet access. The API reports acceptance only. | `clients:rw` |
+| `unauthorizeHotspotClient` | Revoke hotspot (captive portal) authorization for a client; it must pass the portal again. The API reports acceptance only. | `clients:rw` |
+
+#### Hotspot vouchers
+
+| Tool | Description | Category |
+| --- | --- | --- |
+| `createVoucherGroup` | Create a batch of hotspot guest vouchers. | `hotspot-vouchers:rw` |
+| `deleteVoucherGroup` | Delete a voucher group and revoke its unused vouchers. | `hotspot-vouchers:rw` |
+| `listVoucherGroups` | List hotspot voucher groups with their code counts, limits and validity. Returns every page. | `hotspot-vouchers:r` |
 ### Site & Client
 
 | Tool                         | Description                                                                  |

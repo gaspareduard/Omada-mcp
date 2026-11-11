@@ -3,23 +3,61 @@ import type { ToolCategory, ToolPermission } from '../config.js';
 import type { OmadaClient } from '../omadaClient/index.js';
 import { type CatalogOptions, type CatalogTool, registerCatalog } from '../server/catalog.js';
 import { logger } from '../utils/logger.js';
+import { registerAdoptDeviceTool } from './adoptDevice.js';
+import { registerAuthorizeHotspotClientTool } from './authorizeHotspotClient.js';
 import { registerBackupControllerTool } from './backupController.js';
 import { registerBackupControllerToFileServerTool } from './backupControllerToFileServer.js';
 import { registerBackupSitesTool } from './backupSites.js';
 import { registerBackupSitesToFileServerTool } from './backupSitesToFileServer.js';
 import { registerBlockClientTool } from './blockClient.js';
+import { registerCreateDdnsEntryTool } from './createDdnsEntry.js';
 import { registerCreateDhcpReservationTool } from './createDhcpReservation.js';
 import { registerCreateEapAclTool } from './createEapAcl.js';
 import { registerCreateGatewayAclTool } from './createGatewayAcl.js';
+import { registerCreateGroupProfileTool } from './createGroupProfile.js';
+import { registerCreateLanDnsRuleTool } from './createLanDnsRule.js';
+import { registerCreateLanNetworkTool } from './createLanNetwork.js';
+import { registerCreateLanProfileTool } from './createLanProfile.js';
+import { registerCreateMacFilterTool } from './createMacFilter.js';
+import { registerCreateMdnsRuleTool } from './createMdnsRule.js';
+import { registerCreateOneToOneNatTool } from './createOneToOneNat.js';
+import { registerCreatePolicyRouteTool } from './createPolicyRoute.js';
+import { registerCreatePortForwardingRuleTool } from './createPortForwardingRule.js';
+import { registerCreateSsidTool } from './createSsid.js';
+import { registerCreateStaticRouteTool } from './createStaticRoute.js';
 import { registerCreateSwitchAclTool } from './createSwitchAcl.js';
+import { registerCreateUrlFilterRuleTool } from './createUrlFilterRule.js';
+import { registerCreateVoucherGroupTool } from './createVoucherGroup.js';
+import { registerCreateWlanGroupTool } from './createWlanGroup.js';
 import { registerDeleteAclTool } from './deleteAcl.js';
 import { registerDeleteAppControlRuleTool } from './deleteAppControlRule.js';
 import { registerDeleteBandwidthControlRuleTool } from './deleteBandwidthControlRule.js';
+import { registerDeleteClientToSiteVpnClientTool } from './deleteClientToSiteVpnClient.js';
+import { registerDeleteClientToSiteVpnServerTool } from './deleteClientToSiteVpnServer.js';
+import { registerDeleteDdnsEntryTool } from './deleteDdnsEntry.js';
 import { registerDeleteDhcpReservationTool } from './deleteDhcpReservation.js';
+import { registerDeleteGroupProfileTool } from './deleteGroupProfile.js';
+import { registerDeleteLanDnsRuleTool } from './deleteLanDnsRule.js';
+import { registerDeleteLanNetworkTool } from './deleteLanNetwork.js';
+import { registerDeleteLanProfileTool } from './deleteLanProfile.js';
+import { registerDeleteMacFilterTool } from './deleteMacFilter.js';
+import { registerDeleteMdnsRuleTool } from './deleteMdnsRule.js';
+import { registerDeleteOneToOneNatTool } from './deleteOneToOneNat.js';
+import { registerDeletePolicyRouteTool } from './deletePolicyRoute.js';
+import { registerDeletePortForwardingRuleTool } from './deletePortForwardingRule.js';
+import { registerDeleteSiteToSiteVpnTool } from './deleteSiteToSiteVpn.js';
+import { registerDeleteSsidTool } from './deleteSsid.js';
+import { registerDeleteStaticRouteTool } from './deleteStaticRoute.js';
+import { registerDeleteUrlFilterRuleTool } from './deleteUrlFilterRule.js';
+import { registerDeleteVoucherGroupTool } from './deleteVoucherGroup.js';
+import { registerDeleteWireguardTool } from './deleteWireguard.js';
+import { registerDeleteWireguardPeerTool } from './deleteWireguardPeer.js';
+import { registerDeleteWlanGroupTool } from './deleteWlanGroup.js';
 import { registerDiagnoseCameraConnectivityTool } from './diagnoseCameraConnectivity.js';
 import { registerDiagnoseClientTool } from './diagnoseClient.js';
 import { registerDiagnoseLogsTool } from './diagnoseLogs.js';
 import { registerDisableClientRateLimitTool } from './disableClientRateLimit.js';
+import { registerForceProvisionDeviceTool } from './forceProvisionDevice.js';
 import { registerGetAccessControlTool } from './getAccessControl.js';
 import { registerGetAclConfigTypeSettingTool } from './getAclConfigTypeSetting.js';
 import { registerGetAdvancedVpnSettingTool } from './getAdvancedVpnSetting.js';
@@ -324,6 +362,7 @@ import { registerListGlobalAlertsTool } from './listGlobalAlerts.js';
 import { registerListGlobalEventsTool } from './listGlobalEvents.js';
 import { registerListGroupProfilesTool } from './listGroupProfiles.js';
 import { registerListMdnsProfileTool } from './listMdnsProfile.js';
+import { registerListMdnsRulesTool } from './listMdnsRules.js';
 import { registerListMostActiveClientsTool } from './listMostActiveClients.js';
 import { registerListOsgAclsTool } from './listOsgAcls.js';
 import { registerListPendingDevicesTool } from './listPendingDevices.js';
@@ -347,10 +386,13 @@ import { registerListSwitchNetworksTool } from './listSwitchNetworks.js';
 import { registerListTimeRangeProfilesTool } from './listTimeRangeProfiles.js';
 import { registerListUpgradeFirmwaresTool } from './listUpgradeFirmwares.js';
 import { registerListUpgradeOverviewFirmwaresTool } from './listUpgradeOverviewFirmwares.js';
+import { registerListVoucherGroupsTool } from './listVoucherGroups.js';
 import { registerListWireguardTool } from './listWireguard.js';
 import { registerListWireguardPeersTool } from './listWireguardPeers.js';
+import { registerLocateDeviceTool } from './locateDevice.js';
 import { registerRebootDeviceTool } from './rebootDevice.js';
 import { registerReconnectClientTool } from './reconnectClient.js';
+import { registerRecoverSwitchPortPoeTool } from './recoverSwitchPortPoe.js';
 import { registerRestoreControllerTool } from './restoreController.js';
 import { registerRestoreControllerFromFileServerTool } from './restoreControllerFromFileServer.js';
 import { registerRestoreSitesTool } from './restoreSites.js';
@@ -358,24 +400,50 @@ import { registerRestoreSitesFromFileServerTool } from './restoreSitesFromFileSe
 import { registerSearchDevicesTool } from './searchDevices.js';
 import { registerSetAccessControlTool } from './setAccessControl.js';
 import { registerSetAclConfigTypeSettingTool } from './setAclConfigTypeSetting.js';
+import { registerSetAlgSettingTool } from './setAlgSetting.js';
 import { registerSetApChannelLimitTool } from './setApChannelLimit.js';
 import { registerSetApConfigTool } from './setApConfig.js';
 import { registerSetApPowerSavingTool } from './setApPowerSaving.js';
 import { registerSetAppControlRuleTool } from './setAppControlRule.js';
 import { registerSetApRadioTool } from './setApRadio.js';
+import { registerSetAttackDefenseSettingTool } from './setAttackDefenseSetting.js';
 import { registerSetBandwidthControlRuleTool } from './setBandwidthControlRule.js';
+import { registerSetClientLockToApTool } from './setClientLockToAp.js';
+import { registerSetClientNameTool } from './setClientName.js';
 import { registerSetClientRateLimitTool } from './setClientRateLimit.js';
 import { registerSetClientRateLimitProfileTool } from './setClientRateLimitProfile.js';
 import { registerSetDeviceLedTool } from './setDeviceLed.js';
 import { registerSetFirewallSettingTool } from './setFirewallSetting.js';
 import { registerSetGatewayConfigTool } from './setGatewayConfig.js';
+import { registerSetIpsConfigTool } from './setIpsConfig.js';
+import { registerSetSnmpSettingTool } from './setSnmpSetting.js';
 import { registerSetSwitchPortsTool } from './setSwitchPorts.js';
+import { registerSetUpnpSettingTool } from './setUpnpSetting.js';
+import { registerStartDeviceOnlineUpgradeTool } from './startDeviceOnlineUpgrade.js';
+import { registerUnauthorizeHotspotClientTool } from './unauthorizeHotspotClient.js';
 import { registerUnblockClientTool } from './unblockClient.js';
+import { registerUpdateClientToSiteVpnClientTool } from './updateClientToSiteVpnClient.js';
+import { registerUpdateClientToSiteVpnServerTool } from './updateClientToSiteVpnServer.js';
+import { registerUpdateDdnsEntryTool } from './updateDdnsEntry.js';
 import { registerUpdateDhcpReservationTool } from './updateDhcpReservation.js';
 import { registerUpdateEapAclTool } from './updateEapAcl.js';
 import { registerUpdateGatewayAclTool } from './updateGatewayAcl.js';
+import { registerUpdateGroupProfileTool } from './updateGroupProfile.js';
+import { registerUpdateLanDnsRuleTool } from './updateLanDnsRule.js';
+import { registerUpdateLanNetworkTool } from './updateLanNetwork.js';
+import { registerUpdateLanProfileTool } from './updateLanProfile.js';
+import { registerUpdateMacFilterTool } from './updateMacFilter.js';
+import { registerUpdateMdnsRuleTool } from './updateMdnsRule.js';
+import { registerUpdateOneToOneNatTool } from './updateOneToOneNat.js';
+import { registerUpdatePolicyRouteTool } from './updatePolicyRoute.js';
+import { registerUpdatePortForwardingRuleTool } from './updatePortForwardingRule.js';
+import { registerUpdateSiteToSiteVpnTool } from './updateSiteToSiteVpn.js';
 import { registerUpdateSsidTool } from './updateSsid.js';
+import { registerUpdateStaticRouteTool } from './updateStaticRoute.js';
 import { registerUpdateSwitchAclTool } from './updateSwitchAcl.js';
+import { registerUpdateUrlFilterRuleTool } from './updateUrlFilterRule.js';
+import { registerUpdateWireguardTool } from './updateWireguard.js';
+import { registerUpdateWlanGroupTool } from './updateWlanGroup.js';
 
 // ---------------------------------------------------------------------------
 // Tool registry: each entry maps a register-function to its category and
@@ -806,6 +874,76 @@ const TOOL_REGISTRY: ToolEntry[] = [
     { fn: registerGetSiteTemplateListTool, category: 'sites', permission: 'read' },
     { fn: registerGetSiteTemplateDetailTool, category: 'sites', permission: 'read' },
     { fn: registerGetSiteTemplateConfigTool, category: 'sites', permission: 'read' },
+
+    // --- Networking parity writes (resourceMutationShared engine) ---
+    { fn: registerCreateLanDnsRuleTool, category: 'network-lan', permission: 'write' },
+    { fn: registerUpdateLanDnsRuleTool, category: 'network-lan', permission: 'write' },
+    { fn: registerDeleteLanDnsRuleTool, category: 'network-lan', permission: 'write' },
+    { fn: registerCreateStaticRouteTool, category: 'network-routing', permission: 'write' },
+    { fn: registerUpdateStaticRouteTool, category: 'network-routing', permission: 'write' },
+    { fn: registerDeleteStaticRouteTool, category: 'network-routing', permission: 'write' },
+    { fn: registerCreatePolicyRouteTool, category: 'network-routing', permission: 'write' },
+    { fn: registerUpdatePolicyRouteTool, category: 'network-routing', permission: 'write' },
+    { fn: registerDeletePolicyRouteTool, category: 'network-routing', permission: 'write' },
+    { fn: registerCreatePortForwardingRuleTool, category: 'network-nat', permission: 'write' },
+    { fn: registerUpdatePortForwardingRuleTool, category: 'network-nat', permission: 'write' },
+    { fn: registerDeletePortForwardingRuleTool, category: 'network-nat', permission: 'write' },
+    { fn: registerCreateOneToOneNatTool, category: 'network-nat', permission: 'write' },
+    { fn: registerUpdateOneToOneNatTool, category: 'network-nat', permission: 'write' },
+    { fn: registerDeleteOneToOneNatTool, category: 'network-nat', permission: 'write' },
+    { fn: registerCreateDdnsEntryTool, category: 'network-services', permission: 'write' },
+    { fn: registerUpdateDdnsEntryTool, category: 'network-services', permission: 'write' },
+    { fn: registerDeleteDdnsEntryTool, category: 'network-services', permission: 'write' },
+    { fn: registerCreateGroupProfileTool, category: 'profiles', permission: 'write' },
+    { fn: registerUpdateGroupProfileTool, category: 'profiles', permission: 'write' },
+    { fn: registerDeleteGroupProfileTool, category: 'profiles', permission: 'write' },
+    { fn: registerCreateMdnsRuleTool, category: 'network-services', permission: 'write' },
+    { fn: registerUpdateMdnsRuleTool, category: 'network-services', permission: 'write' },
+    { fn: registerDeleteMdnsRuleTool, category: 'network-services', permission: 'write' },
+    { fn: registerCreateLanProfileTool, category: 'network-lan', permission: 'write' },
+    { fn: registerUpdateLanProfileTool, category: 'network-lan', permission: 'write' },
+    { fn: registerDeleteLanProfileTool, category: 'network-lan', permission: 'write' },
+    { fn: registerCreateWlanGroupTool, category: 'wireless-ssid', permission: 'write' },
+    { fn: registerUpdateWlanGroupTool, category: 'wireless-ssid', permission: 'write' },
+    { fn: registerDeleteWlanGroupTool, category: 'wireless-ssid', permission: 'write' },
+    { fn: registerCreateSsidTool, category: 'wireless-ssid', permission: 'write' },
+    { fn: registerDeleteSsidTool, category: 'wireless-ssid', permission: 'write' },
+    { fn: registerCreateLanNetworkTool, category: 'network-lan', permission: 'write' },
+    { fn: registerUpdateLanNetworkTool, category: 'network-lan', permission: 'write' },
+    { fn: registerDeleteLanNetworkTool, category: 'network-lan', permission: 'write' },
+    { fn: registerCreateUrlFilterRuleTool, category: 'firewall-acl', permission: 'write' },
+    { fn: registerUpdateUrlFilterRuleTool, category: 'firewall-acl', permission: 'write' },
+    { fn: registerDeleteUrlFilterRuleTool, category: 'firewall-acl', permission: 'write' },
+    { fn: registerCreateMacFilterTool, category: 'wireless-auth', permission: 'write' },
+    { fn: registerUpdateMacFilterTool, category: 'wireless-auth', permission: 'write' },
+    { fn: registerDeleteMacFilterTool, category: 'wireless-auth', permission: 'write' },
+    { fn: registerUpdateSiteToSiteVpnTool, category: 'vpn', permission: 'write' },
+    { fn: registerDeleteSiteToSiteVpnTool, category: 'vpn', permission: 'write' },
+    { fn: registerUpdateClientToSiteVpnServerTool, category: 'vpn', permission: 'write' },
+    { fn: registerDeleteClientToSiteVpnServerTool, category: 'vpn', permission: 'write' },
+    { fn: registerUpdateClientToSiteVpnClientTool, category: 'vpn', permission: 'write' },
+    { fn: registerDeleteClientToSiteVpnClientTool, category: 'vpn', permission: 'write' },
+    { fn: registerUpdateWireguardTool, category: 'vpn', permission: 'write' },
+    { fn: registerDeleteWireguardTool, category: 'vpn', permission: 'write' },
+    { fn: registerDeleteWireguardPeerTool, category: 'vpn', permission: 'write' },
+    { fn: registerCreateVoucherGroupTool, category: 'hotspot-vouchers', permission: 'write' },
+    { fn: registerDeleteVoucherGroupTool, category: 'hotspot-vouchers', permission: 'write' },
+    { fn: registerSetUpnpSettingTool, category: 'network-services', permission: 'write' },
+    { fn: registerSetAlgSettingTool, category: 'network-services', permission: 'write' },
+    { fn: registerSetSnmpSettingTool, category: 'network-services', permission: 'write' },
+    { fn: registerSetAttackDefenseSettingTool, category: 'firewall-traffic', permission: 'write' },
+    { fn: registerSetIpsConfigTool, category: 'firewall-ids', permission: 'write' },
+    { fn: registerLocateDeviceTool, category: 'devices-general', permission: 'write' },
+    { fn: registerForceProvisionDeviceTool, category: 'devices-general', permission: 'write' },
+    { fn: registerAdoptDeviceTool, category: 'devices-general', permission: 'write' },
+    { fn: registerStartDeviceOnlineUpgradeTool, category: 'devices-general', permission: 'write' },
+    { fn: registerRecoverSwitchPortPoeTool, category: 'devices-switch', permission: 'write' },
+    { fn: registerSetClientNameTool, category: 'clients', permission: 'write' },
+    { fn: registerSetClientLockToApTool, category: 'clients', permission: 'write' },
+    { fn: registerAuthorizeHotspotClientTool, category: 'clients', permission: 'write' },
+    { fn: registerUnauthorizeHotspotClientTool, category: 'clients', permission: 'write' },
+    { fn: registerListMdnsRulesTool, category: 'network-services', permission: 'read' },
+    { fn: registerListVoucherGroupsTool, category: 'hotspot-vouchers', permission: 'read' },
 
     // --- Composite / troubleshooting tools ---
     { fn: registerGetNetworkHealthSummaryTool, category: 'dashboard', permission: 'read' },

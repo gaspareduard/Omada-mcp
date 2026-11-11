@@ -1,7 +1,7 @@
 import { readFileSync } from 'node:fs';
 import https from 'node:https';
-
 import axios, { type AxiosInstance, type AxiosRequestConfig } from 'axios';
+import type { z } from 'zod';
 
 import type { OmadaConnectionConfig } from '../config.js';
 import type {
@@ -37,9 +37,11 @@ import { MaintenanceOperations } from './maintenance.js';
 import { MonitorOperations } from './monitor.js';
 import { NetworkOperations, type SsidBasicConfig } from './network.js';
 import { RequestHandler } from './request.js';
+import type * as schemas from './requestSchemas.js';
 import { ScheduleOperations } from './schedules.js';
 import { SecurityOperations } from './security.js';
 import { SiteOperations } from './site.js';
+import { type Input, type macFilterListSchema, SiteConfigOperations, type urlFilterTypeSchema } from './siteConfig.js';
 import { type SwitchPortChange, SwitchPortOperations } from './switchPorts.js';
 
 export type { LogQueryOptions, SiteThreatListOptions };
@@ -59,6 +61,8 @@ export class OmadaClient {
 
     private readonly siteOps: SiteOperations;
     private readonly switchPortOps: SwitchPortOperations;
+
+    private readonly siteConfigOps: SiteConfigOperations;
 
     private readonly deviceOps: DeviceOperations;
 
@@ -110,6 +114,7 @@ export class OmadaClient {
         this.request = new RequestHandler(this.http, this.auth);
         this.siteOps = new SiteOperations(this.request, this.buildOmadaPath.bind(this), options.siteId);
         this.switchPortOps = new SwitchPortOperations(this.request, this.siteOps, this.buildOmadaPath.bind(this));
+        this.siteConfigOps = new SiteConfigOperations(this.request, this.siteOps, this.buildOmadaPath.bind(this));
         this.deviceOps = new DeviceOperations(this.request, this.siteOps, this.buildOmadaPath.bind(this));
         this.clientOps = new ClientOperations(this.request, this.siteOps, this.buildOmadaPath.bind(this));
         this.securityOps = new SecurityOperations(this.request, this.buildOmadaPath.bind(this));
@@ -1820,5 +1825,451 @@ export class OmadaClient {
     private buildOmadaPath(relativePath: string, version = 'v1'): string {
         const normalized = relativePath.startsWith('/') ? relativePath : `/${relativePath}`;
         return `/openapi/${version}/${encodeURIComponent(this.omadacId)}${normalized}`;
+    }
+
+    // ---- Site configuration writes (siteConfig.ts) ----
+
+    public async createLanNetwork(payload: Input<typeof schemas.lanNetworkOpenApiV2VOSchema>, siteId?: string, h?: CustomHeaders): Promise<unknown> {
+        return await this.siteConfigOps.createLanNetwork(payload, siteId, h);
+    }
+
+    public async updateLanNetwork(
+        networkId: string,
+        payload: Input<typeof schemas.lanNetworkOpenApiV2VOSchema>,
+        siteId?: string,
+        h?: CustomHeaders
+    ): Promise<unknown> {
+        return await this.siteConfigOps.updateLanNetwork(networkId, payload, siteId, h);
+    }
+
+    public async deleteLanNetwork(networkId: string, siteId?: string, h?: CustomHeaders): Promise<unknown> {
+        return await this.siteConfigOps.deleteLanNetwork(networkId, siteId, h);
+    }
+
+    public async createLanProfile(
+        payload: Input<typeof schemas.lanProfileConfigOpenApiVOSchema>,
+        siteId?: string,
+        h?: CustomHeaders
+    ): Promise<unknown> {
+        return await this.siteConfigOps.createLanProfile(payload, siteId, h);
+    }
+
+    public async updateLanProfile(
+        profileId: string,
+        payload: Input<typeof schemas.lanProfileConfigOpenApiVOSchema>,
+        siteId?: string,
+        h?: CustomHeaders
+    ): Promise<unknown> {
+        return await this.siteConfigOps.updateLanProfile(profileId, payload, siteId, h);
+    }
+
+    public async deleteLanProfile(profileId: string, siteId?: string, h?: CustomHeaders): Promise<unknown> {
+        return await this.siteConfigOps.deleteLanProfile(profileId, siteId, h);
+    }
+
+    public async createWlanGroup(
+        payload: Input<typeof schemas.createWlanGroupOpenApiVOSchema>,
+        siteId?: string,
+        h?: CustomHeaders
+    ): Promise<unknown> {
+        return await this.siteConfigOps.createWlanGroup(payload, siteId, h);
+    }
+
+    public async updateWlanGroup(
+        wlanId: string,
+        payload: Input<typeof schemas.updateWlanGroupOpenApiVOSchema>,
+        siteId?: string,
+        h?: CustomHeaders
+    ): Promise<unknown> {
+        return await this.siteConfigOps.updateWlanGroup(wlanId, payload, siteId, h);
+    }
+
+    public async deleteWlanGroup(wlanId: string, siteId?: string, h?: CustomHeaders): Promise<unknown> {
+        return await this.siteConfigOps.deleteWlanGroup(wlanId, siteId, h);
+    }
+
+    public async createSsid(
+        wlanId: string,
+        payload: Input<typeof schemas.createSsidOpenApiVOSchema>,
+        siteId?: string,
+        h?: CustomHeaders
+    ): Promise<unknown> {
+        return await this.siteConfigOps.createSsid(wlanId, payload, siteId, h);
+    }
+
+    public async deleteSsid(wlanId: string, ssidId: string, siteId?: string, h?: CustomHeaders): Promise<unknown> {
+        return await this.siteConfigOps.deleteSsid(wlanId, ssidId, siteId, h);
+    }
+
+    public async createGroupProfile(payload: Input<typeof schemas.createGroupOpenApiVOSchema>, siteId?: string, h?: CustomHeaders): Promise<unknown> {
+        return await this.siteConfigOps.createGroupProfile(payload, siteId, h);
+    }
+
+    public async updateGroupProfile(
+        groupType: string,
+        groupId: string,
+        payload: Input<typeof schemas.createGroupOpenApiVOSchema>,
+        siteId?: string,
+        h?: CustomHeaders
+    ): Promise<unknown> {
+        return await this.siteConfigOps.updateGroupProfile(groupType, groupId, payload, siteId, h);
+    }
+
+    public async deleteGroupProfile(groupType: string, groupId: string, siteId?: string, h?: CustomHeaders): Promise<unknown> {
+        return await this.siteConfigOps.deleteGroupProfile(groupType, groupId, siteId, h);
+    }
+
+    public async listMdnsRules(siteId?: string, h?: CustomHeaders): Promise<unknown[]> {
+        return await this.siteConfigOps.listMdnsRules(siteId, h);
+    }
+
+    public async createMdnsRule(payload: Input<typeof schemas.createMdnsRuleOpenApiVOSchema>, siteId?: string, h?: CustomHeaders): Promise<unknown> {
+        return await this.siteConfigOps.createMdnsRule(payload, siteId, h);
+    }
+
+    public async updateMdnsRule(
+        mdnsId: string,
+        payload: Input<typeof schemas.createMdnsRuleOpenApiVOSchema>,
+        siteId?: string,
+        h?: CustomHeaders
+    ): Promise<unknown> {
+        return await this.siteConfigOps.updateMdnsRule(mdnsId, payload, siteId, h);
+    }
+
+    public async deleteMdnsRule(mdnsId: string, siteId?: string, h?: CustomHeaders): Promise<unknown> {
+        return await this.siteConfigOps.deleteMdnsRule(mdnsId, siteId, h);
+    }
+
+    public async listLanDnsRules(siteId?: string, h?: CustomHeaders): Promise<unknown[]> {
+        return await this.siteConfigOps.listLanDnsRules(siteId, h);
+    }
+
+    public async createLanDnsRule(payload: Input<typeof schemas.lanDnsOpenApiVOSchema>, siteId?: string, h?: CustomHeaders): Promise<unknown> {
+        return await this.siteConfigOps.createLanDnsRule(payload, siteId, h);
+    }
+
+    public async updateLanDnsRule(
+        dnsId: string,
+        payload: Input<typeof schemas.lanDnsOpenApiVOSchema>,
+        siteId?: string,
+        h?: CustomHeaders
+    ): Promise<unknown> {
+        return await this.siteConfigOps.updateLanDnsRule(dnsId, payload, siteId, h);
+    }
+
+    public async deleteLanDnsRule(dnsId: string, siteId?: string, h?: CustomHeaders): Promise<unknown> {
+        return await this.siteConfigOps.deleteLanDnsRule(dnsId, siteId, h);
+    }
+
+    public async listDdnsEntries(siteId?: string, h?: CustomHeaders): Promise<unknown[]> {
+        return await this.siteConfigOps.listDdnsEntries(siteId, h);
+    }
+
+    public async createDdnsEntry(payload: Input<typeof schemas.createDdnsOpenApiVOSchema>, siteId?: string, h?: CustomHeaders): Promise<unknown> {
+        return await this.siteConfigOps.createDdnsEntry(payload, siteId, h);
+    }
+
+    public async updateDdnsEntry(
+        ddnsId: string,
+        payload: Input<typeof schemas.createDdnsOpenApiVOSchema>,
+        siteId?: string,
+        h?: CustomHeaders
+    ): Promise<unknown> {
+        return await this.siteConfigOps.updateDdnsEntry(ddnsId, payload, siteId, h);
+    }
+
+    public async deleteDdnsEntry(ddnsId: string, siteId?: string, h?: CustomHeaders): Promise<unknown> {
+        return await this.siteConfigOps.deleteDdnsEntry(ddnsId, siteId, h);
+    }
+
+    public async setUpnpSetting(payload: Input<typeof schemas.upnpSettingOpenApiVOSchema>, siteId?: string, h?: CustomHeaders): Promise<unknown> {
+        return await this.siteConfigOps.setUpnpSetting(payload, siteId, h);
+    }
+
+    public async setAlgSetting(payload: Input<typeof schemas.aLGSettingSchema>, siteId?: string, h?: CustomHeaders): Promise<unknown> {
+        return await this.siteConfigOps.setAlgSetting(payload, siteId, h);
+    }
+
+    public async setSnmpSetting(payload: Input<typeof schemas.snmpSettingOpenApiVOSchema>, siteId?: string, h?: CustomHeaders): Promise<unknown> {
+        return await this.siteConfigOps.setSnmpSetting(payload, siteId, h);
+    }
+
+    public async createPortForwarding(
+        payload: Input<typeof schemas.portForwardingConfigSchema>,
+        siteId?: string,
+        h?: CustomHeaders
+    ): Promise<unknown> {
+        return await this.siteConfigOps.createPortForwarding(payload, siteId, h);
+    }
+
+    public async updatePortForwarding(
+        portForwardingId: string,
+        payload: Input<typeof schemas.portForwardingConfigSchema>,
+        siteId?: string,
+        h?: CustomHeaders
+    ): Promise<unknown> {
+        return await this.siteConfigOps.updatePortForwarding(portForwardingId, payload, siteId, h);
+    }
+
+    public async deletePortForwarding(portForwardingId: string, siteId?: string, h?: CustomHeaders): Promise<unknown> {
+        return await this.siteConfigOps.deletePortForwarding(portForwardingId, siteId, h);
+    }
+
+    public async listOneToOneNats(siteId?: string, h?: CustomHeaders): Promise<unknown[]> {
+        return await this.siteConfigOps.listOneToOneNats(siteId, h);
+    }
+
+    public async createOneToOneNat(payload: Input<typeof schemas.otoNatOpenApiVOSchema>, siteId?: string, h?: CustomHeaders): Promise<unknown> {
+        return await this.siteConfigOps.createOneToOneNat(payload, siteId, h);
+    }
+
+    public async updateOneToOneNat(
+        otonatId: string,
+        payload: Input<typeof schemas.otoNatOpenApiVOSchema>,
+        siteId?: string,
+        h?: CustomHeaders
+    ): Promise<unknown> {
+        return await this.siteConfigOps.updateOneToOneNat(otonatId, payload, siteId, h);
+    }
+
+    public async deleteOneToOneNat(otonatId: string, siteId?: string, h?: CustomHeaders): Promise<unknown> {
+        return await this.siteConfigOps.deleteOneToOneNat(otonatId, siteId, h);
+    }
+
+    public async createStaticRoute(payload: Input<typeof schemas.staticRoutingConfigSchema>, siteId?: string, h?: CustomHeaders): Promise<unknown> {
+        return await this.siteConfigOps.createStaticRoute(payload, siteId, h);
+    }
+
+    public async updateStaticRoute(
+        staticRoutingId: string,
+        payload: Input<typeof schemas.staticRoutingConfigSchema>,
+        siteId?: string,
+        h?: CustomHeaders
+    ): Promise<unknown> {
+        return await this.siteConfigOps.updateStaticRoute(staticRoutingId, payload, siteId, h);
+    }
+
+    public async deleteStaticRoute(staticRoutingId: string, siteId?: string, h?: CustomHeaders): Promise<unknown> {
+        return await this.siteConfigOps.deleteStaticRoute(staticRoutingId, siteId, h);
+    }
+
+    public async createPolicyRoute(payload: Input<typeof schemas.policyRoutingConfigSchema>, siteId?: string, h?: CustomHeaders): Promise<unknown> {
+        return await this.siteConfigOps.createPolicyRoute(payload, siteId, h);
+    }
+
+    public async updatePolicyRoute(
+        policyRoutingId: string,
+        payload: Input<typeof schemas.policyRoutingConfigSchema>,
+        siteId?: string,
+        h?: CustomHeaders
+    ): Promise<unknown> {
+        return await this.siteConfigOps.updatePolicyRoute(policyRoutingId, payload, siteId, h);
+    }
+
+    public async deletePolicyRoute(policyRoutingId: string, siteId?: string, h?: CustomHeaders): Promise<unknown> {
+        return await this.siteConfigOps.deletePolicyRoute(policyRoutingId, siteId, h);
+    }
+
+    public async listUrlFilterRules(type: z.input<typeof urlFilterTypeSchema>, siteId?: string, h?: CustomHeaders): Promise<unknown[]> {
+        return await this.siteConfigOps.listUrlFilterRules(type, siteId, h);
+    }
+
+    public async createUrlFilterRule(
+        payload: Input<typeof schemas.urlFilteringOpenApiVOSchema>,
+        siteId?: string,
+        h?: CustomHeaders
+    ): Promise<unknown> {
+        return await this.siteConfigOps.createUrlFilterRule(payload, siteId, h);
+    }
+
+    public async updateUrlFilterRule(
+        ruleId: string,
+        payload: Input<typeof schemas.urlFilteringOpenApiVOSchema>,
+        siteId?: string,
+        h?: CustomHeaders
+    ): Promise<unknown> {
+        return await this.siteConfigOps.updateUrlFilterRule(ruleId, payload, siteId, h);
+    }
+
+    public async deleteUrlFilterRule(ruleId: string, siteId?: string, h?: CustomHeaders): Promise<unknown> {
+        return await this.siteConfigOps.deleteUrlFilterRule(ruleId, siteId, h);
+    }
+
+    public async setAttackDefenseSetting(
+        payload: Input<typeof schemas.attackDefenseSettingSchema>,
+        siteId?: string,
+        h?: CustomHeaders
+    ): Promise<unknown> {
+        return await this.siteConfigOps.setAttackDefenseSetting(payload, siteId, h);
+    }
+
+    public async setIpsConfig(payload: Input<typeof schemas.ipsInfoSchema>, siteId?: string, h?: CustomHeaders): Promise<unknown> {
+        return await this.siteConfigOps.setIpsConfig(payload, siteId, h);
+    }
+
+    public async listMacFilters(list: z.input<typeof macFilterListSchema>, siteId?: string, h?: CustomHeaders): Promise<unknown[]> {
+        return await this.siteConfigOps.listMacFilters(list, siteId, h);
+    }
+
+    public async createMacFilter(payload: Input<typeof schemas.macFilteringSchema>, siteId?: string, h?: CustomHeaders): Promise<unknown> {
+        return await this.siteConfigOps.createMacFilter(payload, siteId, h);
+    }
+
+    public async updateMacFilter(
+        filterId: string,
+        payload: Input<typeof schemas.macFilteringSchema>,
+        siteId?: string,
+        h?: CustomHeaders
+    ): Promise<unknown> {
+        return await this.siteConfigOps.updateMacFilter(filterId, payload, siteId, h);
+    }
+
+    public async deleteMacFilter(filterId: string, siteId?: string, h?: CustomHeaders): Promise<unknown> {
+        return await this.siteConfigOps.deleteMacFilter(filterId, siteId, h);
+    }
+
+    public async deleteSiteToSiteVpn(vpnId: string, siteId?: string, h?: CustomHeaders): Promise<unknown> {
+        return await this.siteConfigOps.deleteSiteToSiteVpn(vpnId, siteId, h);
+    }
+
+    public async updateSiteToSiteVpn(
+        vpnId: string,
+        payload: Input<typeof schemas.siteToSiteVpnSchema>,
+        siteId?: string,
+        h?: CustomHeaders
+    ): Promise<unknown> {
+        return await this.siteConfigOps.updateSiteToSiteVpn(vpnId, payload, siteId, h);
+    }
+
+    public async deleteClientToSiteVpnServer(vpnId: string, siteId?: string, h?: CustomHeaders): Promise<unknown> {
+        return await this.siteConfigOps.deleteClientToSiteVpnServer(vpnId, siteId, h);
+    }
+
+    public async updateClientToSiteVpnServer(
+        vpnId: string,
+        payload: Input<typeof schemas.clientToSiteVpnServerSchema>,
+        siteId?: string,
+        h?: CustomHeaders
+    ): Promise<unknown> {
+        return await this.siteConfigOps.updateClientToSiteVpnServer(vpnId, payload, siteId, h);
+    }
+
+    public async deleteClientToSiteVpnClient(vpnId: string, siteId?: string, h?: CustomHeaders): Promise<unknown> {
+        return await this.siteConfigOps.deleteClientToSiteVpnClient(vpnId, siteId, h);
+    }
+
+    public async updateClientToSiteVpnClient(
+        vpnId: string,
+        payload: Input<typeof schemas.clientToSiteVpnClientSchema>,
+        siteId?: string,
+        h?: CustomHeaders
+    ): Promise<unknown> {
+        return await this.siteConfigOps.updateClientToSiteVpnClient(vpnId, payload, siteId, h);
+    }
+
+    public async listClientToSiteVpnClientEntries(siteId?: string, h?: CustomHeaders): Promise<unknown[]> {
+        return await this.siteConfigOps.listClientToSiteVpnClientEntries(siteId, h);
+    }
+
+    public async listWireguardTunnels(siteId?: string, h?: CustomHeaders): Promise<unknown[]> {
+        return await this.siteConfigOps.listWireguardTunnels(siteId, h);
+    }
+
+    public async listWireguardPeerEntries(siteId?: string, h?: CustomHeaders): Promise<unknown[]> {
+        return await this.siteConfigOps.listWireguardPeerEntries(siteId, h);
+    }
+
+    public async updateWireguard(
+        id: string,
+        payload: Input<typeof schemas.wireguardOpenApiVOSchema>,
+        siteId?: string,
+        h?: CustomHeaders
+    ): Promise<unknown> {
+        return await this.siteConfigOps.updateWireguard(id, payload, siteId, h);
+    }
+
+    public async deleteWireguard(id: string, siteId?: string, h?: CustomHeaders): Promise<unknown> {
+        return await this.siteConfigOps.deleteWireguard(id, siteId, h);
+    }
+
+    public async deleteWireguardPeer(id: string, siteId?: string, h?: CustomHeaders): Promise<unknown> {
+        return await this.siteConfigOps.deleteWireguardPeer(id, siteId, h);
+    }
+
+    public async locateDevice(
+        deviceMac: string,
+        payload: Input<typeof schemas.locateDeviceRequest03Schema>,
+        siteId?: string,
+        h?: CustomHeaders
+    ): Promise<unknown> {
+        return await this.siteConfigOps.locateDevice(deviceMac, payload, siteId, h);
+    }
+
+    public async forceProvisionDevice(deviceMac: string, siteId?: string, h?: CustomHeaders): Promise<unknown> {
+        return await this.siteConfigOps.forceProvisionDevice(deviceMac, siteId, h);
+    }
+
+    public async adoptDevice(
+        deviceMac: string,
+        payload: Input<typeof schemas.adoptDeviceRequest03Schema>,
+        siteId?: string,
+        h?: CustomHeaders
+    ): Promise<unknown> {
+        return await this.siteConfigOps.adoptDevice(deviceMac, payload, siteId, h);
+    }
+
+    public async startDeviceOnlineUpgrade(deviceMac: string, siteId?: string, h?: CustomHeaders): Promise<unknown> {
+        return await this.siteConfigOps.startDeviceOnlineUpgrade(deviceMac, siteId, h);
+    }
+
+    public async recoverSwitchPortPoe(
+        switchMac: string,
+        payload: Input<typeof schemas.oswPoeRecoverOpenApiVO03Schema>,
+        siteId?: string,
+        h?: CustomHeaders
+    ): Promise<unknown> {
+        return await this.siteConfigOps.recoverSwitchPortPoe(switchMac, payload, siteId, h);
+    }
+
+    public async setClientName(
+        clientMac: string,
+        payload: Input<typeof schemas.clientNameSetting05Schema>,
+        siteId?: string,
+        h?: CustomHeaders
+    ): Promise<unknown> {
+        return await this.siteConfigOps.setClientName(clientMac, payload, siteId, h);
+    }
+
+    public async setClientLockToAp(
+        clientMac: string,
+        payload: Input<typeof schemas.clientLockToAPSetting05Schema>,
+        siteId?: string,
+        h?: CustomHeaders
+    ): Promise<unknown> {
+        return await this.siteConfigOps.setClientLockToAp(clientMac, payload, siteId, h);
+    }
+
+    public async authorizeHotspotClient(clientMac: string, siteId?: string, h?: CustomHeaders): Promise<unknown> {
+        return await this.siteConfigOps.authorizeHotspotClient(clientMac, siteId, h);
+    }
+
+    public async unauthorizeHotspotClient(clientMac: string, siteId?: string, h?: CustomHeaders): Promise<unknown> {
+        return await this.siteConfigOps.unauthorizeHotspotClient(clientMac, siteId, h);
+    }
+
+    public async listVoucherGroups(siteId?: string, h?: CustomHeaders): Promise<unknown[]> {
+        return await this.siteConfigOps.listVoucherGroups(siteId, h);
+    }
+
+    public async createVoucherGroup(
+        payload: Input<typeof schemas.createVoucherGroupOpenApiVO06Schema>,
+        siteId?: string,
+        h?: CustomHeaders
+    ): Promise<unknown> {
+        return await this.siteConfigOps.createVoucherGroup(payload, siteId, h);
+    }
+
+    public async deleteVoucherGroup(groupId: string, siteId?: string, h?: CustomHeaders): Promise<unknown> {
+        return await this.siteConfigOps.deleteVoucherGroup(groupId, siteId, h);
     }
 }
