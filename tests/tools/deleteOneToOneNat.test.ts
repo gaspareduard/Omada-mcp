@@ -8,7 +8,7 @@ const current = {
     name: 'mcp-test',
     status: false,
     interfaceIds: ['wan-1'],
-    internalIp: '192.168.50.250',
+    internalIp: '192.0.2.250',
     externalIp: '198.51.100.10',
     dmz: false,
     id: 'id-1',

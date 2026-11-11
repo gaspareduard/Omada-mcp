@@ -9,7 +9,7 @@ const current = {
     status: false,
     destinations: ['198.51.100.0/24'],
     routeType: 0,
-    nextHopIp: '192.168.0.250',
+    nextHopIp: '192.0.2.1',
     metric: 1,
     id: 'id-1',
 };

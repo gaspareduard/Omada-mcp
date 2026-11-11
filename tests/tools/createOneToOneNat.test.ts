@@ -5,7 +5,7 @@ import type { OmadaClient } from '../../src/omadaClient/index.js';
 import { OmadaApiError } from '../../src/omadaClient/request.js';
 import { registerCreateOneToOneNatTool } from '../../src/tools/createOneToOneNat.js';
 
-const payload = { name: 'mcp-test', status: false, interfaceIds: ['wan-1'], internalIp: '192.168.50.250', externalIp: '198.51.100.10', dmz: false };
+const payload = { name: 'mcp-test', status: false, interfaceIds: ['wan-1'], internalIp: '192.0.2.250', externalIp: '198.51.100.10', dmz: false };
 
 describe('tools/createOneToOneNat', () => {
     let handler: (args: Record<string, unknown>, extra: { sessionId?: string }) => Promise<{ structuredContent?: Record<string, unknown> }>;
@@ -23,7 +23,7 @@ describe('tools/createOneToOneNat', () => {
                         name: 'mcp-test',
                         status: false,
                         interfaceIds: ['wan-1'],
-                        internalIp: '192.168.50.250',
+                        internalIp: '192.0.2.250',
                         externalIp: '198.51.100.10',
                         dmz: false,
                         id: 'new-1',

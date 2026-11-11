@@ -5,7 +5,7 @@ import type { OmadaClient } from '../../src/omadaClient/index.js';
 import { OmadaApiError } from '../../src/omadaClient/request.js';
 import { registerCreateStaticRouteTool } from '../../src/tools/createStaticRoute.js';
 
-const payload = { name: 'mcp-test', status: false, destinations: ['198.51.100.0/24'], routeType: 0, nextHopIp: '192.168.0.250', metric: 1 };
+const payload = { name: 'mcp-test', status: false, destinations: ['198.51.100.0/24'], routeType: 0, nextHopIp: '192.0.2.1', metric: 1 };
 
 describe('tools/createStaticRoute', () => {
     let handler: (args: Record<string, unknown>, extra: { sessionId?: string }) => Promise<{ structuredContent?: Record<string, unknown> }>;
@@ -24,7 +24,7 @@ describe('tools/createStaticRoute', () => {
                         status: false,
                         destinations: ['198.51.100.0/24'],
                         routeType: 0,
-                        nextHopIp: '192.168.0.250',
+                        nextHopIp: '192.0.2.1',
                         metric: 1,
                         id: 'new-1',
                     },

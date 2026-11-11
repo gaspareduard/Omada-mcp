@@ -4,12 +4,12 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { OmadaClient } from '../../src/omadaClient/index.js';
 import { registerUpdateOneToOneNatTool } from '../../src/tools/updateOneToOneNat.js';
 
-const payload = { name: 'mcp-test', status: false, interfaceIds: ['wan-1'], internalIp: '192.168.50.250', externalIp: '198.51.100.10', dmz: false };
+const payload = { name: 'mcp-test', status: false, interfaceIds: ['wan-1'], internalIp: '192.0.2.250', externalIp: '198.51.100.10', dmz: false };
 const current = {
     name: 'mcp-test',
     status: true,
     interfaceIds: ['wan-1'],
-    internalIp: '192.168.50.250',
+    internalIp: '192.0.2.250',
     externalIp: '198.51.100.10',
     dmz: false,
     id: 'id-1',
@@ -31,7 +31,7 @@ describe('tools/updateOneToOneNat', () => {
                         name: 'mcp-test',
                         status: false,
                         interfaceIds: ['wan-1'],
-                        internalIp: '192.168.50.250',
+                        internalIp: '192.0.2.250',
                         externalIp: '198.51.100.10',
                         dmz: false,
                         id: 'id-1',
