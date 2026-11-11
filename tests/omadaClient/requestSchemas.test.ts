@@ -37,4 +37,20 @@ describe('omadaClient/requestSchemas (generated)', () => {
         expect(schemas.lanDnsOpenApiVOSchema.safeParse({ enable: false, name: '', domain: 'a.example', type: 0 }).success).toBe(false);
         expect(schemas.oswPoeRecoverOpenApiVO03Schema.safeParse({ ports: [1.5] }).success).toBe(false);
     });
+
+    it('applies integer bounds documented only in field prose (S4)', () => {
+        const wireguard = {
+            name: 'wg',
+            status: true,
+            listenPort: 51820,
+            localIp: '10.0.0.1',
+            mtu: 1420,
+            privateKey: 'AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=',
+        };
+        expect(schemas.wireguardOpenApiVOSchema.safeParse(wireguard).success).toBe(true);
+        expect(schemas.wireguardOpenApiVOSchema.safeParse({ ...wireguard, mtu: -1 }).success).toBe(false);
+        expect(schemas.wireguardOpenApiVOSchema.safeParse({ ...wireguard, listenPort: 999999 }).success).toBe(false);
+        const route = { name: 'r', status: false, destinations: [], routeType: 0, metric: 16 };
+        expect(schemas.staticRoutingConfigSchema.safeParse(route).success).toBe(false);
+    });
 });

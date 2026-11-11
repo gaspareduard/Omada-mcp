@@ -18,7 +18,7 @@ describe('tools/createWlanGroup', () => {
         client = {
             getWlanGroupList: vi.fn(async () => state),
             createWlanGroup: vi.fn(() => {
-                state = [{ name: 'mcp-test', clone: false, wlanId: 'new-1' }];
+                state = [{ wlanId: 'new-1', name: 'mcp-test', primary: false }];
                 return Promise.resolve({});
             }),
         };

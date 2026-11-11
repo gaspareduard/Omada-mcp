@@ -110,6 +110,11 @@ describe('tools/resourceMutationShared', () => {
             });
         });
 
+        it('keeps an unacknowledged write unknown when fields are unreadable (S2)', async () => {
+            const result = await pollVerification(async () => ({ name: 'n' }), { name: 'n', status: true }, false, fast);
+            expect(result).toMatchObject({ status: 'unknown', attempts: 1 });
+        });
+
         it('downgrades an unacknowledged, unconfirmed write to unknown', async () => {
             const result = await pollVerification(async () => ({ name: 'old' }), { name: 'new' }, false, fast);
             expect(result.status).toBe('unknown');
@@ -298,6 +303,48 @@ describe('tools/resourceMutationShared', () => {
             });
             expect(write).toHaveBeenCalledTimes(1);
             expect(result).toMatchObject({ noOp: false, verification: { status: 'verified' }, notVerifiedFields: ['secret'], warnings: ['w'] });
+        });
+    });
+
+    describe('unacknowledged writes with write-only fields (S1)', () => {
+        const timeout = () => Promise.reject(new Error('timeout'));
+
+        it('does not report a secret update as verified', async () => {
+            const result = await runUpdate({
+                spec: { label: 'DDNS entry', list: snapshots([{ id: 'a', name: 'n' }]), writeOnly: ['password'] },
+                id: 'a',
+                payload: { name: 'n', password: 'new' },
+                dryRun: false,
+                write: timeout,
+                verify: fast,
+            });
+            expect(result).toMatchObject({ writeAcknowledged: false, verification: { status: 'unknown' } });
+            expect((result.verification as { reason: string }).reason).toContain('write-only fields (password)');
+        });
+
+        it('does not report a secret settings change as verified', async () => {
+            const result = await runSettings({
+                label: 'SNMP',
+                read: async () => ({ snmpV1V2CEnable: true }),
+                payload: { snmpV1V2CEnable: true, communityString: 'new' },
+                writeOnly: ['communityString'],
+                dryRun: false,
+                write: timeout,
+                verify: fast,
+            });
+            expect(result).toMatchObject({ writeAcknowledged: false, verification: { status: 'unknown' } });
+        });
+
+        it('still verifies acknowledged secret updates by their readable fields', async () => {
+            const result = await runUpdate({
+                spec: { label: 'DDNS entry', list: snapshots([{ id: 'a', name: 'n' }]), writeOnly: ['password'] },
+                id: 'a',
+                payload: { name: 'n', password: 'new' },
+                dryRun: false,
+                write: () => Promise.resolve(),
+                verify: fast,
+            });
+            expect(result).toMatchObject({ writeAcknowledged: true, verification: { status: 'verified' }, notVerifiedFields: ['password'] });
         });
     });
 

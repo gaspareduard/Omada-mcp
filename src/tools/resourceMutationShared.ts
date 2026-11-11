@@ -166,7 +166,8 @@ export async function pollVerification(
         }
         const compared = compareRequestedFields(requested, observed);
         last = { ...compared, attempts: attempt };
-        if (compared.status === 'verified' || compared.status === 'unverifiable') return last;
+        // Stop polling, but still apply the unacknowledged-write rule below.
+        if (compared.status === 'verified' || compared.status === 'unverifiable') break;
     }
     if (!acknowledged && last.status !== 'verified') {
         return {
@@ -176,6 +177,19 @@ export async function pollVerification(
         };
     }
     return last;
+}
+
+/**
+ * When a write was not acknowledged, matching readable fields cannot prove that requested
+ * write-only fields (secrets) changed, so the outcome stays unknown.
+ */
+function guardWriteOnly(verification: Verification, acknowledged: boolean, writeOnlyFields: string[]): Verification {
+    if (acknowledged || writeOnlyFields.length === 0 || verification.status !== 'verified') return verification;
+    return {
+        ...verification,
+        status: 'unknown',
+        reason: `The write was not acknowledged and write-only fields (${writeOnlyFields.join(', ')}) cannot be read back. Read current state before retrying.`,
+    };
 }
 
 export interface CreateInput {
@@ -249,11 +263,15 @@ export async function runUpdate(input: UpdateInput): Promise<RecordLike> {
         return { noOp: true, writeAcknowledged: false, id, verification: { ...current, attempts: 0 }, ...warnings };
     }
     const outcome = await attemptWrite(spec.label, 'update', input.write);
-    const verification = await pollVerification(
-        async () => await verificationView(spec, findRecord(await readRecords(spec), id, spec.idKeys)),
-        requested,
+    const verification = guardWriteOnly(
+        await pollVerification(
+            async () => await verificationView(spec, findRecord(await readRecords(spec), id, spec.idKeys)),
+            requested,
+            outcome.acknowledged,
+            input.verify
+        ),
         outcome.acknowledged,
-        input.verify
+        writeOnlyRequested(payload, spec.writeOnly)
     );
     return {
         noOp: false,
@@ -323,7 +341,11 @@ export async function runSettings(input: SettingsInput): Promise<RecordLike> {
     }
     if (alreadyMatches) return { noOp: true, writeAcknowledged: false, verification: { ...current, attempts: 0 }, ...warnings };
     const outcome = await attemptWrite(input.label, 'settings update', input.write);
-    const verification = await pollVerification(readObject, requested, outcome.acknowledged, input.verify);
+    const verification = guardWriteOnly(
+        await pollVerification(readObject, requested, outcome.acknowledged, input.verify),
+        outcome.acknowledged,
+        writeOnlyRequested(input.payload, input.writeOnly)
+    );
     return {
         noOp: false,
         writeAcknowledged: outcome.acknowledged,

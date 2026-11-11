@@ -4,7 +4,15 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { OmadaClient } from '../../src/omadaClient/index.js';
 import { registerDeleteWireguardTool } from '../../src/tools/deleteWireguard.js';
 
-const current = { name: 'mcp-test', status: true, listenPort: 51820, localIp: '10.66.0.1', mtu: 1420, privateKey: 'not-a-real-key', id: 'id-1' };
+const current = {
+    name: 'mcp-test',
+    status: true,
+    listenPort: 51820,
+    localIp: '10.66.0.1',
+    mtu: 1420,
+    privateKey: 'AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=',
+    id: 'id-1',
+};
 
 describe('tools/deleteWireguard', () => {
     let handler: (args: Record<string, unknown>, extra: { sessionId?: string }) => Promise<{ structuredContent?: Record<string, unknown> }>;

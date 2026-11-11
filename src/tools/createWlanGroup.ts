@@ -32,6 +32,8 @@ export function registerCreateWlanGroupTool(server: McpServer, client: Client): 
                         label: 'WLAN group',
                         list: () => client.getWlanGroupList(siteId, customHeaders),
                         idKeys: ['wlanId', 'id'],
+                        // WlanGroupOpenApiVO reads expose only wlanId, name and primary.
+                        writeOnly: ['clone', 'clonedWlanId'],
                     },
                     payload,
                     dryRun,

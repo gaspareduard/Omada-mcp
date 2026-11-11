@@ -56,6 +56,14 @@ const TARGETS = {
 };
 
 const MAX_DESCRIPTION = 240;
+
+/**
+ * Many integer bounds appear only in field prose ("within the range of 1-65535").
+ * They are applied as min/max when no machine-readable bound exists. Ranges that
+ * depend on another field's unit are skipped.
+ */
+const PROSE_RANGE = /(?:within|in) the range of\s*\(?\s*(-?\d+)\s*(?:-|–|~|to)\s*(-?\d+)/i;
+const CONDITIONAL_RANGES = new Set(['rekeyPskInterval', 'rekeyEntInterval']);
 const omittedPatterns = [];
 
 function identifier(file, name) {
@@ -112,6 +120,16 @@ function createGenerator(file, spec) {
         return id;
     }
 
+    function withProseRange(key, value) {
+        const target = value.type === 'array' ? value.items : value;
+        if (!target || target.type !== 'integer' || target.minimum !== undefined || target.maximum !== undefined) return value;
+        if (CONDITIONAL_RANGES.has(key)) return value;
+        const match = PROSE_RANGE.exec(value.description ?? '');
+        if (!match) return value;
+        const bounded = { ...target, minimum: Number(match[1]), maximum: Number(match[2]) };
+        return value.type === 'array' ? { ...value, items: bounded } : bounded;
+    }
+
     function expression(schema, where) {
         if (schema.$ref) return component(refName(schema.$ref));
         if (schema.allOf?.length === 1) return expression(schema.allOf[0], where);
@@ -131,7 +149,7 @@ function createGenerator(file, spec) {
                 }
                 const required = new Set(schema.required ?? []);
                 const fields = Object.entries(schema.properties).map(([key, value]) => {
-                    const inner = expression(value, `${where}.${key}`);
+                    const inner = expression(withProseRange(key, value), `${where}.${key}`);
                     const optional = required.has(key) ? '' : '.optional()';
                     return `${JSON.stringify(key)}: ${inner}${optional}${describe(value.description)}`;
                 });
