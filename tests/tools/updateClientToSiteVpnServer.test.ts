@@ -47,6 +47,19 @@ describe('tools/updateClientToSiteVpnServer', () => {
         expect(result.structuredContent).toMatchObject({ status: 'verified' });
     });
 
+    it('compares the readable accountPassword setting during readback', async () => {
+        state = [{ ...current, accountPassword: false }];
+        client.updateClientToSiteVpnServer.mockImplementation(() => {
+            state = [{ ...current, name: 'mcp-test', accountPassword: false }];
+            return Promise.resolve({});
+        });
+        const result = await handler({ vpnId: 'id-1', payload: { ...payload, accountPassword: true }, dryRun: false }, {});
+        expect(result.structuredContent).toMatchObject({
+            status: 'mismatch',
+            result: { verification: { differences: [{ path: 'accountPassword', reason: 'different' }] } },
+        });
+    });
+
     it('rejects unknown ids before writing', async () => {
         await expect(handler({ vpnId: 'missing', payload, dryRun: false }, {})).rejects.toThrow('No client-to-site VPN server with id "missing"');
         expect(client.updateClientToSiteVpnServer).not.toHaveBeenCalled();

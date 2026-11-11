@@ -24,7 +24,7 @@ describe('tools/updateOneToOneNat', () => {
     beforeEach(() => {
         state = [current];
         client = {
-            listOneToOneNats: vi.fn(async () => state),
+            listOneToOneNatRules: vi.fn(async () => state),
             updateOneToOneNat: vi.fn(() => {
                 state = [
                     {

@@ -29,7 +29,7 @@ export function registerDeleteClientToSiteVpnServerTool(server: McpServer, clien
                     spec: {
                         label: 'client-to-site VPN server',
                         list: () => client.listClientToSiteVpnServers(siteId, customHeaders),
-                        writeOnly: ['preSharedKey', 'accountPassword'],
+                        writeOnly: ['preSharedKey'],
                     },
                     id: vpnId,
                     dryRun,

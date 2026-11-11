@@ -616,7 +616,6 @@ const listCases: { method: keyof Ops; args: unknown[]; spec: string; route: stri
     { method: 'listMdnsRules', args: [], spec: '04-site-setting', route: '/setting/service/mdns' },
     { method: 'listLanDnsRules', args: [], spec: '04-site-setting', route: '/setting/lan/dns' },
     { method: 'listDdnsEntries', args: [], spec: '04-site-setting', route: '/setting/service/ddns' },
-    { method: 'listOneToOneNats', args: [], spec: '04-site-setting', route: '/nat/one-to-one-nat' },
     { method: 'listUrlFilterRules', args: ['gateway'], spec: '04-site-setting', route: '/url-filters/gateway' },
     { method: 'listUrlFilterRules', args: ['eap'], spec: '04-site-setting', route: '/url-filters/eap' },
     { method: 'listMacFilters', args: ['allow'], spec: '04-site-setting', route: '/mac-filters/allow', expected: [{ filterMode: 0, id: 'x' }] },

@@ -223,9 +223,6 @@ export class SiteConfigOperations {
     public async deletePortForwarding(portForwardingId: string, siteId?: string, h?: CustomHeaders): Promise<unknown> {
         return await this.send('DELETE', siteId, `/nat/port-forwardings/${seg(portForwardingId)}`, undefined, h);
     }
-    public async listOneToOneNats(siteId?: string, h?: CustomHeaders): Promise<unknown[]> {
-        return await this.list(siteId, '/nat/one-to-one-nat', h);
-    }
     public async createOneToOneNat(payload: Input<typeof schemas.otoNatOpenApiVOSchema>, siteId?: string, h?: CustomHeaders): Promise<unknown> {
         return await this.send('POST', siteId, '/nat/one-to-one-nat', schemas.otoNatOpenApiVOSchema.parse(payload), h);
     }

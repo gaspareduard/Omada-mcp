@@ -23,7 +23,7 @@ describe('tools/deleteOneToOneNat', () => {
     beforeEach(() => {
         state = [current];
         client = {
-            listOneToOneNats: vi.fn(async () => state),
+            listOneToOneNatRules: vi.fn(async () => state),
             deleteOneToOneNat: vi.fn(() => {
                 state = [];
                 return Promise.resolve({});

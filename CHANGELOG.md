@@ -1,5 +1,10 @@
 # Changelog
 
+## Unreleased
+
+- verify the readable OpenVPN `accountPassword` boolean after `updateClientToSiteVpnServer` instead of treating it as a write-only secret
+- one-to-one NAT write tools read existing rules through the existing `listOneToOneNatRules` operation instead of a duplicate implementation
+
 ## 0.19.0-rc.2 - 2026-11-11
 
 - bundle a network/shield icon and advertise it in MCP server metadata for compatible clients
@@ -8,6 +13,7 @@
 - generate strict request schemas from the official OpenAPI specs and validate controller-enforced requirements before preview
 - share one mutation engine for conflict checks, single writes, error-coded controller rejections and bounded readback verification
 - fix `listSiteToSiteVpns` and `listGroupProfiles`, which failed on controllers returning bare arrays
+- incorporate PR #13 by Cracker8x; add the read-only `listSitesSettingIotDevices` tool (`devices-general`) listing devices that support Bluetooth/iBeacon advertising
 - record exploratory live-controller findings (not release validation) in [networking writes validation](docs/operations/networking-writes-validation.md)
 
 Automated checks and packaging evidence: [rc.2 validation](docs/operations/0.19.0-rc.2-validation.md). Disposable-controller/hardware validation remains pending; this is a prerelease and does not update `latest`.

@@ -10,7 +10,7 @@ const inputSchema = siteInputSchema.extend({
     dryRun: dryRunSchema,
 });
 
-type Client = Pick<OmadaClient, 'deleteOneToOneNat' | 'listOneToOneNats'>;
+type Client = Pick<OmadaClient, 'deleteOneToOneNat' | 'listOneToOneNatRules'>;
 
 export function registerDeleteOneToOneNatTool(server: McpServer, client: Client): void {
     server.registerTool(
@@ -27,7 +27,7 @@ export function registerDeleteOneToOneNatTool(server: McpServer, client: Client)
                 await runDelete({
                     spec: {
                         label: 'one-to-one NAT rule',
-                        list: () => client.listOneToOneNats(siteId, customHeaders),
+                        list: () => client.listOneToOneNatRules(siteId, customHeaders),
                     },
                     id: otonatId,
                     dryRun,
