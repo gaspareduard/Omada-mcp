@@ -286,7 +286,7 @@ describe('registerAllTools category filtering', () => {
         'getTrafficDistribution',
         'getIspLoad',
     ];
-    const fullOperationCount = 373;
+    const fullOperationCount = 441;
     const deprecatedOperationCount = 28;
 
     function names(): string[] {
@@ -323,7 +323,7 @@ describe('registerAllTools category filtering', () => {
         expect(names()).toContain('getRFScanResult');
     });
 
-    it('registers 372 operations plus three discovery tools with explicit recovery and aliases', () => {
+    it('registers 440 operations plus three discovery tools with explicit recovery and aliases', () => {
         registerAllTools(mockServer, mockClient, parseToolCategories('all:rw,recovery:rw').categories, { includeDeprecated: true });
         expect(names()).toHaveLength(fullOperationCount + discoveryNames.length);
         expect(new Set(names()).size).toBe(fullOperationCount + discoveryNames.length);
@@ -336,17 +336,17 @@ describe('registerAllTools category filtering', () => {
         ).toHaveLength(deprecatedOperationCount);
     });
 
-    it('has 377 distinct tool names across the standard and compact interfaces', () => {
+    it('has 445 distinct tool names across the standard and compact interfaces', () => {
         const categories = parseToolCategories('all:rw,recovery:rw').categories;
         registerAllTools(mockServer, mockClient, categories, { includeDeprecated: true });
         const standardNames = names();
         vi.mocked(mockServer.registerTool).mockClear();
         registerAllTools(mockServer, mockClient, categories, { includeDeprecated: true, catalogMode: 'compact' });
         expect(names().sort()).toEqual([...discoveryNames, 'callOperation'].sort());
-        expect(new Set([...standardNames, ...names()]).size).toBe(377);
+        expect(new Set([...standardNames, ...names()]).size).toBe(445);
     });
 
-    it('write-only clients expose six mutations and the three discovery tools', () => {
+    it('write-only clients expose ten mutations and the three discovery tools', () => {
         registerAllTools(mockServer, mockClient, parseToolCategories('clients:w').categories);
         const mutations = [
             'blockClient',
@@ -355,6 +355,10 @@ describe('registerAllTools category filtering', () => {
             'setClientRateLimit',
             'setClientRateLimitProfile',
             'disableClientRateLimit',
+            'setClientName',
+            'setClientLockToAp',
+            'authorizeHotspotClient',
+            'unauthorizeHotspotClient',
         ];
         expect(names().sort()).toEqual([...mutations, ...discoveryNames].sort());
         for (const [name, definition] of vi.mocked(mockServer.registerTool).mock.calls) {

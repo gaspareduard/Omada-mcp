@@ -73,7 +73,6 @@ export const FUTURE_CATEGORIES = new Set<ToolCategory>([
     'network-sim-lte',
     'account-sso',
     'hotspot-portal',
-    'hotspot-vouchers',
     'hotspot-users',
     'voip',
     'olt',

@@ -1,7 +1,7 @@
 {
     "$schema": "https://biomejs.dev/schemas/2.4.6/schema.json",
     "vcs": { "enabled": true, "clientKind": "git", "useIgnoreFile": true },
-    "files": { "includes": ["**", "!dist/**", "!docs/openapi/**/*.json"] },
+    "files": { "includes": ["**", "!dist/**", "!docs/openapi/**/*.json", "!src/omadaClient/requestSchemas.ts"] },
     "formatter": {
         "enabled": true,
         "formatWithErrors": false,

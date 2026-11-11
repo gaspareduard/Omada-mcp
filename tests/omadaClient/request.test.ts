@@ -319,6 +319,23 @@ describe('RequestHandler', () => {
         );
     });
 
+    describe('fetchCollection', () => {
+        it('returns a documented bare array from a single read', async () => {
+            http.request.mockReset();
+            http.request.mockResolvedValueOnce(response({ errorCode: 0, result: [{ id: 1 }] }));
+            await expect(settle(handler.fetchCollection('/items', { 'X-Trace': 't' }))).resolves.toEqual([{ id: 1 }]);
+            expect(http.request).toHaveBeenCalledTimes(1);
+        });
+        it('reads every page when the controller returns a paginated envelope', async () => {
+            http.request.mockReset();
+            http.request
+                .mockResolvedValueOnce(response({ errorCode: 0, result: { data: [{ id: 1 }], totalRows: 2 } }))
+                .mockResolvedValueOnce(response({ errorCode: 0, result: { data: [{ id: 1 }], totalRows: 2, currentPage: 1 } }))
+                .mockResolvedValueOnce(response({ errorCode: 0, result: { data: [{ id: 2 }], totalRows: 2, currentPage: 2 } }));
+            await expect(settle(handler.fetchCollection('/items'))).resolves.toEqual([{ id: 1 }, { id: 2 }]);
+        });
+    });
+
     describe('fetchPaginated', () => {
         function pages(...results: unknown[]): void {
             http.request.mockReset();
@@ -434,6 +451,9 @@ describe('RequestHandler', () => {
         it('surfaces controller messages and the generic fallback', () => {
             expect(() => handler.ensureSuccess({ errorCode: -1005, msg: 'Operation forbidden' })).toThrow('Operation forbidden');
             expect(() => handler.ensureSuccess({ errorCode: -1 })).toThrow('Omada API request failed');
+            expect(() => handler.ensureSuccess({ errorCode: -33006, msg: 'Name exists' })).toThrow(
+                expect.objectContaining({ name: 'OmadaApiError', errorCode: -33006, message: 'Name exists' })
+            );
             expect(logger.error).toHaveBeenCalledWith('Omada API error', { errorCode: -1005, message: 'Operation forbidden' });
         });
         it.each([undefined, null, false, {}, { errorCode: '0' }])('rejects malformed envelope %j', (data) => {
