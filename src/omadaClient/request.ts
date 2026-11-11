@@ -12,6 +12,20 @@ const RETRYABLE_STATUS_CODES = new Set([429, 502, 503, 504]);
 const RETRYABLE_ERROR_CODES = new Set([-7132]);
 const RETRYABLE_NETWORK_CODES = new Set(['ECONNRESET', 'ETIMEDOUT', 'ECONNABORTED', 'EAI_AGAIN']);
 
+/**
+ * The controller answered with a non-zero errorCode: an explicit rejection,
+ * as opposed to a transport failure whose outcome is unknown.
+ */
+export class OmadaApiError extends Error {
+    constructor(
+        public readonly errorCode: number,
+        message: string
+    ) {
+        super(message);
+        this.name = 'OmadaApiError';
+    }
+}
+
 export interface RequestHandlerOptions {
     minRequestIntervalMs?: number;
     maxReadRetries?: number;
@@ -209,6 +223,15 @@ export class RequestHandler {
     }
 
     /**
+     * Read a complete collection whose spec documents a bare array. Controllers that page it
+     * anyway (an envelope with `data`) are read page by page through fetchPaginated.
+     */
+    public async fetchCollection<T>(path: string, customHeaders?: CustomHeaders): Promise<T[]> {
+        const result = this.ensureSuccess(await this.get<OmadaApiResponse<unknown>>(path, undefined, customHeaders));
+        return Array.isArray(result) ? (result as T[]) : await this.fetchPaginated<T>(path, {}, customHeaders);
+    }
+
+    /**
      * Fetch all pages of a paginated API endpoint.
      */
     public async fetchPaginated<T>(path: string, params: Record<string, unknown> = {}, customHeaders?: CustomHeaders): Promise<T[]> {
@@ -311,7 +334,7 @@ export class RequestHandler {
                 errorCode: response.errorCode,
                 message: response.msg,
             });
-            throw new Error(response.msg ?? 'Omada API request failed');
+            throw new OmadaApiError(response.errorCode, response.msg ?? 'Omada API request failed');
         }
 
         return (response.result ?? ({} as T)) as T;

@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="256" height="256" viewBox="0 0 256 256">
+  <title>Safe Omada MCP</title>
+  <rect width="256" height="256" rx="56" fill="#102b3f"/>
+  <path d="M128 28 208 60v59c0 49-34 85-80 109-46-24-80-60-80-109V60Z" fill="#19c8ac"/>
+  <path d="M128 47 190 72v47c0 37-24 67-62 88-38-21-62-51-62-88V72Z" fill="#102b3f"/>
+  <path d="M94 150v-28h68v28m-34-28V91" fill="none" stroke="#f1fffc" stroke-width="12" stroke-linejoin="round"/>
+  <g fill="#19c8ac" stroke="#102b3f" stroke-width="5">
+    <circle cx="128" cy="87" r="16"/>
+    <circle cx="94" cy="154" r="16"/>
+    <circle cx="162" cy="154" r="16"/>
+  </g>
+</svg>

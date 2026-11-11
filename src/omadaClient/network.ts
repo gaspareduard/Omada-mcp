@@ -284,7 +284,7 @@ export class NetworkOperations {
     public async listSiteToSiteVpns(siteId?: string, customHeaders?: CustomHeaders): Promise<unknown[]> {
         const resolvedSiteId = await this.site.resolveSiteId(siteId);
         const path = this.buildPath(`/sites/${encodeURIComponent(resolvedSiteId)}/vpn/site-to-site-vpns`);
-        return await this.request.fetchPaginated<unknown>(path, {}, customHeaders);
+        return await this.request.fetchCollection<unknown>(path, customHeaders);
     }
 
     /**
@@ -294,7 +294,8 @@ export class NetworkOperations {
     public async listClientToSiteVpnServers(siteId?: string, customHeaders?: CustomHeaders): Promise<unknown[]> {
         const resolvedSiteId = await this.site.resolveSiteId(siteId);
         const path = this.buildPath(`/sites/${encodeURIComponent(resolvedSiteId)}/vpn/client-to-site-vpn-servers`);
-        return await this.request.fetchPaginated<unknown>(path, {}, customHeaders);
+        // The spec documents a bare array; some controllers return a paginated envelope.
+        return await this.request.fetchCollection<unknown>(path, customHeaders);
     }
 
     /**
@@ -498,7 +499,7 @@ export class NetworkOperations {
         const resolvedSiteId = await this.site.resolveSiteId(siteId);
         const basePath = `/sites/${encodeURIComponent(resolvedSiteId)}/profiles/groups`;
         const path = this.buildPath(groupType ? `${basePath}/${encodeURIComponent(groupType)}` : basePath);
-        return await this.request.fetchPaginated<unknown>(path, {}, customHeaders);
+        return await this.request.fetchCollection<unknown>(path, customHeaders);
     }
 
     /**

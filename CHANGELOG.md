@@ -1,5 +1,23 @@
 # Changelog
 
+## Unreleased
+
+- verify the readable OpenVPN `accountPassword` boolean after `updateClientToSiteVpnServer` instead of treating it as a write-only secret
+- one-to-one NAT write tools read existing rules through the existing `listOneToOneNatRules` operation instead of a duplicate implementation
+
+## 0.19.0-rc.2 - 2026-11-11
+
+- bundle a network/shield icon and advertise it in MCP server metadata for compatible clients
+- update `follow-redirects` to its patched compatible version
+- add 68 preview-first networking tools for parity with the UniFi MCP server's networking workflows: LAN networks, switch port profiles, WLAN groups and SSIDs, group profiles, mDNS rules, port forwarding, one-to-one NAT, static and policy routes, LAN DNS, DDNS, UPnP/ALG/SNMP, URL and MAC filtering, attack defense, IDS/IPS, VPN update/delete, device locate/provision/adopt (default login only)/upgrade, PoE recovery, client rename/lock-to-AP, hotspot client authorization and voucher groups
+- generate strict request schemas from the official OpenAPI specs and validate controller-enforced requirements before preview
+- share one mutation engine for conflict checks, single writes, error-coded controller rejections and bounded readback verification
+- fix `listSiteToSiteVpns` and `listGroupProfiles`, which failed on controllers returning bare arrays
+- incorporate PR #13 by Cracker8x; add the read-only `listSitesSettingIotDevices` tool (`devices-general`) listing devices that support Bluetooth/iBeacon advertising
+- record exploratory live-controller findings (not release validation) in [networking writes validation](docs/operations/networking-writes-validation.md)
+
+Automated checks and packaging evidence: [rc.2 validation](docs/operations/0.19.0-rc.2-validation.md). Disposable-controller/hardware validation remains pending; this is a prerelease and does not update `latest`.
+
 ## 0.19.0-rc.1 - 2026-10-24
 
 - default all writes to preview, separate explicit recovery permissions, and distinguish submitted changes from verified readback
