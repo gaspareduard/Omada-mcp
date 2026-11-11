@@ -2015,10 +2015,6 @@ export class OmadaClient {
         return await this.siteConfigOps.deletePortForwarding(portForwardingId, siteId, h);
     }
 
-    public async listOneToOneNats(siteId?: string, h?: CustomHeaders): Promise<unknown[]> {
-        return await this.siteConfigOps.listOneToOneNats(siteId, h);
-    }
-
     public async createOneToOneNat(payload: Input<typeof schemas.otoNatOpenApiVOSchema>, siteId?: string, h?: CustomHeaders): Promise<unknown> {
         return await this.siteConfigOps.createOneToOneNat(payload, siteId, h);
     }

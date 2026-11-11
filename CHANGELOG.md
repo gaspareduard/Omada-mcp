@@ -1,5 +1,10 @@
 # Changelog
 
+## Unreleased
+
+- verify the readable OpenVPN `accountPassword` boolean after `updateClientToSiteVpnServer` instead of treating it as a write-only secret
+- one-to-one NAT write tools read existing rules through the existing `listOneToOneNatRules` operation instead of a duplicate implementation
+
 ## 0.19.0-rc.2 - 2026-11-11
 
 - bundle a network/shield icon and advertise it in MCP server metadata for compatible clients

@@ -14,7 +14,7 @@ const inputSchema = siteInputSchema.extend({
     dryRun: dryRunSchema,
 });
 
-type Client = Pick<OmadaClient, 'listOneToOneNats' | 'updateOneToOneNat'>;
+type Client = Pick<OmadaClient, 'listOneToOneNatRules' | 'updateOneToOneNat'>;
 
 export function registerUpdateOneToOneNatTool(server: McpServer, client: Client): void {
     server.registerTool(
@@ -32,7 +32,7 @@ export function registerUpdateOneToOneNatTool(server: McpServer, client: Client)
                 await runUpdate({
                     spec: {
                         label: 'one-to-one NAT rule',
-                        list: () => client.listOneToOneNats(siteId, customHeaders),
+                        list: () => client.listOneToOneNatRules(siteId, customHeaders),
                     },
                     id: otonatId,
                     payload,
