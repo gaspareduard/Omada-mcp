@@ -1,3 +1,5 @@
+import { Client } from '@modelcontextprotocol/sdk/client/index.js';
+import { InMemoryTransport } from '@modelcontextprotocol/sdk/inMemory.js';
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { ToolExtra } from '../../src/server/common.js';
@@ -257,6 +259,28 @@ describe('server/common', () => {
     });
 
     describe('createServer', () => {
+        it('advertises a bundled PNG icon during initialization', async () => {
+            const { createServer } = await import('../../src/server/common.js');
+            const server = createServer();
+            const client = new Client({ name: 'icon-test', version: '1.0.0' });
+            const [clientTransport, serverTransport] = InMemoryTransport.createLinkedPair();
+            try {
+                await server.connect(serverTransport);
+                await client.connect(clientTransport);
+                const info = client.getServerVersion();
+                expect(info?.title).toBe('Safe Omada MCP');
+                const icon = info?.icons?.[0];
+                expect(icon).toMatchObject({ mimeType: 'image/png', sizes: ['256x256'] });
+                const png = Buffer.from(icon?.src.split(',')[1] ?? '', 'base64');
+                expect(png.subarray(0, 8).toString('hex')).toBe('89504e470d0a1a0a');
+                expect(png.readUInt32BE(16)).toBe(256);
+                expect(png.readUInt32BE(20)).toBe(256);
+            } finally {
+                await client.close();
+                await server.close();
+            }
+        });
+
         it('should create MCP server instance', async () => {
             const { createServer } = await import('../../src/server/common.js');
 

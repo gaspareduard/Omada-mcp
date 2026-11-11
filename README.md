@@ -1,5 +1,7 @@
 # Safe Omada MCP
 
+<img src="assets/icon.png" alt="Safe Omada MCP" width="96" height="96" />
+
 [![CI](https://github.com/gaspareduard/Omada-mcp/actions/workflows/ci.yml/badge.svg)](https://github.com/gaspareduard/Omada-mcp/actions/workflows/ci.yml)
 [![npm version](https://img.shields.io/npm/v/safe-omada-mcp)](https://www.npmjs.com/package/safe-omada-mcp)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](./LICENSE)
@@ -17,7 +19,7 @@ Security-focused MCP server for TP-Link Omada Open API workflows.
 
 ## 0.19 release candidate
 
-This branch prepares `0.19.0-rc.1`. Write previews, compact discovery, diagnostics and reliability changes are described in the [migration guide](docs/operations/0.19-migration.md). Stable write-tool release awaits disposable-controller and hardware validation; `latest` remains the existing stable version.
+This branch prepares `0.19.0-rc.2` with 68 additional preview-first networking tools and a bundled server icon for compatible MCP clients. Write previews, compact discovery, diagnostics and reliability changes are described in the [migration guide](docs/operations/0.19-migration.md). Stable write-tool release awaits disposable-controller and hardware validation; `latest` remains the existing stable version.
 
 ## Quick Start
 

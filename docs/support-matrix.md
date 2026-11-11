@@ -1,14 +1,15 @@
 # Support and validation matrix
 
-| Surface | 0.19.0-rc.1 evidence | Limit |
+| Surface | 0.19.0-rc.2 evidence | Limit |
 | --- | --- | --- |
 | stdio / MCP catalog | Local SDK protocol and schema tests | Client host approval policies remain external |
 | Request/auth/pagination | Unit and local HTTP contracts | Live controller/firmware behavior varies |
 | Software controller 6.2.14.11 | Existing installation confirmed; candidate observations in validation record | Selected reads/previews only, not all operations |
 | New radio/SSID/switch apply paths | Official tag specs and mocked contract tests | Disposable controller and adopted hardware tests pending |
-| Networking write tools (unreleased) | Spec-checked routes, generated schemas and mocked contracts; a one-off owner-requested exploratory run on an ER605 + EAP site ([record](operations/networking-writes-validation.md)) | Not release-validated: disposable-controller evidence pending for all write paths; no switch, VPN or static-WAN evidence |
+| Networking write tools | Spec-checked routes, generated schemas and mocked contracts; a one-off owner-requested exploratory run on an ER605 + EAP site ([record](operations/networking-writes-validation.md)) | Not release-validated: disposable-controller evidence pending for all write paths; no switch, VPN or static-WAN evidence |
+| Server icon | SDK initialization tests and extracted-package stdio smoke | Display depends on MCP host support |
 | Other software/hardware controllers | Not newly validated by this candidate | Verify each operation before granting write access |
 | HTTP transport | Loopback lab only | Not production supported |
 | Private GUI APIs / OC200 fallback | Not implemented | `compatibility` is a deprecated profile alias |
 
-Use official Open API routes only. Availability in the catalog is not proof of controller or firmware support. See [release validation](operations/0.19-validation.md) for observed results and [release readiness](operations/release-readiness-checklist.md) for promotion gates.
+Use official Open API routes only. Availability in the catalog is not proof of controller or firmware support. See [rc.2 automated validation](operations/0.19.0-rc.2-validation.md) and [earlier release validation](operations/0.19-validation.md) for observed results, and [release readiness](operations/release-readiness-checklist.md) for promotion gates.

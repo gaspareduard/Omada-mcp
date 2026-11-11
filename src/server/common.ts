@@ -1,3 +1,4 @@
+import { readFileSync } from 'node:fs';
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import type { RequestHandlerExtra } from '@modelcontextprotocol/sdk/shared/protocol.js';
 import { type CallToolResult, ListResourcesRequestSchema, type ServerNotification, type ServerRequest } from '@modelcontextprotocol/sdk/types.js';
@@ -269,6 +270,14 @@ export function createServer(): McpServer {
     const server = new McpServer({
         name: 'safe-omada-mcp',
         version: packageMetadata.version,
+        title: 'Safe Omada MCP',
+        icons: [
+            {
+                src: `data:image/png;base64,${readFileSync(new URL('../../assets/icon.png', import.meta.url)).toString('base64')}`,
+                mimeType: 'image/png',
+                sizes: ['256x256'],
+            },
+        ],
     });
 
     setupServerLogging(server);

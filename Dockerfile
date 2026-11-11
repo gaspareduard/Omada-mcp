@@ -31,5 +31,6 @@ RUN apt-get update \
 COPY package*.json ./
 RUN npm ci --omit=dev --ignore-scripts
 COPY --from=build /app/dist ./dist
+COPY --from=build /app/assets ./assets
 USER omada
 CMD ["node", "dist/index.js"]

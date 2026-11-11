@@ -1,3 +1,4 @@
+import { readFileSync } from 'node:fs';
 import { Client } from '@modelcontextprotocol/sdk/client/index.js';
 import { InMemoryTransport } from '@modelcontextprotocol/sdk/inMemory.js';
 import type { CallToolResult } from '@modelcontextprotocol/sdk/types.js';
@@ -50,7 +51,15 @@ async function expectToolError(client: Client, name: string, args: Record<string
 describe('MCP protocol over in-memory transports', () => {
     it('negotiates resources and advertises the actual default mutation schema', async () => {
         const client = await connect('clients:rw');
-        expect(client.getServerVersion()?.name).toBe('safe-omada-mcp');
+        expect(client.getServerVersion()).toMatchObject({ name: 'safe-omada-mcp', title: 'Safe Omada MCP' });
+        const icon = client.getServerVersion()?.icons?.[0];
+        expect(icon).toMatchObject({ mimeType: 'image/png', sizes: ['256x256'] });
+        expect(icon?.src).toBe(`data:image/png;base64,${readFileSync(new URL('../../assets/icon.png', import.meta.url)).toString('base64')}`);
+        expect(
+            readFileSync(new URL('../../assets/icon.png', import.meta.url))
+                .subarray(0, 8)
+                .toString('hex')
+        ).toBe('89504e470d0a1a0a');
         expect(await client.listResources()).toEqual({ resources: [] });
         const { tools } = await client.listTools();
         const block = tools.find((tool) => tool.name === 'blockClient');
