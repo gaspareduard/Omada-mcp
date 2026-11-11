@@ -1,6 +1,6 @@
 {
     "name": "safe-omada-mcp",
-    "version": "0.19.0-rc.1",
+    "version": "0.19.0-rc.2",
     "description": "Security-focused Model Context Protocol server for TP-Link Omada Open API workflows",
     "type": "module",
     "main": "dist/index.js",
@@ -25,7 +25,7 @@
         "docker:push": "docker push ghcr.io/gaspareduard/omada-mcp:latest",
         "prepare": "husky"
     },
-    "files": ["dist/", "README.md", "README.Docker.md", "CHANGELOG.md", "LICENSE", ".env.example", "SECURITY.md", "docs/operations/", "docs/support-matrix.md", "docs/security-model.md"],
+    "files": ["dist/", "assets/", "README.md", "README.Docker.md", "CHANGELOG.md", "LICENSE", ".env.example", "SECURITY.md", "docs/operations/", "docs/support-matrix.md", "docs/security-model.md"],
     "keywords": ["mcp", "tp-link", "omada"],
     "engines": {
         "node": ">=24.0.0"
