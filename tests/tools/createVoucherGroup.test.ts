@@ -15,7 +15,7 @@ const payload = {
     durationType: 0,
     duration: 60,
     timingType: 0,
-    rateLimit: { mode: 0 },
+    rateLimit: { mode: 0, customRateLimit: { downLimitEnable: false, upLimitEnable: false } },
     trafficLimitEnable: false,
     applyToAllPortals: true,
 };
@@ -34,15 +34,12 @@ describe('tools/createVoucherGroup', () => {
                 state = [
                     {
                         name: 'mcp-test',
-                        amount: 1,
-                        codeLength: 6,
-                        codeForm: [0],
                         limitType: 0,
                         limitNum: 1,
                         durationType: 0,
                         duration: 60,
                         timingType: 0,
-                        rateLimit: { mode: 0 },
+                        rateLimit: { mode: 0, customRateLimit: { downLimitEnable: false, upLimitEnable: false } },
                         trafficLimitEnable: false,
                         applyToAllPortals: true,
                         id: 'new-1',

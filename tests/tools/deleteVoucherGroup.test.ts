@@ -14,7 +14,7 @@ const current = {
     durationType: 0,
     duration: 60,
     timingType: 0,
-    rateLimit: { mode: 0 },
+    rateLimit: { mode: 0, customRateLimit: { downLimitEnable: false, upLimitEnable: false } },
     trafficLimitEnable: false,
     applyToAllPortals: true,
     id: 'id-1',

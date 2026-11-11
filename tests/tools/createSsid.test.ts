@@ -29,6 +29,7 @@ describe('tools/createSsid', () => {
         state = [];
         client = {
             getSsidList: vi.fn(async () => state),
+            getSsidDetail: vi.fn((_wlanId: string, ssidId: string) => Promise.resolve(state.find((record) => record.ssidId === ssidId))),
             createSsid: vi.fn(() => {
                 state = [
                     {
@@ -42,7 +43,7 @@ describe('tools/createSsid', () => {
                         mloEnable: false,
                         pmfMode: 3,
                         enable11r: false,
-                        hidePwd: false,
+
                         ssidId: 'new-1',
                     },
                 ];

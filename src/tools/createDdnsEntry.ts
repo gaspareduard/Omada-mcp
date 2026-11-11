@@ -1,12 +1,12 @@
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 
 import type { OmadaClient } from '../omadaClient/index.js';
-import { createDdnsOpenApiVOSchema } from '../omadaClient/requestSchemas.js';
 import { siteInputSchema, wrapMutationToolHandler } from '../server/common.js';
+import { ddnsPayloadSchema, normalizeDdnsRecord } from './payloadRequirements.js';
 import { dryRunSchema, mutationSummary, runCreate } from './resourceMutationShared.js';
 
 const inputSchema = siteInputSchema.extend({
-    payload: createDdnsOpenApiVOSchema.describe(
+    payload: ddnsPayloadSchema.describe(
         'Dynamic DNS entry (official CreateDdnsOpenApiVO). service: 0 DynDNS, 1 NO-IP, 2 Peanuthull, 3 Comexe, 4 Custom, 5 TP-Link DDNS. The password is write-only and cannot be verified by readback.'
     ),
     dryRun: dryRunSchema,
@@ -33,6 +33,7 @@ export function registerCreateDdnsEntryTool(server: McpServer, client: Client): 
                         list: () => client.listDdnsEntries(siteId, customHeaders),
                         nameKey: null,
                         writeOnly: ['password'],
+                        normalize: normalizeDdnsRecord,
                     },
                     payload,
                     dryRun,

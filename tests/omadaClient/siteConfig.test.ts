@@ -612,15 +612,15 @@ const cases: RouteCase[] = [
     },
 ];
 
-const listCases: { method: keyof Ops; args: unknown[]; spec: string; route: string }[] = [
+const listCases: { method: keyof Ops; args: unknown[]; spec: string; route: string; expected?: unknown[] }[] = [
     { method: 'listMdnsRules', args: [], spec: '04-site-setting', route: '/setting/service/mdns' },
     { method: 'listLanDnsRules', args: [], spec: '04-site-setting', route: '/setting/lan/dns' },
     { method: 'listDdnsEntries', args: [], spec: '04-site-setting', route: '/setting/service/ddns' },
     { method: 'listOneToOneNats', args: [], spec: '04-site-setting', route: '/nat/one-to-one-nat' },
     { method: 'listUrlFilterRules', args: ['gateway'], spec: '04-site-setting', route: '/url-filters/gateway' },
     { method: 'listUrlFilterRules', args: ['eap'], spec: '04-site-setting', route: '/url-filters/eap' },
-    { method: 'listMacFilters', args: ['allow'], spec: '04-site-setting', route: '/mac-filters/allow' },
-    { method: 'listMacFilters', args: ['deny'], spec: '04-site-setting', route: '/mac-filters/deny' },
+    { method: 'listMacFilters', args: ['allow'], spec: '04-site-setting', route: '/mac-filters/allow', expected: [{ filterMode: 0, id: 'x' }] },
+    { method: 'listMacFilters', args: ['deny'], spec: '04-site-setting', route: '/mac-filters/deny', expected: [{ filterMode: 1, id: 'x' }] },
     { method: 'listClientToSiteVpnClientEntries', args: [], spec: '04-site-setting', route: '/vpn/client-to-site-vpn-clients' },
     { method: 'listWireguardTunnels', args: [], spec: '04-site-setting', route: '/vpn/wireguards' },
     { method: 'listWireguardPeerEntries', args: [], spec: '04-site-setting', route: '/vpn/wireguard-peers' },
@@ -662,11 +662,17 @@ describe('omadaClient/siteConfig', () => {
         if (sendsBody) expect(parsed).toContain(body);
     });
 
-    it.each(listCases)('$method reads every page of $route', async ({ method, args, spec, route }) => {
+    it.each(listCases)('$method reads every page of $route', async ({ method, args, spec, route, expected }) => {
         expect(documented(spec, 'v1', route, 'GET')).toBe(true);
         const fn = operations[method] as (...input: unknown[]) => Promise<unknown>;
-        await expect(fn.call(operations, ...args)).resolves.toEqual([{ id: 'x' }]);
+        await expect(fn.call(operations, ...args)).resolves.toEqual(expected ?? [{ id: 'x' }]);
         expect(request.fetchPaginated).toHaveBeenCalledWith(`/openapi/v1/cid/sites/site-1${route}`, {}, undefined);
+    });
+
+    it('labels MAC filter entries with the list they were read from', async () => {
+        request.fetchPaginated.mockResolvedValueOnce([{ id: 'a' }, { id: 'b', filterMode: 1 }, null]).mockResolvedValueOnce([{ id: 'c' }]);
+        await expect(operations.listMacFilters('allow')).resolves.toEqual([{ filterMode: 0, id: 'a' }, { id: 'b', filterMode: 1 }, null]);
+        await expect(operations.listMacFilters('deny')).resolves.toEqual([{ filterMode: 1, id: 'c' }]);
     });
 
     it('rejects blank identifiers, malformed MACs and unknown list selectors before sending', async () => {

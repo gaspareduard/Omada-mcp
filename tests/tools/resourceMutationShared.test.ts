@@ -170,6 +170,44 @@ describe('tools/resourceMutationShared', () => {
             });
         });
 
+        it('normalizes read records onto the request shape before comparing', async () => {
+            const result = await runCreate({
+                spec: {
+                    ...spec(snapshots([], [{ id: 'n1', name: 'n', updateInterval: 6 }])),
+                    normalize: (record) => ({ ...record, interval: { updateInterval: record.updateInterval } }),
+                },
+                payload: { name: 'n', interval: { updateInterval: 6 } },
+                dryRun: false,
+                write: async () => ({}),
+                verify: fast,
+            });
+            expect(result.verification).toMatchObject({ status: 'verified' });
+        });
+
+        it('verifies against the full detail when collection rows are summaries', async () => {
+            const detail = vi.fn(async (id: string) => ({ id, name: 'n', vlanId: 50 }));
+            const result = await runCreate({
+                spec: { ...spec(snapshots([], [{ id: 'n1', name: 'n' }])), detail },
+                payload: { name: 'n', vlanId: 50 },
+                dryRun: false,
+                write: async () => ({}),
+                verify: fast,
+            });
+            expect(detail).toHaveBeenCalledWith('n1');
+            expect(result.verification).toMatchObject({ status: 'verified' });
+        });
+
+        it('treats a malformed detail read as unknown', async () => {
+            const result = await runCreate({
+                spec: { ...spec(snapshots([], [{ id: 'n1', name: 'n' }])), detail: async () => 'oops', normalize: (r) => r },
+                payload: { name: 'n' },
+                dryRun: false,
+                write: async () => ({}),
+                verify: fast,
+            });
+            expect(result.verification).toMatchObject({ status: 'unknown' });
+        });
+
         it('reports ambiguity when several new records match', async () => {
             const result = await runCreate({
                 spec: { ...spec(snapshots([], [{ id: 'a' }, { id: 'b' }])), nameKey: null },
@@ -226,6 +264,25 @@ describe('tools/resourceMutationShared', () => {
             });
             expect(write).not.toHaveBeenCalled();
             expect(result).toMatchObject({ noOp: true, verification: { status: 'verified', attempts: 0 } });
+        });
+
+        it('previews and verifies updates against the normalized detail', async () => {
+            let vlanId = 10;
+            const spec = {
+                label: 'SSID',
+                list: snapshots([{ id: 'a', name: 'one' }]),
+                detail: vi.fn(async () => ({ id: 'a', name: 'one', vlan: vlanId })),
+                normalize: (record: Record<string, unknown>) => ({ ...record, vlanId: record.vlan }),
+            };
+            const preview = await runUpdate({ spec, id: 'a', payload: { vlanId: 20 }, dryRun: true, write: vi.fn() });
+            expect(preview).toMatchObject({ before: { vlanId: 10 }, differences: [{ path: 'vlanId', reason: 'different' }] });
+            const write = vi.fn(() => {
+                vlanId = 20;
+                return Promise.resolve();
+            });
+            await expect(runUpdate({ spec, id: 'a', payload: { vlanId: 20 }, dryRun: false, write, verify: fast })).resolves.toMatchObject({
+                verification: { status: 'verified' },
+            });
         });
 
         it('always writes when write-only fields are requested, and verifies the rest', async () => {

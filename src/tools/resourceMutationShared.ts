@@ -35,6 +35,24 @@ export interface ResourceSpec {
     nameKey?: string | null;
     /** Requested fields the read surface never returns (secrets, write-only options). */
     writeOnly?: readonly string[];
+    /** Maps a read record onto the request shape when the controller flattens or renames fields. */
+    normalize?: (record: RecordLike) => RecordLike;
+    /** Full read of one record, when collection rows are summaries; used for verification. */
+    detail?: (id: string) => Promise<unknown>;
+}
+
+/** Verification view of a record: its full detail when the spec provides one. */
+async function verificationView(spec: ResourceSpec, record: RecordLike | undefined): Promise<RecordLike | undefined> {
+    const id = record && recordId(record, spec.idKeys);
+    if (!record || !spec.detail || id === undefined) return record;
+    const detail = await spec.detail(id);
+    if (!isRecord(detail)) throw new Error(`The controller returned an unexpected ${spec.label} detail.`);
+    return spec.normalize ? spec.normalize(detail) : detail;
+}
+
+async function readRecords(spec: ResourceSpec): Promise<RecordLike[]> {
+    const records = toRecords(await spec.list());
+    return spec.normalize ? records.map(spec.normalize) : records;
 }
 
 export interface Verification {
@@ -171,7 +189,7 @@ export interface CreateInput {
 
 export async function runCreate(input: CreateInput): Promise<RecordLike> {
     const { spec, payload } = input;
-    const before = toRecords(await spec.list());
+    const before = await readRecords(spec);
     nameClash(spec, before, payload);
     const warnings = input.warnings?.length ? { warnings: input.warnings } : {};
     if (input.dryRun) return { accepted: true, dryRun: true, planned: payload, existingCount: before.length, ...warnings };
@@ -183,12 +201,12 @@ export async function runCreate(input: CreateInput): Promise<RecordLike> {
     const outcome = await attemptWrite(spec.label, 'creation', input.write);
     const verification = await pollVerification(
         async () => {
-            const fresh = toRecords(await spec.list()).filter(
+            const fresh = (await readRecords(spec)).filter(
                 (record) => !knownIds.has(recordId(record, spec.idKeys)) && (typeof name !== 'string' || record[nameKey as string] === name)
             );
             if (fresh.length > 1) throw new Error('ambiguous');
             createdId = fresh[0] ? recordId(fresh[0], spec.idKeys) : undefined;
-            return fresh[0];
+            return await verificationView(spec, fresh[0]);
         },
         omitKeys(payload, spec.writeOnly),
         outcome.acknowledged,
@@ -215,10 +233,11 @@ export interface UpdateInput extends CreateInput {
 
 export async function runUpdate(input: UpdateInput): Promise<RecordLike> {
     const { spec, payload, id } = input;
-    const records = toRecords(await spec.list());
-    const before = findRecord(records, id, spec.idKeys);
-    if (!before) throw new Error(`No ${spec.label} with id "${id}" exists. List them again to get a current id.`);
+    const records = await readRecords(spec);
+    const listed = findRecord(records, id, spec.idKeys);
+    if (!listed) throw new Error(`No ${spec.label} with id "${id}" exists. List them again to get a current id.`);
     nameClash(spec, records, payload, id);
+    const before = (await verificationView(spec, listed)) as RecordLike;
     const requested = omitKeys(payload, spec.writeOnly);
     const current = compareRequestedFields(requested, before);
     const alreadyMatches = current.status === 'verified' && writeOnlyRequested(payload, spec.writeOnly).length === 0;
@@ -231,7 +250,7 @@ export async function runUpdate(input: UpdateInput): Promise<RecordLike> {
     }
     const outcome = await attemptWrite(spec.label, 'update', input.write);
     const verification = await pollVerification(
-        async () => findRecord(toRecords(await spec.list()), id, spec.idKeys),
+        async () => await verificationView(spec, findRecord(await readRecords(spec), id, spec.idKeys)),
         requested,
         outcome.acknowledged,
         input.verify
@@ -260,7 +279,7 @@ export interface DeleteInput {
 
 export async function runDelete(input: DeleteInput): Promise<RecordLike> {
     const { spec, id } = input;
-    const records = toRecords(await spec.list());
+    const records = await readRecords(spec);
     const before = findRecord(records, id, spec.idKeys);
     if (!before) throw new Error(`No ${spec.label} with id "${id}" exists. List them again to get a current id.`);
     await input.guard?.(before, records);
@@ -268,7 +287,7 @@ export async function runDelete(input: DeleteInput): Promise<RecordLike> {
     if (input.dryRun) return { accepted: true, dryRun: true, id, before, ...warnings };
     const outcome = await attemptWrite(spec.label, 'deletion', input.write);
     const verification = await pollVerification(
-        async () => findRecord(toRecords(await spec.list()), id, spec.idKeys),
+        async () => findRecord(await readRecords(spec), id, spec.idKeys),
         undefined,
         outcome.acknowledged,
         input.verify

@@ -1,12 +1,12 @@
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 
 import type { OmadaClient } from '../omadaClient/index.js';
-import { createVoucherGroupOpenApiVO06Schema } from '../omadaClient/requestSchemas.js';
 import { siteInputSchema, wrapMutationToolHandler } from '../server/common.js';
+import { voucherGroupPayloadSchema } from './payloadRequirements.js';
 import { dryRunSchema, mutationSummary, runCreate } from './resourceMutationShared.js';
 
 const inputSchema = siteInputSchema.extend({
-    payload: createVoucherGroupOpenApiVO06Schema.describe(
+    payload: voucherGroupPayloadSchema.describe(
         'Voucher group (official CreateVoucherGroupOpenApiVO): number of codes, code format/length, usage limits, duration and rate limits. Requires a hotspot portal that accepts vouchers.'
     ),
     dryRun: dryRunSchema,
@@ -31,6 +31,8 @@ export function registerCreateVoucherGroupTool(server: McpServer, client: Client
                     spec: {
                         label: 'voucher group',
                         list: () => client.listVoucherGroups(siteId, customHeaders),
+                        // Code-generation inputs are not stored on the group, so reads cannot echo them.
+                        writeOnly: ['amount', 'codeLength', 'codeForm'],
                     },
                     payload,
                     dryRun,

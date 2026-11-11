@@ -2,19 +2,19 @@ import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { z } from 'zod';
 
 import type { OmadaClient } from '../omadaClient/index.js';
-import { createSsidOpenApiVOSchema } from '../omadaClient/requestSchemas.js';
 import { siteInputSchema, wrapMutationToolHandler } from '../server/common.js';
+import { ssidPayloadSchema } from './payloadRequirements.js';
 import { dryRunSchema, mutationSummary, runCreate } from './resourceMutationShared.js';
 
 const inputSchema = siteInputSchema.extend({
     wlanId: z.string().trim().min(1).describe('WLAN group ID (wlanId) from getWlanGroupList that the SSID belongs to.'),
-    payload: createSsidOpenApiVOSchema.describe(
+    payload: ssidPayloadSchema.describe(
         'SSID (official CreateSsidOpenApiVO). security: 0 open, 2 WPA-Enterprise, 3 WPA-Personal (pskSetting), 4 PPSK. vlanEnable with vlanSetting maps the SSID to a VLAN/network. Security settings are write-only and are not verified by readback.'
     ),
     dryRun: dryRunSchema,
 });
 
-type Client = Pick<OmadaClient, 'createSsid' | 'getSsidList'>;
+type Client = Pick<OmadaClient, 'createSsid' | 'getSsidDetail' | 'getSsidList'>;
 
 export function registerCreateSsidTool(server: McpServer, client: Client): void {
     server.registerTool(
@@ -33,8 +33,9 @@ export function registerCreateSsidTool(server: McpServer, client: Client): void 
                     spec: {
                         label: 'SSID',
                         list: () => client.getSsidList(wlanId, siteId, customHeaders),
+                        detail: (ssidId) => client.getSsidDetail(wlanId, ssidId, siteId, customHeaders),
                         idKeys: ['ssidId', 'id'],
-                        writeOnly: ['pskSetting', 'entSetting', 'ppskSetting'],
+                        writeOnly: ['pskSetting', 'entSetting', 'ppskSetting', 'hidePwd'],
                     },
                     payload,
                     dryRun,

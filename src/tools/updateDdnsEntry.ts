@@ -2,13 +2,13 @@ import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { z } from 'zod';
 
 import type { OmadaClient } from '../omadaClient/index.js';
-import { createDdnsOpenApiVOSchema } from '../omadaClient/requestSchemas.js';
 import { siteInputSchema, wrapMutationToolHandler } from '../server/common.js';
+import { ddnsPayloadSchema, normalizeDdnsRecord } from './payloadRequirements.js';
 import { dryRunSchema, mutationSummary, runUpdate } from './resourceMutationShared.js';
 
 const inputSchema = siteInputSchema.extend({
     ddnsId: z.string().trim().min(1).describe('Dynamic DNS entry ID from getDdnsGrid.'),
-    payload: createDdnsOpenApiVOSchema.describe(
+    payload: ddnsPayloadSchema.describe(
         'Complete dynamic DNS entry (official CreateDdnsOpenApiVO), including the provider password, which reads never return.'
     ),
     dryRun: dryRunSchema,
@@ -35,6 +35,7 @@ export function registerUpdateDdnsEntryTool(server: McpServer, client: Client): 
                         list: () => client.listDdnsEntries(siteId, customHeaders),
                         nameKey: null,
                         writeOnly: ['password'],
+                        normalize: normalizeDdnsRecord,
                     },
                     id: ddnsId,
                     payload,

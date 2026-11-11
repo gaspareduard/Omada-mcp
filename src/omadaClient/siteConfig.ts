@@ -320,7 +320,12 @@ export class SiteConfigOperations {
 
     // ---- MAC filtering ----
     public async listMacFilters(list: z.input<typeof macFilterListSchema>, siteId?: string, h?: CustomHeaders): Promise<unknown[]> {
-        return await this.list(siteId, `/mac-filters/${macFilterListSchema.parse(list)}`, h);
+        const mode = macFilterListSchema.parse(list);
+        // Entries are read per list without filterMode; restore it so records match the request shape.
+        const filterMode = mode === 'allow' ? 0 : 1;
+        return (await this.list(siteId, `/mac-filters/${mode}`, h)).map((entry) =>
+            entry && typeof entry === 'object' && !('filterMode' in entry) ? { filterMode, ...entry } : entry
+        );
     }
     public async createMacFilter(payload: Input<typeof schemas.macFilteringSchema>, siteId?: string, h?: CustomHeaders): Promise<unknown> {
         return await this.send('POST', siteId, '/mac-filters', schemas.macFilteringSchema.parse(payload), h);

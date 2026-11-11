@@ -1,12 +1,12 @@
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 
 import type { OmadaClient } from '../omadaClient/index.js';
-import { lanDnsOpenApiVOSchema } from '../omadaClient/requestSchemas.js';
 import { siteInputSchema, wrapMutationToolHandler } from '../server/common.js';
+import { lanDnsPayloadSchema } from './payloadRequirements.js';
 import { dryRunSchema, mutationSummary, runCreate } from './resourceMutationShared.js';
 
 const inputSchema = siteInputSchema.extend({
-    payload: lanDnsOpenApiVOSchema.describe(
+    payload: lanDnsPayloadSchema.describe(
         'LAN DNS rule (official LanDnsOpenApiVO). type 0 answers with ipAddresses, 1 maps to cname, 2 forwards to dnsServers. Controllers require at least one lanNetworkIds entry.'
     ),
     dryRun: dryRunSchema,

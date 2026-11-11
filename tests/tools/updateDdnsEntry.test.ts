@@ -11,6 +11,7 @@ const payload = {
     username: 'user@example.com',
     password: 'not-a-real-pass',
     domainName: 'omada-mcp-test.example.com',
+    interval: { updateInterval: 6 },
 };
 const current = {
     service: 1,
@@ -40,6 +41,7 @@ describe('tools/updateDdnsEntry', () => {
                         interfacePortId: 'wan-1',
                         username: 'user@example.com',
                         domainName: 'omada-mcp-test.example.com',
+                        updateInterval: 6,
                         id: 'id-1',
                     },
                 ];

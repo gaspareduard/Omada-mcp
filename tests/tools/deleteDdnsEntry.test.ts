@@ -11,6 +11,7 @@ const current = {
     username: 'user@example.com',
     password: 'not-a-real-pass',
     domainName: 'omada-mcp-test.example.com',
+    interval: { updateInterval: 6 },
     id: 'id-1',
 };
 

@@ -14,8 +14,11 @@ function setup(detail: Record<string, unknown> | undefined) {
     const client = {
         listDevices: vi.fn().mockResolvedValue(devices),
         getClientDetail: vi.fn(async () => detail && { ...detail, clientLockToApSetting: lock }),
-        setClientLockToAp: vi.fn((_mac: string, body: Record<string, unknown>) => {
-            lock = body;
+        setClientLockToAp: vi.fn((_mac: string, body: { enable: boolean; aps?: string[] }) => {
+            // Like the controller, echo APs as { name, mac } objects (lower-case colon MACs here).
+            lock = body.aps
+                ? { enable: body.enable, aps: body.aps.map((mac) => ({ name: 'AP', mac: mac.toLowerCase().replaceAll('-', ':') })) }
+                : body;
             return Promise.resolve();
         }),
     };
@@ -62,5 +65,16 @@ describe('tools/setClientLockToAp', () => {
             undefined
         );
         expect(client.setClientLockToAp).toHaveBeenNthCalledWith(2, 'CC-CC-CC-CC-CC-01', { enable: false }, undefined, undefined);
+    });
+
+    it('reports a mismatch when the controller keeps a different AP', async () => {
+        const { client, harness } = setup(wireless);
+        client.setClientLockToAp.mockImplementation(() => Promise.resolve());
+        client.getClientDetail.mockResolvedValue({ ...wireless, clientLockToApSetting: { enable: true, aps: ['AA:BB:CC:DD:EE:02', 7] } });
+        await expect(
+            harness.invoke({ clientMac: 'CC-CC-CC-CC-CC-01', enable: true, aps: ['AA-BB-CC-DD-EE-01'], dryRun: false })
+        ).resolves.toMatchObject({
+            status: 'mismatch',
+        });
     });
 });

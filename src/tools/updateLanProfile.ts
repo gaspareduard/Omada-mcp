@@ -2,13 +2,13 @@ import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { z } from 'zod';
 
 import type { OmadaClient } from '../omadaClient/index.js';
-import { lanProfileConfigOpenApiVOSchema } from '../omadaClient/requestSchemas.js';
 import { siteInputSchema, wrapMutationToolHandler } from '../server/common.js';
+import { lanProfileUpdatePayloadSchema } from './payloadRequirements.js';
 import { dryRunSchema, mutationSummary, runUpdate } from './resourceMutationShared.js';
 
 const inputSchema = siteInputSchema.extend({
     profileId: z.string().trim().min(1).describe('LAN (switch port) profile ID from getLanProfileList.'),
-    payload: lanProfileConfigOpenApiVOSchema.describe(
+    payload: lanProfileUpdatePayloadSchema.describe(
         'Complete switch port profile (official LanProfileConfigOpenApiVO). Read the current record first and send every field you want to keep.'
     ),
     dryRun: dryRunSchema,

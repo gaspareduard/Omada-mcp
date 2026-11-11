@@ -19,6 +19,16 @@ function apiMac(mac: string): string {
     return normalizeMac(mac).replace(/(..)(?!$)/g, '$1-');
 }
 
+/** Reads return aps as [{ name, mac }]; compare them as API-format MAC strings. */
+function normalizeLockSetting(value: unknown): unknown {
+    if (typeof value !== 'object' || value === null || !Array.isArray((value as { aps?: unknown }).aps)) return value;
+    const aps = (value as { aps: unknown[] }).aps.map((ap) => {
+        const mac = typeof ap === 'string' ? ap : typeof ap === 'object' && ap !== null ? (ap as { mac?: unknown }).mac : undefined;
+        return typeof mac === 'string' ? apiMac(mac) : ap;
+    });
+    return { ...value, aps };
+}
+
 export function registerSetClientLockToApTool(server: McpServer, client: Client): void {
     server.registerTool(
         'setClientLockToAp',
@@ -54,7 +64,7 @@ export function registerSetClientLockToApTool(server: McpServer, client: Client)
                 }
                 return await runSettings({
                     label: 'client lock-to-AP',
-                    read: async () => (await readDetail())?.clientLockToApSetting,
+                    read: async () => normalizeLockSetting((await readDetail())?.clientLockToApSetting),
                     payload,
                     dryRun,
                     write: () => client.setClientLockToAp(clientMac, payload, siteId, customHeaders),

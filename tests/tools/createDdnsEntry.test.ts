@@ -12,6 +12,7 @@ const payload = {
     username: 'user@example.com',
     password: 'not-a-real-pass',
     domainName: 'omada-mcp-test.example.com',
+    interval: { updateInterval: 6 },
 };
 
 describe('tools/createDdnsEntry', () => {
@@ -32,6 +33,7 @@ describe('tools/createDdnsEntry', () => {
                         interfacePortId: 'wan-1',
                         username: 'user@example.com',
                         domainName: 'omada-mcp-test.example.com',
+                        updateInterval: 6,
                         id: 'new-1',
                     },
                 ];

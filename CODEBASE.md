@@ -129,6 +129,8 @@ Add the verified route to its domain class and expose it through `src/omadaClien
 
 Use [listSites](src/tools/listSites.ts) for a read tool and [setSwitchPorts](src/tools/setSwitchPorts.ts) for a validated mutation workflow. Register a raw Zod shape, use the common handler/result helpers, and default `dryRun` to true. Validate real response shapes rather than echoing write payloads in tests.
 
+Configuration writes use the shared engine in `src/tools/resourceMutationShared.ts` (`runCreate`, `runUpdate`, `runDelete`, `runSettings`, `runAction`), which implements preview defaults, conflict checks, single writes and readback verification. Request bodies come from `src/omadaClient/requestSchemas.ts`; add the component name to `scripts/generate-request-schemas.mjs` and rerun it rather than hand-writing schemas. Put controller-enforced rules the spec does not express in `src/tools/payloadRequirements.ts`.
+
 ### 4. Register in `src/tools/index.ts`
 
 Add the import and a `TOOL_REGISTRY` entry with category and read/write permission. Catalog registration applies the effective schema, annotations and redaction in standard and compact modes.
