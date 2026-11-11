@@ -243,7 +243,7 @@ Every write previews by default (`dryRun` omitted or `true`), validates its payl
 | --- | --- | --- |
 | `locateDevice` | Blink (or stop blinking) the locate LED of an adopted gateway, switch or AP so it can be found physically. Does not affect traffic. | `devices-general:rw` |
 | `forceProvisionDevice` | Force the controller to re-push the full configuration to an adopted device. The device can restart services or radios and briefly drop connected clients. | `devices-general:rw` |
-| `adoptDevice` | Adopt a pending (discovered, not yet managed) device into this site. The controller then provisions it with site configuration, which can reboot it. | `devices-general:rw` |
+| `adoptDevice` | Adopt a pending (discovered, not yet managed) device into this site using its default login; devices with changed credentials must be adopted in the controller UI. The controller then provisions it with site configuration, which can reboot it. | `devices-general:rw` |
 | `startDeviceOnlineUpgrade` | Upgrade one adopted device to the latest firmware the controller offers online. Refused when getFirmwareInfo reports no newer version. The device reboots and its clients lose connectivity for several minutes. | `devices-general:rw` |
 | `recoverSwitchPortPoe` | Power-cycle PoE on switch ports (PoE recovery) to reboot powered devices such as cameras or APs. Connected devices lose power and connectivity until they boot. | `devices-switch:rw` |
 | `setClientName` | Rename a client (its display name in the controller). Does not affect connectivity. | `clients:rw` |
@@ -258,7 +258,6 @@ Every write previews by default (`dryRun` omitted or `true`), validates its payl
 | `createVoucherGroup` | Create a batch of hotspot guest vouchers. | `hotspot-vouchers:rw` |
 | `deleteVoucherGroup` | Delete a voucher group and revoke its unused vouchers. | `hotspot-vouchers:rw` |
 | `listVoucherGroups` | List hotspot voucher groups with their code counts, limits and validity. Returns every page. | `hotspot-vouchers:r` |
-
 ### Site & Client
 
 | Tool                         | Description                                                                  |

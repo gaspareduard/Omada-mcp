@@ -875,13 +875,12 @@ describe('NetworkOperations', () => {
     describe('listClientToSiteVpnServers', () => {
         it('should list client-to-site VPN server configurations', async () => {
             const mockData = [{ id: 'server-1', name: 'VPN Server' }];
-            vi.mocked(mockRequest.fetchPaginated).mockResolvedValue(mockData);
+            vi.mocked(mockRequest.fetchCollection).mockResolvedValue(mockData);
 
             const result = await networkOps.listClientToSiteVpnServers('site-123');
 
-            expect(mockRequest.fetchPaginated).toHaveBeenCalledWith(
+            expect(mockRequest.fetchCollection).toHaveBeenCalledWith(
                 '/openapi/v1/test-omadac/sites/site-123/vpn/client-to-site-vpn-servers',
-                {},
                 undefined
             );
             expect(result).toEqual(mockData);

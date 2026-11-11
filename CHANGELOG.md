@@ -2,11 +2,11 @@
 
 ## Unreleased
 
-- add 68 preview-first networking tools for parity with the UniFi MCP server's networking workflows: LAN networks, switch port profiles, WLAN groups and SSIDs, group profiles, mDNS rules, port forwarding, one-to-one NAT, static and policy routes, LAN DNS, DDNS, UPnP/ALG/SNMP, URL and MAC filtering, attack defense, IDS/IPS, VPN update/delete, device locate/provision/adopt/upgrade, PoE recovery, client rename/lock-to-AP, hotspot client authorization and voucher groups
+- add 68 preview-first networking tools for parity with the UniFi MCP server's networking workflows: LAN networks, switch port profiles, WLAN groups and SSIDs, group profiles, mDNS rules, port forwarding, one-to-one NAT, static and policy routes, LAN DNS, DDNS, UPnP/ALG/SNMP, URL and MAC filtering, attack defense, IDS/IPS, VPN update/delete, device locate/provision/adopt (default login only)/upgrade, PoE recovery, client rename/lock-to-AP, hotspot client authorization and voucher groups
 - generate strict request schemas from the official OpenAPI specs and validate controller-enforced requirements before preview
 - share one mutation engine for conflict checks, single writes, error-coded controller rejections and bounded readback verification
 - fix `listSiteToSiteVpns` and `listGroupProfiles`, which failed on controllers returning bare arrays
-- document live-controller validation and its limits in [networking writes validation](docs/operations/networking-writes-validation.md)
+- record exploratory live-controller findings (not release validation) in [networking writes validation](docs/operations/networking-writes-validation.md)
 
 ## 0.19.0-rc.1 - 2026-10-24
 

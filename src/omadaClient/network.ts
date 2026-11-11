@@ -294,7 +294,8 @@ export class NetworkOperations {
     public async listClientToSiteVpnServers(siteId?: string, customHeaders?: CustomHeaders): Promise<unknown[]> {
         const resolvedSiteId = await this.site.resolveSiteId(siteId);
         const path = this.buildPath(`/sites/${encodeURIComponent(resolvedSiteId)}/vpn/client-to-site-vpn-servers`);
-        return await this.request.fetchPaginated<unknown>(path, {}, customHeaders);
+        // The spec documents a bare array; some controllers return a paginated envelope.
+        return await this.request.fetchCollection<unknown>(path, customHeaders);
     }
 
     /**

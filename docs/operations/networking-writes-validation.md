@@ -16,7 +16,9 @@ These tools bring Omada to the networking use cases of the UniFi MCP server (`si
 
 ## Live controller evidence (2026-11-11)
 
-**Environment.** Omada Software Controller with an ER605 v2.20 gateway and three EAP772/EAP653 APs. There is no Omada switch, and the WAN uses DHCP. The owner explicitly authorized testing on this production network, provided connectivity disruption stayed minimal.
+> **Not release validation.** The project rule stands: write tools are validated against a disposable Docker/lab controller, never a production controller, and production checks are read-only or previews (see `CLAUDE.md`, Integration validation). The evidence below is a one-off, owner-requested exploratory run on the owner's own network. It found real controller requirements and shape mismatches, but it does not satisfy the release gate and is not a procedure to repeat. These tools remain release-candidate until disposable-controller evidence exists.
+
+**Environment.** Omada Software Controller with an ER605 v2.20 gateway and three EAP772/EAP653 APs. There is no Omada switch, and the WAN uses DHCP. The owner explicitly requested this run on their own network, provided connectivity disruption stayed minimal.
 
 **Isolation.** Each test object was created disabled, scoped to an unused domain or a TEST-NET range, or placed in an unassigned WLAN group or a switch-only VLAN. Objects were deleted afterwards. A final sweep found no leftovers. All devices stayed online, and critical clients (NAS, servers, Home Assistant, NVR, laptop) stayed connected throughout.
 
@@ -64,5 +66,5 @@ The following pre-existing reads were fixed. They used the paginated reader on e
 
 ## Remaining limits
 
-- Disposable-controller and adopted-switch evidence is still required before a stable release, as described in [the release plan](0.19-release-plan.md). Switch and VPN apply paths were not exercised on hardware.
+- Release validation is outstanding: every write path still needs disposable-controller evidence, plus adopted-switch evidence for switch paths, as described in [the release plan](0.19-release-plan.md). Switch and VPN apply paths were not exercised at all.
 - Verification confirms controller-observed configuration, not data-plane behavior.
