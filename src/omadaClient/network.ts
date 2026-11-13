@@ -1,7 +1,7 @@
 import { z } from 'zod';
 
 import type { CustomHeaders, OmadaApiResponse, PaginatedResult } from '../types/index.js';
-import type { RequestHandler } from './request.js';
+import { OmadaApiError, type RequestHandler } from './request.js';
 import type { SiteOperations } from './site.js';
 
 // Writable request fields from 04-site-setting.json. Strip GET-only metadata when
@@ -102,6 +102,15 @@ export function parseSsidBasicConfig(value: unknown): SsidBasicConfig {
     if (config.security === 5 && !config.ppskSetting?.radiusProfileId) throw new Error('PPSK RADIUS security requires radiusProfileId.');
     return config;
 }
+
+const GENERAL_ERROR_CODE = -1;
+
+// Observed on controller 6.2.14.11: the Open API converter (OsgAclOpenApiVO)
+// throws a NullPointerException when any stored gateway ACL has no stateMode,
+// and the controller reports the whole list as "General error." (-1).
+const GATEWAY_ACL_LIST_FAILURE_HINT =
+    'The controller reported a generic failure while building the gateway ACL list. One known cause, seen on controller 6.2.14.11, is a stored gateway ACL rule with no state mode: the controller server.log then shows a NullPointerException on AclVO.getStateMode(), while the EAP and switch ACL lists still work.';
+
 /**
  * Network-related operations for the Omada API.
  * Covers internet, LAN, WLAN, firewall, and port forwarding configurations.
@@ -338,7 +347,14 @@ export class NetworkOperations {
     public async listOsgAcls(siteId?: string, customHeaders?: CustomHeaders): Promise<unknown[]> {
         const resolvedSiteId = await this.site.resolveSiteId(siteId);
         const path = this.buildPath(`/sites/${encodeURIComponent(resolvedSiteId)}/acls/osg-acls`);
-        return await this.request.fetchPaginated<unknown>(path, {}, customHeaders);
+        try {
+            return await this.request.fetchPaginated<unknown>(path, {}, customHeaders);
+        } catch (error) {
+            if (error instanceof OmadaApiError && error.errorCode === GENERAL_ERROR_CODE) {
+                throw new OmadaApiError(error.errorCode, `${error.message} ${GATEWAY_ACL_LIST_FAILURE_HINT}`);
+            }
+            throw error;
+        }
     }
 
     /**

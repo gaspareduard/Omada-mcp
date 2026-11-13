@@ -8,6 +8,7 @@
 | New radio/SSID/switch apply paths | Official tag specs and mocked contract tests | Disposable controller and adopted hardware tests pending |
 | Networking write tools | Spec-checked routes, generated schemas and mocked contracts; a one-off owner-requested exploratory run on an ER605 + EAP site ([record](operations/networking-writes-validation.md)) | Not release-validated: disposable-controller evidence pending for all write paths; no switch, VPN or static-WAN evidence |
 | Server icon | SDK initialization tests and extracted-package stdio smoke | Display depends on MCP host support |
+| Gateway ACL list (`listOsgAcls`) | Live read on 6.2.14.11 returns `General error.`; the controller log shows a NullPointerException on a stored rule with no state mode | Controller defect: the official endpoint cannot list gateway ACLs until that rule is fixed or TP-Link patches the controller. EAP and switch ACL lists are unaffected |
 | Other software/hardware controllers | Not newly validated by this candidate | Verify each operation before granting write access |
 | HTTP transport | Loopback lab only | Not production supported |
 | Private GUI APIs / OC200 fallback | Not implemented | `compatibility` is a deprecated profile alias |
