@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { NetworkOperations, parseSsidBasicConfig, type SsidBasicConfig } from '../../src/omadaClient/network.js';
-import type { RequestHandler } from '../../src/omadaClient/request.js';
+import { OmadaApiError, type RequestHandler } from '../../src/omadaClient/request.js';
 import type { SiteOperations } from '../../src/omadaClient/site.js';
 import type { OmadaApiResponse, PaginatedResult } from '../../src/types/index.js';
 
@@ -1044,6 +1044,32 @@ describe('NetworkOperations', () => {
 
             expect(mockRequest.fetchPaginated).toHaveBeenCalledWith('/openapi/v1/test-omadac/sites/site-123/acls/osg-acls', {}, undefined);
             expect(result).toEqual(mockData);
+        });
+
+        it('should explain the known controller failure behind a General error', async () => {
+            vi.mocked(mockRequest.fetchPaginated).mockRejectedValue(new OmadaApiError(-1, 'General error.'));
+
+            const failure = networkOps.listOsgAcls('site-123');
+
+            await expect(failure).rejects.toBeInstanceOf(OmadaApiError);
+            await expect(failure).rejects.toMatchObject({
+                errorCode: -1,
+                message: expect.stringMatching(/^General error\. .*AclVO\.getStateMode\(\)/),
+            });
+        });
+
+        it('should pass other controller errors through unchanged', async () => {
+            const error = new OmadaApiError(-1005, 'Operation forbidden.');
+            vi.mocked(mockRequest.fetchPaginated).mockRejectedValue(error);
+
+            await expect(networkOps.listOsgAcls('site-123')).rejects.toBe(error);
+        });
+
+        it('should pass transport errors through unchanged', async () => {
+            const error = new Error('socket hang up');
+            vi.mocked(mockRequest.fetchPaginated).mockRejectedValue(error);
+
+            await expect(networkOps.listOsgAcls('site-123')).rejects.toBe(error);
         });
     });
 

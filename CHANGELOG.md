@@ -4,6 +4,7 @@
 
 - verify the readable OpenVPN `accountPassword` boolean after `updateClientToSiteVpnServer` instead of treating it as a write-only secret
 - one-to-one NAT write tools read existing rules through the existing `listOneToOneNatRules` operation instead of a duplicate implementation
+- explain the controller's `General error.` from the gateway ACL list (`listOsgAcls`, and the `updateGatewayAcl`/`deleteAcl` lookups): on controller 6.2.14.11 the Open API fails the whole list when a stored gateway ACL rule has no state mode, a controller NullPointerException rather than a request problem
 
 ## 0.19.0-rc.2 - 2026-11-11
 
