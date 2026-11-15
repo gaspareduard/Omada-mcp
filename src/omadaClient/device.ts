@@ -226,15 +226,15 @@ export class DeviceOperations {
      * Get radio information for a specific AP.
      * OperationId: getApRadios
      */
-    public async getApRadios(apMac: string, siteId?: string, customHeaders?: CustomHeaders): Promise<unknown[]> {
+    public async getApRadios(apMac: string, siteId?: string, customHeaders?: CustomHeaders): Promise<unknown> {
         if (!apMac) {
             throw new Error('An apMac must be provided.');
         }
         const resolvedSiteId = await this.site.resolveSiteId(siteId);
         const path = this.buildPath(`/sites/${encodeURIComponent(resolvedSiteId)}/aps/${encodeURIComponent(apMac)}/radios`);
-        const response = await this.request.get<OmadaApiResponse<unknown[]>>(path, undefined, customHeaders);
-        const result = this.request.ensureSuccess(response);
-        return Array.isArray(result) ? result : [];
+        const response = await this.request.get<OmadaApiResponse<unknown>>(path, undefined, customHeaders);
+        // The spec returns an ApRadiosDetail object (radioTraffic*/wp*), not an array.
+        return this.request.ensureSuccess(response);
     }
 
     /**

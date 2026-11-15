@@ -400,9 +400,9 @@ describe('omadaClient/device', () => {
     });
 
     describe('getApRadios', () => {
-        it('should get AP radio info', async () => {
-            const mockRadios = [{ band: '5GHz', channel: 36 }];
-            const mockResponse: OmadaApiResponse<unknown[]> = { errorCode: 0, result: mockRadios };
+        it('should return the ApRadiosDetail object unchanged', async () => {
+            const mockRadios = { radioTraffic2g: { rx: 1, tx: 2 }, wp5g: { channel: '36', actualChannel: '36' } };
+            const mockResponse: OmadaApiResponse<unknown> = { errorCode: 0, result: mockRadios };
             (mockRequest.get as ReturnType<typeof vi.fn>).mockResolvedValue(mockResponse);
             (mockRequest.ensureSuccess as ReturnType<typeof vi.fn>).mockReturnValue(mockRadios);
 
@@ -410,24 +410,6 @@ describe('omadaClient/device', () => {
 
             expect(mockRequest.get).toHaveBeenCalledWith('/api/sites/site-1/aps/AA%3ABB%3ACC%3ADD%3AEE%3AFF/radios', undefined, undefined);
             expect(result).toEqual(mockRadios);
-        });
-
-        it('should return empty array when ensureSuccess returns null', async () => {
-            const mockResponse: OmadaApiResponse<unknown[]> = { errorCode: 0, result: [] };
-            (mockRequest.get as ReturnType<typeof vi.fn>).mockResolvedValue(mockResponse);
-            (mockRequest.ensureSuccess as ReturnType<typeof vi.fn>).mockReturnValue(null);
-
-            const result = await deviceOps.getApRadios('AA:BB:CC:DD:EE:FF', 'site-1');
-            expect(result).toEqual([]);
-        });
-
-        it('should return empty array when ensureSuccess returns a non-array object', async () => {
-            const mockResponse: OmadaApiResponse<unknown[]> = { errorCode: 0, result: [] };
-            (mockRequest.get as ReturnType<typeof vi.fn>).mockResolvedValue(mockResponse);
-            (mockRequest.ensureSuccess as ReturnType<typeof vi.fn>).mockReturnValue({});
-
-            const result = await deviceOps.getApRadios('AA:BB:CC:DD:EE:FF', 'site-1');
-            expect(result).toEqual([]);
         });
 
         it('should throw when apMac is empty', async () => {
