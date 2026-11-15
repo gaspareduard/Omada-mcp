@@ -336,7 +336,7 @@ export class OmadaClient {
         return await this.deviceOps.getApDetail(apMac, siteId, customHeaders);
     }
 
-    public async getApRadios(apMac: string, siteId?: string, customHeaders?: CustomHeaders): Promise<unknown[]> {
+    public async getApRadios(apMac: string, siteId?: string, customHeaders?: CustomHeaders): Promise<unknown> {
         return await this.deviceOps.getApRadios(apMac, siteId, customHeaders);
     }
 
