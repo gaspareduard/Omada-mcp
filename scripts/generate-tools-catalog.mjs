@@ -219,7 +219,11 @@ for (const file of readdirSync(clientDir).filter((name) => name.endsWith('.ts') 
             const tail = text.slice(end, end + 600);
             const next = tail.indexOf('this.buildPath(');
             const window = next === -1 ? tail : tail.slice(0, next);
-            const helper = /this\.request\.(get|fetchPaginated|fetchCollection|post|put|patch|delete)\b/.exec(window);
+            // buildPath(...) passed directly as the request's first argument, else the next request call.
+            const enclosing = /this\.request\.(get|fetchPaginated|fetchCollection|post|put|patch|delete)\b(?:<[^()]*>)?\(\s*$/.exec(
+                text.slice(Math.max(0, match.index - 200), match.index)
+            );
+            const helper = enclosing ?? /this\.request\.(get|fetchPaginated|fetchCollection|post|put|patch|delete)\b/.exec(window);
             const explicit = /method:\s*'(GET|POST|PUT|PATCH|DELETE)'/i.exec(window);
             const method = helper ? HELPER_METHOD[helper[1]] : explicit?.[1].toUpperCase();
             if (!method || !args[0]) continue;
