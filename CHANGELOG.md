@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+- refresh `docs/openapi` from Omada software controller 6.3.0.111 (2462 operations in 31 groups, up from 1676 in 18), fetched with the new `scripts/fetch-openapi.mjs`, which replaces the lab controller's address with `controller.example.com`
+- regenerate `OMADA_TOOLS.md` with the new `scripts/generate-tools-catalog.mjs`: implementation status now comes from the routes in `src/omadaClient` (406/2462), and CI fails when the catalogue is stale
+- generated request schemas follow the 6.3 spec, adding fields such as SIP ALG options, Wi-Fi Calling on SSIDs, SNMPv3 settings and switch-port trust mode; exported schema names are unchanged
+- `setApConfig` with `configType: port-config` uses the per-port `PATCH aps/{apMac}/ports/{port}` route, because 6.3 removed the collection-level PATCH; the port comes from `payload.lanPort`
+- deprecate `backupController` and `restoreController`: controller 6.3 removed the self-server controller backup/restore endpoints from the Open API (site-level self-server backup and file-server backup/restore remain)
+- deprecate `setDeviceLed`: its `devices/{mac}/led-setting` route has never been part of the official Open API; set `ledSetting` through `setApConfig` (general-config) or `setGatewayConfig`
 - verify the readable OpenVPN `accountPassword` boolean after `updateClientToSiteVpnServer` instead of treating it as a write-only secret
 - one-to-one NAT write tools read existing rules through the existing `listOneToOneNatRules` operation instead of a duplicate implementation
 - explain the controller's `General error.` from the gateway ACL list (`listOsgAcls`, and the `updateGatewayAcl`/`deleteAcl` lookups): on controller 6.2.14.11 the Open API fails the whole list when a stored gateway ACL rule has no state mode, a controller NullPointerException rather than a request problem

@@ -95,9 +95,9 @@ src/
     logger.ts        Pino wrapper — use this, never console.log
     config-validations.ts  Zod validators for config values
     pagination-schema.ts   Reusable Zod schema for list args
-docs/openapi/        Reference OpenAPI specs (READ ONLY)
+docs/openapi/        Official OpenAPI specs from controller 6.3.0.111 (written only by scripts/fetch-openapi.mjs)
 tests/               Mirrors src/ 1:1 (enforced by CI)
-OMADA_TOOLS.md       Ground-truth backlog of all 1648 API operations
+OMADA_TOOLS.md       Generated catalogue of every spec operation and its implementation status
 CODEBASE.md          Full architecture + "how to add a tool" walkthrough
 ```
 
@@ -128,8 +128,8 @@ CODEBASE.md          Full architecture + "how to add a tool" walkthrough
 2. **Use `OMADA_TOOLS.md` as ground truth** — every tool there has a verified route.
 3. **If not in `OMADA_TOOLS.md` and not in `docs/openapi/`** — do NOT implement it.
 4. **Never infer or guess API routes** — only implement against verified spec paths.
-5. **Never edit `docs/openapi/*.json`** — they are reference-only.
-6. **Use individual tag files** (e.g. `03-device.json`), not `00-all.json` (too large).
+5. **Never hand-edit `docs/openapi/*.json`.** Refresh them only with `node scripts/fetch-openapi.mjs <lab-controller-url>` against a disposable lab controller, then regenerate request schemas and run the route tests. Record the controller version here and in `docs/support-matrix.md`.
+6. **Use individual group files** (e.g. `03-device.json`, `04.3-site-network-setting-network.json`), not `00-all.json` (too large).
 
 ## Adding a New Tool
 
@@ -194,6 +194,7 @@ npm run test:coverage              # Vitest with 90% per-file enforcement
 node scripts/check-branch-coverage.mjs # Global branches >=70%
 node scripts/check-tool-tests.mjs  # 1:1 test file mirroring
 node scripts/check-readme-sync.mjs # README tool table sync
+node scripts/generate-tools-catalog.mjs --check # OMADA_TOOLS.md matches spec + client routes
 ```
 
 The husky pre-commit hook runs `test:coverage` automatically.
@@ -245,4 +246,4 @@ Local MCP protocol and HTTP contract tests exercise the SDK and request layer wi
 
 ## Implementation Backlog
 
-`OMADA_TOOLS.md` is the historical API-route backlog; its checkmarks are not a runtime tool count. After building, run `node scripts/check-readme-sync.mjs` to validate the unique runtime inventory (including discovery and optional aliases). Consult `docs/operations/0.19-release-plan.md` for this release's priority order and deferred work.
+`OMADA_TOOLS.md` is the API-route backlog generated from `docs/openapi` and the routes in `src/omadaClient`; regenerate it with `node scripts/generate-tools-catalog.mjs` whenever either changes. Its checkmarks mean a client route exists, not a runtime tool count. After building, run `node scripts/check-readme-sync.mjs` to validate the unique runtime inventory (including discovery and optional aliases). Consult `docs/operations/0.19-release-plan.md` for this release's priority order and deferred work.

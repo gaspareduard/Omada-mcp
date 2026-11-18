@@ -4,6 +4,7 @@
 | --- | --- | --- |
 | stdio / MCP catalog | Local SDK protocol and schema tests | Client host approval policies remain external |
 | Request/auth/pagination | Unit and local HTTP contracts | Live controller/firmware behavior varies |
+| Software controller 6.3.0.111 (lab) | Disposable Proxmox LXC lab with no adopted devices; source of the checked-in `docs/openapi` specification. Every client route except three deprecated ones exists in its spec | Controller-level and site-configuration writes can be exercised; device, radio and PoE writes still need adopted hardware |
 | Software controller 6.2.14.11 | Existing installation confirmed; candidate observations in validation record | Selected reads/previews only, not all operations |
 | New radio/SSID/switch apply paths | Official tag specs and mocked contract tests | Disposable controller and adopted hardware tests pending |
 | Networking write tools | Spec-checked routes, generated schemas and mocked contracts; a one-off owner-requested exploratory run on an ER605 + EAP site ([record](operations/networking-writes-validation.md)) | Not release-validated: disposable-controller evidence pending for all write paths; no switch, VPN or static-WAN evidence |
