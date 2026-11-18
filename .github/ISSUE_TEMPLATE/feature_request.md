@@ -15,7 +15,7 @@ If this is a new tool request, include the API path from `OMADA_TOOLS.md` or `do
 - **Operation ID**: <!-- e.g. getBackupFileList -->
 - **HTTP Method**: <!-- e.g. GET -->
 - **API Path**: <!-- e.g. /openapi/v1/{omadacId}/sites/{siteId}/cmd/backup/files -->
-- **OpenAPI file**: <!-- e.g. docs/openapi/08-maintenance.json -->
+- **OpenAPI file**: <!-- e.g. docs/openapi/14-maintenance.json -->
 
 ## Use case
 

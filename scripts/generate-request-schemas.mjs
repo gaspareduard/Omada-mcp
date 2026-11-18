@@ -22,38 +22,50 @@ import { join, resolve } from 'node:path';
 const root = resolve(import.meta.dirname, '..');
 const outFile = join(root, 'src', 'omadaClient', 'requestSchemas.ts');
 
-/** Request-body component schemas used by write tools, grouped by tag spec. */
-const TARGETS = {
-    '03-device.json': ['ApUpdateWlanGroupOpenApiVO', 'LocateDeviceRequest', 'AdoptDeviceRequest', 'OswPoeRecoverOpenApiVO'],
-    '04-site-setting.json': [
-        'LanNetworkOpenApiV2VO',
-        'LanProfileConfigOpenApiVO',
-        'CreateWlanGroupOpenApiVO',
-        'UpdateWlanGroupOpenApiVO',
-        'CreateSsidOpenApiVO',
-        'CreateGroupOpenApiVO',
-        'CreateMdnsRuleOpenApiVO',
-        'LanDnsOpenApiVO',
-        'CreateDdnsOpenApiVO',
-        'UpnpSettingOpenApiVO',
-        'ALGSetting',
-        'SnmpSettingOpenApiVO',
-        'PortForwardingConfig',
-        'OtoNatOpenApiVO',
-        'StaticRoutingConfig',
-        'PolicyRoutingConfig',
-        'UrlFilteringOpenApiVO',
-        'AttackDefenseSetting',
-        'IpsInfo',
-        'MacFiltering',
-        'SiteToSiteVpn',
-        'ClientToSiteVpnServer',
-        'ClientToSiteVpnClient',
-        'WireguardOpenApiVO',
-    ],
-    '05-client.json': ['Client Name Setting', 'Client Lock To AP Setting'],
-    '06-hotspot.json': ['CreateVoucherGroupOpenApiVO'],
-};
+/**
+ * Request-body component schemas used by write tools, grouped by tag spec.
+ *
+ * `suffix` is part of every exported identifier and is kept stable across spec
+ * refreshes so consumers do not change when TP-Link renumbers its tag groups:
+ * '' = site settings, '03' = device, '05' = client, '06' = hotspot (the tag
+ * numbers of the original 18-group spec). Schemas that share a suffix must be
+ * identical wherever they are reached; the generator fails otherwise.
+ */
+const TARGETS = [
+    {
+        file: '03-device.json',
+        suffix: '03',
+        names: ['ApUpdateWlanGroupOpenApiVO', 'LocateDeviceRequest', 'AdoptDeviceRequest', 'OswPoeRecoverOpenApiVO'],
+    },
+    { file: '04.2-site-network-setting-general.json', suffix: '', names: ['CreateMdnsRuleOpenApiVO', 'SnmpSettingOpenApiVO'] },
+    {
+        file: '04.3-site-network-setting-network.json',
+        suffix: '',
+        names: [
+            'LanNetworkOpenApiV2VO',
+            'LanProfileConfigOpenApiVO',
+            'CreateWlanGroupOpenApiVO',
+            'UpdateWlanGroupOpenApiVO',
+            'CreateSsidOpenApiVO',
+            'LanDnsOpenApiVO',
+        ],
+    },
+    { file: '04.4-site-network-setting-profiles.json', suffix: '', names: ['CreateGroupOpenApiVO'] },
+    { file: '04.6-site-network-setting-security.json', suffix: '', names: ['UrlFilteringOpenApiVO', 'AttackDefenseSetting', 'IpsInfo'] },
+    {
+        file: '04.7-site-network-setting-transmission.json',
+        suffix: '',
+        names: ['ALGSetting', 'PortForwardingConfig', 'OtoNatOpenApiVO', 'StaticRoutingConfig', 'PolicyRoutingConfig'],
+    },
+    {
+        file: '04.8-site-network-setting-vpn.json',
+        suffix: '',
+        names: ['SiteToSiteVpn', 'ClientToSiteVpnServer', 'ClientToSiteVpnClient', 'WireguardOpenApiVO'],
+    },
+    { file: '05-site-device-config.json', suffix: '', names: ['CreateDdnsOpenApiVO', 'UpnpSettingOpenApiVO', 'MacFiltering'] },
+    { file: '06-client.json', suffix: '05', names: ['Client Name Setting', 'Client Lock To AP Setting'] },
+    { file: '07-hotspot.json', suffix: '06', names: ['CreateVoucherGroupOpenApiVO'] },
+];
 
 const MAX_DESCRIPTION = 240;
 
@@ -66,14 +78,17 @@ const PROSE_RANGE = /(?:within|in) the range of\s*\(?\s*(-?\d+)\s*(?:-|–|~|to)
 const CONDITIONAL_RANGES = new Set(['rekeyPskInterval', 'rekeyEntInterval']);
 const omittedPatterns = [];
 
-function identifier(file, name) {
+function identifier(suffix, name) {
     const words = name
         .replace(/[^A-Za-z0-9]+/g, ' ')
         .trim()
         .split(/\s+/);
     const camel = words.map((word, index) => (index === 0 ? word[0].toLowerCase() + word.slice(1) : word[0].toUpperCase() + word.slice(1))).join('');
-    return `${camel}${file.startsWith('04') ? '' : file.slice(0, 2)}Schema`.replace(/^(\d)/, '_$1');
+    return `${camel}${suffix}Schema`.replace(/^(\d)/, '_$1');
 }
+
+/** identifier -> { body, file } across every target file, so shared nested components are emitted once. */
+const registry = new Map();
 
 function describe(text) {
     if (!text) return '';
@@ -97,7 +112,7 @@ function patternFor(pattern, where) {
     }
 }
 
-function createGenerator(file, spec) {
+function createGenerator(file, suffix, spec) {
     const components = spec.components?.schemas ?? {};
     const emitted = new Map(); // component name -> identifier
     const order = [];
@@ -112,11 +127,18 @@ function createGenerator(file, spec) {
         if (!components[name]) throw new Error(`${file}: missing component ${name}`);
         if (visiting.has(name)) throw new Error(`${file}: recursive component ${name} is not supported`);
         visiting.add(name);
-        const id = identifier(file, name);
+        const id = identifier(suffix, name);
         const body = expression(components[name], name);
         visiting.delete(name);
         emitted.set(name, id);
-        order.push(`export const ${id} = ${body};`);
+        const previous = registry.get(id);
+        if (previous && previous.body !== body) {
+            throw new Error(`${file}: component ${name} differs from the copy in ${previous.file}; give one of the targets its own suffix`);
+        }
+        if (!previous) {
+            registry.set(id, { body, file });
+            order.push(`export const ${id} = ${body};`);
+        }
         return id;
     }
 
@@ -200,11 +222,11 @@ function createGenerator(file, spec) {
 }
 
 const sections = [];
-for (const [file, names] of Object.entries(TARGETS)) {
+for (const { file, suffix, names } of TARGETS) {
     const spec = JSON.parse(readFileSync(join(root, 'docs', 'openapi', file), 'utf8'));
-    const generator = createGenerator(file, spec);
+    const generator = createGenerator(file, suffix, spec);
     for (const name of names) generator.component(name);
-    sections.push(`// ---- docs/openapi/${file} ----\n${generator.order.join('\n\n')}`);
+    if (generator.order.length) sections.push(`// ---- docs/openapi/${file} ----\n${generator.order.join('\n\n')}`);
 }
 
 const header = [

@@ -43,7 +43,7 @@ export interface WifiFinding {
     nextTool: string;
 }
 
-/** Uses percentage fields documented in 07-monitor.json. Thresholds are review heuristics. */
+/** Uses percentage fields documented in 13-monitor.json. Thresholds are review heuristics. */
 export function wifiFindings(sections: Record<string, DiagnosticSection>): WifiFinding[] {
     const findings: WifiFinding[] = [];
     const dashboard = sections.dashboard?.data;

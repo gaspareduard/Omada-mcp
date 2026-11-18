@@ -4,7 +4,7 @@ import type { CustomHeaders, OmadaApiResponse, PaginatedResult } from '../types/
 import { OmadaApiError, type RequestHandler } from './request.js';
 import type { SiteOperations } from './site.js';
 
-// Writable request fields from 04-site-setting.json. Strip GET-only metadata when
+// Writable request fields from 04.3-site-network-setting-network.json. Strip GET-only metadata when
 // constructing the complete, required basic-config body; tool changes are strict.
 const ssidPskSettingOpenApiVOSchema = z
     .object({
@@ -234,7 +234,7 @@ export class NetworkOperations {
         return this.request.ensureSuccess(response);
     }
 
-    /** docs/openapi/04-site-setting.json: updateSsidBasicConfig (PATCH, v1). */
+    /** docs/openapi/04.3-site-network-setting-network.json: updateSsidBasicConfig (PATCH, v1). */
     public async updateSsidBasicConfig(
         wlanId: string,
         ssidId: string,

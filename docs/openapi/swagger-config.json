@@ -20,60 +20,112 @@
             "name": "03-device.json"
         },
         {
-            "url": "04 Site Setting",
-            "name": "04-site-setting.json"
+            "url": "04.1 Site Network Setting-Authentication",
+            "name": "04.1-site-network-setting-authentication.json"
         },
         {
-            "url": "05 Client",
-            "name": "05-client.json"
+            "url": "04.2 Site Network Setting-General",
+            "name": "04.2-site-network-setting-general.json"
         },
         {
-            "url": "06 Hotspot",
-            "name": "06-hotspot.json"
+            "url": "04.3 Site Network Setting-Network",
+            "name": "04.3-site-network-setting-network.json"
         },
         {
-            "url": "07 Monitor",
-            "name": "07-monitor.json"
+            "url": "04.4 Site Network Setting-Profiles",
+            "name": "04.4-site-network-setting-profiles.json"
         },
         {
-            "url": "08 Maintenance",
-            "name": "08-maintenance.json"
+            "url": "04.5 Site Network Setting-QuickAction",
+            "name": "04.5-site-network-setting-quickaction.json"
         },
         {
-            "url": "09 Insight",
-            "name": "09-insight.json"
+            "url": "04.6 Site Network Setting-Security",
+            "name": "04.6-site-network-setting-security.json"
         },
         {
-            "url": "10 Log",
-            "name": "10-log.json"
+            "url": "04.7 Site Network Setting-Transmission",
+            "name": "04.7-site-network-setting-transmission.json"
         },
         {
-            "url": "11 Batch",
-            "name": "11-batch.json"
+            "url": "04.8 Site Network Setting-Vpn",
+            "name": "04.8-site-network-setting-vpn.json"
         },
         {
-            "url": "12 Global Setting",
-            "name": "12-global-setting.json"
+            "url": "05 Site Device Config",
+            "name": "05-site-device-config.json"
         },
         {
-            "url": "13 Global Security",
-            "name": "13-global-security.json"
+            "url": "06 Client",
+            "name": "06-client.json"
         },
         {
-            "url": "14 Msp",
-            "name": "14-msp.json"
+            "url": "07 Hotspot",
+            "name": "07-hotspot.json"
         },
         {
-            "url": "15 Device Template",
-            "name": "15-device-template.json"
+            "url": "08 Device Template",
+            "name": "08-device-template.json"
         },
         {
-            "url": "16 Site Template Setting",
-            "name": "16-site-template-setting.json"
+            "url": "09 Site Network Template Setting",
+            "name": "09-site-network-template-setting.json"
         },
         {
-            "url": "17 Abnormal Detect",
-            "name": "17-abnormal-detect.json"
+            "url": "10 Site Device Config Template",
+            "name": "10-site-device-config-template.json"
+        },
+        {
+            "url": "11 Incident Template",
+            "name": "11-incident-template.json"
+        },
+        {
+            "url": "12 Log Template",
+            "name": "12-log-template.json"
+        },
+        {
+            "url": "13 Monitor",
+            "name": "13-monitor.json"
+        },
+        {
+            "url": "14 Maintenance",
+            "name": "14-maintenance.json"
+        },
+        {
+            "url": "15 Insight",
+            "name": "15-insight.json"
+        },
+        {
+            "url": "16 Log",
+            "name": "16-log.json"
+        },
+        {
+            "url": "17 Incident Detect",
+            "name": "17-incident-detect.json"
+        },
+        {
+            "url": "18 Intelli Recover",
+            "name": "18-intelli-recover.json"
+        },
+        {
+            "url": "19 Tools",
+            "name": "19-tools.json"
+        },
+        {
+            "url": "20 Batch",
+            "name": "20-batch.json"
+        },
+        {
+            "url": "21 Global Setting",
+            "name": "21-global-setting.json"
+        },
+        {
+            "url": "22 Global Security",
+            "name": "22-global-security.json"
+        },
+        {
+            "url": "23 Msp",
+            "name": "23-msp.json"
         }
     ],
     "validatorUrl": ""
