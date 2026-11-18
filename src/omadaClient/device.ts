@@ -946,10 +946,18 @@ export class DeviceOperations {
         return Array.isArray(result) ? result : [];
     }
 
+    /**
+     * docs/openapi/03-device.json: modifyApPort (PATCH, v1). Controller 6.3 removed the
+     * collection-level PATCH; the port is now a path segment and must match payload.lanPort.
+     */
     public async setSitesApsPortConfig(apMac: string, payload: unknown, siteId?: string, customHeaders?: CustomHeaders): Promise<unknown> {
         if (!apMac) throw new Error('An apMac must be provided.');
+        const lanPort = typeof payload === 'object' && payload !== null ? (payload as Record<string, unknown>).lanPort : undefined;
+        if (typeof lanPort !== 'string' || lanPort.trim() === '') throw new Error('payload.lanPort must identify the AP port to modify.');
         const resolvedSiteId = await this.site.resolveSiteId(siteId);
-        const path = this.buildPath(`/sites/${encodeURIComponent(resolvedSiteId)}/aps/${encodeURIComponent(apMac)}/ports`);
+        const path = this.buildPath(
+            `/sites/${encodeURIComponent(resolvedSiteId)}/aps/${encodeURIComponent(apMac)}/ports/${encodeURIComponent(lanPort.trim())}`
+        );
         const response = await this.request.patch<OmadaApiResponse<unknown>>(path, payload, customHeaders);
         return this.request.ensureSuccess(response);
     }

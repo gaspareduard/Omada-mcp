@@ -287,7 +287,9 @@ describe('registerAllTools category filtering', () => {
         'getIspLoad',
     ];
     const fullOperationCount = 441;
-    const deprecatedOperationCount = 28;
+    const deprecatedOperationCount = 31;
+    // restoreController is both a restore tool and deprecated (removed from the Open API in controller 6.3).
+    const activeRestoreCount = restoreNames.filter((name) => name !== 'restoreController').length;
 
     function names(): string[] {
         return vi.mocked(mockServer.registerTool).mock.calls.map(([name]) => name);
@@ -303,7 +305,7 @@ describe('registerAllTools category filtering', () => {
 
     it('omitted categories expose nondeprecated operations with recovery denied', () => {
         registerAllTools(mockServer, mockClient);
-        expect(names()).toHaveLength(fullOperationCount - deprecatedOperationCount - restoreNames.length + discoveryNames.length);
+        expect(names()).toHaveLength(fullOperationCount - deprecatedOperationCount - activeRestoreCount + discoveryNames.length);
         expect(names()).toEqual(expect.arrayContaining(discoveryNames));
         expect(names().filter((name) => restoreNames.includes(name))).toEqual([]);
         for (const [, definition] of vi.mocked(mockServer.registerTool).mock.calls) {

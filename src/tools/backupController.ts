@@ -15,7 +15,7 @@ export function registerBackupControllerTool(server: McpServer, client: OmadaCli
         'backupController',
         {
             description:
-                'Trigger a controller configuration backup to the self/cloud server. Use getBackupResult to poll the backup status afterwards.',
+                '[DEPRECATED] Trigger a controller configuration backup to the self/cloud server. Omada controller 6.3 removed this endpoint from the Open API; it only works on older controllers. Prefer backupControllerToFileServer, or backupSites for site-level self-server backups. Use getBackupResult to poll the backup status afterwards.',
             inputSchema: inputSchema.shape,
             annotations: {
                 destructiveHint: false,

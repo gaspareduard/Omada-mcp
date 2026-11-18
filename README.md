@@ -362,7 +362,7 @@ Site listing, client monitoring, and client-level operational controls (rate lim
 | Tool | Description |
 |---|---|
 | `rebootDevice` | Reboots a managed device with an auditable mutation summary. |
-| `setDeviceLed` | Changes a device LED state with an auditable mutation summary. |
+| `setDeviceLed` | [DEPRECATED] Calls a route absent from the official Open API spec; use `setApConfig` (general-config) or `setGatewayConfig` for `ledSetting`. |
 
 </details>
 
@@ -828,9 +828,9 @@ Controller and site backups, restores, and rogue AP exports.
 
 | Tool | Description |
 |---|---|
-| `backupController` | Trigger a controller configuration backup to the self/cloud server. |
+| `backupController` | [DEPRECATED] Controller backup to the self/cloud server; removed from the Open API in controller 6.3. Prefer `backupControllerToFileServer`. |
 | `backupControllerToFileServer` | Trigger a controller configuration backup to an external file server (FTP/SFTP). |
-| `restoreController` | Restore controller configuration from a backup file on the self/cloud server. |
+| `restoreController` | [DEPRECATED] Controller restore from the self/cloud server; removed from the Open API in controller 6.3. Prefer `restoreControllerFromFileServer`. |
 | `restoreControllerFromFileServer` | Restore controller configuration from a backup file on an external file server. |
 | `backupSites` | Trigger a multi-site configuration backup to the self/cloud server (up to 300 sites). |
 | `backupSitesToFileServer` | Trigger a multi-site configuration backup to an external file server (up to 300 sites). |

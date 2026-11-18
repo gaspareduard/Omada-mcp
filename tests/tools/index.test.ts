@@ -212,20 +212,28 @@ describe('tools/index', () => {
     it('does not grant recovery through maintenance, all, or read-only recovery', () => {
         registerAllTools(mockServer, mockClient, parseToolCategories('all:rw,maintenance:rw,recovery:r').categories);
         expect(names().filter((name) => name.startsWith('restore'))).toEqual([]);
-        expect(names()).toContain('backupController');
+        expect(names()).toContain('backupControllerToFileServer');
     });
 
-    it('registers all four restore tools only with explicit recovery write permission', () => {
+    it('registers the restore tools only with explicit recovery write permission', () => {
         registerAllTools(mockServer, mockClient, parseToolCategories('recovery:rw').categories);
         expect(names().sort()).toEqual([
             'describeOperation',
             'getServerCapabilities',
-            'restoreController',
             'restoreControllerFromFileServer',
             'restoreSites',
             'restoreSitesFromFileServer',
             'searchOperations',
         ]);
+    });
+
+    it('adds the deprecated self-server controller restore only when deprecated tools are included', () => {
+        registerAllTools(mockServer, mockClient, parseToolCategories('recovery:rw').categories, { includeDeprecated: true });
+        expect(
+            names()
+                .filter((name) => name.startsWith('restore'))
+                .sort()
+        ).toEqual(['restoreController', 'restoreControllerFromFileServer', 'restoreSites', 'restoreSitesFromFileServer']);
     });
 
     it('restricts compact registration to discovery and the policy-aware dispatcher', () => {
@@ -235,7 +243,8 @@ describe('tools/index', () => {
 
     it('fails closed for recovery when categories are omitted', () => {
         registerAllTools(mockServer, mockClient);
-        expect(names()).toContain('backupController');
+        expect(names()).toContain('backupControllerToFileServer');
+        expect(names()).not.toContain('backupController');
         expect(names().filter((name) => name.startsWith('restore'))).toEqual([]);
     });
 });

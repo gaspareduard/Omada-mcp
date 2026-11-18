@@ -31,7 +31,7 @@ export function registerRestoreControllerTool(server: McpServer, client: OmadaCl
         'restoreController',
         {
             description:
-                'Restore controller configuration from a backup file stored on the self/cloud server. This will overwrite current controller settings. Use getBackupFileList to find available file names, and getRestoreResult to poll the restore status. REQUIRES explicit confirmDangerous: true — this acknowledges the risk and is not a technical human-approval gate.',
+                '[DEPRECATED] Restore controller configuration from a backup file stored on the self/cloud server. Omada controller 6.3 removed this endpoint from the Open API; it only works on older controllers. Prefer restoreControllerFromFileServer. This will overwrite current controller settings. Use getBackupFileList to find available file names, and getRestoreResult to poll the restore status. REQUIRES explicit confirmDangerous: true — this acknowledges the risk and is not a technical human-approval gate.',
             inputSchema: inputSchema.shape,
             annotations: {
                 destructiveHint: true,

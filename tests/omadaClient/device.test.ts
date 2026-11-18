@@ -1132,7 +1132,6 @@ describe('omadaClient/device', () => {
             ['setRadiosConfig', '/api/sites/site-1/aps/AA%3ABB%3ACC%3ADD%3AEE%3AFF/radio-config'],
             ['setApServiceConfig', '/api/sites/site-1/aps/AA%3ABB%3ACC%3ADD%3AEE%3AFF/service-config'],
             ['setApWlanGroup', '/api/sites/site-1/aps/AA%3ABB%3ACC%3ADD%3AEE%3AFF/wlan-group'],
-            ['setSitesApsPortConfig', '/api/sites/site-1/aps/AA%3ABB%3ACC%3ADD%3AEE%3AFF/ports'],
             ['setAntennaGainConfig', '/api/sites/site-1/aps/AA%3ABB%3ACC%3ADD%3AEE%3AFF/antenna-gain'],
             ['setSitesGatewaysGeneralConfig', '/api/sites/site-1/gateways/AA%3ABB%3ACC%3ADD%3AEE%3AFF/general-config'],
         ])('should patch config via %s', async (methodName, expectedPath) => {
@@ -1151,6 +1150,27 @@ describe('omadaClient/device', () => {
 
             expect(mockRequest.patch).toHaveBeenCalledWith(expectedPath, payload, undefined);
             expect(result).toEqual({ success: true });
+        });
+
+        it('should patch a single AP port via the documented per-port route', async () => {
+            const payload = { lanPort: ' ETH1 ', status: true };
+            (mockRequest.patch as ReturnType<typeof vi.fn>).mockResolvedValue(mockSimpleResponse({ success: true }));
+            (mockRequest.ensureSuccess as ReturnType<typeof vi.fn>).mockReturnValue({ success: true });
+
+            const result = await deviceOps.setSitesApsPortConfig('AA:BB:CC:DD:EE:FF', payload, 'site-1');
+
+            expect(mockRequest.patch).toHaveBeenCalledWith('/api/sites/site-1/aps/AA%3ABB%3ACC%3ADD%3AEE%3AFF/ports/ETH1', payload, undefined);
+            expect(result).toEqual({ success: true });
+        });
+
+        it.each([
+            [{ status: true }],
+            [{ lanPort: '  ' }],
+            [null],
+            ['ETH1'],
+        ])('should reject AP port payload %j without a lanPort', async (payload) => {
+            await expect(deviceOps.setSitesApsPortConfig('AA:BB:CC:DD:EE:FF', payload, 'site-1')).rejects.toThrow('payload.lanPort');
+            expect(mockRequest.patch).not.toHaveBeenCalled();
         });
 
         it.each([

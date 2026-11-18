@@ -14,7 +14,8 @@ export function registerSetDeviceLedTool(server: McpServer, client: OmadaClient)
     server.registerTool(
         'setDeviceLed',
         {
-            description: 'Change the LED state for a managed device through the official Omada Open API.',
+            description:
+                '[DEPRECATED] Change the LED state for a managed device. The route this tool calls is not in the official Omada Open API specification (checked against controller 6.3.0.111), so controllers reject it. Set ledSetting through setApConfig (configType general-config) or setGatewayConfig instead.',
             inputSchema: inputSchema.shape,
         },
         wrapMutationToolHandler(

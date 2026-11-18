@@ -146,7 +146,8 @@ describe('MCP protocol over in-memory transports', () => {
             { name: 'restoreController', arguments: { fileName: 'backup.cfg', dryRun: false, confirmDangerous: true } },
             /unavailable/
         );
-        const client = await connect('recovery:rw', { restoreController });
+        // restoreController is deprecated (removed in controller 6.3), so it must be opted into explicitly.
+        const client = await connect('recovery:rw', { restoreController }, { includeDeprecated: true });
         expect(
             payload(await client.callTool({ name: 'restoreController', arguments: { fileName: 'backup.cfg', confirmDangerous: true } }))
         ).toMatchObject({ mode: 'dry-run', status: 'planned' });

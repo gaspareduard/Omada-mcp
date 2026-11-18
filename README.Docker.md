@@ -287,7 +287,7 @@ Every write previews by default (`dryRun` omitted or `true`), validates its payl
 | `unblockClient` | Restores a blocked client to network access with an auditable mutation summary. |
 | `reconnectClient` | Forces a client to reconnect with an auditable mutation summary. |
 | `rebootDevice` | Reboots a managed device with an auditable mutation summary. |
-| `setDeviceLed` | Changes a device LED state with an auditable mutation summary. |
+| `setDeviceLed` | [DEPRECATED] Calls a route absent from the official Open API spec; use `setApConfig` (general-config) or `setGatewayConfig` for `ledSetting`. |
 ### Device
 
 | Tool                   | Description                                                                       |
@@ -595,9 +595,9 @@ Single-call tools that internally aggregate multiple Omada API calls in parallel
 | `getSiteBackupFileList` | List available backup files for a site. |
 | `getSiteBackupResult` | Get the backup result for a site. |
 | `getRogueApExport` | Export Rogue AP scan results for a site in CSV or Excel format. |
-| `backupController` | Trigger a controller configuration backup to the self/cloud server. |
+| `backupController` | [DEPRECATED] Controller backup to the self/cloud server; removed from the Open API in controller 6.3. Prefer `backupControllerToFileServer`. |
 | `backupControllerToFileServer` | Trigger a controller configuration backup to an external file server (FTP/SFTP). |
-| `restoreController` | Restore controller configuration from a backup file on the self/cloud server. |
+| `restoreController` | [DEPRECATED] Controller restore from the self/cloud server; removed from the Open API in controller 6.3. Prefer `restoreControllerFromFileServer`. |
 | `restoreControllerFromFileServer` | Restore controller configuration from a backup file on an external file server. |
 | `backupSites` | Trigger a multi-site configuration backup to the self/cloud server (up to 300 sites). |
 | `backupSitesToFileServer` | Trigger a multi-site configuration backup to an external file server (up to 300 sites). |
