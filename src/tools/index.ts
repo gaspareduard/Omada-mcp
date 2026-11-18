@@ -13,6 +13,7 @@ import { registerBlockClientTool } from './blockClient.js';
 import { registerCreateDdnsEntryTool } from './createDdnsEntry.js';
 import { registerCreateDhcpReservationTool } from './createDhcpReservation.js';
 import { registerCreateEapAclTool } from './createEapAcl.js';
+import { registerCreateExternalUserGroupTool } from './createExternalUserGroup.js';
 import { registerCreateGatewayAclTool } from './createGatewayAcl.js';
 import { registerCreateGroupProfileTool } from './createGroupProfile.js';
 import { registerCreateLanDnsRuleTool } from './createLanDnsRule.js';
@@ -23,6 +24,8 @@ import { registerCreateMdnsRuleTool } from './createMdnsRule.js';
 import { registerCreateOneToOneNatTool } from './createOneToOneNat.js';
 import { registerCreatePolicyRouteTool } from './createPolicyRoute.js';
 import { registerCreatePortForwardingRuleTool } from './createPortForwardingRule.js';
+import { registerCreateRoleTool } from './createRole.js';
+import { registerCreateSamlIdpTool } from './createSamlIdp.js';
 import { registerCreateSsidTool } from './createSsid.js';
 import { registerCreateStaticRouteTool } from './createStaticRoute.js';
 import { registerCreateSwitchAclTool } from './createSwitchAcl.js';
@@ -36,6 +39,7 @@ import { registerDeleteClientToSiteVpnClientTool } from './deleteClientToSiteVpn
 import { registerDeleteClientToSiteVpnServerTool } from './deleteClientToSiteVpnServer.js';
 import { registerDeleteDdnsEntryTool } from './deleteDdnsEntry.js';
 import { registerDeleteDhcpReservationTool } from './deleteDhcpReservation.js';
+import { registerDeleteExternalUserGroupTool } from './deleteExternalUserGroup.js';
 import { registerDeleteGroupProfileTool } from './deleteGroupProfile.js';
 import { registerDeleteLanDnsRuleTool } from './deleteLanDnsRule.js';
 import { registerDeleteLanNetworkTool } from './deleteLanNetwork.js';
@@ -45,6 +49,8 @@ import { registerDeleteMdnsRuleTool } from './deleteMdnsRule.js';
 import { registerDeleteOneToOneNatTool } from './deleteOneToOneNat.js';
 import { registerDeletePolicyRouteTool } from './deletePolicyRoute.js';
 import { registerDeletePortForwardingRuleTool } from './deletePortForwardingRule.js';
+import { registerDeleteRoleTool } from './deleteRole.js';
+import { registerDeleteSamlIdpTool } from './deleteSamlIdp.js';
 import { registerDeleteSiteToSiteVpnTool } from './deleteSiteToSiteVpn.js';
 import { registerDeleteSsidTool } from './deleteSsid.js';
 import { registerDeleteStaticRouteTool } from './deleteStaticRoute.js';
@@ -90,6 +96,7 @@ import { registerGetAuditLogsForGlobalTool } from './getAuditLogsForGlobal.js';
 import { registerGetAvailableRolesTool } from './getAvailableRoles.js';
 import { registerGetBackupFileListTool } from './getBackupFileList.js';
 import { registerGetBackupResultTool } from './getBackupResult.js';
+import { registerGetBackupScheduleTool } from './getBackupSchedule.js';
 import { registerGetBandSteeringSettingTool } from './getBandSteeringSetting.js';
 import { registerGetBandwidthControlTool } from './getBandwidthControl.js';
 import { registerGetBandwidthCtrlTool } from './getBandwidthCtrl.js';
@@ -358,6 +365,8 @@ import { registerListClientToSiteVpnServersTool } from './listClientToSiteVpnSer
 import { registerListDevicesTool } from './listDevices.js';
 import { registerListDevicesStatsTool } from './listDevicesStats.js';
 import { registerListEapAclsTool } from './listEapAcls.js';
+import { registerListExternalUserGroupsTool } from './listExternalUserGroups.js';
+import { registerListExternalUsersTool } from './listExternalUsers.js';
 import { registerListGlobalAlertsTool } from './listGlobalAlerts.js';
 import { registerListGlobalEventsTool } from './listGlobalEvents.js';
 import { registerListGroupProfilesTool } from './listGroupProfiles.js';
@@ -369,6 +378,7 @@ import { registerListPendingDevicesTool } from './listPendingDevices.js';
 import { registerListPolicyRoutesTool } from './listPolicyRoutes.js';
 import { registerListPortForwardingRulesTool } from './listPortForwardingRules.js';
 import { registerListRadiusProfilesTool } from './listRadiusProfiles.js';
+import { registerListSamlIdpsTool } from './listSamlIdps.js';
 import { registerListServiceTypeTool } from './listServiceType.js';
 import { registerListSiteAlertsTool } from './listSiteAlerts.js';
 import { registerListSiteAuditLogsTool } from './listSiteAuditLogs.js';
@@ -407,6 +417,7 @@ import { registerSetApPowerSavingTool } from './setApPowerSaving.js';
 import { registerSetAppControlRuleTool } from './setAppControlRule.js';
 import { registerSetApRadioTool } from './setApRadio.js';
 import { registerSetAttackDefenseSettingTool } from './setAttackDefenseSetting.js';
+import { registerSetBackupScheduleTool } from './setBackupSchedule.js';
 import { registerSetBandwidthControlRuleTool } from './setBandwidthControlRule.js';
 import { registerSetClientLockToApTool } from './setClientLockToAp.js';
 import { registerSetClientNameTool } from './setClientName.js';
@@ -416,6 +427,7 @@ import { registerSetDeviceLedTool } from './setDeviceLed.js';
 import { registerSetFirewallSettingTool } from './setFirewallSetting.js';
 import { registerSetGatewayConfigTool } from './setGatewayConfig.js';
 import { registerSetIpsConfigTool } from './setIpsConfig.js';
+import { registerSetMfaStatusTool } from './setMfaStatus.js';
 import { registerSetSnmpSettingTool } from './setSnmpSetting.js';
 import { registerSetSwitchPortsTool } from './setSwitchPorts.js';
 import { registerSetUpnpSettingTool } from './setUpnpSetting.js';
@@ -427,6 +439,7 @@ import { registerUpdateClientToSiteVpnServerTool } from './updateClientToSiteVpn
 import { registerUpdateDdnsEntryTool } from './updateDdnsEntry.js';
 import { registerUpdateDhcpReservationTool } from './updateDhcpReservation.js';
 import { registerUpdateEapAclTool } from './updateEapAcl.js';
+import { registerUpdateExternalUserGroupTool } from './updateExternalUserGroup.js';
 import { registerUpdateGatewayAclTool } from './updateGatewayAcl.js';
 import { registerUpdateGroupProfileTool } from './updateGroupProfile.js';
 import { registerUpdateLanDnsRuleTool } from './updateLanDnsRule.js';
@@ -437,6 +450,8 @@ import { registerUpdateMdnsRuleTool } from './updateMdnsRule.js';
 import { registerUpdateOneToOneNatTool } from './updateOneToOneNat.js';
 import { registerUpdatePolicyRouteTool } from './updatePolicyRoute.js';
 import { registerUpdatePortForwardingRuleTool } from './updatePortForwardingRule.js';
+import { registerUpdateRoleTool } from './updateRole.js';
+import { registerUpdateSamlIdpTool } from './updateSamlIdp.js';
 import { registerUpdateSiteToSiteVpnTool } from './updateSiteToSiteVpn.js';
 import { registerUpdateSsidTool } from './updateSsid.js';
 import { registerUpdateStaticRouteTool } from './updateStaticRoute.js';
@@ -840,10 +855,12 @@ const TOOL_REGISTRY: ToolEntry[] = [
     { fn: registerGetSiteBackupResultTool, category: 'maintenance', permission: 'read' },
     { fn: registerGetSiteBackupFileListTool, category: 'maintenance', permission: 'read' },
     { fn: registerGetRogueApExportTool, category: 'maintenance', permission: 'read' },
+    { fn: registerGetBackupScheduleTool, category: 'maintenance', permission: 'read' },
     { fn: registerBackupControllerTool, category: 'maintenance', permission: 'write' },
     { fn: registerBackupControllerToFileServerTool, category: 'maintenance', permission: 'write' },
     { fn: registerBackupSitesTool, category: 'maintenance', permission: 'write' },
     { fn: registerBackupSitesToFileServerTool, category: 'maintenance', permission: 'write' },
+    { fn: registerSetBackupScheduleTool, category: 'maintenance', permission: 'write' },
     { fn: registerRestoreControllerTool, category: 'recovery', permission: 'write' },
     { fn: registerRestoreControllerFromFileServerTool, category: 'recovery', permission: 'write' },
     { fn: registerRestoreSitesTool, category: 'recovery', permission: 'write' },
@@ -856,12 +873,27 @@ const TOOL_REGISTRY: ToolEntry[] = [
     { fn: registerGetRoleDetailTool, category: 'account-users', permission: 'read' },
     { fn: registerGetAvailableRolesTool, category: 'account-users', permission: 'read' },
     { fn: registerGetAllUsersAppTool, category: 'account-users', permission: 'read' },
+    { fn: registerCreateRoleTool, category: 'account-users', permission: 'write' },
+    { fn: registerUpdateRoleTool, category: 'account-users', permission: 'write' },
+    { fn: registerDeleteRoleTool, category: 'account-users', permission: 'write' },
+
+    // --- Account SSO ---
+    { fn: registerListSamlIdpsTool, category: 'account-sso', permission: 'read' },
+    { fn: registerCreateSamlIdpTool, category: 'account-sso', permission: 'write' },
+    { fn: registerUpdateSamlIdpTool, category: 'account-sso', permission: 'write' },
+    { fn: registerDeleteSamlIdpTool, category: 'account-sso', permission: 'write' },
+    { fn: registerListExternalUserGroupsTool, category: 'account-sso', permission: 'read' },
+    { fn: registerCreateExternalUserGroupTool, category: 'account-sso', permission: 'write' },
+    { fn: registerUpdateExternalUserGroupTool, category: 'account-sso', permission: 'write' },
+    { fn: registerDeleteExternalUserGroupTool, category: 'account-sso', permission: 'write' },
+    { fn: registerListExternalUsersTool, category: 'account-sso', permission: 'read' },
 
     // --- Account cloud ---
     { fn: registerGetCloudAccessStatusTool, category: 'account-cloud', permission: 'read' },
     { fn: registerGetCloudUserInfoTool, category: 'account-cloud', permission: 'read' },
     { fn: registerGetMfaStatusTool, category: 'account-cloud', permission: 'read' },
     { fn: registerGetRemoteBindingStatusTool, category: 'account-cloud', permission: 'read' },
+    { fn: registerSetMfaStatusTool, category: 'account-cloud', permission: 'write' },
 
     // --- Schedules ---
     { fn: registerGetUpgradeScheduleListTool, category: 'schedules', permission: 'read' },

@@ -10,6 +10,9 @@
 - deprecate `setDeviceLed`: its `devices/{mac}/led-setting` route has never been part of the official Open API; set `ledSetting` through `setApConfig` (general-config) or `setGatewayConfig`
 - verify the readable OpenVPN `accountPassword` boolean after `updateClientToSiteVpnServer` instead of treating it as a write-only secret
 - one-to-one NAT write tools read existing rules through the existing `listOneToOneNatRules` operation instead of a duplicate implementation
+- add 15 preview-first controller tools, each validated on the 6.3.0.111 lab controller with preview, single apply, readback verification and cleanup: `getBackupSchedule`/`setBackupSchedule` (maintenance), `createRole`/`updateRole`/`deleteRole` (account-users, built-in roles refused), `setMfaStatus` (account-cloud), and the new account-sso category (`listSamlIdps`, `createSamlIdp`, `updateSamlIdp`, `deleteSamlIdp`, `listExternalUserGroups`, `createExternalUserGroup`, `updateExternalUserGroup`, `deleteExternalUserGroup`, `listExternalUsers`)
+- document 6.3 Open API behavior found in the lab: user-management routes (`/users`, `/users/local`, `/users/cloud`, `/roles/available`) need the authorization-code grant and return -44118 to this client-credentials server, so user CRUD is not implemented; SAML IdP certificates must be the base64 of the complete PEM file and IdP rows are keyed by `id`; a disabled backup schedule ignores timing and retention changes
+- the catalogue generator now recognises `this.request.*(this.buildPath(...))` calls, which also marks seven existing read routes (sites, devices, clients, dashboard activity) as implemented
 - explain the controller's `General error.` from the gateway ACL list (`listOsgAcls`, and the `updateGatewayAcl`/`deleteAcl` lookups): on controller 6.2.14.11 the Open API fails the whole list when a stored gateway ACL rule has no state mode, a controller NullPointerException rather than a request problem
 
 ## 0.19.0-rc.2 - 2026-11-11

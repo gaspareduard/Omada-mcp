@@ -595,6 +595,7 @@ Single-call tools that internally aggregate multiple Omada API calls in parallel
 | `getSiteBackupFileList` | List available backup files for a site. |
 | `getSiteBackupResult` | Get the backup result for a site. |
 | `getRogueApExport` | Export Rogue AP scan results for a site in CSV or Excel format. |
+| `getBackupSchedule` | Get the controller automatic backup schedule (timing, retention, storage target). |
 | `backupController` | [DEPRECATED] Controller backup to the self/cloud server; removed from the Open API in controller 6.3. Prefer `backupControllerToFileServer`. |
 | `backupControllerToFileServer` | Trigger a controller configuration backup to an external file server (FTP/SFTP). |
 | `restoreController` | [DEPRECATED] Controller restore from the self/cloud server; removed from the Open API in controller 6.3. Prefer `restoreControllerFromFileServer`. |
@@ -603,6 +604,7 @@ Single-call tools that internally aggregate multiple Omada API calls in parallel
 | `backupSitesToFileServer` | Trigger a multi-site configuration backup to an external file server (up to 300 sites). |
 | `restoreSites` | Restore multiple site configurations from backup files on the self/cloud server. |
 | `restoreSitesFromFileServer` | Restore multiple site configurations from backup files on an external file server. |
+| `setBackupSchedule` | Change the controller automatic backup schedule. Preview by default; verified by readback. |
 ### Account Users
 
 | Tool                          | Description                                                                              |
@@ -613,6 +615,25 @@ Single-call tools that internally aggregate multiple Omada API calls in parallel
 | `getAllUsersApp` | List all users (cloud and local) in grid view. |
 | `getAvailableRoles` | List roles available for user assignment. |
 | `getRoleDetail` | Get detailed information about a specific role. Requires `roleId`. |
+| `createRole` | Create a custom administrator role with per-area privileges. Preview by default. |
+| `updateRole` | Rename a custom role or change its privileges; built-in roles are refused. Preview by default. |
+| `deleteRole` | Delete a custom role; built-in and bound roles are refused. Preview by default. |
+
+With OAuth client credentials (the only mode this server uses), controller 6.3 rejects the user-management routes (`/users`, `/users/local`, `/users/cloud`, `/roles/available`) with error -44118: they require the authorization-code mode. `getAllLocalUsers`, `getAllCloudUsers` and `getAvailableRoles` therefore fail on 6.3, and user create/modify/delete are not implemented.
+
+### Account SSO
+
+| Tool                          | Description                                                                              |
+| ----------------------------- | ---------------------------------------------------------------------------------------- |
+| `listSamlIdps` | List SAML identity providers configured for controller single sign-on. |
+| `listExternalUserGroups` | List SSO external user groups (role and site scope for IdP users). |
+| `listExternalUsers` | List users who have signed in through SSO. |
+| `createSamlIdp` | Add a SAML identity provider. Preview by default. |
+| `updateSamlIdp` | Replace a SAML identity provider (login URL, certificate). Preview by default. |
+| `deleteSamlIdp` | Delete a SAML identity provider. Preview by default. |
+| `createExternalUserGroup` | Create an SSO external user group with a role and site scope. Preview by default. |
+| `updateExternalUserGroup` | Replace an SSO external user group. Preview by default. |
+| `deleteExternalUserGroup` | Delete an SSO external user group. Preview by default. |
 ### Account Cloud
 
 | Tool                          | Description                                                                              |
@@ -621,6 +642,7 @@ Single-call tools that internally aggregate multiple Omada API calls in parallel
 | `getCloudUserInfo` | Get cloud user account information. |
 | `getMfaStatus` | Get global MFA (multi-factor authentication) status. |
 | `getRemoteBindingStatus` | Get remote binding status between controller and cloud. |
+| `setMfaStatus` | Turn controller-wide two-factor authentication on or off. Preview by default; verified by readback. |
 ### Schedules
 
 | Tool                          | Description                                                                              |

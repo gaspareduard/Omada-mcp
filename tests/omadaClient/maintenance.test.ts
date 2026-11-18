@@ -279,3 +279,30 @@ describe('MaintenanceOperations', () => {
         });
     });
 });
+
+describe('MaintenanceOperations backup schedule', () => {
+    const schedule = { enable: true, occurrence: { timingType: 1, hour: 3, minute: 0 }, maxNumberOfFile: 7, retention: 30 };
+    let request: Record<string, ReturnType<typeof vi.fn>>;
+    let ops: MaintenanceOperations;
+
+    beforeEach(() => {
+        request = {
+            get: vi.fn(async () => ({ errorCode: 0, result: schedule })),
+            post: vi.fn(async () => ({ errorCode: 0 })),
+            ensureSuccess: vi.fn((response: OmadaApiResponse<unknown>) => response.result),
+        };
+        ops = new MaintenanceOperations(request as unknown as RequestHandler, {} as SiteOperations, (path) => `/openapi/v1/c${path}`);
+    });
+
+    it('reads the schedule', async () => {
+        await expect(ops.getBackupSchedule()).resolves.toEqual(schedule);
+        expect(request.get).toHaveBeenCalledWith('/openapi/v1/c/backupschedule/task', undefined, undefined);
+    });
+
+    it('validates and posts the schedule', async () => {
+        await ops.setBackupSchedule(schedule, { h: '1' });
+        expect(request.post).toHaveBeenCalledWith('/openapi/v1/c/backupschedule/task', schedule, { h: '1' });
+        await expect(ops.setBackupSchedule({ ...schedule, occurrence: { timingType: 1 } } as never)).rejects.toThrow();
+        expect(request.post).toHaveBeenCalledTimes(1);
+    });
+});

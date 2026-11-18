@@ -1,7 +1,9 @@
 import type { CustomHeaders, OmadaApiResponse } from '../types/index.js';
 
 import type { RequestHandler } from './request.js';
+import * as schemas from './requestSchemas.js';
 import type { SiteOperations } from './site.js';
+import type { Input } from './siteConfig.js';
 
 export interface FileServerConfig {
     protocol: string;
@@ -197,6 +199,26 @@ export class MaintenanceOperations {
     ): Promise<unknown> {
         const path = this.buildPath('/sites/maintenance/multi-restore/file-server');
         const response = await this.request.post<OmadaApiResponse<unknown>>(path, { serverConfig, siteInfos }, customHeaders);
+        return this.request.ensureSuccess(response);
+    }
+
+    /**
+     * Get the controller's scheduled (automatic) backup task.
+     * OperationId: getBackupScheduleTask
+     */
+    public async getBackupSchedule(customHeaders?: CustomHeaders): Promise<unknown> {
+        const path = this.buildPath('/backupschedule/task');
+        const response = await this.request.get<OmadaApiResponse<unknown>>(path, undefined, customHeaders);
+        return this.request.ensureSuccess(response);
+    }
+
+    /**
+     * Modify the controller's scheduled (automatic) backup task.
+     * OperationId: modifyBackupScheduleTask
+     */
+    public async setBackupSchedule(payload: Input<typeof schemas.autoBackupOpenApiVO08Schema>, customHeaders?: CustomHeaders): Promise<unknown> {
+        const path = this.buildPath('/backupschedule/task');
+        const response = await this.request.post<OmadaApiResponse<unknown>>(path, schemas.autoBackupOpenApiVO08Schema.parse(payload), customHeaders);
         return this.request.ensureSuccess(response);
     }
 }

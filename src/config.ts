@@ -68,16 +68,7 @@ export const ALL_CATEGORIES = [
 export type ToolCategory = (typeof ALL_CATEGORIES)[number];
 
 /** Categories declared in ALL_CATEGORIES but with no tool implementations yet (reserved for future phases). */
-export const FUTURE_CATEGORIES = new Set<ToolCategory>([
-    'insights',
-    'network-sim-lte',
-    'account-sso',
-    'hotspot-portal',
-    'hotspot-users',
-    'voip',
-    'olt',
-    'msp',
-]);
+export const FUTURE_CATEGORIES = new Set<ToolCategory>(['insights', 'network-sim-lte', 'hotspot-portal', 'hotspot-users', 'voip', 'olt', 'msp']);
 
 /** Group aliases that expand to multiple categories */
 export const CATEGORY_GROUP_ALIASES: Record<string, ToolCategory[]> = {

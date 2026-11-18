@@ -1791,6 +1791,81 @@ export class OmadaClient {
         return await this.accountOps.getRemoteBindingStatus(customHeaders);
     }
 
+    public async createRole(payload: Input<typeof schemas.modifyControllerRoleVO01Schema>, customHeaders?: CustomHeaders): Promise<unknown> {
+        return await this.accountOps.createRole(payload, customHeaders);
+    }
+
+    public async updateRole(
+        roleId: string,
+        payload: Input<typeof schemas.modifyControllerRoleVO01Schema>,
+        customHeaders?: CustomHeaders
+    ): Promise<unknown> {
+        return await this.accountOps.updateRole(roleId, payload, customHeaders);
+    }
+
+    public async deleteRole(roleId: string, customHeaders?: CustomHeaders): Promise<unknown> {
+        return await this.accountOps.deleteRole(roleId, customHeaders);
+    }
+
+    public async setMfaStatus(payload: Input<typeof schemas.mFAConfigOpenApiVO01Schema>, customHeaders?: CustomHeaders): Promise<unknown> {
+        return await this.accountOps.setMfaStatus(payload, customHeaders);
+    }
+
+    public async listSamlIdps(customHeaders?: CustomHeaders): Promise<unknown[]> {
+        return await this.accountOps.listSamlIdps(customHeaders);
+    }
+
+    public async createSamlIdp(payload: Input<typeof schemas.idpMetadataOpenApiVO01Schema>, customHeaders?: CustomHeaders): Promise<unknown> {
+        return await this.accountOps.createSamlIdp(payload, customHeaders);
+    }
+
+    public async updateSamlIdp(
+        idpId: string,
+        payload: Input<typeof schemas.idpMetadataOpenApiVO01Schema>,
+        customHeaders?: CustomHeaders
+    ): Promise<unknown> {
+        return await this.accountOps.updateSamlIdp(idpId, payload, customHeaders);
+    }
+
+    public async deleteSamlIdp(idpId: string, customHeaders?: CustomHeaders): Promise<unknown> {
+        return await this.accountOps.deleteSamlIdp(idpId, customHeaders);
+    }
+
+    public async listExternalUserGroups(customHeaders?: CustomHeaders): Promise<unknown[]> {
+        return await this.accountOps.listExternalUserGroups(customHeaders);
+    }
+
+    public async createExternalUserGroup(
+        payload: Input<typeof schemas.externalUserGroupOpenApiVO01Schema>,
+        customHeaders?: CustomHeaders
+    ): Promise<unknown> {
+        return await this.accountOps.createExternalUserGroup(payload, customHeaders);
+    }
+
+    public async updateExternalUserGroup(
+        groupId: string,
+        payload: Input<typeof schemas.externalUserGroupOpenApiVO01Schema>,
+        customHeaders?: CustomHeaders
+    ): Promise<unknown> {
+        return await this.accountOps.updateExternalUserGroup(groupId, payload, customHeaders);
+    }
+
+    public async deleteExternalUserGroup(groupId: string, customHeaders?: CustomHeaders): Promise<unknown> {
+        return await this.accountOps.deleteExternalUserGroup(groupId, customHeaders);
+    }
+
+    public async listExternalUsers(customHeaders?: CustomHeaders): Promise<unknown[]> {
+        return await this.accountOps.listExternalUsers(customHeaders);
+    }
+
+    public async getBackupSchedule(customHeaders?: CustomHeaders): Promise<unknown> {
+        return await this.maintenanceOps.getBackupSchedule(customHeaders);
+    }
+
+    public async setBackupSchedule(payload: Input<typeof schemas.autoBackupOpenApiVO08Schema>, customHeaders?: CustomHeaders): Promise<unknown> {
+        return await this.maintenanceOps.setBackupSchedule(payload, customHeaders);
+    }
+
     // Schedule operations
     public async getUpgradeScheduleList(siteId?: string, customHeaders?: CustomHeaders): Promise<unknown> {
         return await this.scheduleOps.getUpgradeScheduleList(siteId, customHeaders);

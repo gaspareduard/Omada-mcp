@@ -182,3 +182,66 @@ describe('AccountOperations', () => {
         });
     });
 });
+
+describe('AccountOperations writes and SSO collections', () => {
+    const ok = { errorCode: 0, msg: 'Success.', result: { id: 'x' } };
+    let request: Record<string, ReturnType<typeof vi.fn>>;
+    let ops: AccountOperations;
+    const role = { name: 'mcp-role', privilege: { devices: 1 } };
+    const idp = { name: 'idp', entityId: 'https://idp.example.com/metadata', loginUrl: 'https://idp.example.com/sso', x509Certificate: 'TUlJ' };
+    const group = { name: 'group', roleId: 'role-1', allSite: false, sites: ['site-1'] };
+
+    beforeEach(() => {
+        request = {
+            post: vi.fn(async () => ok),
+            put: vi.fn(async () => ok),
+            delete: vi.fn(async () => ok),
+            fetchPaginated: vi.fn(async () => [{ id: 'a' }]),
+            ensureSuccess: vi.fn((response: OmadaApiResponse<unknown>) => response.result),
+        };
+        ops = new AccountOperations(request as unknown as RequestHandler, (path) => `/openapi/v1/c${path}`);
+    });
+
+    it('creates, modifies and deletes roles on the documented routes', async () => {
+        await expect(ops.createRole(role)).resolves.toEqual({ id: 'x' });
+        expect(request.post).toHaveBeenCalledWith('/openapi/v1/c/roles', role, undefined);
+        await ops.updateRole('r/1', role, { h: '1' });
+        expect(request.put).toHaveBeenCalledWith('/openapi/v1/c/roles/r%2F1', role, { h: '1' });
+        await ops.deleteRole('r/1');
+        expect(request.delete).toHaveBeenCalledWith('/openapi/v1/c/roles/r%2F1', undefined);
+    });
+
+    it('rejects undocumented role fields before sending', async () => {
+        await expect(ops.createRole({ ...role, extra: true } as never)).rejects.toThrow();
+        expect(request.post).not.toHaveBeenCalled();
+    });
+
+    it('sets the MFA status', async () => {
+        await ops.setMfaStatus({ enable: true });
+        expect(request.post).toHaveBeenCalledWith('/openapi/v1/c/mfa/status', { enable: true }, undefined);
+    });
+
+    it('manages SAML identity providers', async () => {
+        await expect(ops.listSamlIdps()).resolves.toEqual([{ id: 'a' }]);
+        expect(request.fetchPaginated).toHaveBeenCalledWith('/openapi/v1/c/sso/saml-idps', {}, undefined);
+        await ops.createSamlIdp(idp);
+        expect(request.post).toHaveBeenCalledWith('/openapi/v1/c/sso/saml-idps', idp, undefined);
+        await ops.updateSamlIdp('i1', idp);
+        expect(request.put).toHaveBeenCalledWith('/openapi/v1/c/sso/saml-idps/i1', idp, undefined);
+        await ops.deleteSamlIdp('i1');
+        expect(request.delete).toHaveBeenCalledWith('/openapi/v1/c/sso/saml-idps/i1', undefined);
+    });
+
+    it('manages external user groups and lists external users', async () => {
+        await ops.listExternalUserGroups();
+        expect(request.fetchPaginated).toHaveBeenCalledWith('/openapi/v1/c/sso/external-user-groups', {}, undefined);
+        await ops.createExternalUserGroup(group);
+        expect(request.post).toHaveBeenCalledWith('/openapi/v1/c/sso/external-user-groups', group, undefined);
+        await ops.updateExternalUserGroup('g1', group);
+        expect(request.put).toHaveBeenCalledWith('/openapi/v1/c/sso/external-user-groups/g1', group, undefined);
+        await ops.deleteExternalUserGroup('g1');
+        expect(request.delete).toHaveBeenCalledWith('/openapi/v1/c/sso/external-user-groups/g1', undefined);
+        await ops.listExternalUsers({ h: '1' });
+        expect(request.fetchPaginated).toHaveBeenCalledWith('/openapi/v1/c/sso/external-users', {}, { h: '1' });
+    });
+});

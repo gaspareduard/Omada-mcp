@@ -810,7 +810,7 @@ Controller-level settings: certificates, ports, data retention, telemetry, and g
 Controller and site backups, restores, and rogue AP exports.
 
 <details>
-<summary>Read tools (5)</summary>
+<summary>Read tools (7)</summary>
 
 | Tool | Description |
 |---|---|
@@ -820,11 +820,12 @@ Controller and site backups, restores, and rogue AP exports.
 | `getSiteBackupFileList` | List available backup files for a site. |
 | `getSiteBackupResult` | Get the backup result for a site. |
 | `getRogueApExport` | Export Rogue AP scan results for a site in CSV or Excel format. |
+| `getBackupSchedule` | Get the controller automatic backup schedule (timing, retention, storage target). |
 
 </details>
 
 <details>
-<summary>Write tools (8)</summary>
+<summary>Write tools (9)</summary>
 
 | Tool | Description |
 |---|---|
@@ -836,6 +837,7 @@ Controller and site backups, restores, and rogue AP exports.
 | `backupSitesToFileServer` | Trigger a multi-site configuration backup to an external file server (up to 300 sites). |
 | `restoreSites` | Restore multiple site configurations from backup files on the self/cloud server. |
 | `restoreSitesFromFileServer` | Restore multiple site configurations from backup files on an external file server. |
+| `setBackupSchedule` | Change the controller automatic backup schedule. Preview by default; verified by readback. |
 
 </details>
 
@@ -859,6 +861,50 @@ User and role management for the controller.
 
 </details>
 
+<details>
+<summary>Write tools (3)</summary>
+
+| Tool | Description |
+|---|---|
+| `createRole` | Create a custom administrator role with per-area privileges. Preview by default. |
+| `updateRole` | Rename a custom role or change its privileges; built-in roles are refused. Preview by default. |
+| `deleteRole` | Delete a custom role; built-in and bound roles are refused. Preview by default. |
+
+</details>
+
+With OAuth client credentials (the only mode this server uses), controller 6.3 rejects the user-management routes (`/users`, `/users/local`, `/users/cloud`, `/roles/available`) with error -44118: they require the authorization-code mode. `getAllLocalUsers`, `getAllCloudUsers` and `getAvailableRoles` therefore fail on 6.3, and user create/modify/delete are not implemented.
+
+---
+
+### Account SSO
+
+SAML identity providers and external (SSO) user groups.
+
+<details>
+<summary>Read tools (3)</summary>
+
+| Tool | Description |
+|---|---|
+| `listSamlIdps` | List SAML identity providers configured for controller single sign-on. |
+| `listExternalUserGroups` | List SSO external user groups (role and site scope for IdP users). |
+| `listExternalUsers` | List users who have signed in through SSO. |
+
+</details>
+
+<details>
+<summary>Write tools (6)</summary>
+
+| Tool | Description |
+|---|---|
+| `createSamlIdp` | Add a SAML identity provider. Preview by default. |
+| `updateSamlIdp` | Replace a SAML identity provider (login URL, certificate). Preview by default. |
+| `deleteSamlIdp` | Delete a SAML identity provider. Preview by default. |
+| `createExternalUserGroup` | Create an SSO external user group with a role and site scope. Preview by default. |
+| `updateExternalUserGroup` | Replace an SSO external user group. Preview by default. |
+| `deleteExternalUserGroup` | Delete an SSO external user group. Preview by default. |
+
+</details>
+
 ---
 
 ### Account Cloud
@@ -874,6 +920,15 @@ Cloud access, MFA, and remote binding status.
 | `getCloudUserInfo` | Get cloud user account information. |
 | `getMfaStatus` | Get global MFA (multi-factor authentication) status. |
 | `getRemoteBindingStatus` | Get remote binding status between controller and cloud. |
+
+</details>
+
+<details>
+<summary>Write tools (1)</summary>
+
+| Tool | Description |
+|---|---|
+| `setMfaStatus` | Turn controller-wide two-factor authentication on or off. Preview by default; verified by readback. |
 
 </details>
 

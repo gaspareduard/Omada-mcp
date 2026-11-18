@@ -27,11 +27,17 @@ const outFile = join(root, 'src', 'omadaClient', 'requestSchemas.ts');
  *
  * `suffix` is part of every exported identifier and is kept stable across spec
  * refreshes so consumers do not change when TP-Link renumbers its tag groups:
- * '' = site settings, '03' = device, '05' = client, '06' = hotspot (the tag
+ * '' = site settings, '01' = account, '03' = device, '05' = client,
+ * '06' = hotspot, '08' = maintenance (the tag
  * numbers of the original 18-group spec). Schemas that share a suffix must be
  * identical wherever they are reached; the generator fails otherwise.
  */
 const TARGETS = [
+    {
+        file: '01-account.json',
+        suffix: '01',
+        names: ['ModifyControllerRoleVO', 'MFAConfigOpenApiVO', 'IdpMetadataOpenApiVO', 'ExternalUserGroupOpenApiVO'],
+    },
     {
         file: '03-device.json',
         suffix: '03',
@@ -65,6 +71,7 @@ const TARGETS = [
     { file: '05-site-device-config.json', suffix: '', names: ['CreateDdnsOpenApiVO', 'UpnpSettingOpenApiVO', 'MacFiltering'] },
     { file: '06-client.json', suffix: '05', names: ['Client Name Setting', 'Client Lock To AP Setting'] },
     { file: '07-hotspot.json', suffix: '06', names: ['CreateVoucherGroupOpenApiVO'] },
+    { file: '14-maintenance.json', suffix: '08', names: ['AutoBackupOpenApiVO'] },
 ];
 
 const MAX_DESCRIPTION = 240;
