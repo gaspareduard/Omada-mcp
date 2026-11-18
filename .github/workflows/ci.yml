@@ -48,5 +48,8 @@ jobs:
       - name: Verify README and generated docs sync
         run: node scripts/check-readme-sync.mjs
 
+      - name: Verify OMADA_TOOLS.md catalogue is current
+        run: node scripts/generate-tools-catalog.mjs --check
+
       - name: Release readiness checklist exists
         run: test -f docs/operations/release-readiness-checklist.md
